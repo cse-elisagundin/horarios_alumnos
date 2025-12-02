@@ -1,8 +1,7 @@
 <html lang="es"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Generador JPG</title>
-    <style>
+    <title>Horario de Sancho</title> <style>
         /* --- ESTILOS VISUALES --- */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -113,6 +112,7 @@
             background: #fdfdfd; 
             border-radius: 8px; 
         }
+        .notes h3 { margin-top: 0; color: #2a3b72; font-size: 14px; text-transform: uppercase; margin-bottom: 10px; }
 
         /* MODO FOTO */
         body.preview-mode { background-color: #ccc; } 
@@ -133,7 +133,7 @@
     </div>
 
     <div class="info">
-        <p><strong>ALUMN@:</strong> <span >Sancho</span></p>
+        <p><strong>ALUMN@:</strong> <span  id="nombreAlumno">Sancho</span></p>
         <p><strong>TOTAL HORAS SEMANALES:</strong> <span >3 horas</span></p>
     </div>
 
@@ -182,19 +182,25 @@
     }
 
     function copyCode() {
-        // 1. Obtener todo el HTML (con las ediciones hechas en el navegador)
+        // 1. OBTENER DATOS DEL ALUMNO
+        const nombre = document.getElementById('nombreAlumno').textContent.trim();
+        const titulo = `<title>Horario de ${nombre}</title>`;
+
+        // 2. Obtener todo el HTML (con las ediciones hechas en el navegador)
         let htmlContent = document.documentElement.outerHTML;
 
-        // 2. ELIMINAR EL ATRIBUTO DE EDICIÓN ()
-        // Utilizamos un Regex global (g) para reemplazar todas las instancias
+        // 3. LIMPIEZA 1: ELIMINAR EL ATRIBUTO DE EDICIÓN (para que sea lectura)
         htmlContent = htmlContent.replace(//g, ""); 
         
-        // 3. ELIMINAR LOS BOTONES (Lógica anterior)
+        // 4. LIMPIEZA 2: REEMPLAZAR EL TÍTULO GENÉRICO
+        htmlContent = htmlContent.replace(/<title>[\s\S]*?<\/title>/, titulo);
+
+        // 5. LIMPIEZA 3: ELIMINAR LOS BOTONES
         htmlContent = htmlContent.replace(/<div class="control-panel">[\s\S]*?<\/div>/, "");
 
-        // 4. Copiar al portapapeles
+        // 6. Copiar al portapapeles
         navigator.clipboard.writeText(htmlContent).then(() => {
-            alert("✅ ¡CÓDIGO COPIADO!\n\nEl horario es ahora de SÓLO LECTURA y se han eliminado los botones.");
+            alert(`✅ ¡CÓDIGO COPIADO! El título del horario es: ${nombre}.`);
         }).catch(err => {
             console.error('Error al copiar:', err);
             alert("Error al copiar. Inténtalo de nuevo.");
