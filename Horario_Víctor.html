@@ -1,0 +1,212 @@
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario de Víctor</title> <style>
+        /* --- ESTILOS VISUALES --- */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f4f4; 
+            margin: 0; 
+            padding: 20px; 
+            color: #333; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .container { 
+            max-width: 700px; 
+            width: 100%;
+            background: white; 
+            padding: 40px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            border: 1px solid #ddd; 
+            text-align: center; 
+        }
+        
+        /* BOTONERA */
+        .control-panel { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            background: #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 50px;
+        }
+        
+        .btn-toggle {
+            background-color: #2a3b72;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: background 0.3s;
+            margin: 5px; 
+        }
+        .btn-toggle:hover { background-color: #f06b9b; }
+
+        .btn-copy { background-color: #28a745; }
+        .btn-copy:hover { background-color: #218838; }
+
+        /* CABECERA */
+        .header { border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+        .header img { max-width: 140px; margin-bottom: 15px; }
+        h1 { color: #2a3b72; text-transform: uppercase; margin: 0; font-size: 32px; letter-spacing: 3px; }
+
+        /* INFO ALUMNO */
+        .info { 
+            background: #e8f0fe; 
+            padding: 20px; 
+            border-radius: 8px; 
+            margin-bottom: 30px; 
+            border-top: 5px solid #2a3b72; 
+            text-align: center; 
+        }
+        .info p { margin: 10px 0; font-size: 18px; }
+        .info strong { color: #2a3b72; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* LISTA HORARIO */
+        .row { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-bottom: 1px solid #f0f0f0; 
+            padding: 15px 10px; 
+        }
+        
+        .day { 
+            font-weight: bold; 
+            color: #2a3b72; 
+            font-size: 18px; 
+            text-transform: uppercase; 
+            margin-right: 15px; 
+            min-width: 100px; 
+            text-align: right; 
+        }
+        
+        /* ZONAS EDITABLES */
+        [] {
+            background-color: white; 
+            border-bottom: 2px dashed #f06b9b; 
+            padding: 2px 8px;
+            min-width: 30px;
+            display: inline-block;
+            outline: none;
+            color: #333;
+            border-radius: 4px;
+        }
+        
+        .time-slot { font-weight: bold; color: #2a3b72; font-size: 18px; }
+
+        /* NOTAS */
+        .notes { 
+            margin-top: 40px; 
+            text-align: left; 
+            border: 2px dashed #2a3b72; 
+            padding: 20px; 
+            background: #fdfdfd; 
+            border-radius: 8px; 
+        }
+        .notes h3 { margin-top: 0; color: #2a3b72; font-size: 14px; text-transform: uppercase; margin-bottom: 10px; }
+
+        /* MODO FOTO */
+        body.preview-mode { background-color: #ccc; } 
+        body.preview-mode [] { border-bottom: none !important; background-color: transparent !important; }
+        body.preview-mode .control-panel { display: none; }
+        body.preview-mode .info { background-color: #e8f0fe !important; border-top: 5px solid #2a3b72 !important; }
+        body.preview-mode .notes { background-color: #fdfdfd !important; border: 2px dashed #2a3b72 !important; }
+    </style>
+</head>
+<body>
+
+
+
+<div class="container" id="scheduleCard">
+    <div class="header">
+        <img src="image.png" alt="Logo">
+        <h1>HORARIO</h1>
+    </div>
+
+    <div class="info">
+        <p><strong>ALUMN@:</strong> <span  id="nombreAlumno">Víctor</span></p>
+        <p><strong>TOTAL HORAS SEMANALES:</strong> <span >4 horas</span></p>
+    </div>
+
+    <div class="schedule">
+        <div class="row">
+            <div class="day">LUNES:</div>
+            <div  class="time-slot">15:30 - 17:00</div>
+        </div>
+        <div class="row">
+            <div class="day">MARTES:</div>
+            <div  class="time-slot">15:30 - 16:30</div>
+        </div>
+        <div class="row">
+            <div class="day">MIÉRCOLES:</div>
+            <div  class="time-slot"><span style="color: rgb(51, 51, 51); font-weight: 400;">Libre</span></div>
+        </div>
+        <div class="row">
+            <div class="day">JUEVES:</div>
+            <div  class="time-slot">15:30 - 17:00</div>
+        </div>
+        <div class="row">
+            <div class="day">VIERNES:</div>
+            <div  class="time-slot"><span style="color: rgb(51, 51, 51); font-weight: 400;">Libre</span></div>
+        </div>
+    </div>
+
+    <div class="notes">
+        <h3>Notas / Observaciones:</h3>
+        <div ></div>
+    </div>
+</div>
+
+<script>
+    function toggleMode() {
+        var body = document.body;
+        var btn = document.getElementById('btnAction');
+        body.classList.toggle('preview-mode');
+
+        if (body.classList.contains('preview-mode')) {
+            btn.innerHTML = "&#9999; Volver a Editar";
+            btn.style.backgroundColor = "#28a745"; 
+        } else {
+            btn.innerHTML = "&#128247; Vista para Foto";
+            btn.style.backgroundColor = "#2a3b72"; 
+        }
+    }
+
+    function copyCode() {
+        // 1. OBTENER DATOS DEL ALUMNO
+        const nombre = document.getElementById('nombreAlumno').textContent.trim();
+        const titulo = `<title>Horario de ${nombre}</title>`;
+
+        // 2. Obtener todo el HTML (con las ediciones hechas en el navegador)
+        let htmlContent = document.documentElement.outerHTML;
+
+        // 3. LIMPIEZA 1: ELIMINAR EL ATRIBUTO DE EDICIÓN (para que sea lectura)
+        htmlContent = htmlContent.replace(//g, ""); 
+        
+        // 4. LIMPIEZA 2: REEMPLAZAR EL TÍTULO GENÉRICO
+        htmlContent = htmlContent.replace(/<title>[\s\S]*?<\/title>/, titulo);
+
+        // 5. LIMPIEZA 3: ELIMINAR LOS BOTONES
+        htmlContent = htmlContent.replace(/<div class="control-panel">[\s\S]*?<\/div>/, "");
+
+        // 6. Copiar al portapapeles
+        navigator.clipboard.writeText(htmlContent).then(() => {
+            alert(`✅ ¡CÓDIGO COPIADO! El título del horario es: ${nombre}.`);
+        }).catch(err => {
+            console.error('Error al copiar:', err);
+            alert("Error al copiar. Inténtalo de nuevo.");
+        });
+    }
+</script>
+
+
+</body></html>
