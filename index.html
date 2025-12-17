@@ -54,11 +54,11 @@
     </div>
 
     <div id="resultado"></div>
-    <button id="btnLimpiar" onclick="location.reload()" style="display:none; margin-top:20px; background:#666;">BUSCAR OTRO</button>
+    <button id="btnLimpiar" onclick="location.href = window.location.pathname" style="display:none; margin-top:20px; background:#666;">BUSCAR OTRO</button>
 </div>
 
 <script>
-    // TUS ENLACES (Dejé CSV para Lunes y TSV para el resto según me diste)
+    // TUS ENLACES DE GOOGLE SHEETS
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -67,7 +67,7 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    // 1. LÓGICA DE TIEMPO (Convertir lista de horas en rangos)
+    // LÓGICA DE TIEMPO (Agrupar horas)
     function timeToMins(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { 
         const hh = Math.floor(m / 60).toString().padStart(2,'0');
@@ -77,19 +77,14 @@
 
     function agruparHoras(lista) {
         if(!lista.length) return [];
-        // Convertir a minutos y ordenar
         let times = lista.map(timeToMins).sort((a,b)=>a-b);
         let resultado = [];
-        
         let inicio = times[0];
-        let fin = times[0] + 30; // Asumimos clase de 30 min
+        let fin = times[0] + 30; 
 
         for(let i=1; i < times.length; i++) {
-            if(times[i] === fin) {
-                // Es consecutivo (ej: acaba a las 17:30 y el siguiente empieza a las 17:30)
-                fin += 30; 
-            } else {
-                // Hueco detectado, cerramos bloque anterior
+            if(times[i] === fin) { fin += 30; } 
+            else {
                 resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
                 inicio = times[i];
                 fin = times[i] + 30;
@@ -99,25 +94,22 @@
         return resultado;
     }
 
-    // 2. FUNCIÓN PARA LEER UNA URL CON PAPAPARSE (Promesa)
+    // LECTURA DE DATOS
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url, {
-                download: true,
-                header: false, // Leemos en bruto para evitar errores de cabeceras
-                skipEmptyLines: true,
+                download: true, header: false, skipEmptyLines: true,
                 complete: function(results) { resolve(results.data); },
                 error: function(err) { console.error("Error lectura", err); resolve([]); }
             });
         });
     }
 
-    // 3. PROCESO PRINCIPAL
+    // PROCESO DE BÚSQUEDA
     async function iniciarBusqueda() {
         const nombre = document.getElementById('alumnoInput').value.trim().toLowerCase();
         if(!nombre) return alert("Escribe un nombre");
 
-        // Interfaz
         document.getElementById('loading').style.display = 'block';
         document.getElementById('btnBuscar').style.display = 'none';
         document.getElementById('resultado').innerHTML = '';
@@ -126,34 +118,23 @@
         let encontroAlgo = false;
         let htmlFinal = `<h3 style='color:#003366'>Horario de: ${document.getElementById('alumnoInput').value}</h3>`;
 
-        // Recorremos días (Secuencial para no saturar)
         for (const [dia, url] of Object.entries(urls)) {
             try {
                 const data = await leerHoja(url);
                 if(!data || data.length === 0) continue;
 
                 let horasDelDia = [];
-
-                // Analizamos fila a fila (Empezamos en fila 1 para saltar títulos)
-                // Buscamos columnas C, D, E, F, G, H... (Indices 2, 3, 4, 5, 6, 7)
                 for(let i=1; i < data.length; i++) {
                     const row = data[i];
-                    if(row.length < 2) continue; // Fila vacía
-
-                    // Comprobamos si el nombre está en alguna columna a partir de la 2 (C)
+                    if(row.length < 2) continue; 
                     let estaEnFila = false;
                     for(let c=2; c < row.length; c++) {
                         if(row[c] && row[c].toString().toLowerCase().trim() === nombre) {
-                            estaEnFila = true;
-                            break;
+                            estaEnFila = true; break;
                         }
                     }
-
                     if(estaEnFila) {
-                        // Capturamos la hora (Columna B -> índice 1)
-                        // Limpiamos la hora por si viene con espacios "17:00 "
                         let h = row[1] ? row[1].toString().trim() : "";
-                        // A veces excel manda fechas completas, nos quedamos con HH:MM
                         if(h.length > 5) h = h.substring(0, 5); 
                         if(h.includes(":")) horasDelDia.push(h);
                     }
@@ -162,17 +143,14 @@
                 if(horasDelDia.length > 0) {
                     encontroAlgo = true;
                     const bloques = agruparHoras(horasDelDia);
-                    
                     htmlFinal += `
                     <div class="dia-card">
                         <span class="dia-title">${dia}</span>
                         ${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}
                     </div>`;
                 }
-
             } catch (e) {
                 document.getElementById('debugLog').innerText += ` Error en ${dia}: ${e.message}`;
-                document.getElementById('debugLog').style.display = 'block';
             }
         }
 
@@ -180,20 +158,29 @@
         
         if(!encontroAlgo) {
             document.getElementById('resultado').innerHTML = "<p style='color:red; font-weight:bold;'>No se encontraron clases para este alumno.</p>";
-            document.getElementById('btnBuscar').style.display = 'block'; // Volver a intentar
+            document.getElementById('btnBuscar').style.display = 'block'; 
         } else {
             document.getElementById('resultado').innerHTML = htmlFinal;
-            document.getElementById('buscador').querySelector('input').style.display = 'none'; // Ocultar input
+            document.getElementById('buscador').querySelector('input').style.display = 'none'; 
             document.getElementById('btnBuscar').style.display = 'none';
             document.getElementById('btnLimpiar').style.display = 'block';
         }
     }
 
-    // Activar Enter
+    // EVENTOS
     document.getElementById("alumnoInput").addEventListener("keypress", function(e) {
         if (e.key === "Enter") iniciarBusqueda();
     });
 
+    // === AQUÍ ESTÁ LA MAGIA PARA LOS ENLACES ===
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno'); // Coge el nombre de la url ?alumno=Roberto...
+        if (alumnoURL) {
+            document.getElementById('alumnoInput').value = alumnoURL; // Lo escribe en la caja
+            iniciarBusqueda(); // Pulsa el botón automáticamente
+        }
+    };
 </script>
 </body>
 </html>
