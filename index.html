@@ -4,75 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horario Alumnos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { 
             --primary: #003366; 
             --accent: #4a90e2; 
-            --bg: #f4f4f9;
+            --bg: #f4f4f9;      
+            --card-bg: #ffffff;
         }
         
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
         
-        /* === PANTALLA 1: LOGIN === */
-        #screen-login {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: var(--primary);
-            color: white;
-            width: 100%;
-            position: fixed; top: 0; left: 0; z-index: 2000;
-        }
-
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            color: #333;
-        }
-
-        .login-box input {
-            width: 100%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center;
-        }
-
-        .login-box button {
-            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.3s;
-        }
-        .login-box button:hover { background: #357abd; }
-        .login-box button:disabled { background: #ccc; cursor: not-allowed; }
-
-        /* === PANTALLA 2: APP === */
-        #screen-app {
-            display: none; /* Se activa con JS */
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
         /* LOGO */
-        .logo-img { max-width: 200px; display: block; margin: 0 auto 10px auto; mix-blend-mode: multiply; }
+        .logo-img {
+            max-width: 200px;
+            display: block;
+            margin: 0 auto 10px auto;
+            mix-blend-mode: multiply; 
+        }
 
-        h1 { color: var(--primary); margin-bottom: 20px; }
+        h1 { color: var(--primary); margin-bottom: 20px; margin-top: 0; }
         
-        /* PESTAÑAS */
-        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px; }
+        /* Pestañas */
+        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .tab-btn:hover { background: #e6f0ff; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* --- TARJETAS --- */
-        .cards-container { display: flex; flex-direction: column; gap: 20px; }
+        /* --- AQUÍ ESTÁ EL CAMBIO VISUAL (TARJETAS EN VEZ DE TABLA) --- */
+        .cards-container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
 
         .horario-card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             border-left: 10px solid var(--accent);
             display: flex;
             align-items: center;
@@ -80,57 +52,70 @@
         }
 
         .time-group { text-align: center; flex: 1; }
-        .time-label { display: block; font-size: 11px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
-        .time-val { font-size: 26px; font-weight: 800; color: var(--primary); }
-        
-        .arrow { font-size: 24px; color: #ccc; }
-        
-        .turno-tag { background: #eef4ff; color: var(--primary); padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block;}
+        .time-label { display: block; font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
+        .time-val { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .arrow { font-size: 20px; color: #ccc; }
+        .turno-tag { background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 4px; display: inline-block;}
 
-        .no-classes { background: white; padding: 30px; border-radius: 10px; color: #666; font-style: italic; }
-        .error-msg { background: #ffe6e6; color: #cc0000; padding: 15px; border-radius: 5px; margin-top: 10px; font-size: 14px; display:none; }
-        
-        #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
+        .no-classes { padding: 30px; color: #666; font-style: italic; background: white; border-radius: 10px; }
+
+        /* PANTALLA DE LOGIN */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 90%; max-width: 400px; text-align: center;
+        }
+        .login-box h2 { margin-top: 0; color: var(--primary); }
+        .login-box p { color: #666; font-size: 14px; margin-bottom: 5px;}
+        .login-box input {
+            width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center;
+        }
+        .login-box button {
+            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
+        }
+        .login-box button:hover { background: #357abd; }
+        .hint { font-size: 12px; color: #888; margin-bottom: 20px; display: block;}
+
+        #user-display { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline;}
     </style>
 </head>
 <body>
 
-    <div id="screen-login">
+    <div id="login-screen">
         <div class="login-box">
-            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" style="max-width:150px; margin-bottom:10px;">
-            <h2 style="margin:0; color:var(--primary)">Acceso Alumnos</h2>
-            <p style="color:#666; font-size:14px;">Introduce tu nombre completo</p>
-            
+            <h2>🔐 Acceso Alumnos</h2>
+            <p>Introduce tu nombre completo</p>
             <input type="text" id="studentName" placeholder="Nombre Apellido">
-            
-            <button id="btnLogin" onclick="entrarEnApp()">VER MI HORARIO</button>
-            <div id="loginError" class="error-msg"></div>
-
-            <p style="font-size:12px; color:#999; margin-top:15px;">Debe coincidir exactamente con el registro.</p>
+            <span class="hint">Debe coincidir exactamente con el registro.</span>
+            <button onclick="login()">VER MI HORARIO</button>
         </div>
     </div>
 
-    <div id="screen-app">
-        <div id="btn-salir" onclick="location.reload()">Salir</div>
-        
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img">
-        <h1>📅 Mis Clases</h1>
-        
-        <div class="tabs">
-            <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
-            <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
-            <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
-            <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
-            <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
-        </div>
+    <div id="user-display" onclick="borrarYSalir()">Salir</div>
 
-        <div id="loading" style="display:none; color:#003366; font-weight:bold; margin:20px;">Cargando...</div>
-        
-        <div id="cardsContainer" class="cards-container"></div>
+    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo Academia">
+
+    <h1>📅 Mis Clases</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
+        <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
+        <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
+        <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
+        <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
     </div>
+
+    <div id="loading" style="display:none; margin-top:20px;">Buscando tus clases...</div>
+
+    <div id="cardsContainer" class="cards-container"></div>
 
     <script>
-        // --- CONFIGURACIÓN ---
+        // TUS ENLACES ORIGINALES (CORREGIDOS A CSV, QUE ES LO SEGURO)
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -141,15 +126,184 @@
 
         let currentUser = "";
 
-        // --- SISTEMA DE LOGIN ---
-        
-        // 1. Detectar ENTER
-        document.getElementById("studentName").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") entrarEnApp();
-        });
-
-        // 2. Auto-login por URL
+        // --- LÓGICA DE LOGIN ORIGINAL (QUE FUNCIONABA) ---
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('alumno')) {
-                document.getElementById("studentName").value = urlParams.get
+            const alumnoURL = urlParams.get('alumno');
+            if (alumnoURL) {
+                document.getElementById("studentName").value = alumnoURL;
+                login();
+            }
+        };
+
+        document.getElementById("studentName").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") login();
+        });
+
+        function login() {
+            const input = document.getElementById("studentName").value.trim();
+            if(!input) return alert("Por favor, escribe tu nombre.");
+            
+            currentUser = decodeURIComponent(input).toLowerCase();
+            
+            document.getElementById("login-screen").style.display = "none";
+            
+            const nombreBonito = input.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            document.getElementById("user-display").innerText = "Usuario: " + nombreBonito + " (Salir)";
+            
+            cargarDia('Lunes');
+        }
+
+        function borrarYSalir() {
+            window.history.pushState({}, document.title, window.location.pathname);
+            location.reload();
+        }
+
+        // --- LÓGICA DE CARGA ORIGINAL (CON PAPAPARSE) ---
+        function cargarDia(dia) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (event) event.target.classList.add('active');
+
+            const url = enlaces[dia];
+            const container = document.getElementById('cardsContainer');
+            const loading = document.getElementById('loading');
+
+            container.innerHTML = ''; 
+            loading.style.display = 'block';
+
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    loading.style.display = 'none';
+                    // AQUÍ LLAMAMOS A LA NUEVA FUNCIÓN DE TARJETAS
+                    filtrarYMostrarTarjetas(results.data);
+                },
+                error: function(err) {
+                    loading.innerText = "❌ Error al cargar. Verifica el enlace.";
+                }
+            });
+        }
+
+        // --- NUEVA LÓGICA VISUAL (PROTEGIDA CONTRA ERRORES) ---
+        function filtrarYMostrarTarjetas(data) {
+            const container = document.getElementById('cardsContainer');
+            
+            // 1. Detectamos columnas (Igual que antes)
+            const headers = Object.keys(data[0]);
+            const getColName = (keyword) => headers.find(h => h.toUpperCase().includes(keyword));
+            
+            const keyTurno = getColName("TURNO") || headers[0];
+            const keyHora = getColName("HORA");
+            const colsAlumnos = headers.filter(h => h.toUpperCase().includes("ALUMNO"));
+
+            if (!keyHora || colsAlumnos.length === 0) {
+                container.innerHTML = '<div class="no-classes">Error: Estructura Excel incorrecta.</div>';
+                return;
+            }
+
+            // 2. Extraemos las horas (Como antes, pero en un array)
+            let misHoras = [];
+            data.forEach(fila => {
+                let esMiClase = false;
+                colsAlumnos.forEach(col => {
+                    if (fila[col]) {
+                        let celdaExcel = fila[col].toLowerCase().trim(); 
+                        if (celdaExcel === currentUser) esMiClase = true;
+                    }
+                });
+
+                if (esMiClase && fila[keyHora]) {
+                    misHoras.push({
+                        turno: fila[keyTurno] || "Clase",
+                        hora: String(fila[keyHora]).trim()
+                    });
+                }
+            });
+
+            if (misHoras.length === 0) {
+                container.innerHTML = '<div class="no-classes">No tienes clases este día.</div>';
+                return;
+            }
+
+            // 3. AGRUPACIÓN SEGURA (Esta es la parte que fallaba antes)
+            let tarjetas = [];
+            let bloqueActual = null;
+
+            misHoras.forEach(item => {
+                // INTENTO DE CALCULAR MINUTOS DE FORMA SEGURA
+                let minutosInicio = -1;
+                
+                try {
+                    // Validamos si tiene :
+                    if(item.hora.includes(':')) {
+                        let partes = item.hora.split(':');
+                        let h = parseInt(partes[0]);
+                        let m = parseInt(partes[1]);
+                        if(!isNaN(h) && !isNaN(m)) {
+                            minutosInicio = h * 60 + m;
+                        }
+                    }
+                } catch(e) { minutosInicio = -1; }
+
+                // LÓGICA DE AGRUPACIÓN
+                if (minutosInicio === -1) {
+                    // Si la hora es texto raro (ej: "Recreo"), no agrupamos, pintamos tal cual
+                    tarjetas.push({ turno: item.turno, inicio: item.hora, fin: null });
+                } else {
+                    // Si es una hora válida
+                    if (!bloqueActual) {
+                        bloqueActual = { turno: item.turno, inicio: item.hora, finMinutos: minutosInicio + 30 };
+                    } else {
+                        // ¿Es consecutivo?
+                        if (bloqueActual.finMinutos === minutosInicio) {
+                            bloqueActual.finMinutos += 30;
+                        } else {
+                            tarjetas.push(bloqueActual);
+                            bloqueActual = { turno: item.turno, inicio: item.hora, finMinutos: minutosInicio + 30 };
+                        }
+                    }
+                }
+            });
+            if (bloqueActual) tarjetas.push(bloqueActual);
+
+            // 4. PINTAR (Generar HTML)
+            tarjetas.forEach(t => {
+                let html = "";
+                
+                // Si tenemos una hora de fin calculada...
+                if (t.finMinutos) {
+                    let hS = Math.floor(t.finMinutos / 60);
+                    let mS = t.finMinutos % 60;
+                    let txtSalida = `${hS.toString().padStart(2,'0')}:${mS.toString().padStart(2,'0')}`;
+
+                    html = `
+                    <div class="horario-card">
+                        <div class="time-group" style="text-align:left">
+                            <span class="time-label">ENTRADA</span>
+                            <span class="time-val">${t.inicio}</span>
+                            <div class="turno-tag">${t.turno}</div>
+                        </div>
+                        <div class="arrow">➝</div>
+                        <div class="time-group" style="text-align:right">
+                            <span class="time-label">SALIDA</span>
+                            <span class="time-val">${txtSalida}</span>
+                        </div>
+                    </div>`;
+                } else {
+                    // Si era texto (no hora)
+                    html = `
+                    <div class="horario-card">
+                        <div class="time-group" style="text-align:left">
+                            <span class="time-val">${t.inicio}</span>
+                            <div class="turno-tag">${t.turno}</div>
+                        </div>
+                    </div>`;
+                }
+                container.innerHTML += html;
+            });
+        }
+    </script>
+</body>
+</html>
