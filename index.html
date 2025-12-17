@@ -66,4 +66,180 @@
     <div id="search-box">
         <h2>Consulta tu Horario</h2>
         <input type="text" id="alumnoInput" placeholder="Nombre completo exacto...">
-        <button onclick="iniciarBusqueda()" class="btn-main" id="btnBuscar
+        <button onclick="iniciarBusqueda()" class="btn-main" id="btnBuscar">VER MI HORARIO</button>
+        <p id="loading" style="display:none; color:#003366; font-weight:bold;">Buscando...</p>
+        <p id="error-msg"></p>
+    </div>
+
+    <div id="resultado"></div>
+    
+    <button id="btnShare" onclick="copiarEnlace()" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+    <button id="btnReset" onclick="resetear()" class="btn-reset">🔄 BUSCAR OTRO ALUMNO</button>
+</div>
+
+<script>
+    // --- CONFIGURACIÓN ---
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    // --- UTILIDADES DE TIEMPO ---
+    function timeToMins(t) { 
+        if(!t) return 0;
+        const [h, m] = t.split(':').map(Number); 
+        return h * 60 + m; 
+    }
+    
+    function minsToTime(m) { 
+        const hh = Math.floor(m / 60).toString().padStart(2,'0');
+        const mm = (m % 60).toString().padStart(2,'0');
+        return `${hh}:${mm}`;
+    }
+
+    function agruparHoras(lista) {
+        if(!lista.length) return [];
+        let times = lista.map(timeToMins).sort((a,b)=>a-b);
+        let resultado = [];
+        let inicio = times[0];
+        let fin = times[0] + 30; 
+
+        for(let i=1; i < times.length; i++) {
+            if(times[i] === fin) { fin += 30; } 
+            else {
+                resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
+                inicio = times[i];
+                fin = times[i] + 30;
+            }
+        }
+        resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
+        return resultado;
+    }
+
+    // --- LÓGICA PRINCIPAL ---
+    function leerHoja(url) {
+        return new Promise(resolve => {
+            Papa.parse(url, {
+                download: true, header: false, skipEmptyLines: true,
+                complete: function(results) { resolve(results.data); },
+                error: function(err) { console.error(err); resolve([]); }
+            });
+        });
+    }
+
+    async function iniciarBusqueda() {
+        const input = document.getElementById('alumnoInput');
+        const nombre = input.value.trim();
+        
+        if(!nombre) { alert("Por favor escribe un nombre"); return; }
+
+        // Preparar UI
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('btnBuscar').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('btnShare').style.display = 'none';
+        document.getElementById('btnReset').style.display = 'none';
+
+        let htmlAccumulado = `<h3 style='color:#003366; border-bottom:1px solid #ddd;'>Horario: ${nombre}</h3>`;
+        let encontrado = false;
+        const nombreBuscado = nombre.toLowerCase();
+
+        for (const [dia, url] of Object.entries(urls)) {
+            try {
+                const data = await leerHoja(url);
+                if(!data || data.length === 0) continue;
+
+                let horasDelDia = [];
+                // Bucle de lectura
+                for(let i=1; i < data.length; i++) {
+                    const row = data[i];
+                    if(row.length < 2) continue; 
+                    
+                    let estaEnFila = false;
+                    // Buscamos a partir de columna C (index 2)
+                    for(let c=2; c < row.length; c++) {
+                        if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) {
+                            estaEnFila = true; break;
+                        }
+                    }
+
+                    if(estaEnFila) {
+                        let h = row[1] ? row[1].toString().trim() : "";
+                        if(h.length > 5) h = h.substring(0, 5); 
+                        if(h.includes(":")) horasDelDia.push(h);
+                    }
+                }
+
+                if(horasDelDia.length > 0) {
+                    encontrado = true;
+                    const bloques = agruparHoras(horasDelDia);
+                    htmlAccumulado += `
+                    <div class="dia-card">
+                        <span class="dia-title">${dia}</span>
+                        ${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}
+                    </div>`;
+                }
+
+            } catch (e) {
+                console.error("Error en " + dia);
+            }
+        }
+
+        document.getElementById('loading').style.display = 'none';
+
+        if(encontrado) {
+            document.getElementById('resultado').innerHTML = htmlAccumulado;
+            input.style.display = 'none'; // Ocultamos input para limpiar
+            document.getElementById('btnShare').style.display = 'block';
+            document.getElementById('btnReset').style.display = 'block';
+        } else {
+            document.getElementById('error-msg').innerText = "No se encontraron clases para ese nombre.";
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('btnBuscar').style.display = 'block';
+        }
+    }
+
+    // --- FUNCIÓN COPIAR ENLACE ---
+    function copiarEnlace() {
+        const nombre = document.getElementById('alumnoInput').value.trim();
+        // Construye la URL actual + ?alumno=Nombre
+        const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombre);
+
+        // Intento de copiar
+        navigator.clipboard.writeText(urlFinal).then(() => {
+            const btn = document.getElementById('btnShare');
+            const textoOriginal = btn.innerText;
+            btn.innerText = "✅ ¡COPIADO!";
+            setTimeout(() => { btn.innerText = textoOriginal; }, 2000);
+        }).catch(err => {
+            prompt("Tu navegador no permite copiado automático. Copia este enlace:", urlFinal);
+        });
+    }
+
+    function resetear() {
+        // Recargar página limpia
+        window.location.href = window.location.pathname;
+    }
+
+    // --- EVENTOS DE TECLADO ---
+    document.getElementById("alumnoInput").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") iniciarBusqueda();
+    });
+
+    // --- AUTO-BUSQUEDA AL CARGAR ---
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        if (alumnoURL) {
+            document.getElementById('alumnoInput').value = alumnoURL;
+            iniciarBusqueda();
+        }
+    };
+</script>
+
+</body>
+</html>
