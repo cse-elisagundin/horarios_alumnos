@@ -3,40 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horarios Academia - MODO DIAGNÓSTICO</title>
+    <title>Horarios Academia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { --primary: #003366; --bg: #f4f7f9; }
-        body { font-family: sans-serif; background-color: var(--bg); padding: 20px; text-align: center; }
-        .container { background: white; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; }
-        input { padding: 10px; width: 80%; font-size: 16px; text-align: center; }
-        button { padding: 10px 20px; background: var(--primary); color: white; border: none; cursor: pointer; font-size: 16px; margin-top: 10px;}
-        #log-area { 
-            background: #eee; color: #333; padding: 10px; margin-top: 20px; 
-            text-align: left; font-family: monospace; font-size: 12px; 
-            height: 150px; overflow-y: scroll; border: 1px solid #999;
+        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
         }
-        .dia-card { background: #eef2f7; margin: 10px 0; padding: 10px; border-left: 5px solid var(--primary); text-align: left; }
-        .hora-tag { font-weight: bold; font-size: 18px; }
+
+        .container { 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            width: 100%; 
+            max-width: 500px; 
+            text-align: center;
+        }
+
+        .logo-img { max-width: 180px; margin-bottom: 20px; }
+        h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
+        
+        /* INPUTS */
+        input { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
+        }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-main { 
+            width: 100%; padding: 14px; background: var(--primary); color: white; 
+            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+        .btn-main:hover { background: #002244; }
+
+        /* SPINNER */
+        .spinner {
+            border: 5px solid #f3f3f3; 
+            border-top: 5px solid var(--primary); 
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* RESULTADOS */
+        #resultado { margin-top: 20px; text-align: left; }
+        .dia-card { 
+            background: #eef2f7; margin-bottom: 10px; padding: 15px; 
+            border-radius: 8px; border-left: 5px solid var(--primary);
+        }
+        .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
+        .hora-tag { font-size: 18px; color: #333; display: block; }
+
+        /* BOTONES EXTRA */
+        #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
+        
+        #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Diagnóstico de Horario</h2>
-    <p>Escribe el nombre y mira el cuadro gris de abajo.</p>
+    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
     
-    <form id="searchForm">
-        <input type="text" id="alumnoInput" placeholder="Nombre exacto" autocomplete="off">
-        <button type="submit">BUSCAR</button>
-    </form>
+    <div id="search-area">
+        <h2>Consulta tu Horario</h2>
+        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto...">
+        <button id="btnBuscar" class="btn-main">VER MI HORARIO</button>
+    </div>
 
+    <div id="loading-spinner" class="spinner"></div>
+
+    <p id="error-msg"></p>
     <div id="resultado"></div>
-
-    <div id="log-area">Esperando búsqueda...</div>
+    
+    <div id="actions-panel">
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+        <br>
+        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
+    </div>
 </div>
 
 <script>
+    // 1. CONFIGURACIÓN DE URLS
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -45,21 +107,69 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    function log(msg) {
-        const area = document.getElementById('log-area');
-        area.innerHTML += `<div>> ${msg}</div>`;
-        area.scrollTop = area.scrollHeight;
-    }
-
-    // Funciones de tiempo
+    // 2. UTILIDADES
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function agruparHoras(lista) {
         if(!lista.length) return [];
         let times = lista.map(timeToMins).sort((a,b)=>a-b);
-        let res = []; let ini = times[0]; let fin = times[0]+30;
-        for(let i=1;i<times.length;i++){ if(times[i]===fin){fin+=30}else{res.push(`${minsToTime(ini)}-${minsToTime(fin)}`);ini=times[i];fin=times[i]+30}}
-        res.push(`${minsToTime(ini)}-${minsToTime(fin)}`); return res;
+        let res=[]; let ini=times[0]; let fin=times[0]+30;
+        for(let i=1; i<times.length; i++) { if(times[i]===fin){fin+=30}else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} }
+        res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
+    }
+    function leerHoja(url) {
+        return new Promise(r => Papa.parse(url, { download:true, header:false, skipEmptyLines:true, complete:res=>r(res.data), error:e=>r([]) }));
     }
 
-    document.
+    // 3. LOGICA PRINCIPAL
+    async function ejecutarBusqueda(nombre, esProfesor) {
+        // UI RESET
+        document.getElementById('search-area').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('actions-panel').style.display = 'none';
+
+        let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
+        let encontrado = false;
+        const nombreBuscado = nombre.toLowerCase();
+
+        for (const [dia, url] of Object.entries(urls)) {
+            const data = await leerHoja(url);
+            if(!data || data.length === 0) continue;
+            
+            let horas = [];
+            for(let i=1; i < data.length; i++) {
+                const row = data[i];
+                let esta = false;
+                // Busca en todas las columnas
+                for(let c=0; c < row.length; c++) {
+                    if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
+                }
+                if(esta) {
+                    let h = row[1] ? row[1].toString().trim().substring(0,5) : "";
+                    if(h.includes(":")) horas.push(h);
+                }
+            }
+
+            if(horas.length > 0) {
+                encontrado = true;
+                const bloques = agruparHoras(horas);
+                html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
+            }
+        }
+
+        document.getElementById('loading-spinner').style.display = 'none';
+
+        if(encontrado) {
+            document.getElementById('resultado').innerHTML = html;
+            if(esProfesor) document.getElementById('actions-panel').style.display = 'block';
+        } else {
+            const err = document.getElementById('error-msg');
+            err.innerText = "❌ No se encontraron clases. Revisa el nombre.";
+            err.style.display = 'block';
+            document.getElementById('search-area').style.display = 'block';
+        }
+    }
+
+    // 4. CONTROLADORES
