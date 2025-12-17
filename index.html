@@ -7,10 +7,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { 
-            --primary: #003366; /* Azul oscuro corporativo */
-            --accent: #4a90e2;  /* Azul claro para detalles */
-            --bg: #f4f4f9;      /* Fondo gris suave */
-            --card-bg: #ffffff; /* Fondo de las tarjetas */
+            --primary: #003366; 
+            --accent: #4a90e2; 
+            --bg: #f4f4f9; 
+            --card-bg: #ffffff; 
         }
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
@@ -20,86 +20,56 @@
 
         h1 { color: var(--primary); margin-bottom: 20px; margin-top: 0; }
         
-        /* PESTAÑAS (BOTONES DÍAS) */
+        /* PESTAÑAS */
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px; }
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .tab-btn:hover { background: #e6f0ff; }
         .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,51,102,0.3); }
 
-        /* --- NUEVO DISEÑO: TARJETAS DE HORARIO --- */
+        /* DISEÑO TARJETAS */
         .cards-container { 
             max-width: 600px; 
             margin: 0 auto; 
             display: flex; 
             flex-direction: column; 
             gap: 20px; 
+            padding-bottom: 50px;
         }
 
         .horario-card {
             background: var(--card-bg);
             border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08); /* Sombra suave */
-            border-left: 8px solid var(--accent); /* Línea de color a la izquierda */
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 8px solid var(--accent);
             display: flex;
             align-items: center;
             justify-content: space-between;
             transition: transform 0.2s;
         }
-
         .horario-card:hover { transform: translateY(-3px); }
 
-        /* Bloques de hora dentro de la tarjeta */
         .time-block { text-align: left; flex: 1; }
-        .time-label { 
-            display: block; 
-            font-size: 11px; 
-            text-transform: uppercase; 
-            letter-spacing: 1px; 
-            color: #888; 
-            margin-bottom: 5px; 
-            font-weight: bold;
-        }
-        .time-value { 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: var(--primary); 
-        }
+        .time-label { display: block; font-size: 10px; text-transform: uppercase; color: #888; font-weight: bold; margin-bottom: 2px; }
+        .time-value { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .arrow-divider { font-size: 20px; color: #ccc; padding: 0 15px; }
         
-        /* Flecha decorativa en medio */
-        .arrow-divider { 
-            font-size: 24px; 
-            color: #ccc; 
-            padding: 0 20px; 
-        }
+        /* Turno */
+        .turno-badge { font-size: 12px; color: #666; font-weight: bold; margin-top: 5px; }
 
-        /* Etiqueta del turno (Mañana/Tarde) */
-        .turno-badge {
-            background: #eef4ff;
-            color: var(--primary);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: bold;
-            margin-top: 10px;
-            display: inline-block;
-        }
+        .no-classes { padding: 40px; color: #888; font-style: italic; background: white; border-radius: 10px; max-width: 500px; margin: 0 auto;}
 
-        .no-classes { padding: 40px; color: #888; font-style: italic; background: white; border-radius: 10px; margin: 0 auto; max-width: 500px;}
-
-        /* PANTALLA DE LOGIN */
+        /* LOGIN */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
         .login-box h2 { margin-top: 0; color: var(--primary); }
-        .login-box p { color: #666; font-size: 14px; margin-bottom: 5px;}
         .login-box input { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center; }
         .login-box button { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .login-box button:hover { background: #357abd; }
         .hint { font-size: 12px; color: #888; margin-bottom: 20px; display: block;}
 
         #user-display { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline;}
-        
-        #loading { display: none; color: #666; margin-top: 20px; }
+        #loading { display: none; margin-top: 20px; color: #003366; font-weight: bold;}
     </style>
 </head>
 <body>
@@ -108,35 +78,4 @@
         <div class="login-box">
             <h2>🔐 Acceso Alumnos</h2>
             <p>Introduce tu nombre completo</p>
-            <input type="text" id="studentName" placeholder="Nombre Apellido">
-            <span class="hint">Debe coincidir exactamente con el registro.</span>
-            <button onclick="login()">VER MI HORARIO</button>
-        </div>
-    </div>
-
-    <div id="user-display" onclick="borrarYSalir()">Salir</div>
-
-    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo Academia">
-
-    <h1>📅 Mis Clases</h1>
-    
-    <div class="tabs">
-        <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
-        <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
-        <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
-        <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
-        <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
-    </div>
-
-    <div id="loading">Buscando tus clases... ⏳</div>
-
-    <div id="cardsContainer" class="cards-container"></div>
-
-    <script>
-        // TUS ENLACES ORIGINALES
-        const enlaces = {
-            "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-            "Viernes":   "
+            <input type="text" id="studentName" placeholder
