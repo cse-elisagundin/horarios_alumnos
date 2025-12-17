@@ -70,8 +70,13 @@
             border-left: 5px solid var(--primary-color);
         }
         .dia-nombre { font-weight: bold; color: var(--primary-color); display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 14px; }
-        .hora-detalle { font-size: 18px; color: #333; }
-        .no-clase { color: #999; font-style: italic; font-size: 14px; }
+        .hora-detalle { font-size: 18px; color: #333; display: block; margin-bottom: 5px; }
+        .hora-detalle:last-child { margin-bottom: 0; }
+        .btn-volver {
+            background-color: #666; 
+            margin-top: 20px;
+        }
+        .btn-volver:hover { background-color: #444; }
     </style>
 </head>
 <body>
@@ -85,7 +90,7 @@
         <h2>Consulta tu Horario</h2>
         <div class="input-group">
             <label for="alumnoNombre">Nombre del Alumno:</label>
-            <input type="text" id="alumnoNombre" placeholder="Escribe tu nombre aquí...">
+            <input type="text" id="alumnoNombre" placeholder="Nombre completo exacto...">
         </div>
         <button onclick="buscarHorario()">VER MI HORARIO</button>
     </div>
@@ -102,71 +107,25 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    async function buscarHorario() {
-        const nombreBuscado = document.getElementById('alumnoNombre').value.trim().toLowerCase();
-        const resultadoDiv = document.getElementById('resultado');
-        
-        if (!nombreBuscado) {
-            alert("Por favor, introduce un nombre.");
-            return;
-        }
-
-        resultadoDiv.innerHTML = "<p>Buscando horarios...</p>";
-
-        let contenidoHtml = `<h3>Horarios para: ${document.getElementById('alumnoNombre').value}</h3>`;
-        let encontradoCualquierDia = false;
-
-        for (const [dia, url] of Object.entries(urls)) {
-            try {
-                const response = await fetch(url);
-                const data = await response.text();
-                // El Lunes es CSV (coma), el resto son TSV (tabulador) según tus enlaces
-                const separador = dia === "Lunes" ? "," : "\t";
-                const filas = data.split("\n");
-                
-                let horaAlumno = null;
-
-                for (let i = 1; i < filas.length; i++) {
-                    const columnas = filas[i].split(separador);
-                    if (columnas.length < 3) continue;
-
-                    // Buscamos el nombre en las columnas de alumnos (C en adelante, índice 2+)
-                    const tieneClase = columnas.slice(2).some(col => col.trim().toLowerCase() === nombreBuscado);
-                    
-                    if (tieneClase) {
-                        const horaInicio = columnas[1].trim(); // Columna B (Hora)
-                        // Calculamos hora salida (sumar 30 min)
-                        const [h, m] = horaInicio.split(':').map(Number);
-                        let date = new Date();
-                        date.setHours(h, m + 30);
-                        const horaFin = date.getHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0');
-                        
-                        horaAlumno = `${horaInicio} - ${horaFin}`;
-                        break;
-                    }
-                }
-
-                if (horaAlumno) {
-                    encontradoCualquierDia = true;
-                    contenidoHtml += `
-                        <div class="dia-seccion">
-                            <span class="dia-nombre">${dia}</span>
-                            <span class="hora-detalle">⏱️ ${horaAlumno}</span>
-                        </div>`;
-                }
-            } catch (error) {
-                console.error("Error cargando " + dia, error);
-            }
-        }
-
-        if (!encontradoCualquierDia) {
-            resultadoDiv.innerHTML = "<p style='color:red;'>No se encontró ningún horario para ese nombre.</p>";
-        } else {
-            resultadoDiv.innerHTML = contenidoHtml;
-            document.getElementById('login-area').style.display = 'none'; // Ocultamos el buscador para limpiar la vista
-        }
+    // Función auxiliar para convertir "17:30" a minutos (1050)
+    function timeToMinutes(timeStr) {
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
     }
-</script>
 
-</body>
-</html>
+    // Función auxiliar para convertir minutos (1050) a "17:30"
+    function minutesToTime(totalMinutes) {
+        const h = Math.floor(totalMinutes / 60).toString().padStart(2, '0');
+        const m = (totalMinutes % 60).toString().padStart(2, '0');
+        return `${h}:${m}`;
+    }
+
+    // Función mágica: Recibe lista de horas ["17:00", "17:30"] y devuelve ["17:00 - 18:00"]
+    function agruparHoras(listaHoras) {
+        if (listaHoras.length === 0) return [];
+        
+        // 1. Convertir a minutos y ordenar
+        let minutos = listaHoras.map(timeToMinutes).sort((a, b) => a - b);
+        
+        let bloques = [];
+        let inicioBloque = minutos[0];
