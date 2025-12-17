@@ -8,7 +8,7 @@
     <style>
         :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; }
         body { 
-            font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; 
             display: flex; justify-content: center; align-items: center; min-height: 100vh;
         }
         .container { 
@@ -16,24 +16,35 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 500px; text-align: center;
         }
         .logo-img { max-width: 180px; margin-bottom: 20px; }
-        h2 { color: var(--primary); margin-bottom: 20px; }
+        
+        h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
         input { 
             width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
-            font-size: 16px; margin-bottom: 15px; box-sizing: border-box;
+            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
         }
-        button { 
+        input:focus { border-color: var(--primary); outline: none; }
+
+        /* Botón Principal (Azul) */
+        .btn-main { 
             width: 100%; padding: 14px; background: var(--primary); color: white; 
             border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px;
         }
-        button:hover { background: #002244; }
+        .btn-main:hover { background: #002244; }
 
-        /* Botón verde para copiar enlace */
-        #btnShare { background-color: var(--success); display: none; }
-        #btnShare:hover { background-color: #218838; }
+        /* Botón Compartir (Verde) */
+        .btn-share { 
+            width: 100%; padding: 14px; background: var(--success); color: white; 
+            border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: none;
+        }
+        .btn-share:hover { background: #218838; }
 
-        #btnLimpiar { background-color: #666; display: none; }
-        #btnLimpiar:hover { background-color: #444; }
+        /* Botón Limpiar (Gris) */
+        .btn-reset { 
+            width: 100%; padding: 14px; background: #666; color: white; 
+            border: none; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; display: none;
+        }
+        .btn-reset:hover { background: #444; }
 
         /* RESULTADOS */
         #resultado { margin-top: 20px; text-align: left; }
@@ -44,7 +55,7 @@
         .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
         .hora-tag { font-size: 18px; color: #333; display: block; }
         
-        .error-log { color: red; font-size: 12px; margin-top: 10px; display: none;}
+        #error-msg { color: red; font-weight: bold; display: none; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -52,154 +63,7 @@
 <div class="container">
     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
     
-    <div id="buscador">
+    <div id="search-box">
         <h2>Consulta tu Horario</h2>
         <input type="text" id="alumnoInput" placeholder="Nombre completo exacto...">
-        <button onclick="iniciarBusqueda()" id="btnBuscar">VER MI HORARIO</button>
-        <p id="loading" style="display:none; color:#003366; font-weight:bold; margin-top:10px;">Buscando en todas las hojas...</p>
-        <div id="debugLog" class="error-log"></div>
-    </div>
-
-    <div id="resultado"></div>
-    
-    <button id="btnShare" onclick="copiarEnlace()">🔗 COPIAR ENLACE PARA PADRES</button>
-    <button id="btnLimpiar" onclick="location.href = window.location.pathname">🔄 BUSCAR OTRO</button>
-</div>
-
-<script>
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
-    };
-
-    function timeToMins(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
-    function minsToTime(m) { 
-        const hh = Math.floor(m / 60).toString().padStart(2,'0');
-        const mm = (m % 60).toString().padStart(2,'0');
-        return `${hh}:${mm}`;
-    }
-
-    function agruparHoras(lista) {
-        if(!lista.length) return [];
-        let times = lista.map(timeToMins).sort((a,b)=>a-b);
-        let resultado = [];
-        let inicio = times[0];
-        let fin = times[0] + 30; 
-        for(let i=1; i < times.length; i++) {
-            if(times[i] === fin) { fin += 30; } 
-            else {
-                resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
-                inicio = times[i];
-                fin = times[i] + 30;
-            }
-        }
-        resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
-        return resultado;
-    }
-
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url, {
-                download: true, header: false, skipEmptyLines: true,
-                complete: function(results) { resolve(results.data); },
-                error: function(err) { console.error("Error lectura", err); resolve([]); }
-            });
-        });
-    }
-
-    async function iniciarBusqueda() {
-        const nombre = document.getElementById('alumnoInput').value.trim(); // Quitamos toLowerCase aqui para mantener formato visual, lo usamos abajo
-        if(!nombre) return alert("Escribe un nombre");
-
-        // UI Reset
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('btnBuscar').style.display = 'none';
-        document.getElementById('btnShare').style.display = 'none';
-        document.getElementById('btnLimpiar').style.display = 'none';
-        document.getElementById('resultado').innerHTML = '';
-        document.getElementById('debugLog').style.display = 'none';
-
-        let encontroAlgo = false;
-        let htmlFinal = `<h3 style='color:#003366'>Horario de: ${nombre}</h3>`;
-        const nombreBuscado = nombre.toLowerCase();
-
-        for (const [dia, url] of Object.entries(urls)) {
-            try {
-                const data = await leerHoja(url);
-                if(!data || data.length === 0) continue;
-
-                let horasDelDia = [];
-                for(let i=1; i < data.length; i++) {
-                    const row = data[i];
-                    if(row.length < 2) continue; 
-                    let estaEnFila = false;
-                    for(let c=2; c < row.length; c++) {
-                        if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) {
-                            estaEnFila = true; break;
-                        }
-                    }
-                    if(estaEnFila) {
-                        let h = row[1] ? row[1].toString().trim() : "";
-                        if(h.length > 5) h = h.substring(0, 5); 
-                        if(h.includes(":")) horasDelDia.push(h);
-                    }
-                }
-
-                if(horasDelDia.length > 0) {
-                    encontroAlgo = true;
-                    const bloques = agruparHoras(horasDelDia);
-                    htmlFinal += `
-                    <div class="dia-card">
-                        <span class="dia-title">${dia}</span>
-                        ${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}
-                    </div>`;
-                }
-            } catch (e) {
-                document.getElementById('debugLog').innerText += ` Error en ${dia}: ${e.message}`;
-            }
-        }
-
-        document.getElementById('loading').style.display = 'none';
-        
-        if(!encontroAlgo) {
-            document.getElementById('resultado').innerHTML = "<p style='color:red; font-weight:bold;'>No se encontraron clases para este alumno.</p>";
-            document.getElementById('btnBuscar').style.display = 'block'; 
-        } else {
-            document.getElementById('resultado').innerHTML = htmlFinal;
-            document.getElementById('buscador').querySelector('input').style.display = 'none'; 
-            document.getElementById('btnBuscar').style.display = 'none';
-            // MOSTRAMOS LOS BOTONES
-            document.getElementById('btnShare').style.display = 'block';
-            document.getElementById('btnLimpiar').style.display = 'block';
-        }
-    }
-
-    // FUNCIÓN NUEVA: GENERAR URL Y COPIAR
-    function copiarEnlace() {
-        const nombre = document.getElementById('alumnoInput').value.trim();
-        // Creamos la URL limpia (sin basura anterior) + el parametro
-        const urlBase = window.location.protocol + "//" + window.location.host + window.location.pathname;
-        const urlFinal = urlBase + "?alumno=" + encodeURIComponent(nombre);
-
-        // Copiar al portapapeles
-        navigator.clipboard.writeText(urlFinal).then(() => {
-            const btn = document.getElementById('btnShare');
-            const textoOriginal = btn.innerText;
-            btn.innerText = "✅ ¡ENLACE COPIADO!";
-            setTimeout(() => { btn.innerText = textoOriginal; }, 3000);
-        }).catch(err => {
-            alert("No se pudo copiar automáticamente. Copia este enlace:\n" + urlFinal);
-        });
-    }
-
-    document.getElementById("alumnoInput").addEventListener("keypress", function(e) {
-        if (e.key === "Enter") iniciarBusqueda();
-    });
-
-    window.onload = function() {
-        const params = new URLSearchParams(window.location.search);
-        const alumnoURL = params.get('alumno');
-        if (alumnoURL) {
+        <button onclick="iniciarBusqueda()" class="btn-main" id="btnBuscar
