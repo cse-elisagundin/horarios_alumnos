@@ -3,322 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Alumnos</title>
-    
+    <title>Horarios Academia</title>
     <style>
-        :root { 
-            --primary: #003366; 
-            --accent: #4a90e2; 
-            --bg: #f4f4f9;      
-            --card-bg: #ffffff;
+        :root {
+            --primary-color: #003366;
+            --bg-color: #f4f7f9;
         }
-        
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--bg); }
-
-        /* LOGO */
-        .logo-img { max-width: 180px; display: block; margin: 0 auto 15px auto; mix-blend-mode: multiply; }
-
-        /* === PANTALLA 1: LOGIN (ESTILO FINAL) === */
-        #screen-login {
-            min-height: 100vh; 
-            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
-
-        .login-box {
-            background: white;
-            padding: 50px 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            width: 90%;
-            max-width: 380px;
-            text-align: center;
-            margin: 20px 0; 
-        }
-
-        .login-box h2 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
-        .login-box p { color: #888; margin-bottom: 30px; font-size: 14px; }
-
-        .login-box input {
-            width: 100%; padding: 15px; margin-bottom: 25px;
-            border: 2px solid #e1e1e1; border-radius: 10px;
-            font-size: 16px; text-align: center; outline: none; box-sizing: border-box; background: #f9f9f9;
-        }
-
-        #btnLogin {
-            width: 100%; padding: 16px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3);
-        }
-        #btnLogin:hover { background: var(--accent); transform: translateY(-2px); }
-
-        /* === PANTALLA 2: APP === */
-        #screen-app {
-            display: none; 
-            padding: 20px;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
             min-height: 100vh;
         }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            width: 90%; 
+            max-width: 450px; 
+            text-align: center;
+        }
+        .logo-container { margin-bottom: 20px; }
+        .logo-container img { max-width: 180px; height: auto; }
+        
+        h2 { color: var(--primary-color); margin-bottom: 25px; font-size: 22px; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        
+        input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 2px solid #ddd; 
+            border-radius: 8px; 
+            box-sizing: border-box; 
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus { border-color: var(--primary-color); outline: none; }
 
-        /* Estilos App */
-        .header-app img { max-width: 150px; mix-blend-mode: multiply; margin-top: 10px;}
-        h1 { color: var(--primary); margin-bottom: 20px; }
-        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
-        .tab-btn { padding: 8px 20px; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 50px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .cards-list { display: flex; flex-direction: column; gap: 15px; padding-bottom: 40px;}
-        .horario-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--accent); display: flex; align-items: center; justify-content: space-between; }
-        .t-group { text-align: center; flex: 1; }
-        .t-label { font-size: 10px; color: #999; font-weight: bold; letter-spacing: 1px; display: block; margin-bottom: 3px; }
-        .t-val { font-size: 22px; font-weight: 800; color: var(--primary); }
-        .t-arrow { font-size: 20px; color: #ddd; }
-        .t-tag { background: #f0f7ff; color: var(--accent); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 5px; display: inline-block;}
-        .msg-box { background: white; padding: 30px; border-radius: 10px; color: #777; font-style: italic; }
-        #btn-logout { position: absolute; top: 15px; right: 20px; color: #666; font-size: 13px; cursor: pointer; text-decoration: underline;}
+        button { 
+            width: 100%; 
+            padding: 14px; 
+            background-color: var(--primary-color); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover { background-color: #002244; }
+
+        /* Estilos para el horario una vez cargado */
+        #resultado { margin-top: 20px; text-align: left; }
+        .dia-seccion { 
+            background: #eef2f7; 
+            margin-bottom: 10px; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border-left: 5px solid var(--primary-color);
+        }
+        .dia-nombre { font-weight: bold; color: var(--primary-color); display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 14px; }
+        .hora-detalle { font-size: 18px; color: #333; }
+        .no-clase { color: #999; font-style: italic; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <div id="screen-login">
-        <div class="login-box">
-            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-login">
-            <h2>Bienvenido</h2>
-            <p>Consulta tus clases semanales</p>
-            
-            <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
-            
-            <button id="btnLogin">ENTRAR</button>
-            
-            <p style="font-size: 12px; margin-top: 20px; margin-bottom: 0; color: #aaa;">Acceso exclusivo para alumnos</p>
+<div class="container">
+    <div class="logo-container">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo">
+    </div>
+    
+    <div id="login-area">
+        <h2>Consulta tu Horario</h2>
+        <div class="input-group">
+            <label for="alumnoNombre">Nombre del Alumno:</label>
+            <input type="text" id="alumnoNombre" placeholder="Escribe tu nombre aquí...">
         </div>
+        <button onclick="buscarHorario()">VER MI HORARIO</button>
     </div>
 
-    <div id="screen-app">
-        <div id="btn-logout" onclick="location.reload()">Cerrar Sesión</div>
+    <div id="resultado"></div>
+</div>
+
+<script>
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    async function buscarHorario() {
+        const nombreBuscado = document.getElementById('alumnoNombre').value.trim().toLowerCase();
+        const resultadoDiv = document.getElementById('resultado');
         
-        <div class="header-app">
-            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-            <h1>Mis Clases</h1>
-        </div>
+        if (!nombreBuscado) {
+            alert("Por favor, introduce un nombre.");
+            return;
+        }
 
-        <div class="tabs">
-            <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
-            <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
-            <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
-            <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
-            <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
-        </div>
+        resultadoDiv.innerHTML = "<p>Buscando horarios...</p>";
 
-        <div id="status-msg" style="display:none; color:var(--primary); font-weight:bold; margin:20px;">Cargando...</div>
-        <div id="horario-container" class="cards-list"></div>
-    </div>
+        let contenidoHtml = `<h3>Horarios para: ${document.getElementById('alumnoNombre').value}</h3>`;
+        let encontradoCualquierDia = false;
 
-    <script>
-        // --- CONFIGURACIÓN DE ENLACES ---
-        const enlaces = {
-            "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-        };
-
-        let currentUser = "";
-
-        // --- SISTEMA DE INICIALIZACIÓN DE EVENTOS ---
-        document.addEventListener('DOMContentLoaded', function() {
-            // Asignación de evento al botón
-            document.getElementById("btnLogin").addEventListener("click", iniciarSesion);
-            
-            // Asignar Enter al input
-            document.getElementById("studentName").addEventListener("keypress", function(e) {
-                if (e.key === "Enter") iniciarSesion();
-            });
-
-            // Auto-login (si viene de enlace)
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('alumno')) {
-                document.getElementById("studentName").value = urlParams.get('alumno');
-                iniciarSesion();
-            }
-        });
-
-        // --- FUNCIÓN PRINCIPAL DE LOGIN ---
-        function iniciarSesion() {
-            const input = document.getElementById("studentName").value.trim();
-            const btn = document.getElementById("btnLogin");
-            
-            if(!input) return alert("Por favor, escribe tu nombre.");
-
+        for (const [dia, url] of Object.entries(urls)) {
             try {
-                // Procesar y guardar usuario
-                currentUser = decodeURIComponent(input).toLowerCase();
-
-                // 1. Feedback
-                btn.innerText = "Cargando...";
-                btn.disabled = true;
-
-                // 2. CAMBIAR PANTALLA (Acción directa)
-                document.getElementById("screen-login").style.display = "none";
-                document.getElementById("app-layer").style.display = "block";
+                const response = await fetch(url);
+                const data = await response.text();
+                // El Lunes es CSV (coma), el resto son TSV (tabulador) según tus enlaces
+                const separador = dia === "Lunes" ? "," : "\t";
+                const filas = data.split("\n");
                 
-                // 3. Actualizar UI
-                const nombreBonito = input.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-                document.getElementById("btn-logout").innerText = "Salir (" + nombreBonito + ")";
+                let horaAlumno = null;
 
-                // 4. Cargar datos
-                cargarDia('Lunes');
-            } catch(e) {
-                alert("Error al iniciar sesión: " + e.message);
-                btn.innerText = "ENTRAR";
-                btn.disabled = false;
-            }
-        }
+                for (let i = 1; i < filas.length; i++) {
+                    const columnas = filas[i].split(separador);
+                    if (columnas.length < 3) continue;
 
-        // --- LÓGICA DE DATOS (PAPAPARSE) ---
-        function cargarDia(dia) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if(event && event.target) event.target.classList.add('active');
-
-            const url = enlaces[dia];
-            const container = document.getElementById('horario-container');
-            const status = document.getElementById('status-msg');
-
-            container.innerHTML = '';
-            status.style.display = 'block';
-
-            // Usamos PapaParse
-            Papa.parse(url, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    status.style.display = 'none';
-                    procesarYMostrar(results.data);
-                },
-                error: function(err) {
-                    status.innerText = "Error de conexión con Google Sheets. Intenta recargar la página.";
-                }
-            });
-        }
-
-        function procesarYMostrar(data) {
-            const container = document.getElementById('horario-container');
-            
-            // 1. Detectar columnas
-            if(!data || data.length === 0) {
-                container.innerHTML = '<div class="msg-box">Hoja de cálculo vacía.</div>'; 
-                return;
-            }
-            const headers = Object.keys(data[0]);
-            const getCol = (k) => headers.find(h => h.toUpperCase().includes(k));
-            
-            const keyHora = getCol("HORA");
-            const keyTurno = getCol("TURNO") || headers[0];
-            const colsAlumnos = headers.filter(h => h.toUpperCase().includes("ALUMNO"));
-
-            if (!keyHora || colsAlumnos.length === 0) {
-                container.innerHTML = '<div class="msg-box">Error: No encuentro HORA o ALUMNO en el Excel.</div>';
-                return;
-            }
-
-            // 2. Extraer horas del alumno
-            let horasSueltas = [];
-            data.forEach(fila => {
-                let encontrado = false;
-                colsAlumnos.forEach(col => {
-                    if (fila[col] && col && fila[col].toLowerCase().trim() === currentUser) encontrado = true;
-                });
-                if (encontrado && fila[keyHora]) {
-                    horasSueltas.push({
-                        turno: fila[keyTurno] || "Clase",
-                        hora: fila[keyHora].trim()
-                    });
-                }
-            });
-
-            if (horasSueltas.length === 0) {
-                container.innerHTML = '<div class="msg-box">No tienes clases este día.</div>';
-                return;
-            }
-
-            // 3. Agrupar bloques
-            let tarjetas = [];
-            let actual = null;
-
-            horasSueltas.forEach(item => {
-                let minInicio = -1;
-                if(item.hora.includes(':')) {
-                    try {
-                        let p = item.hora.split(':');
-                        let h = parseInt(p[0]);
-                        let m = parseInt(p[1]);
-                        if(!isNaN(h) && !isNaN(m)) minInicio = h * 60 + m;
-                    } catch(e) { minInicio = -1; }
-                }
-
-                if(minInicio === -1) {
-                    tarjetas.push({ turno: item.turno, inicio: item.hora, finMin: null });
-                } else {
-                    if(!actual) {
-                        actual = { turno: item.turno, inicio: item.hora, finMin: minInicio + 30 };
-                    } else {
-                        if(actual.finMin === minInicio) {
-                            actual.finMin += 30;
-                        } else {
-                            tarjetas.push(actual);
-                            actual = { turno: item.turno, inicio: item.hora, finMin: minInicio + 30 };
-                        }
+                    // Buscamos el nombre en las columnas de alumnos (C en adelante, índice 2+)
+                    const tieneClase = columnas.slice(2).some(col => col.trim().toLowerCase() === nombreBuscado);
+                    
+                    if (tieneClase) {
+                        const horaInicio = columnas[1].trim(); // Columna B (Hora)
+                        // Calculamos hora salida (sumar 30 min)
+                        const [h, m] = horaInicio.split(':').map(Number);
+                        let date = new Date();
+                        date.setHours(h, m + 30);
+                        const horaFin = date.getHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0');
+                        
+                        horaAlumno = `${horaInicio} - ${horaFin}`;
+                        break;
                     }
                 }
-            });
-            if(actual) tarjetas.push(actual);
 
-            // 4. Renderizar
-            tarjetas.forEach(t => {
-                let html = "";
-                if(t.finMin) {
-                    let hS = Math.floor(t.finMin / 60);
-                    let mS = t.finMin % 60;
-                    let txtSalida = `${hS.toString().padStart(2,'0')}:${mS.toString().padStart(2,'0')}`;
-                    
-                    html = `
-                    <div class="horario-card">
-                        <div class="t-group" style="text-align:left">
-                            <span class="t-label">ENTRADA</span>
-                            <span class="t-val">${t.inicio}</span>
-                            <div class="t-tag">${t.turno}</div>
-                        </div>
-                        <div class="t-arrow">➝</div>
-                        <div class="t-group" style="text-align:right">
-                            <span class="t-label">SALIDA</span>
-                            <span class="t-val">${txtSalida}</span>
-                        </div>
-                    </div>`;
-                } else {
-                    html = `
-                    <div class="horario-card">
-                        <div class="t-group" style="text-align:left">
-                            <span class="t-val">${t.inicio}</span>
-                            <div class="t-tag">${t.turno}</div>
-                        </div>
-                    </div>`;
+                if (horaAlumno) {
+                    encontradoCualquierDia = true;
+                    contenidoHtml += `
+                        <div class="dia-seccion">
+                            <span class="dia-nombre">${dia}</span>
+                            <span class="hora-detalle">⏱️ ${horaAlumno}</span>
+                        </div>`;
                 }
-                container.innerHTML += html;
-            });
+            } catch (error) {
+                console.error("Error cargando " + dia, error);
+            }
         }
-    </script>
+
+        if (!encontradoCualquierDia) {
+            resultadoDiv.innerHTML = "<p style='color:red;'>No se encontró ningún horario para ese nombre.</p>";
+        } else {
+            resultadoDiv.innerHTML = contenidoHtml;
+            document.getElementById('login-area').style.display = 'none'; // Ocultamos el buscador para limpiar la vista
+        }
+    }
+</script>
+
 </body>
 </html>
