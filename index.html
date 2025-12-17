@@ -4,51 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horario Alumnos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { --primary: #003366; --accent: #4a90e2; --bg: #f4f4f9; --card-bg: #ffffff; }
+        :root { 
+            --primary: #003366; /* Color Principal */
+            --accent: #4a90e2;  /* Color Botones */
+            --bg: #f4f4f9;      /* Color de fondo */
+        }
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
         
-        .logo-img { max-width: 200px; display: block; margin: 0 auto 10px auto; mix-blend-mode: multiply; }
-        h1 { color: var(--primary); margin-bottom: 20px; margin-top: 0; }
+        /* LOGO CON TRUCO DE TRANSPARENCIA */
+        .logo-img {
+            max-width: 200px;
+            display: block;
+            margin: 0 auto 10px auto;
+            mix-blend-mode: multiply; 
+        }
+
+        h1 { color: var(--primary); margin-bottom: 10px; margin-top: 0; }
         
         /* Pestañas */
-        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px; }
+        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .tab-btn:hover { background: #e6f0ff; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,51,102,0.3); }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Contenedor de Tarjetas */
-        .cards-container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 50px; }
-
-        /* Tarjeta */
-        .class-card {
-            background: var(--card-bg); border-left: 8px solid var(--accent); border-radius: 8px;
-            padding: 20px 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left;
-            position: relative; transition: transform 0.2s; display: flex; justify-content: space-between; align-items: center;
-        }
-        .class-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-        .card-info h2 { margin: 0; color: var(--primary); font-size: 24px; font-weight: 800; }
-        .card-info p { margin: 5px 0 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .card-icon { font-size: 30px; opacity: 0.8; }
-
-        .no-classes { padding: 40px; color: #888; font-style: italic; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 500px; margin: 0 auto; }
+        /* Tabla */
+        .table-container { overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; background: white; max-width: 800px; margin: 0 auto; display: none; }
+        table { width: 100%; border-collapse: collapse; min-width: 300px; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 15px; }
+        th { background-color: var(--primary); color: white; text-transform: uppercase; }
         
-        /* CAJA DE DIAGNÓSTICO (Visible si hay error) */
-        #debug-log { 
-            background: #333; color: #0f0; font-family: monospace; padding: 15px; 
-            border-radius: 5px; margin: 20px auto; max-width: 500px; text-align: left; font-size: 12px; 
-            display: none; white-space: pre-wrap; word-break: break-all;
-        }
+        .no-classes { padding: 30px; color: #666; font-style: italic; }
 
-        /* LOGIN */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
+        /* PANTALLA DE LOGIN */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 90%; max-width: 400px; text-align: center;
+        }
         .login-box h2 { margin-top: 0; color: var(--primary); }
-        .login-box input { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center; }
-        .login-box button { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        .login-box p { color: #666; font-size: 14px; margin-bottom: 5px;}
+        .login-box input {
+            width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center;
+        }
+        .login-box button {
+            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
+        }
         .login-box button:hover { background: #357abd; }
-        .status-text { margin-top: 10px; font-size: 13px; color: #666; min-height: 20px;}
         .hint { font-size: 12px; color: #888; margin-bottom: 20px; display: block;}
 
         #user-display { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline;}
@@ -62,13 +71,12 @@
             <p>Introduce tu nombre completo</p>
             <input type="text" id="studentName" placeholder="Nombre Apellido">
             <span class="hint">Debe coincidir exactamente con el registro.</span>
-            <button id="btnLogin" onclick="iniciarSesion()">VER MI HORARIO</button>
-            <div id="loginStatus" class="status-text"></div>
+            <button onclick="login()">VER MI HORARIO</button>
         </div>
     </div>
 
     <div id="user-display" onclick="borrarYSalir()">Salir</div>
-    
+
     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo Academia">
 
     <h1>📅 Mis Clases</h1>
@@ -81,13 +89,26 @@
         <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
     </div>
 
-    <div id="loading" style="display:none; color: #003366; font-weight: bold; margin-top:20px;"></div>
-    <div id="debug-log"></div>
+    <div id="loading" style="display:none; margin-top:20px;">Buscando tus clases...</div>
 
-    <div id="scheduleContainer" class="cards-container"></div>
+    <div class="table-container" id="scheduleContainer">
+        <table id="horarioTable">
+            <thead>
+                <tr>
+                    <th>TURNO</th>
+                    <th>HORA</th>
+                    <th>ESTADO</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="no-classes-msg" class="no-classes" style="display:none;">No tienes clases este día.</div>
+    </div>
 
     <script>
-        // --- 1. CONFIGURACIÓN ---
+        // =================================================================
+        //  TUS ENLACES CONFIGURADOS (CORREGIDOS A CSV)
+        // =================================================================
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -95,33 +116,138 @@
             "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
             "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
         };
+        // =================================================================
 
         let currentUser = "";
 
-        // --- 2. SISTEMA DE LOGIN ---
-        window.addEventListener('load', function() {
-            log("Sistema iniciado.");
+        window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('alumno')) {
-                document.getElementById("studentName").value = urlParams.get('alumno');
-                iniciarSesion();
+            const alumnoURL = urlParams.get('alumno');
+
+            if (alumnoURL) {
+                document.getElementById("studentName").value = alumnoURL;
+                login();
             }
-        });
+        };
 
         document.getElementById("studentName").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") iniciarSesion();
+            if (e.key === "Enter") login();
         });
 
-        function iniciarSesion() {
+        function login() {
             const input = document.getElementById("studentName").value.trim();
-            const status = document.getElementById("loginStatus");
-            const btn = document.getElementById("btnLogin");
-
-            if(!input) { status.innerText = "⚠️ Escribe un nombre."; return; }
+            if(!input) return alert("Por favor, escribe tu nombre.");
             
-            // Feedback visual inmediato
-            status.innerText = "🔄 Validando...";
-            btn.disabled = true;
+            currentUser = decodeURIComponent(input).toLowerCase();
+            
+            document.getElementById("login-screen").style.display = "none";
+            document.querySelector(".table-container").style.display = "block";
+            
+            const nombreBonito = input.split(' ')
+               .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+               .join(' ');
+               
+            document.getElementById("user-display").innerText = "Usuario: " + nombreBonito + " (Salir)";
+            
+            cargarDia('Lunes');
+        }
 
-            setTimeout(() => {
-                currentUser = decodeURIComponent(input).toLowerCase
+        function borrarYSalir() {
+            window.history.pushState({}, document.title, window.location.pathname);
+            location.reload();
+        }
+
+        function cargarDia(dia) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if (event) event.target.classList.add('active');
+
+            const url = enlaces[dia];
+            const tbody = document.querySelector('#horarioTable tbody');
+            const loading = document.getElementById('loading');
+            const noMsg = document.getElementById('no-classes-msg');
+            const table = document.getElementById('horarioTable');
+
+            tbody.innerHTML = '';
+            noMsg.style.display = 'none';
+            table.style.display = 'none';
+            loading.style.display = 'block';
+
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    loading.style.display = 'none';
+                    filtrarYMostrar(results.data);
+                },
+                error: function(err) {
+                    loading.innerText = "❌ Error al cargar. Verifica el enlace.";
+                }
+            });
+        }
+
+        function filtrarYMostrar(data) {
+            const tbody = document.querySelector('#horarioTable tbody');
+            const table = document.getElementById('horarioTable');
+            const noMsg = document.getElementById('no-classes-msg');
+            let clasesEncontradas = 0;
+
+            // Detectamos las cabeceras para buscar "TURNO", "HORA", "ALUMNO"
+            const headers = Object.keys(data[0]);
+            
+            // Buscadores flexibles (para evitar errores si en excel pone "Hora " con espacio)
+            const getColName = (keyword) => headers.find(h => h.toUpperCase().includes(keyword));
+            
+            const keyTurno = getColName("TURNO") || headers[0];
+            const keyHora = getColName("HORA");
+            const colsAlumnos = headers.filter(h => h.toUpperCase().includes("ALUMNO"));
+
+            if (!keyHora || colsAlumnos.length === 0) {
+                alert("Error: No encuentro las columnas HORA o ALUMNO en el Excel.");
+                return;
+            }
+
+            data.forEach(fila => {
+                let esMiClase = false;
+                
+                colsAlumnos.forEach(col => {
+                    if (fila[col]) {
+                        // Comparación estricta
+                        let celdaExcel = fila[col].toLowerCase().trim(); 
+                        if (celdaExcel === currentUser) { 
+                            esMiClase = true;
+                        }
+                    }
+                });
+
+                if (esMiClase && fila[keyHora]) {
+                    clasesEncontradas++;
+                    let tr = document.createElement('tr');
+                    
+                    let tdTurno = document.createElement('td');
+                    tdTurno.innerText = fila[keyTurno] || "";
+                    tr.appendChild(tdTurno);
+
+                    let tdHora = document.createElement('td');
+                    tdHora.innerText = fila[keyHora] || "";
+                    tdHora.style.fontWeight = "bold";
+                    tdHora.style.color = "#003366";
+                    tr.appendChild(tdHora);
+
+                    let tdEstado = document.createElement('td');
+                    tdEstado.innerText = "✅ Clase Asignada"; 
+                    tr.appendChild(tdEstado);
+
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (clasesEncontradas > 0) {
+                table.style.display = 'table';
+            } else {
+                noMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
