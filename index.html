@@ -3,61 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Academia</title>
+    <title>Mi Horario Personal</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { --primary: #003366; --accent: #4a90e2; --bg: #f4f4f9; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
         
         h1 { color: var(--primary); margin-bottom: 10px; }
-        p { color: #666; font-size: 14px; }
-
-        /* Estilo de los Botones (Pestañas) */
+        
+        /* Pestañas */
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .tab-btn {
-            padding: 10px 20px;
-            background: white;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
+        .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .tab-btn:hover { background: #e6f0ff; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Contenedor de la tabla */
-        .table-container { overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; background: white; max-width: 1000px; margin: 0 auto; }
+        /* Tabla */
+        .table-container { overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; background: white; max-width: 800px; margin: 0 auto; display: none; }
+        table { width: 100%; border-collapse: collapse; min-width: 300px; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 15px; }
+        th { background-color: var(--primary); color: white; text-transform: uppercase; }
         
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
-        
-        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
-        
-        /* Cabecera */
-        th { background-color: var(--primary); color: white; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; position: sticky; top: 0; }
-        
-        /* Columnas específicas */
-        td:nth-child(2) { font-weight: bold; color: var(--primary); background-color: #f9fbff; } /* Columna HORA */
-        
-        /* Fila de separación (Fila 5 vacía) */
-        .separator-row td { 
-            background-color: #eee; 
-            height: 10px; 
-            padding: 0; 
-            border-top: 2px solid #ccc; 
-            border-bottom: 2px solid #ccc;
-        }
+        .no-classes { padding: 30px; color: #666; font-style: italic; }
 
-        .loading { font-size: 18px; color: #666; margin: 20px; }
+        /* Login */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            width: 90%; max-width: 400px; text-align: center;
+        }
+        .login-box h2 { margin-top: 0; color: var(--primary); }
+        .login-box p { color: #666; font-size: 14px; margin-bottom: 5px;}
+        .login-box input {
+            width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center;
+        }
+        .login-box button {
+            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
+        }
+        .login-box button:hover { background: #357abd; }
+        .hint { font-size: 12px; color: #888; margin-bottom: 20px; display: block;}
+
+        #user-display { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline;}
 
     </style>
 </head>
 <body>
 
-    <h1>📅 Horario de Clases</h1>
-    <p>Selecciona el día de la semana:</p>
+    <div id="login-screen">
+        <div class="login-box">
+            <h2>🔐 Acceso Alumnos</h2>
+            <p>Introduce tu nombre completo</p>
+            <input type="text" id="studentName" placeholder="Nombre Apellido">
+            <span class="hint">Debe coincidir exactamente con el registro.</span>
+            <button onclick="login()">VER MI HORARIO</button>
+        </div>
+    </div>
 
+    <div id="user-display" onclick="borrarYSalir()">Salir</div>
+    <h1>📅 Mis Clases</h1>
+    
     <div class="tabs">
         <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
         <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
@@ -66,108 +74,163 @@
         <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
     </div>
 
-    <div id="loading" class="loading" style="display:none;">Cargando...</div>
+    <div id="loading" style="display:none; margin-top:20px;">Buscando tus clases...</div>
 
-    <div class="table-container">
+    <div class="table-container" id="scheduleContainer">
         <table id="horarioTable">
-            <thead></thead>
+            <thead>
+                <tr>
+                    <th>TURNO</th>
+                    <th>HORA</th>
+                    <th>ESTADO</th>
+                </tr>
+            </thead>
             <tbody></tbody>
         </table>
+        <div id="no-classes-msg" class="no-classes" style="display:none;">No tienes clases este día.</div>
     </div>
 
     <script>
         // =================================================================
-        //  ⬇️ CONFIGURACIÓN: PEGA AQUÍ TUS 5 ENLACES CSV
+        //  ⬇️ PEGA AQUÍ TUS 5 ENLACES CSV
         // =================================================================
         const enlaces = {
-            "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+            "Lunes":     "PEGAR_ENLACE_LUNES_AQUI",
+            "Martes":    "PEGAR_ENLACE_MARTES_AQUI",
+            "Miercoles": "PEGAR_ENLACE_MIERCOLES_AQUI",
+            "Jueves":    "PEGAR_ENLACE_JUEVES_AQUI",
+            "Viernes":   "PEGAR_ENLACE_VIERNES_AQUI"
         };
         // =================================================================
 
-        // Cargar Lunes al iniciar
-        window.onload = function() { cargarDia('Lunes'); };
+        let currentUser = "";
+
+        // 1. Carga automática si hay enlace mágico
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const alumnoURL = urlParams.get('alumno');
+
+            if (alumnoURL) {
+                document.getElementById("studentName").value = alumnoURL;
+                login();
+            }
+        };
+
+        document.getElementById("studentName").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") login();
+        });
+
+        function login() {
+            const input = document.getElementById("studentName").value.trim();
+            if(!input) return alert("Por favor, escribe tu nombre.");
+            
+            // CAMBIO CLAVE: Guardamos el nombre exacto (solo en minúsculas para evitar líos de mayúsculas)
+            currentUser = decodeURIComponent(input).toLowerCase();
+            
+            // UI Update
+            document.getElementById("login-screen").style.display = "none";
+            document.querySelector(".table-container").style.display = "block";
+            
+            // Formatear nombre para mostrarlo bonito
+            const nombreBonito = input.split(' ')
+               .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+               .join(' ');
+               
+            document.getElementById("user-display").innerText = "Usuario: " + nombreBonito + " (Salir)";
+            
+            cargarDia('Lunes');
+        }
+
+        function borrarYSalir() {
+            window.history.pushState({}, document.title, window.location.pathname);
+            location.reload();
+        }
 
         function cargarDia(dia) {
-            // Actualizar estilo de botones
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             event ? event.target.classList.add('active') : document.querySelector('.tab-btn').classList.add('active');
 
             const url = enlaces[dia];
-            const table = document.getElementById('horarioTable');
+            const tbody = document.querySelector('#horarioTable tbody');
             const loading = document.getElementById('loading');
-            
-            // Limpiar tabla y mostrar carga
-            table.querySelector('thead').innerHTML = '';
-            table.querySelector('tbody').innerHTML = '';
+            const noMsg = document.getElementById('no-classes-msg');
+            const table = document.getElementById('horarioTable');
+
+            tbody.innerHTML = '';
+            noMsg.style.display = 'none';
+            table.style.display = 'none';
             loading.style.display = 'block';
 
             if(url.includes("PEGAR_ENLACE")) {
-                loading.innerText = "⚠️ Falta configurar el enlace del " + dia;
+                loading.innerText = "⚠️ Falta configurar el enlace.";
                 return;
             }
 
             Papa.parse(url, {
                 download: true,
-                header: true, 
-                skipEmptyLines: false, // Importante para detectar tu fila vacía
+                header: true,
+                skipEmptyLines: true,
                 complete: function(results) {
                     loading.style.display = 'none';
-                    generarTabla(results.data, results.meta.fields);
-                },
-                error: function(err) {
-                    loading.innerText = "❌ Error cargando " + dia;
+                    filtrarYMostrar(results.data);
                 }
             });
         }
 
-        function generarTabla(data, headers) {
+        function filtrarYMostrar(data) {
+            const tbody = document.querySelector('#horarioTable tbody');
             const table = document.getElementById('horarioTable');
-            const thead = table.querySelector('thead');
-            const tbody = table.querySelector('tbody');
+            const noMsg = document.getElementById('no-classes-msg');
+            let clasesEncontradas = 0;
 
-            // 1. Cabeceras (TURNO, HORA, ALUMNO 1...)
-            let headerRow = document.createElement('tr');
-            headers.forEach(h => {
-                let th = document.createElement('th');
-                th.innerText = h;
-                headerRow.appendChild(th);
-            });
-            thead.appendChild(headerRow);
+            data.forEach(fila => {
+                let esMiClase = false;
+                const columnasAlumnos = ["ALUMNO 1", "ALUMNO 2", "ALUMNO 3", "ALUMNO 4", "ALUMNO 5", "ALUMNO 6"];
 
-            // 2. Filas de datos
-            data.forEach((fila, index) => {
-                let tr = document.createElement('tr');
-                
-                // DETECCIÓN DE TU FILA VACÍA (Separador Mañana/Tarde)
-                // Si la columna HORA (o la segunda columna) está vacía, asumimos que es el separador
-                const horaValue = fila['HORA'] || fila[Object.keys(fila)[1]]; // Busca columna HORA o la segunda
-                
-                if (!horaValue || horaValue.trim() === "") {
-                    tr.classList.add('separator-row');
-                    // Creamos celdas vacías pero con estilo de separador
-                    headers.forEach(() => {
-                        let td = document.createElement('td');
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                    return; // Saltamos al siguiente ciclo
-                }
-
-                // Si es una fila normal con datos
-                headers.forEach(header => {
-                    let td = document.createElement('td');
-                    td.innerText = fila[header] || ""; 
-                    tr.appendChild(td);
+                columnasAlumnos.forEach(col => {
+                    // ============================================================
+                    // 🛡️ LÓGICA DE SEGURIDAD MEJORADA (EXACT MATCH)
+                    // ============================================================
+                    // Antes usábamos .includes() -> Inseguro
+                    // Ahora comparamos que sea IDÉNTICO (quitando espacios extra)
+                    
+                    if (fila[col]) {
+                        let celdaExcel = fila[col].toLowerCase().trim(); // Convertir a minuscula y quitar espacios
+                        if (celdaExcel === currentUser) { // Tienen que ser EXACTAMENTE IGUALES
+                            esMiClase = true;
+                        }
+                    }
                 });
-                tbody.appendChild(tr);
+
+                if (esMiClase) {
+                    clasesEncontradas++;
+                    let tr = document.createElement('tr');
+                    
+                    let tdTurno = document.createElement('td');
+                    tdTurno.innerText = fila["TURNO"] || "";
+                    tr.appendChild(tdTurno);
+
+                    let tdHora = document.createElement('td');
+                    tdHora.innerText = fila["HORA"] || "";
+                    tdHora.style.fontWeight = "bold";
+                    tdHora.style.color = "#003366";
+                    tr.appendChild(tdHora);
+
+                    let tdEstado = document.createElement('td');
+                    tdEstado.innerText = "✅ Clase Asignada"; 
+                    tr.appendChild(tdEstado);
+
+                    tbody.appendChild(tr);
+                }
             });
+
+            if (clasesEncontradas > 0) {
+                table.style.display = 'table';
+            } else {
+                noMsg.style.display = 'block';
+            }
         }
     </script>
 
 </body>
-
 </html>
