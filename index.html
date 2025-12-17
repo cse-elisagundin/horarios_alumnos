@@ -6,31 +6,17 @@
     <title>Horario Alumnos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { 
-            --primary: #003366; /* Color Principal */
-            --accent: #4a90e2;  /* Color Botones */
-            --bg: #f4f4f9;      /* Color de fondo */
-        }
-        
+        :root { --primary: #003366; --accent: #4a90e2; --bg: #f4f4f9; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
         
-        /* LOGO CON TRUCO DE TRANSPARENCIA */
-        .logo-img {
-            max-width: 200px;
-            display: block;
-            margin: 0 auto 10px auto;
-            mix-blend-mode: multiply; /* Esto borra el fondo blanco del logo */
-        }
-
+        .logo-img { max-width: 200px; display: block; margin: 0 auto 10px auto; mix-blend-mode: multiply; }
         h1 { color: var(--primary); margin-bottom: 10px; margin-top: 0; }
         
-        /* Pestañas */
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .tab-btn:hover { background: #e6f0ff; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* Tabla */
         .table-container { overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; background: white; max-width: 800px; margin: 0 auto; display: none; }
         table { width: 100%; border-collapse: collapse; min-width: 300px; }
         th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 15px; }
@@ -38,25 +24,13 @@
         
         .no-classes { padding: 30px; color: #666; font-style: italic; }
 
-        /* PANTALLA DE LOGIN */
-        #login-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 1000;
-        }
-        .login-box {
-            background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            width: 90%; max-width: 400px; text-align: center;
-        }
+        /* LOGIN */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
         .login-box h2 { margin-top: 0; color: var(--primary); }
         .login-box p { color: #666; font-size: 14px; margin-bottom: 5px;}
-        .login-box input {
-            width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center;
-        }
-        .login-box button {
-            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
-        }
+        .login-box input { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center; }
+        .login-box button { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .login-box button:hover { background: #357abd; }
         .hint { font-size: 12px; color: #888; margin-bottom: 20px; display: block;}
 
@@ -76,7 +50,6 @@
     </div>
 
     <div id="user-display" onclick="borrarYSalir()">Salir</div>
-
     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo Academia">
 
     <h1>📅 Mis Clases</h1>
@@ -106,12 +79,159 @@
     </div>
 
     <script>
-        // =================================================================
-        //  TUS ENLACES CONFIGURADOS
-        // =================================================================
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
             "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
             "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-            "Viernes":   "
+            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+        };
+
+        let currentUser = "";
+
+        // Inicialización
+        window.onload = function() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const alumnoURL = urlParams.get('alumno');
+                if (alumnoURL) {
+                    document.getElementById("studentName").value = alumnoURL;
+                    login();
+                }
+            } catch (e) { console.log("Error inicio:", e); }
+        };
+
+        document.getElementById("studentName").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") login();
+        });
+
+        function login() {
+            const input = document.getElementById("studentName").value.trim();
+            if(!input) return alert("Por favor, escribe tu nombre.");
+            
+            // Verificamos si PapaParse cargó bien
+            if (typeof Papa === 'undefined') {
+                return alert("ERROR TÉCNICO: La librería 'PapaParse' no se ha cargado. Comprueba tu conexión a internet.");
+            }
+
+            currentUser = decodeURIComponent(input).toLowerCase();
+            
+            // Ocultamos login
+            document.getElementById("login-screen").style.display = "none";
+            document.querySelector(".table-container").style.display = "block";
+            
+            const nombreBonito = input.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            document.getElementById("user-display").innerText = "Usuario: " + nombreBonito + " (Salir)";
+            
+            cargarDia('Lunes');
+        }
+
+        function borrarYSalir() {
+            window.history.pushState({}, document.title, window.location.pathname);
+            location.reload();
+        }
+
+        function cargarDia(dia) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(event) event.target.classList.add('active');
+
+            const url = enlaces[dia];
+            const tbody = document.querySelector('#horarioTable tbody');
+            const loading = document.getElementById('loading');
+            const noMsg = document.getElementById('no-classes-msg');
+            const table = document.getElementById('horarioTable');
+
+            tbody.innerHTML = '';
+            noMsg.style.display = 'none';
+            table.style.display = 'none';
+            loading.style.display = 'block';
+
+            // PapaParse con auto-detección
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                delimiter: "", // AUTO DETECTAR si es comas o tabulaciones
+                complete: function(results) {
+                    loading.style.display = 'none';
+                    if (results.data && results.data.length > 0) {
+                        filtrarYMostrar(results.data);
+                    } else {
+                        console.error("Datos vacíos para", dia);
+                        noMsg.innerText = "Error leyendo datos del " + dia;
+                        noMsg.style.display = 'block';
+                    }
+                },
+                error: function(err) {
+                    loading.style.display = 'none';
+                    alert("Error al conectar con Google Sheets para el " + dia + ". Verifica tu conexión.");
+                }
+            });
+        }
+
+        function filtrarYMostrar(data) {
+            const tbody = document.querySelector('#horarioTable tbody');
+            const table = document.getElementById('horarioTable');
+            const noMsg = document.getElementById('no-classes-msg');
+            let clasesEncontradas = 0;
+
+            // Normalizador de cabeceras (para que ALUMNO 1 = Alumno 1)
+            // Busca las claves que empiecen por "ALUMNO"
+            const headers = Object.keys(data[0]);
+            const columnasAlumnos = headers.filter(h => h.toUpperCase().trim().startsWith("ALUMNO"));
+
+            if (columnasAlumnos.length === 0) {
+                // Si llegamos aquí, es que los títulos en el Excel no contienen la palabra "ALUMNO"
+                alert("⚠️ ALERTA: No encuentro columnas que empiecen por 'ALUMNO' en el Excel. Revisa los títulos de la fila 1.");
+                return;
+            }
+
+            data.forEach(fila => {
+                let esMiClase = false;
+
+                columnasAlumnos.forEach(col => {
+                    if (fila[col]) {
+                        // Comparación estricta
+                        let celdaExcel = fila[col].toLowerCase().trim();
+                        if (celdaExcel === currentUser) { 
+                            esMiClase = true;
+                        }
+                    }
+                });
+
+                if (esMiClase) {
+                    clasesEncontradas++;
+                    let tr = document.createElement('tr');
+                    
+                    // Intentamos buscar columna TURNO y HORA de forma flexible
+                    let keyTurno = headers.find(h => h.toUpperCase().trim() === "TURNO") || "TURNO";
+                    let keyHora = headers.find(h => h.toUpperCase().trim() === "HORA") || "HORA";
+
+                    let tdTurno = document.createElement('td');
+                    tdTurno.innerText = fila[keyTurno] || "";
+                    tr.appendChild(tdTurno);
+
+                    let tdHora = document.createElement('td');
+                    tdHora.innerText = fila[keyHora] || "";
+                    tdHora.style.fontWeight = "bold";
+                    tdHora.style.color = "#003366";
+                    tr.appendChild(tdHora);
+
+                    let tdEstado = document.createElement('td');
+                    tdEstado.innerText = "✅ Clase Asignada"; 
+                    tr.appendChild(tdEstado);
+
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (clasesEncontradas > 0) {
+                table.style.display = 'table';
+            } else {
+                noMsg.innerText = "No tienes clases este día.";
+                noMsg.style.display = 'block';
+            }
+        }
+    </script>
+</body>
+</html>
