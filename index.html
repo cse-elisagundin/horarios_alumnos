@@ -7,33 +7,34 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { 
-            --primary: #003366; /* Azul Oscuro */
-            --accent: #4a90e2;  /* Azul Claro */
-            --bg: #f4f4f9;      /* Fondo General */
+            --primary: #003366; 
+            --accent: #4a90e2; 
+            --bg: #f4f4f9;      
             --card-bg: #ffffff;
         }
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; text-align: center; }
         
-        /* LOGO (Con el truco para que se vea bien integrado) */
+        /* LOGO */
         .logo-img {
             max-width: 180px;
             display: block;
             margin: 0 auto 15px auto;
-            mix-blend-mode: multiply; /* Esto hace transparente el fondo blanco del logo */
+            mix-blend-mode: multiply; /* Truco para quitar fondo blanco */
         }
 
-        /* === PANTALLA 1: LOGIN (ESTILO BONITO) === */
+        /* === PANTALLA 1: LOGIN === */
         #screen-login {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background-color: var(--primary); /* Fondo azul corporativo */
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 2000;
+            min-height: 100vh;
+            background-color: var(--primary);
+            width: 100%;
         }
 
-        .login-card {
+        .login-box {
             background: white;
             padding: 40px;
             border-radius: 15px;
@@ -41,86 +42,69 @@
             width: 90%;
             max-width: 400px;
             text-align: center;
-            animation: fadeIn 0.5s ease-out;
         }
 
-        .login-card h2 { margin: 10px 0 5px; color: var(--primary); font-size: 22px; }
-        .login-card p { color: #666; font-size: 14px; margin-bottom: 25px; }
+        .login-box h2 { margin: 10px 0 5px; color: var(--primary); font-size: 22px; }
+        .login-box p { color: #666; font-size: 14px; margin-bottom: 25px; }
 
-        .login-card input {
+        .login-box input {
             width: 100%; padding: 15px; margin-bottom: 20px;
             border: 2px solid #eee; border-radius: 8px;
-            font-size: 16px; text-align: center; outline: none; transition: 0.3s;
-            box-sizing: border-box;
+            font-size: 16px; text-align: center; outline: none; box-sizing: border-box;
         }
-        .login-card input:focus { border-color: var(--accent); }
 
-        .login-card button {
+        .login-box button {
             width: 100%; padding: 15px;
             background: var(--accent); color: white;
             border: none; border-radius: 8px;
             font-size: 16px; font-weight: bold; cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
         }
-        .login-card button:hover { background: #357abd; transform: translateY(-2px); }
+        .login-box button:hover { background: #357abd; }
 
-        /* === PANTALLA 2: APP (HORARIO) === */
+        /* === PANTALLA 2: APP === */
         #screen-app {
-            display: none; /* Se activa al entrar */
+            display: none; /* Oculto al principio */
             padding: 20px;
             max-width: 800px;
             margin: 0 auto;
-            min-height: 100vh;
         }
 
         h1 { color: var(--primary); margin-bottom: 20px; }
         
-        /* PESTAÑAS DE DÍAS */
-        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 25px; }
-        .tab-btn { 
-            padding: 10px 20px; background: white; border: 2px solid var(--primary); 
-            color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; 
-        }
-        .tab-btn:hover { background: #e6f0ff; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,51,102,0.3); }
+        /* Pestañas */
+        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* TARJETAS DE HORARIO (DISEÑO INTELIGENTE) */
+        /* TARJETAS DE HORARIO */
         .cards-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 50px;}
 
         .horario-card {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             border-left: 8px solid var(--accent);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            animation: slideUp 0.3s ease-out;
         }
 
         .time-group { text-align: center; flex: 1; }
-        .time-label { display: block; font-size: 10px; color: #999; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px;}
-        .time-val { font-size: 26px; font-weight: 800; color: var(--primary); }
-        .arrow { font-size: 20px; color: #ddd; }
+        .time-label { display: block; font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+        .time-val { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .arrow { font-size: 20px; color: #ccc; }
+        .turno-tag { background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 4px; display: inline-block;}
+
+        .no-classes { background: white; padding: 30px; border-radius: 10px; color: #888; font-style: italic; }
         
-        .turno-tag { 
-            background: #eef4ff; color: var(--primary); 
-            padding: 4px 10px; border-radius: 20px; 
-            font-size: 11px; font-weight: bold; margin-top: 5px; display: inline-block;
-        }
-
-        .no-classes { background: white; padding: 40px; border-radius: 10px; color: #888; font-style: italic; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
         #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
     <div id="screen-login">
-        <div class="login-card">
+        <div class="login-box">
             <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img">
             
             <h2>Acceso Alumnos</h2>
@@ -130,9 +114,7 @@
             
             <button onclick="entrar()">VER MI HORARIO</button>
             
-            <p style="font-size:12px; color:#aaa; margin-top:20px; margin-bottom:0;">
-                🔒 El nombre debe coincidir con el registro.
-            </p>
+            <p style="font-size:12px; color:#aaa; margin-top:20px; margin-bottom:0;">🔒 El nombre debe coincidir con el registro.</p>
         </div>
     </div>
 
@@ -157,6 +139,6 @@
     </div>
 
     <script>
-        // TUS ENLACES DEL EXCEL
+        // TUS ENLACES
         const enlaces = {
             "Lunes":     "
