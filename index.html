@@ -43,7 +43,6 @@
             width: 90%; 
             max-width: 380px; 
             text-align: center;
-            animation: fadeIn 0.5s ease-out;
         }
 
         .login-logo {
@@ -68,22 +67,20 @@
             margin-bottom: 25px; 
         }
 
-        .input-group {
-            position: relative;
-            margin-bottom: 20px;
-        }
+        /* Input y Botón */
+        .input-group { margin-bottom: 20px; }
 
         .login-box input {
             width: 100%; 
             padding: 14px; 
-            border: 2px solid #eee; 
+            border: 2px solid #ccc; 
             border-radius: 8px; 
             font-size: 16px; 
             box-sizing: border-box; 
             text-align: center;
             outline: none;
-            transition: border-color 0.3s;
             background-color: #fafafa;
+            color: #333;
         }
 
         .login-box input:focus {
@@ -91,24 +88,27 @@
             background-color: #fff;
         }
 
-        .login-box button {
+        /* FORZAMOS VISIBILIDAD DEL BOTÓN */
+        .btn-acceso {
+            display: block !important;
             width: 100%; 
             padding: 14px; 
-            background: var(--primary); 
-            color: white; 
+            background-color: var(--primary) !important; 
+            color: white !important; 
             border: none; 
             border-radius: 8px; 
             font-size: 16px; 
             cursor: pointer; 
             font-weight: bold;
-            transition: background 0.3s, transform 0.2s;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-top: 15px;
         }
 
-        .login-box button:hover { 
-            background: var(--primary-light); 
+        .btn-acceso:hover { 
+            background-color: var(--primary-light) !important; 
             transform: translateY(-2px);
+            transition: all 0.2s;
         }
 
         .hint { 
@@ -124,13 +124,11 @@
             max-width: 140px;
             margin: 10px auto;
             display: block;
-            /* Si el logo tiene fondo blanco, esto ayuda a integrarlo */
             mix-blend-mode: multiply; 
         }
 
         h1 { color: var(--primary); margin-bottom: 25px; font-size: 24px; }
         
-        /* Pestañas */
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
         .tab-btn { 
             padding: 10px 20px; 
@@ -151,7 +149,6 @@
             box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2);
         }
 
-        /* Tabla */
         .table-container { 
             overflow-x: auto; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
@@ -184,15 +181,6 @@
         }
         #user-display:hover { color: #d9534f; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
 
-        /* Animación de entrada */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* Móvil */
-        @media (max-width: 600px) {
-            .login-box { padding: 30px 20px; }
-            h1 { font-size: 20px; }
-            .tab-btn { padding: 8px 15px; font-size: 13px; }
-        }
     </style>
 </head>
 <body>
@@ -204,5 +192,153 @@
             <h2>Acceso Alumnos</h2>
             <p>Consulta tus horarios semanales</p>
             
-            <div class="input-group">
-                <input type="text" id="studentName" placeholder="Escribe tu Nombre y Apellido">
+            <form id="loginForm" onsubmit="event.preventDefault(); login();">
+                <div class="input-group">
+                    <input type="text" id="studentName" placeholder="Escribe tu Nombre y Apellido" required>
+                </div>
+                
+                <button type="submit" class="btn-acceso">ENTRAR</button>
+            </form>
+
+            <span class="hint">Introduce tu nombre exactamente como en el registro.</span>
+        </div>
+    </div>
+
+    <div id="user-display" onclick="borrarYSalir()">Cerrar Sesión ✖</div>
+
+    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="header-logo" alt="Logo Academia">
+
+    <h1>📅 Mis Clases</h1>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
+        <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
+        <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
+        <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
+        <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
+    </div>
+
+    <div id="loading" style="display:none; margin-top:20px; color: var(--primary); font-weight:bold;">
+        Buscando tus clases...
+    </div>
+
+    <div class="table-container" id="scheduleContainer">
+        <table id="horarioTable">
+            <thead>
+                <tr>
+                    <th>TURNO</th>
+                    <th>HORA</th>
+                    <th>ESTADO</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div id="no-classes-msg" class="no-classes" style="display:none;">
+            😴 No tienes clases asignadas para este día.
+        </div>
+    </div>
+
+    <script>
+        // =================================================================
+        //  CONFIGURACIÓN DE ENLACES
+        // =================================================================
+        const enlaces = {
+            "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
+            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+        };
+        // =================================================================
+
+        let currentUser = "";
+
+        // Al cargar la página, verificamos si hay un alumno en la URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const alumnoURL = urlParams.get('alumno');
+            if (alumnoURL) {
+                document.getElementById("studentName").value = alumnoURL;
+                login();
+            }
+        };
+
+        function login() {
+            const input = document.getElementById("studentName").value.trim();
+            if(!input) {
+                alert("Por favor, escribe tu nombre.");
+                return;
+            }
+            
+            currentUser = decodeURIComponent(input).toLowerCase();
+            
+            // Ocultamos login y mostramos tabla
+            document.getElementById("login-screen").style.display = "none";
+            document.querySelector(".table-container").style.display = "block";
+            
+            // Ponemos el nombre bonito arriba a la derecha
+            const nombreBonito = input.split(' ')
+               .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+               .join(' ');
+            document.getElementById("user-display").innerText = nombreBonito + " (Cerrar)";
+            
+            // Cargamos el Lunes por defecto
+            cargarDia('Lunes');
+        }
+
+        function borrarYSalir() {
+            // Recargamos la página limpia
+            window.history.pushState({}, document.title, window.location.pathname);
+            location.reload();
+        }
+
+        function cargarDia(dia) {
+            // Gestionamos las pestañas activas
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Si el click lo genera el usuario (event existe), marcamos activo. Si es automático, buscamos por texto.
+            if (window.event && window.event.target.classList.contains('tab-btn')) {
+                window.event.target.classList.add('active');
+            } else {
+                // Fallback para cuando se carga Lunes automático
+                const tabs = document.querySelectorAll('.tab-btn');
+                for(let t of tabs) { if(t.innerText.includes(dia)) t.classList.add('active'); }
+            }
+
+            const url = enlaces[dia];
+            const tbody = document.querySelector('#horarioTable tbody');
+            const loading = document.getElementById('loading');
+            const noMsg = document.getElementById('no-classes-msg');
+            const table = document.getElementById('horarioTable');
+
+            // Limpiamos vista anterior
+            tbody.innerHTML = '';
+            noMsg.style.display = 'none';
+            table.style.display = 'none';
+            loading.style.display = 'block';
+
+            // Petición al Excel
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    loading.style.display = 'none';
+                    filtrarYMostrar(results.data);
+                },
+                error: function(err) {
+                    loading.innerText = "❌ Error al cargar. Verifica el enlace.";
+                }
+            });
+        }
+
+        function filtrarYMostrar(data) {
+            const tbody = document.querySelector('#horarioTable tbody');
+            const table = document.getElementById('horarioTable');
+            const noMsg = document.getElementById('no-classes-msg');
+            let clasesEncontradas = 0;
+
+            if(!data || data.length === 0) return;
+
+            // Detección inteligente de columnas
+            const headers = Object.keys(data[0]);
+            const getColName = (keyword) => headers.find(h => h.toUpperCase().includes(keyword));
