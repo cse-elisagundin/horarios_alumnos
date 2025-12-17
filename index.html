@@ -8,6 +8,7 @@
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
     <style>
         :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; }
         
@@ -35,7 +36,7 @@
         .logo-img { max-width: 180px; margin-bottom: 20px; }
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
-        /* INPUTS */
+        /* INPUTS Y BOTONES */
         input { 
             width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
             font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
@@ -48,7 +49,7 @@
         }
         .btn-main:hover { background: #002244; }
 
-        /* SPINNER */
+        /* SPINNER DE CARGA */
         .spinner {
             border: 5px solid #f3f3f3; 
             border-top: 5px solid var(--primary); 
@@ -69,7 +70,7 @@
         .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
         .hora-tag { font-size: 18px; color: #333; display: block; }
 
-        /* BOTONES EXTRA */
+        /* BOTONES EXTRA (SOLO PROFESOR) */
         #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
         .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
         .btn-share:hover { background: #218838; }
@@ -85,10 +86,8 @@
     
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
-        
-        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." onkeypress="checkEnter(event)">
-        
-        <button id="btnBuscar" class="btn-main" onclick="buscarManualmente()">VER MI HORARIO</button>
+        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
+        <button id="btnBuscar" class="btn-main">VER MI HORARIO</button>
     </div>
 
     <div id="loading-spinner" class="spinner"></div>
@@ -97,9 +96,9 @@
     <div id="resultado"></div>
     
     <div id="actions-panel">
-        <button id="btnCopiar" class="btn-share" onclick="copiarEnlace()">🔗 COPIAR ENLACE PARA PADRES</button>
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
         <br>
-        <button id="btnReset" class="btn-reset" onclick="resetear()">🔄 Buscar otro alumno</button>
+        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
     </div>
 </div>
 
@@ -113,33 +112,35 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    // 2. UTILIDADES
+    // 2. UTILIDADES DE TIEMPO
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+    
     function agruparHoras(lista) {
         if(!lista.length) return [];
         let times = lista.map(timeToMins).sort((a,b)=>a-b);
         let res=[]; let ini=times[0]; let fin=times[0]+30;
-        for(let i=1; i<times.length; i++) { if(times[i]===fin){fin+=30}else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} }
+        for(let i=1; i<times.length; i++) { 
+            if(times[i]===fin){fin+=30}
+            else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} 
+        }
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
-    
-    // Función de lectura segura
+
+    // 3. LECTURA DE HOJAS
     function leerHoja(url) {
         return new Promise(resolve => {
-            // Verificamos si Papa existe
             if (typeof Papa === 'undefined') {
-                alert("Error: La librería no ha cargado. Revisa tu conexión a internet.");
-                resolve([]);
-                return;
+                alert("Error crítico: La librería PapaParse no ha cargado.");
+                return resolve([]);
             }
             Papa.parse(url, { download:true, header:false, skipEmptyLines:true, complete:res=>resolve(res.data), error:e=>resolve([]) });
         });
     }
 
-    // 3. BÚSQUEDA
+    // 4. FUNCIÓN MAESTRA
     async function ejecutarBusqueda(nombre, esProfesor) {
-        // Interfaz visual
+        // UI RESET
         document.getElementById('search-area').style.display = 'none';
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
@@ -182,4 +183,59 @@
         } else {
             const err = document.getElementById('error-msg');
             err.innerText = "❌ No se encontraron clases. Revisa el nombre.";
-            err
+            err.style.display = 'block';
+            document.getElementById('search-area').style.display = 'block';
+        }
+    }
+
+    // 5. ASIGNACIÓN DE EVENTOS (INFALIBLE)
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('alumnoInput');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnCopiar = document.getElementById('btnCopiar');
+        const btnReset = document.getElementById('btnReset');
+
+        // Función wrapper para validar
+        const buscarClick = () => {
+            const val = input.value.trim();
+            if(val) ejecutarBusqueda(val, true);
+            else alert("Escribe un nombre primero.");
+        };
+
+        // Click botón
+        btnBuscar.addEventListener('click', buscarClick);
+
+        // Enter en Input
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') buscarClick();
+        });
+
+        // Copiar Enlace
+        btnCopiar.addEventListener('click', () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url)
+                .then(() => { 
+                    const original = btnCopiar.innerText;
+                    btnCopiar.innerText = "✅ ENLACE COPIADO";
+                    setTimeout(() => btnCopiar.innerText = original, 2000);
+                })
+                .catch(() => prompt("Copia este enlace:", url));
+        });
+
+        // Reset
+        btnReset.addEventListener('click', () => {
+            window.location.href = window.location.pathname;
+        });
+
+        // Auto-Carga si es Padre (viene por URL)
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        if (alumnoURL) {
+            input.value = alumnoURL;
+            ejecutarBusqueda(alumnoURL, false); // false = modo padre
+        }
+    });
+</script>
+
+</body>
+</html>
