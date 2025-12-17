@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horario Alumnos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { 
             --primary: #003366; 
@@ -14,7 +13,7 @@
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; text-align: center; }
         
-        /* === PANTALLA 1: LOGIN (VISIBLE POR DEFECTO) === */
+        /* === PANTALLA 1: LOGIN === */
         #screen-login {
             display: flex;
             flex-direction: column;
@@ -24,6 +23,7 @@
             background-color: var(--primary);
             color: white;
             width: 100%;
+            position: fixed; top: 0; left: 0; z-index: 2000;
         }
 
         .login-box {
@@ -42,11 +42,12 @@
         }
 
         .login-box button {
-            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
+            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.3s;
         }
         .login-box button:hover { background: #357abd; }
+        .login-box button:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* === PANTALLA 2: APP (OCULTA POR DEFECTO) === */
+        /* === PANTALLA 2: APP === */
         #screen-app {
             display: none; /* Se activa con JS */
             padding: 20px;
@@ -64,7 +65,7 @@
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* --- DISEÑO DE TARJETAS (ENTRADA -> SALIDA) --- */
+        /* --- TARJETAS --- */
         .cards-container { display: flex; flex-direction: column; gap: 20px; }
 
         .horario-card {
@@ -87,6 +88,7 @@
         .turno-tag { background: #eef4ff; color: var(--primary); padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block;}
 
         .no-classes { background: white; padding: 30px; border-radius: 10px; color: #666; font-style: italic; }
+        .error-msg { background: #ffe6e6; color: #cc0000; padding: 15px; border-radius: 5px; margin-top: 10px; font-size: 14px; display:none; }
         
         #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
     </style>
@@ -100,5 +102,54 @@
             <p style="color:#666; font-size:14px;">Introduce tu nombre completo</p>
             
             <input type="text" id="studentName" placeholder="Nombre Apellido">
-            <button onclick="entrarEnApp()">VER MI HORARIO</button>
-            <p style="font-size:12px; color:#999; margin-top:15px;">Debe coincidir exactamente
+            
+            <button id="btnLogin" onclick="entrarEnApp()">VER MI HORARIO</button>
+            <div id="loginError" class="error-msg"></div>
+
+            <p style="font-size:12px; color:#999; margin-top:15px;">Debe coincidir exactamente con el registro.</p>
+        </div>
+    </div>
+
+    <div id="screen-app">
+        <div id="btn-salir" onclick="location.reload()">Salir</div>
+        
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img">
+        <h1>📅 Mis Clases</h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
+            <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
+            <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
+            <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
+            <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
+        </div>
+
+        <div id="loading" style="display:none; color:#003366; font-weight:bold; margin:20px;">Cargando...</div>
+        
+        <div id="cardsContainer" class="cards-container"></div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN ---
+        const enlaces = {
+            "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
+            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+        };
+
+        let currentUser = "";
+
+        // --- SISTEMA DE LOGIN ---
+        
+        // 1. Detectar ENTER
+        document.getElementById("studentName").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") entrarEnApp();
+        });
+
+        // 2. Auto-login por URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('alumno')) {
+                document.getElementById("studentName").value = urlParams.get
