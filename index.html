@@ -112,4 +112,155 @@
 <script>
     // --- 1. CONFIGURACIÓN ---
     const urls = {
-        "Lunes": "
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    // --- 2. LOGICA DEL BOTÓN (Aquí estaba el fallo antes) ---
+    // Esperamos a que la página cargue completa
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Controlar el envío del formulario (CLICK y ENTER)
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // ESTO EVITA QUE LA PÁGINA SE RECARGUE
+            const nombre = document.getElementById('alumnoInput').value.trim();
+            if(nombre) {
+                ejecutarBusqueda(nombre, true); // true = MODO PROFESOR
+            } else {
+                alert("Por favor, escribe un nombre.");
+            }
+        });
+
+        // Controlar botón de copiar
+        document.getElementById('btnCopiar').addEventListener('click', copiarEnlace);
+        
+        // Controlar botón de reset
+        document.getElementById('btnReset').addEventListener('click', function() {
+            window.location.href = window.location.pathname;
+        });
+
+        // Verificar si es un enlace de Padre
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        if (alumnoURL) {
+            document.getElementById('alumnoInput').value = alumnoURL;
+            ejecutarBusqueda(alumnoURL, false); // false = MODO PADRE
+        }
+    });
+
+    // --- 3. LÓGICA DE TIEMPO ---
+    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+
+    function agruparHoras(lista) {
+        if(!lista.length) return [];
+        let times = lista.map(timeToMins).sort((a,b)=>a-b);
+        let resultado = [];
+        let inicio = times[0];
+        let fin = times[0] + 30; 
+        for(let i=1; i < times.length; i++) {
+            if(times[i] === fin) { fin += 30; } 
+            else {
+                resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
+                inicio = times[i]; fin = times[i] + 30;
+            }
+        }
+        resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
+        return resultado;
+    }
+
+    function leerHoja(url) {
+        return new Promise(resolve => {
+            Papa.parse(url, {
+                download: true, header: false, skipEmptyLines: true,
+                complete: function(results) { resolve(results.data); },
+                error: function(err) { console.error(err); resolve([]); }
+            });
+        });
+    }
+
+    // --- 4. EJECUTAR BÚSQUEDA ---
+    async function ejecutarBusqueda(nombre, esProfesor) {
+        // UI: Ocultar form, mostrar spinner
+        document.getElementById('searchForm').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('actions-panel').style.display = 'none';
+
+        let htmlAccumulado = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
+        let encontrado = false;
+        const nombreBuscado = nombre.toLowerCase();
+
+        try {
+            for (const [dia, url] of Object.entries(urls)) {
+                const data = await leerHoja(url);
+                if(!data || data.length === 0) continue;
+
+                let horasDelDia = [];
+                for(let i=1; i < data.length; i++) {
+                    const row = data[i];
+                    if(row.length < 2) continue; 
+                    
+                    let estaEnFila = false;
+                    for(let c=2; c < row.length; c++) {
+                        if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) {
+                            estaEnFila = true; break;
+                        }
+                    }
+                    if(estaEnFila) {
+                        let h = row[1] ? row[1].toString().trim() : "";
+                        if(h.length > 5) h = h.substring(0, 5); 
+                        if(h.includes(":")) horasDelDia.push(h);
+                    }
+                }
+
+                if(horasDelDia.length > 0) {
+                    encontrado = true;
+                    const bloques = agruparHoras(horasDelDia);
+                    htmlAccumulado += `
+                    <div class="dia-card">
+                        <span class="dia-title">${dia}</span>
+                        ${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}
+                    </div>`;
+                }
+            }
+        } catch (error) {
+            console.error("Error:", error);
+        }
+
+        document.getElementById('loading-spinner').style.display = 'none';
+
+        if(encontrado) {
+            document.getElementById('resultado').innerHTML = htmlAccumulado;
+            if(esProfesor) {
+                document.getElementById('actions-panel').style.display = 'block';
+            }
+        } else {
+            const errorP = document.getElementById('error-msg');
+            errorP.innerText = "❌ No se encontraron clases para ese nombre.";
+            errorP.style.display = 'block';
+            document.getElementById('searchForm').style.display = 'block';
+        }
+    }
+
+    function copiarEnlace() {
+        const nombre = document.getElementById('alumnoInput').value.trim();
+        const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombre);
+        
+        navigator.clipboard.writeText(urlFinal).then(() => {
+            const btn = document.getElementById('btnCopiar');
+            const original = btn.innerText;
+            btn.innerText = "✅ ENLACE COPIADO";
+            setTimeout(() => { btn.innerText = original; }, 2000);
+        }).catch(err => {
+            prompt("Copia este enlace:", urlFinal);
+        });
+    }
+</script>
+
+</body>
+</html>
