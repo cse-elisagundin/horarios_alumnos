@@ -19,7 +19,7 @@
         
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
-        /* FORMULARIO BLINDADO */
+        /* FORMULARIO */
         input { 
             width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
             font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
@@ -32,7 +32,7 @@
         }
         .btn-main:hover { background: #002244; }
 
-        /* Botones de acción (ocultos al inicio) */
+        /* PANEL DE ACCIONES (PROFESOR) */
         #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
 
         .btn-share { 
@@ -45,7 +45,7 @@
             background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; font-size: 14px;
         }
 
-        /* RESULTADOS */
+        /* RESULTADOS Y ERRORES */
         #resultado { margin-top: 20px; text-align: left; }
         .dia-card { 
             background: #eef2f7; margin-bottom: 10px; padding: 15px; 
@@ -55,175 +55,13 @@
         .hora-tag { font-size: 18px; color: #333; display: block; }
         
         #error-msg { color: red; font-weight: bold; display: none; margin-top: 10px; }
-        #loading { display: none; color: var(--primary); font-weight: bold; margin-top: 10px; }
-    </style>
-</head>
-<body>
 
-<div class="container">
-    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
-    
-    <div id="search-area">
-        <h2>Consulta tu Horario</h2>
-        <form id="miFormulario" onsubmit="event.preventDefault(); buscarDesdeFormulario();">
-            <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." required>
-            <button type="submit" class="btn-main">VER MI HORARIO</button>
-        </form>
-        <p id="loading">Buscando en todas las hojas...</p>
-        <p id="error-msg"></p>
-    </div>
-
-    <div id="resultado"></div>
-    
-    <div id="actions-panel">
-        <button onclick="copiarEnlace()" class="btn-share" id="btnCopiar">🔗 COPIAR ENLACE PARA PADRES</button>
-        <br>
-        <button onclick="location.href = window.location.pathname" class="btn-reset">🔄 Buscar otro alumno</button>
-    </div>
-</div>
-
-<script>
-    // --- 1. CONFIGURACIÓN ---
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
-    };
-
-    // --- 2. LÓGICA DE TIEMPO (Agrupar 17:00 y 17:30) ---
-    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
-    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
-
-    function agruparHoras(lista) {
-        if(!lista.length) return [];
-        let times = lista.map(timeToMins).sort((a,b)=>a-b);
-        let resultado = [];
-        let inicio = times[0];
-        let fin = times[0] + 30; 
-        for(let i=1; i < times.length; i++) {
-            if(times[i] === fin) { fin += 30; } 
-            else {
-                resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
-                inicio = times[i]; fin = times[i] + 30;
-            }
-        }
-        resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
-        return resultado;
-    }
-
-    // --- 3. LECTURA DE DATOS ---
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url, {
-                download: true, header: false, skipEmptyLines: true,
-                complete: function(results) { resolve(results.data); },
-                error: function(err) { console.error(err); resolve([]); }
-            });
-        });
-    }
-
-    // --- 4. FUNCIÓN MAESTRA DE BÚSQUEDA ---
-    async function ejecutarBusqueda(nombre, modoProfesor) {
-        // UI Reset
-        document.getElementById('loading').style.display = 'block';
-        document.getElementById('miFormulario').style.display = 'none'; // Ocultar form siempre al buscar
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('resultado').innerHTML = '';
-        document.getElementById('actions-panel').style.display = 'none';
-
-        let htmlAccumulado = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
-        let encontrado = false;
-        const nombreBuscado = nombre.toLowerCase();
-
-        for (const [dia, url] of Object.entries(urls)) {
-            try {
-                const data = await leerHoja(url);
-                if(!data || data.length === 0) continue;
-
-                let horasDelDia = [];
-                for(let i=1; i < data.length; i++) {
-                    const row = data[i];
-                    if(row.length < 2) continue; 
-                    let estaEnFila = false;
-                    for(let c=2; c < row.length; c++) {
-                        if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) {
-                            estaEnFila = true; break;
-                        }
-                    }
-                    if(estaEnFila) {
-                        let h = row[1] ? row[1].toString().trim() : "";
-                        if(h.length > 5) h = h.substring(0, 5); 
-                        if(h.includes(":")) horasDelDia.push(h);
-                    }
-                }
-
-                if(horasDelDia.length > 0) {
-                    encontrado = true;
-                    const bloques = agruparHoras(horasDelDia);
-                    htmlAccumulado += `
-                    <div class="dia-card">
-                        <span class="dia-title">${dia}</span>
-                        ${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}
-                    </div>`;
-                }
-            } catch (e) { console.error(e); }
-        }
-
-        document.getElementById('loading').style.display = 'none';
-
-        if(encontrado) {
-            document.getElementById('resultado').innerHTML = htmlAccumulado;
-            // SI ES MODO PROFESOR (Búsqueda manual) -> MOSTRAR BOTONES
-            if (modoProfesor) {
-                document.getElementById('actions-panel').style.display = 'block';
-            }
-            // SI ES MODO PADRE -> NO HACER NADA (Botones siguen ocultos)
-        } else {
-            document.getElementById('error-msg').innerText = "No se encontraron clases para ese nombre.";
-            document.getElementById('error-msg').style.display = 'block';
-            // Volver a mostrar buscador para intentar de nuevo
-            document.getElementById('miFormulario').style.display = 'block';
-        }
-    }
-
-    // --- 5. CONTROLADORES ---
-
-    // Caso A: Profesor busca manualmente
-    function buscarDesdeFormulario() {
-        const nombre = document.getElementById('alumnoInput').value.trim();
-        if(nombre) {
-            ejecutarBusqueda(nombre, true); // true = MODO PROFESOR
-        }
-    }
-
-    // Caso B: Padre entra por enlace
-    window.onload = function() {
-        const params = new URLSearchParams(window.location.search);
-        const alumnoURL = params.get('alumno');
-        if (alumnoURL) {
-            // Rellenar input por si acaso, pero ocultar form
-            document.getElementById('alumnoInput').value = alumnoURL;
-            ejecutarBusqueda(alumnoURL, false); // false = MODO PADRE (Sin botones)
-        }
-    };
-
-    // Copiar enlace
-    function copiarEnlace() {
-        const nombre = document.getElementById('alumnoInput').value.trim();
-        const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombre);
-        
-        navigator.clipboard.writeText(urlFinal).then(() => {
-            const btn = document.getElementById('btnCopiar');
-            const original = btn.innerText;
-            btn.innerText = "✅ ENLACE COPIADO";
-            setTimeout(() => { btn.innerText = original; }, 2000);
-        }).catch(err => {
-            prompt("Copia este enlace:", urlFinal);
-        });
-    }
-</script>
-
-</body>
-</html>
+        /* --- NUEVO: SPINNER DE CARGA ANIMADO --- */
+        .spinner {
+           border: 4px solid rgba(0, 51, 102, 0.1); /* Color base suave */
+           width: 40px; height: 40px;
+           border-radius: 50%;
+           border-left-color: var(--primary); /* Color que gira (Azul corporativo) */
+           animation: spin 1s linear infinite;
+           margin: 30px auto; /* Centrado */
+           display: none; /* Oculto por defecto
