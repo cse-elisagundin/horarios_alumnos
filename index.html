@@ -7,14 +7,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; }
+        
         body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; 
-            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
         }
+
+        /* CAJA PRINCIPAL - Forzamos color blanco y visibilidad */
         .container { 
-            background: white; padding: 30px; border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 90%; max-width: 500px; text-align: center;
+            background-color: white !important; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            width: 100%; 
+            max-width: 500px; 
+            text-align: center;
+            display: block; /* Asegura que se vea */
+            min-height: 300px; /* Evita que se vea vacía */
         }
+
         .logo-img { max-width: 180px; margin-bottom: 20px; }
         
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
@@ -32,8 +49,21 @@
         }
         .btn-main:hover { background: #002244; }
 
-        /* PANEL DE ACCIONES (PROFESOR) */
-        #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        /* SPINNER DE CARGA (ANIMACIÓN) */
+        .spinner {
+            border: 5px solid #f3f3f3; /* Gris claro */
+            border-top: 5px solid var(--primary); /* Azul */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none; /* Oculto por defecto */
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* BOTONES DE ACCIÓN (PROFESOR) */
+        #actions-panel { display: none; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px; }
 
         .btn-share { 
             width: 100%; padding: 12px; background: var(--success); color: white; 
@@ -45,7 +75,7 @@
             background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; font-size: 14px;
         }
 
-        /* RESULTADOS Y ERRORES */
+        /* RESULTADOS */
         #resultado { margin-top: 20px; text-align: left; }
         .dia-card { 
             background: #eef2f7; margin-bottom: 10px; padding: 15px; 
@@ -54,14 +84,71 @@
         .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
         .hora-tag { font-size: 18px; color: #333; display: block; }
         
-        #error-msg { color: red; font-weight: bold; display: none; margin-top: 10px; }
+        #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
+    </style>
+</head>
+<body>
 
-        /* --- NUEVO: SPINNER DE CARGA ANIMADO --- */
-        .spinner {
-           border: 4px solid rgba(0, 51, 102, 0.1); /* Color base suave */
-           width: 40px; height: 40px;
-           border-radius: 50%;
-           border-left-color: var(--primary); /* Color que gira (Azul corporativo) */
-           animation: spin 1s linear infinite;
-           margin: 30px auto; /* Centrado */
-           display: none; /* Oculto por defecto
+<div class="container">
+    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+    
+    <div id="search-area">
+        <h2>Consulta tu Horario</h2>
+        
+        <form id="miFormulario" onsubmit="event.preventDefault(); buscarDesdeFormulario();">
+            <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." required>
+            <button type="submit" class="btn-main">VER MI HORARIO</button>
+        </form>
+    </div>
+
+    <div id="loading-spinner" class="spinner"></div>
+
+    <p id="error-msg"></p>
+
+    <div id="resultado"></div>
+    
+    <div id="actions-panel">
+        <button onclick="copiarEnlace()" class="btn-share" id="btnCopiar">🔗 COPIAR ENLACE PARA PADRES</button>
+        <br>
+        <button onclick="location.href = window.location.pathname" class="btn-reset">🔄 Buscar otro alumno</button>
+    </div>
+</div>
+
+<script>
+    // --- 1. ENLACES A TUS HOJAS ---
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    // --- 2. LÓGICA DE TIEMPO ---
+    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+
+    function agruparHoras(lista) {
+        if(!lista.length) return [];
+        let times = lista.map(timeToMins).sort((a,b)=>a-b);
+        let resultado = [];
+        let inicio = times[0];
+        let fin = times[0] + 30; 
+        for(let i=1; i < times.length; i++) {
+            if(times[i] === fin) { fin += 30; } 
+            else {
+                resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
+                inicio = times[i]; fin = times[i] + 30;
+            }
+        }
+        resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
+        return resultado;
+    }
+
+    // --- 3. LEER GOOGLE SHEETS ---
+    function leerHoja(url) {
+        return new Promise(resolve => {
+            Papa.parse(url, {
+                download: true, header: false, skipEmptyLines: true,
+                complete: function(results) { resolve(results.data); },
+                error: function(err) { console
