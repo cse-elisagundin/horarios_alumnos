@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario Academia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        :root { --primary: #003366; --accent: #4a90e2; --bg: #f4f4f9; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
+        
+        h1 { color: var(--primary); margin-bottom: 10px; }
+        p { color: #666; font-size: 14px; }
+
+        /* Estilo de los Botones (Pestañas) */
+        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .tab-btn {
+            padding: 10px 20px;
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover { background: #e6f0ff; }
+        .tab-btn.active { background: var(--primary); color: white; }
+
+        /* Contenedor de la tabla */
+        .table-container { overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; background: white; max-width: 1000px; margin: 0 auto; }
+        
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        /* Cabecera */
+        th { background-color: var(--primary); color: white; text-transform: uppercase; font-size: 13px; letter-spacing: 0.5px; position: sticky; top: 0; }
+        
+        /* Columnas específicas */
+        td:nth-child(2) { font-weight: bold; color: var(--primary); background-color: #f9fbff; } /* Columna HORA */
+        
+        /* Fila de separación (Fila 5 vacía) */
+        .separator-row td { 
+            background-color: #eee; 
+            height: 10px; 
+            padding: 0; 
+            border-top: 2px solid #ccc; 
+            border-bottom: 2px solid #ccc;
+        }
+
+        .loading { font-size: 18px; color: #666; margin: 20px; }
+
+    </style>
+</head>
+<body>
+
+    <h1>📅 Horario de Clases</h1>
+    <p>Selecciona el día de la semana:</p>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
+        <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
+        <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
+        <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
+        <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
+    </div>
+
+    <div id="loading" class="loading" style="display:none;">Cargando...</div>
+
+    <div class="table-container">
+        <table id="horarioTable">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        // =================================================================
+        //  ⬇️ CONFIGURACIÓN: PEGA AQUÍ TUS 5 ENLACES CSV
+        // =================================================================
+        const enlaces = {
+            "Lunes":     "PEGAR_ENLACE_LUNES_AQUI",
+            "Martes":    "PEGAR_ENLACE_MARTES_AQUI",
+            "Miercoles": "PEGAR_ENLACE_MIERCOLES_AQUI",
+            "Jueves":    "PEGAR_ENLACE_JUEVES_AQUI",
+            "Viernes":   "PEGAR_ENLACE_VIERNES_AQUI"
+        };
+        // =================================================================
+
+        // Cargar Lunes al iniciar
+        window.onload = function() { cargarDia('Lunes'); };
+
+        function cargarDia(dia) {
+            // Actualizar estilo de botones
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            event ? event.target.classList.add('active') : document.querySelector('.tab-btn').classList.add('active');
+
+            const url = enlaces[dia];
+            const table = document.getElementById('horarioTable');
+            const loading = document.getElementById('loading');
+            
+            // Limpiar tabla y mostrar carga
+            table.querySelector('thead').innerHTML = '';
+            table.querySelector('tbody').innerHTML = '';
+            loading.style.display = 'block';
+
+            if(url.includes("PEGAR_ENLACE")) {
+                loading.innerText = "⚠️ Falta configurar el enlace del " + dia;
+                return;
+            }
+
+            Papa.parse(url, {
+                download: true,
+                header: true, 
+                skipEmptyLines: false, // Importante para detectar tu fila vacía
+                complete: function(results) {
+                    loading.style.display = 'none';
+                    generarTabla(results.data, results.meta.fields);
+                },
+                error: function(err) {
+                    loading.innerText = "❌ Error cargando " + dia;
+                }
+            });
+        }
+
+        function generarTabla(data, headers) {
+            const table = document.getElementById('horarioTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+
+            // 1. Cabeceras (TURNO, HORA, ALUMNO 1...)
+            let headerRow = document.createElement('tr');
+            headers.forEach(h => {
+                let th = document.createElement('th');
+                th.innerText = h;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+
+            // 2. Filas de datos
+            data.forEach((fila, index) => {
+                let tr = document.createElement('tr');
+                
+                // DETECCIÓN DE TU FILA VACÍA (Separador Mañana/Tarde)
+                // Si la columna HORA (o la segunda columna) está vacía, asumimos que es el separador
+                const horaValue = fila['HORA'] || fila[Object.keys(fila)[1]]; // Busca columna HORA o la segunda
+                
+                if (!horaValue || horaValue.trim() === "") {
+                    tr.classList.add('separator-row');
+                    // Creamos celdas vacías pero con estilo de separador
+                    headers.forEach(() => {
+                        let td = document.createElement('td');
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                    return; // Saltamos al siguiente ciclo
+                }
+
+                // Si es una fila normal con datos
+                headers.forEach(header => {
+                    let td = document.createElement('td');
+                    td.innerText = fila[header] || ""; 
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+
+</body>
+</html>
