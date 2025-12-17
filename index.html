@@ -23,44 +23,30 @@
 
         /* CONTENEDOR DE TARJETAS */
         .cards-container { 
-            max-width: 500px; 
-            margin: 0 auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            padding-bottom: 50px;
+            max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 50px;
         }
 
         /* DISEÑO DE LA TARJETA */
         .class-card {
-            background: var(--card-bg);
-            border-left: 8px solid var(--accent);
-            border-radius: 8px;
-            padding: 20px 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            text-align: left;
-            position: relative;
-            transition: transform 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: var(--card-bg); border-left: 8px solid var(--accent); border-radius: 8px;
+            padding: 20px 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: left;
+            position: relative; transition: transform 0.2s; display: flex; justify-content: space-between; align-items: center;
         }
-        
         .class-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
-
         .card-info h2 { margin: 0; color: var(--primary); font-size: 24px; font-weight: 800; }
         .card-info p { margin: 5px 0 0; color: #666; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        
         .card-icon { font-size: 30px; opacity: 0.8; }
 
         .no-classes { padding: 40px; color: #888; font-style: italic; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 500px; margin: 0 auto; }
-        .error-msg { color: red; font-weight: bold; padding: 20px; background: #ffe6e6; border-radius: 10px; margin: 20px auto; max-width: 500px; }
+        
+        /* MENSAJES DE ESTADO Y ERROR */
+        .status-msg { margin: 10px auto; max-width: 500px; font-size: 14px; color: #555; }
+        .error-box { background: #ffebee; color: #c62828; padding: 15px; border-radius: 5px; border: 1px solid #ef9a9a; margin: 20px auto; max-width: 500px; display: none; text-align: left; font-size: 13px; }
 
-        /* PANTALLA DE LOGIN */
+        /* LOGIN */
         #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
         .login-box h2 { margin-top: 0; color: var(--primary); }
-        .login-box p { color: #666; font-size: 14px; margin-bottom: 5px;}
         .login-box input { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center; }
         .login-box button { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
         .login-box button:hover { background: #357abd; }
@@ -77,7 +63,8 @@
             <p>Introduce tu nombre completo</p>
             <input type="text" id="studentName" placeholder="Nombre Apellido">
             <span class="hint">Debe coincidir exactamente con el registro.</span>
-            <button id="btnLogin" onclick="login()">VER MI HORARIO</button>
+            <button id="btnLogin" onclick="intentarLogin()">VER MI HORARIO</button>
+            <div id="login-status" style="margin-top:10px; font-size:12px; color:red;"></div>
         </div>
     </div>
 
@@ -95,14 +82,111 @@
         <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
     </div>
 
-    <div id="loading" style="display:none; margin-top:20px;">Calculando horario...</div>
-    <div id="error-container" style="display:none;" class="error-msg"></div>
+    <div id="loading" class="status-msg" style="display:none;">⏳ Conectando con Google Sheets...</div>
+    <div id="debug-error" class="error-box"></div>
 
     <div id="scheduleContainer" class="cards-container"></div>
 
     <script>
-        // TUS ENLACES (HE CAMBIADO 'tsv' A 'csv' AUTOMÁTICAMENTE PARA EVITAR ERRORES)
+        // TUS ENLACES (Corregidos para asegurar formato CSV)
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-            "Miercoles": "
+            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+        };
+
+        let currentUser = "";
+
+        // Inicialización
+        window.onload = function() {
+            console.log("Sistema iniciado.");
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('alumno')) {
+                document.getElementById("studentName").value = urlParams.get('alumno');
+                intentarLogin();
+            }
+        };
+
+        // Tecla Enter
+        document.getElementById("studentName").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") intentarLogin();
+        });
+
+        function intentarLogin() {
+            // 1. Verificación básica
+            const input = document.getElementById("studentName").value.trim();
+            const statusDiv = document.getElementById("login-status");
+            const btn = document.getElementById("btnLogin");
+
+            statusDiv.innerText = "";
+            
+            if(!input) { 
+                statusDiv.innerText = "⚠️ Por favor, escribe un nombre."; 
+                return; 
+            }
+
+            // 2. Verificación de Librería (Causa común de 'no hace nada')
+            if (typeof Papa === 'undefined') {
+                alert("🔴 ERROR TÉCNICO: La librería no se ha cargado. \nPosible causa: Bloqueo de red o fallo de internet. \nPrueba a recargar la página.");
+                statusDiv.innerText = "Error: Librería PapaParse no cargada.";
+                return;
+            }
+
+            // Si todo va bien, cambiamos botón para dar feedback
+            btn.innerText = "Entrando...";
+            btn.disabled = true;
+
+            setTimeout(() => {
+                ejecutarLogin(input);
+            }, 500); // Pequeña pausa para que se vea el cambio
+        }
+
+        function ejecutarLogin(input) {
+            currentUser = decodeURIComponent(input).toLowerCase();
+            
+            document.getElementById("login-screen").style.display = "none";
+            
+            const nombreBonito = input.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            document.getElementById("user-display").innerText = "Usuario: " + nombreBonito + " (Salir)";
+            
+            cargarDia('Lunes');
+        }
+
+        function borrarYSalir() {
+            window.history.pushState({}, document.title, window.location.pathname);
+            location.reload();
+        }
+
+        function cargarDia(dia) {
+            // Estilos
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(event && event.target) event.target.classList.add('active');
+
+            const url = enlaces[dia];
+            const container = document.getElementById('scheduleContainer');
+            const loading = document.getElementById('loading');
+            const errorBox = document.getElementById('debug-error');
+
+            container.innerHTML = '';
+            errorBox.style.display = 'none';
+            loading.style.display = 'block';
+            loading.innerText = "⏳ Leyendo hoja del " + dia + "...";
+
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    loading.style.display = 'none';
+                    if (results.data && results.data.length > 0) {
+                        try {
+                            procesarHorario(results.data, dia);
+                        } catch (e) {
+                            mostrarError("Error procesando datos: " + e.message);
+                        }
+                    } else {
+                        mostrarError(`La hoja del ${dia} parece estar vacía o no se pudo leer.`);
+                    }
+                },
