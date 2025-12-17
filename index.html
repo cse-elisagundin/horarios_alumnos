@@ -19,7 +19,6 @@
             min-height: 100vh;
         }
 
-        /* CAJA PRINCIPAL - Forzamos color blanco y visibilidad */
         .container { 
             background-color: white !important; 
             padding: 30px; 
@@ -28,15 +27,13 @@
             width: 100%; 
             max-width: 500px; 
             text-align: center;
-            display: block; /* Asegura que se vea */
-            min-height: 300px; /* Evita que se vea vacía */
+            display: block;
         }
 
         .logo-img { max-width: 180px; margin-bottom: 20px; }
-        
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
-        /* FORMULARIO */
+        /* INPUTS */
         input { 
             width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
             font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
@@ -49,16 +46,15 @@
         }
         .btn-main:hover { background: #002244; }
 
-        /* SPINNER DE CARGA (ANIMACIÓN) */
+        /* SPINNER (Círculo de carga) */
         .spinner {
-            border: 5px solid #f3f3f3; /* Gris claro */
-            border-top: 5px solid var(--primary); /* Azul */
+            border: 5px solid #f3f3f3; 
+            border-top: 5px solid var(--primary); 
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
-            display: none; /* Oculto por defecto */
+            display: none; 
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -75,7 +71,6 @@
             background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; font-size: 14px;
         }
 
-        /* RESULTADOS */
         #resultado { margin-top: 20px; text-align: left; }
         .dia-card { 
             background: #eef2f7; margin-bottom: 10px; padding: 15px; 
@@ -95,8 +90,8 @@
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
         
-        <form id="miFormulario" onsubmit="event.preventDefault(); buscarDesdeFormulario();">
-            <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." required>
+        <form id="searchForm">
+            <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
             <button type="submit" class="btn-main">VER MI HORARIO</button>
         </form>
     </div>
@@ -108,47 +103,13 @@
     <div id="resultado"></div>
     
     <div id="actions-panel">
-        <button onclick="copiarEnlace()" class="btn-share" id="btnCopiar">🔗 COPIAR ENLACE PARA PADRES</button>
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
         <br>
-        <button onclick="location.href = window.location.pathname" class="btn-reset">🔄 Buscar otro alumno</button>
+        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
     </div>
 </div>
 
 <script>
-    // --- 1. ENLACES A TUS HOJAS ---
+    // --- 1. CONFIGURACIÓN ---
     const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
-    };
-
-    // --- 2. LÓGICA DE TIEMPO ---
-    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
-    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
-
-    function agruparHoras(lista) {
-        if(!lista.length) return [];
-        let times = lista.map(timeToMins).sort((a,b)=>a-b);
-        let resultado = [];
-        let inicio = times[0];
-        let fin = times[0] + 30; 
-        for(let i=1; i < times.length; i++) {
-            if(times[i] === fin) { fin += 30; } 
-            else {
-                resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
-                inicio = times[i]; fin = times[i] + 30;
-            }
-        }
-        resultado.push(`${minsToTime(inicio)} - ${minsToTime(fin)}`);
-        return resultado;
-    }
-
-    // --- 3. LEER GOOGLE SHEETS ---
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url, {
-                download: true, header: false, skipEmptyLines: true,
-                complete: function(results) { resolve(results.data); },
-                error: function(err) { console
+        "Lunes": "
