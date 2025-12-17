@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horario Alumnos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root { 
             --primary: #003366; 
@@ -20,18 +19,17 @@
             max-width: 180px;
             display: block;
             margin: 0 auto 15px auto;
-            mix-blend-mode: multiply; /* Truco para quitar fondo blanco */
+            mix-blend-mode: multiply; 
         }
 
         /* === PANTALLA 1: LOGIN === */
         #screen-login {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            background-color: var(--primary);
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background-color: var(--primary);
-            width: 100%;
+            z-index: 9999; /* Asegura que esté siempre encima */
         }
 
         .login-box {
@@ -52,31 +50,34 @@
             border: 2px solid #eee; border-radius: 8px;
             font-size: 16px; text-align: center; outline: none; box-sizing: border-box;
         }
+        .login-box input:focus { border-color: var(--accent); }
 
         .login-box button {
             width: 100%; padding: 15px;
             background: var(--accent); color: white;
             border: none; border-radius: 8px;
             font-size: 16px; font-weight: bold; cursor: pointer;
+            transition: 0.3s;
         }
         .login-box button:hover { background: #357abd; }
+        .login-box button:disabled { background: #ccc; cursor: wait; }
 
         /* === PANTALLA 2: APP === */
         #screen-app {
-            display: none; /* Oculto al principio */
+            display: none; 
             padding: 20px;
             max-width: 800px;
             margin: 0 auto;
+            min-height: 100vh;
         }
 
         h1 { color: var(--primary); margin-bottom: 20px; }
         
-        /* Pestañas */
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .tab-btn:hover { background: #e6f0ff; }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        /* TARJETAS DE HORARIO */
         .cards-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 50px;}
 
         .horario-card {
@@ -88,17 +89,19 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            animation: slideUp 0.3s ease-out;
         }
 
         .time-group { text-align: center; flex: 1; }
-        .time-label { display: block; font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; }
+        .time-label { display: block; font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px;}
         .time-val { font-size: 24px; font-weight: 800; color: var(--primary); }
         .arrow { font-size: 20px; color: #ccc; }
         .turno-tag { background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 4px; display: inline-block;}
 
         .no-classes { background: white; padding: 30px; border-radius: 10px; color: #888; font-style: italic; }
-        
         #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
+
+        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -110,35 +113,13 @@
             <h2>Acceso Alumnos</h2>
             <p>Introduce tu nombre completo</p>
             
-            <input type="text" id="studentName" placeholder="Ej: Roberto Cremades">
+            <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
             
-            <button onclick="entrar()">VER MI HORARIO</button>
+            <button id="btnLogin" onclick="entrar()">VER MI HORARIO</button>
             
             <p style="font-size:12px; color:#aaa; margin-top:20px; margin-bottom:0;">🔒 El nombre debe coincidir con el registro.</p>
         </div>
     </div>
 
     <div id="screen-app">
-        <div id="btn-salir" onclick="location.reload()">Cerrar Sesión</div>
-        
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img">
-        
-        <h1>📅 Mis Clases</h1>
-        
-        <div class="tabs">
-            <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
-            <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
-            <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
-            <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
-            <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
-        </div>
-
-        <div id="loading" style="display:none; color:#003366; font-weight:bold; margin:20px;">Cargando...</div>
-        
-        <div id="cardsContainer" class="cards-container"></div>
-    </div>
-
-    <script>
-        // TUS ENLACES
-        const enlaces = {
-            "Lunes":     "
+        <div id="btn-salir"
