@@ -20,24 +20,26 @@
         /* LOGO */
         .logo-img { max-width: 180px; display: block; margin: 0 auto 15px auto; mix-blend-mode: multiply; }
 
-        /* === PANTALLA 1: LOGIN === */
+        /* === PANTALLA 1: LOGIN (ESTRUCTURA CORREGIDA) === */
         #screen-login {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
+            /* Eliminamos 'position: fixed' para evitar que se coma la pantalla */
+            min-height: 100vh; /* Aseguramos que ocupe toda la altura */
             background: linear-gradient(135deg, #003366 0%, #00509e 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
+            width: 100%;
         }
 
         .login-box {
             background: white;
             padding: 50px 40px;
             border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             width: 90%;
             max-width: 380px;
             text-align: center;
+            margin: 20px 0; /* Espacio extra para asegurar visibilidad en móviles */
         }
 
         .login-box h2 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
@@ -49,7 +51,6 @@
             font-size: 16px; text-align: center; outline: none; box-sizing: border-box; background: #f9f9f9;
         }
 
-        /* CAMBIO CRÍTICO: Botón sin 'onclick' en el HTML, el evento se asigna en el JS */
         #btnLogin {
             width: 100%; padding: 16px;
             background: var(--primary);
@@ -71,6 +72,7 @@
             max-width: 600px;
             margin: 0 auto;
             text-align: center;
+            min-height: 100vh;
         }
 
         /* Estilos App */
@@ -127,7 +129,7 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN ---
+        // --- CONFIGURACIÓN DE ENLACES ---
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -138,9 +140,9 @@
 
         let currentUser = "";
 
-        // --- SISTEMA DE INICIALIZACIÓN (ASIGNACIÓN DE EVENTOS) ---
+        // --- SISTEMA DE INICIALIZACIÓN Y EVENTOS ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Asignación de evento al botón (MÉTODO MÁS SEGURO)
+            // Asignación de evento al botón (MÉTODO SEGURO)
             document.getElementById("btnLogin").addEventListener("click", iniciarSesion);
             
             // Asignar Enter al input
@@ -156,7 +158,6 @@
             }
         });
 
-        // --- FUNCIÓN DE LOGIN (Ahora robusta y universal) ---
         function iniciarSesion() {
             const input = document.getElementById("studentName").value.trim();
             const btn = document.getElementById("btnLogin");
@@ -164,22 +165,22 @@
             if(!input) return alert("Por favor, escribe tu nombre.");
 
             try {
-                // 1. Procesar
+                // Procesar y guardar usuario
                 currentUser = decodeURIComponent(input).toLowerCase();
 
-                // 2. Feedback
-                btn.innerText = "Cargando horario...";
+                // Feedback
+                btn.innerText = "Cargando...";
                 btn.disabled = true;
 
-                // 3. CAMBIAR PANTALLA
+                // CAMBIAR PANTALLA
                 document.getElementById("screen-login").style.display = "none";
                 document.getElementById("app-layer").style.display = "block";
                 
-                // 4. Actualizar UI
+                // Actualizar UI
                 const nombreBonito = input.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
                 document.getElementById("btn-logout").innerText = "Salir (" + nombreBonito + ")";
 
-                // 5. Cargar datos
+                // Cargar datos
                 cargarDia('Lunes');
             } catch(e) {
                 alert("Error al iniciar sesión: " + e.message);
@@ -217,7 +218,7 @@
         function procesarYMostrar(data) {
             const container = document.getElementById('horario-container');
             
-            // 1. Detectar columnas (Seguro)
+            // 1. Detectar columnas
             if(!data || data.length === 0) {
                 container.innerHTML = '<div class="msg-box">Hoja de cálculo vacía.</div>'; 
                 return;
