@@ -22,7 +22,7 @@
             mix-blend-mode: multiply; 
         }
 
-        /* === PANTALLA DE LOGIN === */
+        /* === PANTALLA 1: LOGIN === */
         #screen-login {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
             background-color: var(--primary);
@@ -57,12 +57,12 @@
             background: var(--accent); color: white;
             border: none; border-radius: 8px;
             font-size: 16px; font-weight: bold; cursor: pointer;
-            transition: 0.2s;
+            transition: background 0.2s;
         }
-        .login-box button:hover { background: #357abd; transform: translateY(-2px); }
-        .login-box button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+        .login-box button:hover { background: #357abd; }
+        .login-box button:active { transform: scale(0.98); } /* Efecto visual de pulsado */
 
-        /* === PANTALLA APP === */
+        /* === PANTALLA 2: APP === */
         #screen-app {
             display: none; 
             padding: 20px;
@@ -99,14 +99,6 @@
         .turno-tag { background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 4px; display: inline-block;}
 
         .no-classes { background: white; padding: 30px; border-radius: 10px; color: #888; font-style: italic; }
-        
-        /* ERROR BOX */
-        #global-error {
-            display: none;
-            background: #ffe6e6; border: 1px solid red; color: #cc0000;
-            padding: 10px; margin-top: 15px; border-radius: 5px; font-size: 12px; text-align: left;
-        }
-
         #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
 
         @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -123,9 +115,7 @@
             
             <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
             
-            <button id="btnLogin">VER MI HORARIO</button>
-            
-            <div id="global-error"></div>
+            <button id="btnLogin" onclick="entrar()">VER MI HORARIO</button>
             
             <p style="font-size:12px; color:#aaa; margin-top:20px; margin-bottom:0;">🔒 El nombre debe coincidir con el registro.</p>
         </div>
@@ -151,14 +141,18 @@
     </div>
 
     <script>
-        // --- PROTECCIÓN CONTRA ERRORES GLOBALES ---
-        window.onerror = function(msg, url, line) {
-            const errorBox = document.getElementById('global-error');
-            errorBox.style.display = 'block';
-            errorBox.innerText = `Error técnico: ${msg} (Línea ${line})`;
-            return false;
-        };
-
+        // CONFIGURACIÓN DE ENLACES
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-            "Martes":    "
+            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
+            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+        };
+
+        let currentUser = "";
+
+        // AL CARGAR LA PÁGINA
+        window.onload = function() {
+            // Verificar si venimos de un enlace con nombre
+            const urlParams = new URLSearchParams(window.location
