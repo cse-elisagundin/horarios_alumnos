@@ -9,73 +9,96 @@
         :root { 
             --primary: #003366; 
             --accent: #4a90e2; 
-            --bg: #f4f4f9; 
-            --card-bg: #ffffff; 
+            --bg: #f4f4f9;
         }
         
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 20px; text-align: center; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; text-align: center; }
         
+        /* === PANTALLA 1: LOGIN (VISIBLE POR DEFECTO) === */
+        #screen-login {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--primary);
+            color: white;
+            width: 100%;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            color: #333;
+        }
+
+        .login-box input {
+            width: 100%; padding: 15px; margin: 20px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center;
+        }
+
+        .login-box button {
+            width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold;
+        }
+        .login-box button:hover { background: #357abd; }
+
+        /* === PANTALLA 2: APP (OCULTA POR DEFECTO) === */
+        #screen-app {
+            display: none; /* Se activa con JS */
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         /* LOGO */
         .logo-img { max-width: 200px; display: block; margin: 0 auto 10px auto; mix-blend-mode: multiply; }
 
-        h1 { color: var(--primary); margin-bottom: 20px; margin-top: 0; }
+        h1 { color: var(--primary); margin-bottom: 20px; }
         
         /* PESTAÑAS */
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 30px; }
         .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-        .tab-btn:hover { background: #e6f0ff; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(0,51,102,0.3); }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        /* DISEÑO TARJETAS */
-        .cards-container { 
-            max-width: 600px; 
-            margin: 0 auto; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
-            padding-bottom: 50px;
-        }
+        /* --- DISEÑO DE TARJETAS (ENTRADA -> SALIDA) --- */
+        .cards-container { display: flex; flex-direction: column; gap: 20px; }
 
         .horario-card {
-            background: var(--card-bg);
-            border-radius: 15px;
+            background: white;
+            border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 8px solid var(--accent);
+            border-left: 10px solid var(--accent);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: transform 0.2s;
         }
-        .horario-card:hover { transform: translateY(-3px); }
 
-        .time-block { text-align: left; flex: 1; }
-        .time-label { display: block; font-size: 10px; text-transform: uppercase; color: #888; font-weight: bold; margin-bottom: 2px; }
-        .time-value { font-size: 24px; font-weight: 800; color: var(--primary); }
-        .arrow-divider { font-size: 20px; color: #ccc; padding: 0 15px; }
+        .time-group { text-align: center; flex: 1; }
+        .time-label { display: block; font-size: 11px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+        .time-val { font-size: 26px; font-weight: 800; color: var(--primary); }
         
-        /* Turno */
-        .turno-badge { font-size: 12px; color: #666; font-weight: bold; margin-top: 5px; }
+        .arrow { font-size: 24px; color: #ccc; }
+        
+        .turno-tag { background: #eef4ff; color: var(--primary); padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 5px; display: inline-block;}
 
-        .no-classes { padding: 40px; color: #888; font-style: italic; background: white; border-radius: 10px; max-width: 500px; margin: 0 auto;}
-
-        /* LOGIN */
-        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 90%; max-width: 400px; text-align: center; }
-        .login-box h2 { margin-top: 0; color: var(--primary); }
-        .login-box input { width: 100%; padding: 15px; margin: 15px 0; border: 2px solid #ddd; border-radius: 5px; font-size: 16px; box-sizing: border-box; text-align: center; }
-        .login-box button { width: 100%; padding: 15px; background: var(--accent); color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        .login-box button:hover { background: #357abd; }
-        .hint { font-size: 12px; color: #888; margin-bottom: 20px; display: block;}
-
-        #user-display { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline;}
-        #loading { display: none; margin-top: 20px; color: #003366; font-weight: bold;}
+        .no-classes { background: white; padding: 30px; border-radius: 10px; color: #666; font-style: italic; }
+        
+        #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen">
+    <div id="screen-login">
         <div class="login-box">
-            <h2>🔐 Acceso Alumnos</h2>
-            <p>Introduce tu nombre completo</p>
-            <input type="text" id="studentName" placeholder
+            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" style="max-width:150px; margin-bottom:10px;">
+            <h2 style="margin:0; color:var(--primary)">Acceso Alumnos</h2>
+            <p style="color:#666; font-size:14px;">Introduce tu nombre completo</p>
+            
+            <input type="text" id="studentName" placeholder="Nombre Apellido">
+            <button onclick="entrarEnApp()">VER MI HORARIO</button>
+            <p style="font-size:12px; color:#999; margin-top:15px;">Debe coincidir exactamente
