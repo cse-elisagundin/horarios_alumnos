@@ -12,14 +12,17 @@
             --primary: #003366; 
             --accent: #4a90e2; 
             --bg: #f4f4f9;      
+            --card-bg: #ffffff;
         }
         
         body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--bg); }
 
-        /* === NUEVO DISEÑO DE PORTADA (LOGIN) === */
-        #login-layer {
+        /* LOGO */
+        .logo-img { max-width: 180px; display: block; margin: 0 auto 15px auto; mix-blend-mode: multiply; }
+
+        /* === PANTALLA 1: LOGIN === */
+        #screen-login {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            /* Fondo degradado moderno en vez de plano */
             background: linear-gradient(135deg, #003366 0%, #00509e 100%);
             display: flex;
             justify-content: center;
@@ -27,7 +30,7 @@
             z-index: 9999;
         }
 
-        .login-card {
+        .login-box {
             background: white;
             padding: 50px 40px;
             border-radius: 20px;
@@ -35,38 +38,20 @@
             width: 90%;
             max-width: 380px;
             text-align: center;
-            /* Animación suave de entrada */
-            animation: slideUp 0.6s ease-out;
         }
 
-        .logo-login {
-            max-width: 160px;
-            margin-bottom: 20px;
-            mix-blend-mode: multiply;
+        .login-box h2 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
+        .login-box p { color: #888; margin-bottom: 30px; font-size: 14px; }
+
+        .login-box input {
+            width: 100%; padding: 15px; margin-bottom: 25px;
+            border: 2px solid #e1e1e1; border-radius: 10px;
+            font-size: 16px; text-align: center; outline: none; box-sizing: border-box; background: #f9f9f9;
         }
 
-        .login-card h2 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
-        .login-card p { color: #888; margin-bottom: 30px; font-size: 14px; }
-
-        .input-group { position: relative; margin-bottom: 25px; }
-        
-        .login-card input {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e1e1e1;
-            border-radius: 10px;
-            font-size: 16px;
-            text-align: center;
-            outline: none;
-            transition: 0.3s;
-            box-sizing: border-box;
-            background: #f9f9f9;
-        }
-        .login-card input:focus { border-color: var(--accent); background: #fff; }
-
-        .btn-login {
-            width: 100%;
-            padding: 16px;
+        /* CAMBIO CRÍTICO: Botón sin 'onclick' en el HTML, el evento se asigna en el JS */
+        #btnLogin {
+            width: 100%; padding: 16px;
             background: var(--primary);
             color: white;
             border: none;
@@ -77,70 +62,51 @@
             transition: 0.3s;
             box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3);
         }
-        .btn-login:hover { background: var(--accent); transform: translateY(-2px); }
+        #btnLogin:hover { background: var(--accent); transform: translateY(-2px); }
 
-        /* === DISEÑO DE LA APP (HORARIO) === */
-        #app-layer {
-            display: none; /* Oculto al inicio */
+        /* === PANTALLA 2: APP === */
+        #screen-app {
+            display: none; 
             padding: 20px;
             max-width: 600px;
             margin: 0 auto;
             text-align: center;
         }
 
+        /* Estilos App */
         .header-app img { max-width: 150px; mix-blend-mode: multiply; margin-top: 10px;}
         h1 { color: var(--primary); margin-bottom: 20px; }
-
         .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
-        .tab-btn { 
-            padding: 8px 20px; background: white; border: 1px solid var(--primary); 
-            color: var(--primary); border-radius: 50px; cursor: pointer; font-weight: 600; 
-            transition: 0.2s; 
-        }
+        .tab-btn { padding: 8px 20px; background: white; border: 1px solid var(--primary); color: var(--primary); border-radius: 50px; cursor: pointer; font-weight: 600; transition: 0.2s; }
         .tab-btn.active { background: var(--primary); color: white; }
-
-        /* Tarjetas de Horas */
         .cards-list { display: flex; flex-direction: column; gap: 15px; padding-bottom: 40px;}
-        
-        .horario-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            border-left: 6px solid var(--accent);
-            display: flex; align-items: center; justify-content: space-between;
-        }
+        .horario-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 6px solid var(--accent); display: flex; align-items: center; justify-content: space-between; }
         .t-group { text-align: center; flex: 1; }
         .t-label { font-size: 10px; color: #999; font-weight: bold; letter-spacing: 1px; display: block; margin-bottom: 3px; }
         .t-val { font-size: 22px; font-weight: 800; color: var(--primary); }
         .t-arrow { font-size: 20px; color: #ddd; }
         .t-tag { background: #f0f7ff; color: var(--accent); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 5px; display: inline-block;}
-
         .msg-box { background: white; padding: 30px; border-radius: 10px; color: #777; font-style: italic; }
-        
         #btn-logout { position: absolute; top: 15px; right: 20px; color: #666; font-size: 13px; cursor: pointer; text-decoration: underline;}
-
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="login-layer">
-        <div class="login-card">
+    <div id="screen-login">
+        <div class="login-box">
             <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-login">
             <h2>Bienvenido</h2>
             <p>Consulta tus clases semanales</p>
             
-            <div class="input-group">
-                <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
-            </div>
+            <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
             
-            <button class="btn-login" onclick="iniciarSesion()">ENTRAR</button>
-            <p style="font-size: 12px; margin-top: 20px; margin-bottom: 0; color: #bbb;">Acceso exclusivo para alumnos</p>
+            <button id="btnLogin">ENTRAR</button>
+            
+            <p style="font-size: 12px; margin-top: 20px; margin-bottom: 0; color: #aaa;">Acceso exclusivo para alumnos</p>
         </div>
     </div>
 
-    <div id="app-layer">
+    <div id="screen-app">
         <div id="btn-logout" onclick="location.reload()">Cerrar Sesión</div>
         
         <div class="header-app">
@@ -167,4 +133,192 @@
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
             "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
             "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-            "Viernes":   "
+            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+        };
+
+        let currentUser = "";
+
+        // --- SISTEMA DE INICIALIZACIÓN (ASIGNACIÓN DE EVENTOS) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Asignación de evento al botón (MÉTODO MÁS SEGURO)
+            document.getElementById("btnLogin").addEventListener("click", iniciarSesion);
+            
+            // Asignar Enter al input
+            document.getElementById("studentName").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") iniciarSesion();
+            });
+
+            // Auto-login (si viene de enlace)
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('alumno')) {
+                document.getElementById("studentName").value = urlParams.get('alumno');
+                iniciarSesion();
+            }
+        });
+
+        // --- FUNCIÓN DE LOGIN (Ahora robusta y universal) ---
+        function iniciarSesion() {
+            const input = document.getElementById("studentName").value.trim();
+            const btn = document.getElementById("btnLogin");
+            
+            if(!input) return alert("Por favor, escribe tu nombre.");
+
+            try {
+                // 1. Procesar
+                currentUser = decodeURIComponent(input).toLowerCase();
+
+                // 2. Feedback
+                btn.innerText = "Cargando horario...";
+                btn.disabled = true;
+
+                // 3. CAMBIAR PANTALLA
+                document.getElementById("screen-login").style.display = "none";
+                document.getElementById("app-layer").style.display = "block";
+                
+                // 4. Actualizar UI
+                const nombreBonito = input.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                document.getElementById("btn-logout").innerText = "Salir (" + nombreBonito + ")";
+
+                // 5. Cargar datos
+                cargarDia('Lunes');
+            } catch(e) {
+                alert("Error al iniciar sesión: " + e.message);
+                btn.innerText = "ENTRAR";
+                btn.disabled = false;
+            }
+        }
+
+        // --- LÓGICA DE DATOS (PAPAPARSE) ---
+        function cargarDia(dia) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(event && event.target) event.target.classList.add('active');
+
+            const url = enlaces[dia];
+            const container = document.getElementById('horario-container');
+            const status = document.getElementById('status-msg');
+
+            container.innerHTML = '';
+            status.style.display = 'block';
+
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    status.style.display = 'none';
+                    procesarYMostrar(results.data);
+                },
+                error: function(err) {
+                    status.innerText = "Error de conexión con Google Sheets.";
+                }
+            });
+        }
+
+        function procesarYMostrar(data) {
+            const container = document.getElementById('horario-container');
+            
+            // 1. Detectar columnas (Seguro)
+            if(!data || data.length === 0) {
+                container.innerHTML = '<div class="msg-box">Hoja de cálculo vacía.</div>'; 
+                return;
+            }
+            const headers = Object.keys(data[0]);
+            const getCol = (k) => headers.find(h => h.toUpperCase().includes(k));
+            
+            const keyHora = getCol("HORA");
+            const keyTurno = getCol("TURNO") || headers[0];
+            const colsAlumnos = headers.filter(h => h.toUpperCase().includes("ALUMNO"));
+
+            if (!keyHora || colsAlumnos.length === 0) {
+                container.innerHTML = '<div class="msg-box">Error: No encuentro HORA o ALUMNO en el Excel.</div>';
+                return;
+            }
+
+            // 2. Extraer horas del alumno
+            let horasSueltas = [];
+            data.forEach(fila => {
+                let encontrado = false;
+                colsAlumnos.forEach(col => {
+                    if (fila[col] && col && fila[col].toLowerCase().trim() === currentUser) encontrado = true;
+                });
+                if (encontrado && fila[keyHora]) {
+                    horasSueltas.push({
+                        turno: fila[keyTurno] || "Clase",
+                        hora: fila[keyHora].trim()
+                    });
+                }
+            });
+
+            if (horasSueltas.length === 0) {
+                container.innerHTML = '<div class="msg-box">No tienes clases este día.</div>';
+                return;
+            }
+
+            // 3. Agrupar bloques
+            let tarjetas = [];
+            let actual = null;
+
+            horasSueltas.forEach(item => {
+                let minInicio = -1;
+                if(item.hora.includes(':')) {
+                    try {
+                        let p = item.hora.split(':');
+                        let h = parseInt(p[0]);
+                        let m = parseInt(p[1]);
+                        if(!isNaN(h) && !isNaN(m)) minInicio = h * 60 + m;
+                    } catch(e) { minInicio = -1; }
+                }
+
+                if(minInicio === -1) {
+                    tarjetas.push({ turno: item.turno, inicio: item.hora, finMin: null });
+                } else {
+                    if(!actual) {
+                        actual = { turno: item.turno, inicio: item.hora, finMin: minInicio + 30 };
+                    } else {
+                        if(actual.finMin === minInicio) {
+                            actual.finMin += 30;
+                        } else {
+                            tarjetas.push(actual);
+                            actual = { turno: item.turno, inicio: item.hora, finMin: minInicio + 30 };
+                        }
+                    }
+                }
+            });
+            if(actual) tarjetas.push(actual);
+
+            // 4. Renderizar
+            tarjetas.forEach(t => {
+                let html = "";
+                if(t.finMin) {
+                    let hS = Math.floor(t.finMin / 60);
+                    let mS = t.finMin % 60;
+                    let txtSalida = `${hS.toString().padStart(2,'0')}:${mS.toString().padStart(2,'0')}`;
+                    
+                    html = `
+                    <div class="horario-card">
+                        <div class="t-group" style="text-align:left">
+                            <span class="t-label">ENTRADA</span>
+                            <span class="t-val">${t.inicio}</span>
+                            <div class="t-tag">${t.turno}</div>
+                        </div>
+                        <div class="t-arrow">➝</div>
+                        <div class="t-group" style="text-align:right">
+                            <span class="t-label">SALIDA</span>
+                            <span class="t-val">${txtSalida}</span>
+                        </div>
+                    </div>`;
+                } else {
+                    html = `
+                    <div class="horario-card">
+                        <div class="t-group" style="text-align:left">
+                            <span class="t-val">${t.inicio}</span>
+                            <div class="t-tag">${t.turno}</div>
+                        </div>
+                    </div>`;
+                }
+                container.innerHTML += html;
+            });
+        }
+    </script>
+</body>
+</html>
