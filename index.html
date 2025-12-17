@@ -8,26 +8,24 @@
     <style>
         :root { 
             --primary: #003366; /* Azul Oscuro Corporativo */
-            --primary-light: #004080; 
-            --accent: #4a90e2;  
-            --bg: #f4f7f6;      
+            --accent: #4a90e2;  /* Azul más claro */
+            --bg: #f4f4f9;      
             --white: #ffffff;
         }
         
         body { 
-            font-family: 'Segoe UI', 'Roboto', sans-serif; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
             background-color: var(--bg); 
             margin: 0; 
             padding: 20px; 
             text-align: center; 
-            color: #333;
         }
         
-        /* --- ESTILOS DEL LOGIN (PANTALLA DE ACCESO) --- */
+        /* === ESTILOS VISUALES DEL LOGIN (SOLO ESTÉTICA) === */
         #login-screen {
             position: fixed; 
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Degradado elegante con el azul corporativo */
+            /* Fondo azul elegante */
             background: linear-gradient(135deg, var(--primary) 0%, #001a33 100%);
             display: flex; 
             justify-content: center; 
@@ -36,17 +34,18 @@
         }
 
         .login-box {
-            background: var(--white); 
-            padding: 40px 30px; 
+            background: white; 
+            padding: 40px; 
             border-radius: 15px; 
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             width: 90%; 
-            max-width: 380px; 
+            max-width: 400px; 
             text-align: center;
         }
 
+        /* Logo dentro del login */
         .login-logo {
-            max-width: 160px;
+            max-width: 180px; 
             margin-bottom: 20px;
             display: block;
             margin-left: auto;
@@ -54,291 +53,87 @@
         }
 
         .login-box h2 { 
-            margin: 10px 0 5px 0; 
+            margin-top: 0; 
             color: var(--primary); 
-            font-size: 22px; 
             text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 20px;
         }
-
+        
         .login-box p { 
             color: #666; 
             font-size: 14px; 
-            margin-bottom: 25px; 
+            margin-bottom: 20px;
         }
-
-        /* Input y Botón */
-        .input-group { margin-bottom: 20px; }
 
         .login-box input {
             width: 100%; 
-            padding: 14px; 
-            border: 2px solid #ccc; 
+            padding: 15px; 
+            margin: 10px 0 20px 0; /* Espacio asegurado abajo */
+            border: 2px solid #ddd; 
             border-radius: 8px; 
             font-size: 16px; 
             box-sizing: border-box; 
             text-align: center;
-            outline: none;
-            background-color: #fafafa;
-            color: #333;
         }
 
-        .login-box input:focus {
-            border-color: var(--primary);
-            background-color: #fff;
-        }
-
-        /* FORZAMOS VISIBILIDAD DEL BOTÓN */
-        .btn-acceso {
-            display: block !important;
+        .login-box button {
+            display: block; /* Asegura que se vea */
             width: 100%; 
-            padding: 14px; 
-            background-color: var(--primary) !important; 
-            color: white !important; 
+            padding: 15px; 
+            background: var(--primary); 
+            color: white; 
             border: none; 
             border-radius: 8px; 
             font-size: 16px; 
             cursor: pointer; 
             font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 15px;
         }
-
-        .btn-acceso:hover { 
-            background-color: var(--primary-light) !important; 
-            transform: translateY(-2px);
-            transition: all 0.2s;
+        
+        .login-box button:hover { 
+            background: #002244; 
         }
 
         .hint { 
             font-size: 12px; 
             color: #888; 
-            margin-top: 15px; 
-            display: block; 
+            margin-top: 20px; 
+            display: block;
         }
 
-        /* --- ESTILOS DE LA WEB (DENTRO) --- */
+        /* === ESTILOS INTERNOS (RESTO DE LA WEB) === */
         
+        /* Logo de cabecera (cuando entras) con truco de transparencia */
         .header-logo {
-            max-width: 140px;
-            margin: 10px auto;
+            max-width: 150px;
             display: block;
+            margin: 0 auto 10px auto;
             mix-blend-mode: multiply; 
         }
 
-        h1 { color: var(--primary); margin-bottom: 25px; font-size: 24px; }
+        h1 { color: var(--primary); margin-bottom: 25px; }
         
-        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
-        .tab-btn { 
-            padding: 10px 20px; 
-            background: white; 
-            border: 1px solid #ddd; 
-            color: var(--primary); 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            transition: all 0.3s;
-            font-size: 14px;
-        }
-        .tab-btn:hover { background: #eef4fb; border-color: var(--primary); }
-        .tab-btn.active { 
-            background: var(--primary); 
-            color: white; 
-            border-color: var(--primary); 
-            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.2);
-        }
+        /* Pestañas */
+        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+        .tab-btn:hover { background: #e6f0ff; }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        .table-container { 
-            overflow-x: auto; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05); 
-            border-radius: 12px; 
-            background: white; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            display: none; 
-            border: 1px solid #eee;
-        }
+        /* Tabla */
+        .table-container { overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-radius: 10px; background: white; max-width: 800px; margin: 0 auto; display: none; }
         table { width: 100%; border-collapse: collapse; min-width: 300px; }
-        th, td { padding: 15px; text-align: center; border-bottom: 1px solid #f0f0f0; font-size: 15px; }
-        th { background-color: var(--primary); color: white; text-transform: uppercase; font-size: 13px; letter-spacing: 1px; }
-        tr:last-child td { border-bottom: none; }
+        th, td { padding: 12px 15px; text-align: center; border-bottom: 1px solid #eee; font-size: 15px; }
+        th { background-color: var(--primary); color: white; text-transform: uppercase; }
         
-        .no-classes { padding: 40px; color: #777; font-style: italic; background: white; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.05);}
+        .no-classes { padding: 30px; color: #666; font-style: italic; }
 
-        #user-display { 
-            position: absolute; 
-            top: 20px; 
-            right: 20px; 
-            font-size: 13px; 
-            color: #555; 
-            cursor: pointer; 
-            background: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: all 0.2s;
-        }
-        #user-display:hover { color: #d9534f; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        #user-display { position: absolute; top: 20px; right: 20px; font-size: 14px; color: white; cursor: pointer; text-decoration: underline; background: rgba(0,0,0,0.1); padding: 5px 10px; border-radius: 5px;}
+        /* Estilo para el botón de salir dentro de la web (fondo claro) */
+        body.logged-in #user-display { color: #555; background: none; }
 
     </style>
 </head>
 <body>
 
     <div id="login-screen">
-        <div class="login-box">
-            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="login-logo" alt="CSE Elisa Gundín">
-            
-            <h2>Acceso Alumnos</h2>
-            <p>Consulta tus horarios semanales</p>
-            
-            <form id="loginForm" onsubmit="event.preventDefault(); login();">
-                <div class="input-group">
-                    <input type="text" id="studentName" placeholder="Escribe tu Nombre y Apellido" required>
-                </div>
-                
-                <button type="submit" class="btn-acceso">ENTRAR</button>
-            </form>
-
-            <span class="hint">Introduce tu nombre exactamente como en el registro.</span>
-        </div>
-    </div>
-
-    <div id="user-display" onclick="borrarYSalir()">Cerrar Sesión ✖</div>
-
-    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="header-logo" alt="Logo Academia">
-
-    <h1>📅 Mis Clases</h1>
-    
-    <div class="tabs">
-        <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
-        <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
-        <button class="tab-btn" onclick="cargarDia('Miercoles')">Miércoles</button>
-        <button class="tab-btn" onclick="cargarDia('Jueves')">Jueves</button>
-        <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
-    </div>
-
-    <div id="loading" style="display:none; margin-top:20px; color: var(--primary); font-weight:bold;">
-        Buscando tus clases...
-    </div>
-
-    <div class="table-container" id="scheduleContainer">
-        <table id="horarioTable">
-            <thead>
-                <tr>
-                    <th>TURNO</th>
-                    <th>HORA</th>
-                    <th>ESTADO</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        <div id="no-classes-msg" class="no-classes" style="display:none;">
-            😴 No tienes clases asignadas para este día.
-        </div>
-    </div>
-
-    <script>
-        // =================================================================
-        //  CONFIGURACIÓN DE ENLACES
-        // =================================================================
-        const enlaces = {
-            "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-            "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-            "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-            "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-        };
-        // =================================================================
-
-        let currentUser = "";
-
-        // Al cargar la página, verificamos si hay un alumno en la URL
-        window.onload = function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const alumnoURL = urlParams.get('alumno');
-            if (alumnoURL) {
-                document.getElementById("studentName").value = alumnoURL;
-                login();
-            }
-        };
-
-        function login() {
-            const input = document.getElementById("studentName").value.trim();
-            if(!input) {
-                alert("Por favor, escribe tu nombre.");
-                return;
-            }
-            
-            currentUser = decodeURIComponent(input).toLowerCase();
-            
-            // Ocultamos login y mostramos tabla
-            document.getElementById("login-screen").style.display = "none";
-            document.querySelector(".table-container").style.display = "block";
-            
-            // Ponemos el nombre bonito arriba a la derecha
-            const nombreBonito = input.split(' ')
-               .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-               .join(' ');
-            document.getElementById("user-display").innerText = nombreBonito + " (Cerrar)";
-            
-            // Cargamos el Lunes por defecto
-            cargarDia('Lunes');
-        }
-
-        function borrarYSalir() {
-            // Recargamos la página limpia
-            window.history.pushState({}, document.title, window.location.pathname);
-            location.reload();
-        }
-
-        function cargarDia(dia) {
-            // Gestionamos las pestañas activas
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            // Si el click lo genera el usuario (event existe), marcamos activo. Si es automático, buscamos por texto.
-            if (window.event && window.event.target.classList.contains('tab-btn')) {
-                window.event.target.classList.add('active');
-            } else {
-                // Fallback para cuando se carga Lunes automático
-                const tabs = document.querySelectorAll('.tab-btn');
-                for(let t of tabs) { if(t.innerText.includes(dia)) t.classList.add('active'); }
-            }
-
-            const url = enlaces[dia];
-            const tbody = document.querySelector('#horarioTable tbody');
-            const loading = document.getElementById('loading');
-            const noMsg = document.getElementById('no-classes-msg');
-            const table = document.getElementById('horarioTable');
-
-            // Limpiamos vista anterior
-            tbody.innerHTML = '';
-            noMsg.style.display = 'none';
-            table.style.display = 'none';
-            loading.style.display = 'block';
-
-            // Petición al Excel
-            Papa.parse(url, {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    loading.style.display = 'none';
-                    filtrarYMostrar(results.data);
-                },
-                error: function(err) {
-                    loading.innerText = "❌ Error al cargar. Verifica el enlace.";
-                }
-            });
-        }
-
-        function filtrarYMostrar(data) {
-            const tbody = document.querySelector('#horarioTable tbody');
-            const table = document.getElementById('horarioTable');
-            const noMsg = document.getElementById('no-classes-msg');
-            let clasesEncontradas = 0;
-
-            if(!data || data.length === 0) return;
-
-            // Detección inteligente de columnas
-            const headers = Object.keys(data[0]);
-            const getColName = (keyword) => headers.find(h => h.toUpperCase().includes(keyword));
+        <div
