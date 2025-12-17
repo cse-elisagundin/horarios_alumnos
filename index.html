@@ -69,6 +69,7 @@
         /* BOTONES EXTRA */
         #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
         .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-share:hover { background: #218838; }
         .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
         
         #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
@@ -81,8 +82,10 @@
     
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
-        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto...">
-        <button id="btnBuscar" class="btn-main">VER MI HORARIO</button>
+        
+        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." onkeypress="checkEnter(event)">
+        
+        <button id="btnBuscar" class="btn-main" onclick="buscarManualmente()">VER MI HORARIO</button>
     </div>
 
     <div id="loading-spinner" class="spinner"></div>
@@ -91,14 +94,14 @@
     <div id="resultado"></div>
     
     <div id="actions-panel">
-        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+        <button id="btnCopiar" class="btn-share" onclick="copiarEnlace()">🔗 COPIAR ENLACE PARA PADRES</button>
         <br>
-        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
+        <button id="btnReset" class="btn-reset" onclick="resetear()">🔄 Buscar otro alumno</button>
     </div>
 </div>
 
 <script>
-    // 1. CONFIGURACIÓN DE URLS
+    // 1. CONFIGURACIÓN
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -117,13 +120,23 @@
         for(let i=1; i<times.length; i++) { if(times[i]===fin){fin+=30}else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} }
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
+    
+    // Función de lectura segura
     function leerHoja(url) {
-        return new Promise(r => Papa.parse(url, { download:true, header:false, skipEmptyLines:true, complete:res=>r(res.data), error:e=>r([]) }));
+        return new Promise(resolve => {
+            // Verificamos si Papa existe
+            if (typeof Papa === 'undefined') {
+                alert("Error: La librería no ha cargado. Revisa tu conexión a internet.");
+                resolve([]);
+                return;
+            }
+            Papa.parse(url, { download:true, header:false, skipEmptyLines:true, complete:res=>resolve(res.data), error:e=>resolve([]) });
+        });
     }
 
-    // 3. LOGICA PRINCIPAL
+    // 3. BÚSQUEDA
     async function ejecutarBusqueda(nombre, esProfesor) {
-        // UI RESET
+        // Interfaz visual
         document.getElementById('search-area').style.display = 'none';
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
@@ -142,7 +155,6 @@
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
                 let esta = false;
-                // Busca en todas las columnas
                 for(let c=0; c < row.length; c++) {
                     if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
                 }
@@ -172,4 +184,50 @@
         }
     }
 
-    // 4. CONTROLADORES
+    // 4. FUNCIONES GATILLO (TRIGGERS)
+    
+    // Llamada desde el botón HTML
+    function buscarManualmente() {
+        const input = document.getElementById('alumnoInput');
+        if(input.value.trim()) {
+            ejecutarBusqueda(input.value.trim(), true);
+        } else {
+            alert("Por favor, escribe un nombre.");
+        }
+    }
+
+    // Llamada desde el Enter del input
+    function checkEnter(event) {
+        if (event.key === "Enter") {
+            buscarManualmente();
+        }
+    }
+
+    function copiarEnlace() {
+        const nombre = document.getElementById('alumnoInput').value.trim();
+        const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombre);
+        navigator.clipboard.writeText(urlFinal).then(() => {
+            const btn = document.getElementById('btnCopiar');
+            const original = btn.innerText;
+            btn.innerText = "✅ ENLACE COPIADO";
+            setTimeout(() => { btn.innerText = original; }, 2000);
+        }).catch(() => prompt("Copia:", urlFinal));
+    }
+
+    function resetear() {
+        window.location.href = window.location.pathname;
+    }
+
+    // Al cargar la página (Modo Padre)
+    window.onload = function() {
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        if (alumnoURL) {
+            document.getElementById('alumnoInput').value = alumnoURL;
+            ejecutarBusqueda(alumnoURL, false); // false = es padre (sin botones)
+        }
+    }
+</script>
+
+</body>
+</html>
