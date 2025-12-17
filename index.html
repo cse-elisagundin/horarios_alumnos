@@ -4,130 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horario Alumnos</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
     <style>
         :root { 
             --primary: #003366; 
             --accent: #4a90e2; 
             --bg: #f4f4f9;      
-            --card-bg: #ffffff;
         }
         
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; padding: 0; text-align: center; }
-        
-        /* LOGO */
-        .logo-img {
-            max-width: 180px;
-            display: block;
-            margin: 0 auto 15px auto;
-            mix-blend-mode: multiply; 
-        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; padding: 0; background-color: var(--bg); }
 
-        /* === PANTALLA 1: LOGIN === */
-        #screen-login {
+        /* === NUEVO DISEÑO DE PORTADA (LOGIN) === */
+        #login-layer {
             position: fixed; top: 0; left: 0; width: 100%; height: 100vh;
-            background-color: var(--primary);
+            /* Fondo degradado moderno en vez de plano */
+            background: linear-gradient(135deg, #003366 0%, #00509e 100%);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 9999;
         }
 
-        .login-box {
+        .login-card {
             background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             width: 90%;
-            max-width: 400px;
+            max-width: 380px;
+            text-align: center;
+            /* Animación suave de entrada */
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .logo-login {
+            max-width: 160px;
+            margin-bottom: 20px;
+            mix-blend-mode: multiply;
+        }
+
+        .login-card h2 { color: var(--primary); margin: 0 0 10px 0; font-size: 24px; }
+        .login-card p { color: #888; margin-bottom: 30px; font-size: 14px; }
+
+        .input-group { position: relative; margin-bottom: 25px; }
+        
+        .login-card input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e1e1;
+            border-radius: 10px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+            transition: 0.3s;
+            box-sizing: border-box;
+            background: #f9f9f9;
+        }
+        .login-card input:focus { border-color: var(--accent); background: #fff; }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.3);
+        }
+        .btn-login:hover { background: var(--accent); transform: translateY(-2px); }
+
+        /* === DISEÑO DE LA APP (HORARIO) === */
+        #app-layer {
+            display: none; /* Oculto al inicio */
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
             text-align: center;
         }
 
-        .login-box h2 { margin: 10px 0 5px; color: var(--primary); font-size: 22px; }
-        .login-box p { color: #666; font-size: 14px; margin-bottom: 25px; }
-
-        .login-box input {
-            width: 100%; padding: 15px; margin-bottom: 20px;
-            border: 2px solid #eee; border-radius: 8px;
-            font-size: 16px; text-align: center; outline: none; box-sizing: border-box;
-        }
-        .login-box input:focus { border-color: var(--accent); }
-
-        .login-box button {
-            width: 100%; padding: 15px;
-            background: var(--accent); color: white;
-            border: none; border-radius: 8px;
-            font-size: 16px; font-weight: bold; cursor: pointer;
-            transition: background 0.2s;
-        }
-        .login-box button:hover { background: #357abd; }
-        .login-box button:active { transform: scale(0.98); } /* Efecto visual de pulsado */
-
-        /* === PANTALLA 2: APP === */
-        #screen-app {
-            display: none; 
-            padding: 20px;
-            max-width: 800px;
-            margin: 0 auto;
-            min-height: 100vh;
-        }
-
+        .header-app img { max-width: 150px; mix-blend-mode: multiply; margin-top: 10px;}
         h1 { color: var(--primary); margin-bottom: 20px; }
-        
-        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .tab-btn { padding: 10px 20px; background: white; border: 2px solid var(--primary); color: var(--primary); border-radius: 25px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-        .tab-btn:hover { background: #e6f0ff; }
+
+        .tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 25px; }
+        .tab-btn { 
+            padding: 8px 20px; background: white; border: 1px solid var(--primary); 
+            color: var(--primary); border-radius: 50px; cursor: pointer; font-weight: 600; 
+            transition: 0.2s; 
+        }
         .tab-btn.active { background: var(--primary); color: white; }
 
-        .cards-container { display: flex; flex-direction: column; gap: 15px; padding-bottom: 50px;}
-
+        /* Tarjetas de Horas */
+        .cards-list { display: flex; flex-direction: column; gap: 15px; padding-bottom: 40px;}
+        
         .horario-card {
-            background: var(--card-bg);
-            border-radius: 12px;
+            background: white;
+            border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            border-left: 8px solid var(--accent);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            animation: slideUp 0.3s ease-out;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 6px solid var(--accent);
+            display: flex; align-items: center; justify-content: space-between;
         }
+        .t-group { text-align: center; flex: 1; }
+        .t-label { font-size: 10px; color: #999; font-weight: bold; letter-spacing: 1px; display: block; margin-bottom: 3px; }
+        .t-val { font-size: 22px; font-weight: 800; color: var(--primary); }
+        .t-arrow { font-size: 20px; color: #ddd; }
+        .t-tag { background: #f0f7ff; color: var(--accent); padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 5px; display: inline-block;}
 
-        .time-group { text-align: center; flex: 1; }
-        .time-label { display: block; font-size: 10px; color: #888; font-weight: bold; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 1px;}
-        .time-val { font-size: 24px; font-weight: 800; color: var(--primary); }
-        .arrow { font-size: 20px; color: #ccc; }
-        .turno-tag { background: #eef4ff; color: var(--primary); padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-top: 4px; display: inline-block;}
+        .msg-box { background: white; padding: 30px; border-radius: 10px; color: #777; font-style: italic; }
+        
+        #btn-logout { position: absolute; top: 15px; right: 20px; color: #666; font-size: 13px; cursor: pointer; text-decoration: underline;}
 
-        .no-classes { background: white; padding: 30px; border-radius: 10px; color: #888; font-style: italic; }
-        #btn-salir { position: absolute; top: 20px; right: 20px; font-size: 14px; color: #666; cursor: pointer; text-decoration: underline; }
-
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-    <div id="screen-login">
-        <div class="login-box">
-            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img">
+    <div id="login-layer">
+        <div class="login-card">
+            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-login">
+            <h2>Bienvenido</h2>
+            <p>Consulta tus clases semanales</p>
             
-            <h2>Acceso Alumnos</h2>
-            <p>Introduce tu nombre completo</p>
+            <div class="input-group">
+                <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
+            </div>
             
-            <input type="text" id="studentName" placeholder="Escribe tu nombre aquí...">
-            
-            <button id="btnLogin" onclick="entrar()">VER MI HORARIO</button>
-            
-            <p style="font-size:12px; color:#aaa; margin-top:20px; margin-bottom:0;">🔒 El nombre debe coincidir con el registro.</p>
+            <button class="btn-login" onclick="iniciarSesion()">ENTRAR</button>
+            <p style="font-size: 12px; margin-top: 20px; margin-bottom: 0; color: #bbb;">Acceso exclusivo para alumnos</p>
         </div>
     </div>
 
-    <div id="screen-app">
-        <div id="btn-salir" onclick="location.reload()">Cerrar Sesión</div>
+    <div id="app-layer">
+        <div id="btn-logout" onclick="location.reload()">Cerrar Sesión</div>
         
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img">
-        
-        <h1>📅 Mis Clases</h1>
-        
+        <div class="header-app">
+            <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+            <h1>Mis Clases</h1>
+        </div>
+
         <div class="tabs">
             <button class="tab-btn active" onclick="cargarDia('Lunes')">Lunes</button>
             <button class="tab-btn" onclick="cargarDia('Martes')">Martes</button>
@@ -136,23 +156,15 @@
             <button class="tab-btn" onclick="cargarDia('Viernes')">Viernes</button>
         </div>
 
-        <div id="loading" style="display:none; color:#003366; font-weight:bold; margin:20px;">Cargando...</div>
-        <div id="cardsContainer" class="cards-container"></div>
+        <div id="status-msg" style="display:none; color:var(--primary); font-weight:bold; margin:20px;">Cargando...</div>
+        <div id="horario-container" class="cards-list"></div>
     </div>
 
     <script>
-        // CONFIGURACIÓN DE ENLACES
+        // --- CONFIGURACIÓN ---
         const enlaces = {
             "Lunes":     "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
             "Martes":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
             "Miercoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
             "Jueves":    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-            "Viernes":   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-        };
-
-        let currentUser = "";
-
-        // AL CARGAR LA PÁGINA
-        window.onload = function() {
-            // Verificar si venimos de un enlace con nombre
-            const urlParams = new URLSearchParams(window.location
+            "Viernes":   "
