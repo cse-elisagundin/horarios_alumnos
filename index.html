@@ -1,133 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horarios Academia</title>
-    
-    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-
-    <style>
-        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; --error: #dc3545; }
-        
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; 
-            padding: 20px;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh;
-        }
-
-        .container { 
-            background-color: white; 
-            padding: 30px; 
-            border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
-            width: 100%; 
-            max-width: 500px; 
-            text-align: center;
-        }
-
-        /* CORRECCIÓN: display block evita duplicados visuales y centra perfecto */
-        .logo-img { 
-            max-width: 180px; 
-            display: block; 
-            margin: 0 auto 20px auto; 
-        }
-
-        h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
-        
-        /* INPUTS Y BOTONES */
-        input { 
-            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
-            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
-        }
-        input:focus { border-color: var(--primary); outline: none; }
-
-        .btn-main { 
-            width: 100%; padding: 14px; background: var(--primary); color: white; 
-            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
-        }
-        .btn-main:hover { background: #002244; }
-
-        /* SPINNER DE CARGA */
-        .spinner {
-            border: 5px solid #f3f3f3; 
-            border-top: 5px solid var(--primary); 
-            border-radius: 50%;
-            width: 40px; height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-            display: none; 
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* RESULTADOS */
-        #resultado { margin-top: 20px; text-align: left; }
-        .dia-card { 
-            background: #eef2f7; margin-bottom: 10px; padding: 15px; 
-            border-radius: 8px; border-left: 5px solid var(--primary);
-        }
-        .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
-        .hora-tag { font-size: 18px; color: #333; display: block; }
-
-        /* BOTONES EXTRA (SOLO PROFESOR) */
-        #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-        .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-share:hover { background: #218838; }
-        .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
-        
-        #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
-
-        /* PANTALLA DE CONTRASEÑA */
-        #password-area { display: none; }
-        .lock-icon { font-size: 40px; margin-bottom: 10px; display: block; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
-    
-    <div id="password-area">
-        <span class="lock-icon">🔒</span>
-        <h2>Acceso Profesor</h2>
-        <p style="color:#666; font-size:14px; margin-bottom:20px;">Introduce la clave para buscar alumnos.</p>
-        <input type="password" id="passInput" placeholder="Contraseña...">
-        <button id="btnUnlock" class="btn-main">ENTRAR</button>
-        <p id="pass-error" style="color:red; display:none; margin-top:10px;">Contraseña incorrecta</p>
-    </div>
-
-    <div id="search-area" style="display:none;">
-        <h2>Consulta tu Horario</h2>
-        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
-        <button id="btnBuscar" class="btn-main">VER MI HORARIO</button>
-    </div>
-
-    <div id="loading-spinner" class="spinner"></div>
-
-    <p id="error-msg"></p>
-    <div id="resultado"></div>
-    
-    <div id="actions-panel">
-        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
-        <br>
-        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
-    </div>
-</div>
-
-<script>
-    // --- 0. SEGURIDAD ---
-    // CAMBIA "1234" POR TU CONTRASEÑA
-    const PASSWORD_PROFE = "1234"; 
-
-    // 1. CONFIGURACIÓN EXCEL
-    const INDICE_COLUMNA_HORA = 1; 
+// 1. CONFIGURACIÓN
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -136,6 +7,7 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
+    // MEMORIA CACHÉ (Para no descargar dos veces lo mismo en la misma sesión)
     let memoriaCache = {}; 
 
     // 2. UTILIDADES
@@ -148,5 +20,141 @@
         let res=[]; let ini=times[0]; let fin=times[0]+30;
         for(let i=1; i<times.length; i++) { 
             if(times[i]===fin){fin+=30}
-            else{res.push
+            else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} 
+        }
+        res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
+    }
 
+    // 3. LECTURA DE HOJAS (OPTIMIZADA + ANTI-CACHÉ)
+    function leerHoja(url) {
+        // Si ya está en memoria, devolver instantáneamente
+        if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
+
+        return new Promise(resolve => {
+            if (typeof Papa === 'undefined') {
+                alert("Error crítico: La librería PapaParse no ha cargado.");
+                return resolve([]);
+            }
+            
+            // DIFERENCIA CLAVE: Añadimos timestamp para evitar datos viejos de Google
+            const urlFresca = url + "&t=" + Date.now();
+
+            Papa.parse(urlFresca, { 
+                download:true, 
+                header:false, 
+                skipEmptyLines:true, 
+                complete: res => {
+                    memoriaCache[url] = res.data; // Guardar en memoria
+                    resolve(res.data);
+                }, 
+                error: e => resolve([]) 
+            });
+        });
+    }
+
+    // 4. FUNCIÓN MAESTRA (PARALELA)
+    async function ejecutarBusqueda(nombre, esProfesor) {
+        // UI RESET
+        document.getElementById('search-area').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('actions-panel').style.display = 'none';
+
+        let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
+        let encontrado = false;
+        
+        // Búsqueda exacta (respetando tildes como pediste)
+        const nombreBuscado = nombre.toLowerCase().trim();
+
+        // DIFERENCIA CLAVE: Carga Paralela (Promise.all) en vez de bucle for-await
+        const dias = Object.keys(urls);
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const resultados = await Promise.all(promesas);
+
+        dias.forEach((dia, index) => {
+            const data = resultados[index];
+            if(!data || data.length === 0) return;
+
+            let horas = [];
+            for(let i=1; i < data.length; i++) {
+                const row = data[i];
+                let esta = false;
+                for(let c=0; c < row.length; c++) {
+                    // Comparación exacta
+                    if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
+                }
+                if(esta) {
+                    let h = row[1] ? row[1].toString().trim().substring(0,5) : "";
+                    if(h.includes(":")) horas.push(h);
+                }
+            }
+
+            if(horas.length > 0) {
+                encontrado = true;
+                const bloques = agruparHoras(horas);
+                html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
+            }
+        });
+
+        document.getElementById('loading-spinner').style.display = 'none';
+
+        if(encontrado) {
+            document.getElementById('resultado').innerHTML = html;
+            if(esProfesor) document.getElementById('actions-panel').style.display = 'block';
+        } else {
+            const err = document.getElementById('error-msg');
+            err.innerText = "❌ No se encontraron clases. Revisa el nombre.";
+            err.style.display = 'block';
+            document.getElementById('search-area').style.display = 'block';
+        }
+    }
+
+    // 5. EVENTOS
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('alumnoInput');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnCopiar = document.getElementById('btnCopiar');
+        const btnReset = document.getElementById('btnReset');
+
+        const buscarClick = () => {
+            const val = input.value.trim();
+            if(val) ejecutarBusqueda(val, true);
+            else alert("Escribe un nombre primero.");
+        };
+
+        btnBuscar.addEventListener('click', buscarClick);
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') buscarClick();
+        });
+
+        btnCopiar.addEventListener('click', () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url)
+                .then(() => { 
+                    const original = btnCopiar.innerText;
+                    btnCopiar.innerText = "✅ ENLACE COPIADO";
+                    setTimeout(() => btnCopiar.innerText = original, 2000);
+                })
+                .catch(() => prompt("Copia este enlace:", url));
+        });
+
+        btnReset.addEventListener('click', () => {
+            // Limpia la URL y vuelve al inicio
+            window.history.pushState({}, document.title, window.location.pathname);
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('actions-panel').style.display = 'none';
+            document.getElementById('search-area').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'none';
+            input.value = ""; 
+            input.focus();
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        if (alumnoURL) {
+            input.value = alumnoURL;
+            ejecutarBusqueda(alumnoURL, false);
+        }
+    });
