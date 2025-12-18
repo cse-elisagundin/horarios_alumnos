@@ -112,6 +112,10 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
+    // --- MEJORA: MEMORIA CACHÉ ---
+    // Aquí guardaremos los datos para no descargarlos dos veces
+    let memoriaCache = {}; 
+
     // 2. UTILIDADES DE TIEMPO
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
@@ -127,18 +131,34 @@
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
 
-    // 3. LECTURA DE HOJAS
+    // 3. LECTURA DE HOJAS (OPTIMIZADA)
     function leerHoja(url) {
+        // Si ya lo tenemos en memoria, lo devolvemos INSTANTÁNEAMENTE
+        if (memoriaCache[url]) {
+            return Promise.resolve(memoriaCache[url]);
+        }
+
+        // Si no, lo descargamos
         return new Promise(resolve => {
             if (typeof Papa === 'undefined') {
                 alert("Error crítico: La librería PapaParse no ha cargado.");
                 return resolve([]);
             }
-            Papa.parse(url, { download:true, header:false, skipEmptyLines:true, complete:res=>resolve(res.data), error:e=>resolve([]) });
+            Papa.parse(url, { 
+                download:true, 
+                header:false, 
+                skipEmptyLines:true, 
+                complete: res => {
+                    // Guardamos en caché para la próxima vez
+                    memoriaCache[url] = res.data;
+                    resolve(res.data);
+                }, 
+                error: e => resolve([]) 
+            });
         });
     }
 
-    // 4. FUNCIÓN MAESTRA
+    // 4. FUNCIÓN MAESTRA (AHORA EN PARALELO)
     async function ejecutarBusqueda(nombre, esProfesor) {
         // UI RESET
         document.getElementById('search-area').style.display = 'none';
@@ -151,10 +171,16 @@
         let encontrado = false;
         const nombreBuscado = nombre.toLowerCase();
 
-        for (const [dia, url] of Object.entries(urls)) {
-            const data = await leerHoja(url);
-            if(!data || data.length === 0) continue;
-            
+        // --- TRUCO DE VELOCIDAD: Cargar todo a la vez ---
+        const dias = Object.keys(urls);
+        const promesas = dias.map(dia => leerHoja(urls[dia])); // Lanza las 5 peticiones a la vez
+        const resultados = await Promise.all(promesas); // Espera a que lleguen todas
+
+        // Procesar datos
+        dias.forEach((dia, index) => {
+            const data = resultados[index];
+            if(!data || data.length === 0) return;
+
             let horas = [];
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
@@ -173,7 +199,7 @@
                 const bloques = agruparHoras(horas);
                 html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
             }
-        }
+        });
 
         document.getElementById('loading-spinner').style.display = 'none';
 
@@ -188,7 +214,7 @@
         }
     }
 
-    // 5. ASIGNACIÓN DE EVENTOS (INFALIBLE)
+    // 5. ASIGNACIÓN DE EVENTOS
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('alumnoInput');
         const btnBuscar = document.getElementById('btnBuscar');
@@ -239,3 +265,4 @@
 
 </body>
 </html>
+
