@@ -3,62 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda Profesor - Conexión Rápida</title>
+    <title>Agenda Profesor - Proxy</title>
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #004488; --bg: #f5f7fa; --line: #e0e0e0; }
+        :root { --primary: #003366; --bg: #f4f7f9; --light: #ffffff; }
         
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; padding: 20px; color: #333;
+        }
+
+        .container { max-width: 800px; margin: 0 auto; background: var(--light); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
         /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid var(--line); padding-bottom: 20px; }
-        h1 { margin: 0; color: var(--primary); font-size: 24px; }
-        button.print-btn { background: #445566; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        button.print-btn:hover { background: #333; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        h1 { color: var(--primary); margin: 0; font-size: 22px; }
+        .btn-print { background: #555; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
+        .btn-print:hover { background: #333; }
 
-        /* BOTONES DÍAS */
-        .nav { display: flex; gap: 10px; margin-bottom: 30px; overflow-x: auto; padding-bottom: 5px; }
-        .nav button {
-            flex: 1; padding: 10px; border: 1px solid var(--line); background: white; border-radius: 8px;
-            cursor: pointer; font-weight: 600; color: #666; transition: all 0.2s; white-space: nowrap;
+        /* BOTONERA */
+        .nav-days { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .btn-day {
+            flex: 1; padding: 10px; border: 1px solid #ddd; background: white; 
+            border-radius: 6px; cursor: pointer; font-weight: 600; color: #555; white-space: nowrap;
         }
-        .nav button.active { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,68,136,0.2); }
+        .btn-day.active { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
-        /* TIMELINE (AGENDA) */
-        .day-view { display: none; animation: fadeIn 0.3s; }
-        .day-view.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* VISTA DÍA */
+        .day-content { display: none; animation: fade 0.3s; }
+        .day-content.active { display: block; }
+        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
-        .time-row { display: flex; border-bottom: 1px solid #f0f0f0; padding: 12px 0; align-items: flex-start; }
-        .time-row:last-child { border-bottom: none; }
-        .time-row:hover { background-color: #fafbfc; }
-
-        .hour-col {
-            width: 70px; font-weight: 800; color: var(--primary); font-size: 15px;
-            padding-top: 6px; text-align: center; border-right: 3px solid #eee; margin-right: 15px;
+        /* FILA DE HORARIO */
+        .time-row { display: flex; border-bottom: 1px solid #f0f0f0; padding: 10px 0; align-items: flex-start; }
+        .time-row:hover { background: #fcfcfc; }
+        
+        .col-hora { 
+            width: 70px; font-weight: bold; color: var(--primary); font-size: 15px; 
+            padding-top: 5px; border-right: 3px solid #eee; margin-right: 15px; text-align: center;
+        }
+        
+        .col-alumnos { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; }
+        
+        .tag-alumno {
+            background: #eef4ff; color: var(--primary); padding: 5px 12px; border-radius: 20px;
+            font-size: 14px; border: 1px solid #dce8f7; display: flex; align-items: center;
         }
 
-        .students-col { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; }
-
-        .student-tag {
-            background: #eef4ff; color: #004488; padding: 6px 12px; border-radius: 6px;
-            font-size: 14px; font-weight: 500; border-left: 4px solid var(--primary);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center;
+        /* LOG DE DEBUG (Para ver errores) */
+        #debug { 
+            margin-top: 30px; padding: 10px; background: #333; color: #0f0; 
+            font-family: monospace; font-size: 11px; max-height: 150px; overflow-y: auto; border-radius: 6px;
+            display: none; /* Oculto por defecto, se activa si hay error */
         }
-
-        /* ESTADO Y ERRORES */
-        .msg { text-align: center; padding: 20px; color: #666; }
-        .error { color: #d32f2f; background: #ffebee; padding: 15px; border-radius: 8px; }
+        .error-txt { color: #ff5555; }
 
         /* IMPRESIÓN */
         @media print {
             body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; padding: 0; }
-            .nav, .print-btn { display: none; }
-            .day-view { display: block !important; margin-bottom: 30px; page-break-inside: avoid; }
-            .day-title { display: block; font-size: 20px; font-weight: bold; margin-bottom: 10px; border-bottom: 2px solid black; }
+            .container { box-shadow: none; max-width: 100%; margin: 0; padding: 0; }
+            .nav-days, .btn-print, #debug { display: none; }
+            .day-content { display: block !important; break-inside: avoid; margin-bottom: 30px; }
+            .day-title { display: block; font-size: 20px; font-weight: bold; border-bottom: 2px solid black; margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -66,26 +75,22 @@
 
 <div class="container">
     <header>
-        <div>
-            <h1>Agenda de Clases</h1>
-            <small style="color:#666">Vista Cronológica</small>
-        </div>
-        <button class="print-btn" onclick="window.print()">🖨️ Imprimir</button>
+        <h1>Agenda Diaria</h1>
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
-    <div class="nav" id="nav-buttons"></div>
-    <div id="content-area">
-        <div class="msg" id="loading-msg">Conectando con Google...</div>
+    <div id="nav" class="nav-days"></div>
+    <div id="content">
+        <p style="text-align:center; color:#666">Cargando datos...</p>
     </div>
+
+    <div id="debug">LOG DEL SISTEMA:<br></div>
 </div>
 
 <script>
-    // TUS DATOS: Solo necesitamos el ID de la hoja y el GID de cada pestaña
-    // La URL base es siempre la misma, solo cambia el ID
-    const SHEET_ID = "2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx";
-    
-    // Mapeo de Días con sus GIDs (sacados de tus enlaces anteriores)
-    const DIAS = [
+    // 1. DEFINIMOS LAS URLs (Forzamos output=csv en todas para evitar errores de formato)
+    const baseID = "2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx";
+    const diasConfig = [
         { nombre: "Lunes",     gid: "0" },
         { nombre: "Martes",    gid: "1905233272" },
         { nombre: "Miércoles", gid: "745373517" },
@@ -93,128 +98,146 @@
         { nombre: "Viernes",   gid: "1396865785" }
     ];
 
-    // Función mágica: Usa 'gviz/tq' que devuelve JSON y no da error de CORS
-    async function fetchData(gid) {
-        const url = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}`;
+    function log(msg, esError = false) {
+        const d = document.getElementById('debug');
+        if(esError) {
+            d.style.display = 'block'; // Mostrar consola si hay error
+            d.innerHTML += `<span class="error-txt">[ERROR] ${msg}</span><br>`;
+        } else {
+            d.innerHTML += `<span>[INFO] ${msg}</span><br>`;
+        }
+    }
+
+    // 2. FUNCIÓN DE CARGA BLINDADA (Usa Proxy AllOrigins)
+    async function cargarDia(diaObj) {
+        // Construimos la URL oficial de Google CSV
+        const googleUrl = `https://docs.google.com/spreadsheets/d/e/${baseID}/pub?gid=${diaObj.gid}&single=true&output=csv`;
         
+        // Pasamos esa URL por el Proxy para evitar bloqueo CORS
+        // Añadimos timestamp para evitar caché vieja
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(googleUrl)}&t=${Date.now()}`;
+
         try {
-            const res = await fetch(url);
-            const text = await res.text();
-            // Google devuelve algo como: /*O_o*/ google.visualization.Query.setResponse({...})
-            // Limpiamos el texto para sacar solo el JSON
-            const jsonText = text.substring(47, text.length - 2);
-            const json = JSON.parse(jsonText);
-            return json.table;
-        } catch (e) {
-            console.error("Error cargando GID " + gid, e);
+            log(`Solicitando ${diaObj.nombre}...`);
+            const response = await fetch(proxyUrl);
+            
+            if (!response.ok) throw new Error("Error de red: " + response.status);
+            
+            const textoCSV = await response.text();
+            
+            // Verificamos si Google nos devolvió un HTML de error en vez de CSV
+            if(textoCSV.trim().startsWith("<!DOCTYPE")) {
+                throw new Error("Google devolvió una página de error (posiblemente ID incorrecto)");
+            }
+
+            // Parseamos
+            const resultado = Papa.parse(textoCSV, { header: false, skipEmptyLines: true });
+            
+            if (resultado.errors.length > 0) {
+                log(`Error parseando ${diaObj.nombre}: ${JSON.stringify(resultado.errors)}`, true);
+                return null;
+            }
+
+            log(`${diaObj.nombre} cargado: ${resultado.data.length} filas.`);
+            return { nombre: diaObj.nombre, data: resultado.data };
+
+        } catch (error) {
+            log(`Fallo al cargar ${diaObj.nombre}: ${error.message}`, true);
             return null;
         }
     }
 
-    async function init() {
-        const nav = document.getElementById('nav-buttons');
-        const content = document.getElementById('content-area');
+    async function iniciar() {
+        const nav = document.getElementById('nav');
+        const content = document.getElementById('content');
         
-        // 1. Generar Botones
-        DIAS.forEach(d => {
-            const btn = document.createElement('button');
-            btn.innerText = d.nombre;
-            btn.onclick = () => switchTab(d.nombre);
-            btn.id = `btn-${d.nombre}`;
-            nav.appendChild(btn);
+        // Generar botones
+        let botonesHTML = "";
+        diasConfig.forEach(d => {
+            botonesHTML += `<button class="btn-day" id="btn-${d.nombre}" onclick="verDia('${d.nombre}')">${d.nombre}</button>`;
         });
+        nav.innerHTML = botonesHTML;
 
-        // 2. Cargar datos en paralelo
-        const promises = DIAS.map(d => fetchData(d.gid));
-        const results = await Promise.all(promises);
-        
-        document.getElementById('loading-msg').style.display = 'none';
+        // Cargar datos
+        const promesas = diasConfig.map(d => cargarDia(d));
+        const resultados = await Promise.all(promesas);
 
-        // 3. Renderizar cada día
-        results.forEach((table, index) => {
-            const diaNombre = DIAS[index].nombre;
-            
-            if (!table || !table.rows) {
-                const err = document.createElement('div');
-                err.className = `day-view`;
-                err.id = `view-${diaNombre}`;
-                err.innerHTML = `<div class="error">No se pudieron cargar datos para el ${diaNombre}</div>`;
-                content.appendChild(err);
-                return;
+        content.innerHTML = ""; // Limpiar mensaje de carga
+
+        resultados.forEach(res => {
+            if(!res) {
+                // Si falló la carga de este día
+                return; 
             }
 
-            const wrapper = document.createElement('div');
-            wrapper.className = 'day-view';
-            wrapper.id = `view-${diaNombre}`;
-            
-            // Título para imprimir
-            wrapper.innerHTML = `<div class="day-title" style="display:none">${diaNombre}</div>`;
-
-            let rowsHTML = "";
+            const nombre = res.nombre;
+            const filas = res.data;
             let hayClases = false;
+            let htmlFilas = "";
 
-            // Procesar filas de Google Viz
-            // Google Viz rows: C array. C[0] es col A, C[1] es col B (Hora), C[2...] alumnos
-            table.rows.forEach(row => {
-                const cols = row.c;
-                if (!cols || !cols[1]) return; // Si no hay hora, saltar
+            // Saltamos la fila 0 (cabeceras)
+            for(let i=1; i<filas.length; i++) {
+                const fila = filas[i];
+                // Asumimos Col 1 = Hora, Col 2+ = Alumnos
+                let hora = fila[1] ? fila[1].trim() : "";
+                
+                // Limpiar hora (16:00:00 -> 16:00)
+                if(hora.length > 5) hora = hora.substring(0, 5);
 
-                // Formatear hora (a veces viene como objeto, a veces string)
-                let hora = cols[1].v; 
-                if(!hora) return;
-                // Si es string "16:00:00", cortar. Si es objeto fecha, formatear.
-                if(typeof hora === 'string') hora = hora.substring(0, 5);
-
-                // Buscar alumnos (desde columna 2 en adelante)
                 let alumnos = [];
-                for (let i = 2; i < cols.length; i++) {
-                    if (cols[i] && cols[i].v) {
-                        alumnos.push(cols[i].v);
-                    }
+                for(let c=2; c<fila.length; c++) {
+                    if(fila[c] && fila[c].trim()) alumnos.push(fila[c].trim());
                 }
 
-                if (alumnos.length > 0) {
+                if(hora && alumnos.length > 0) {
                     hayClases = true;
-                    rowsHTML += `
+                    htmlFilas += `
                         <div class="time-row">
-                            <div class="hour-col">${hora}</div>
-                            <div class="students-col">
-                                ${alumnos.map(al => `<div class="student-tag">👤 ${al}</div>`).join('')}
+                            <div class="col-hora">${hora}</div>
+                            <div class="col-alumnos">
+                                ${alumnos.map(al => `<span class="tag-alumno">👤 ${al}</span>`).join('')}
                             </div>
                         </div>
                     `;
                 }
-            });
+            }
 
-            if (!hayClases) rowsHTML = `<div class="msg">No hay clases programadas.</div>`;
-            
-            wrapper.innerHTML += rowsHTML;
-            content.appendChild(wrapper);
+            if(!hayClases) {
+                htmlFilas = "<p style='padding:20px; color:#999; text-align:center'>No hay clases programadas.</p>";
+            }
+
+            // Crear contenedor del día
+            const divDia = document.createElement('div');
+            divDia.id = `view-${nombre}`;
+            divDia.className = "day-content";
+            divDia.innerHTML = `<div class="day-title" style="display:none">${nombre}</div>` + htmlFilas;
+            content.appendChild(divDia);
         });
 
-        // 4. Seleccionar día actual
-        const hoyIndex = new Date().getDay(); // 0 Dom, 1 Lun...
-        // Mapear js day (0-6) a nuestros dias. Si es finde -> Lunes
+        // Activar día actual o Lunes por defecto
         const map = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoyNombre = map[hoyIndex];
-        const existe = DIAS.find(d => d.nombre === hoyNombre);
-        switchTab(existe ? hoyNombre : "Lunes");
+        let hoy = map[new Date().getDay()];
+        let diaInicial = diasConfig.find(d => d.nombre === hoy) ? hoy : "Lunes";
+        
+        verDia(diaInicial);
     }
 
-    function switchTab(dia) {
+    // Función global para cambiar pestaña
+    window.verDia = function(diaNombre) {
         // Botones
-        document.querySelectorAll('.nav button').forEach(b => {
+        document.querySelectorAll('.btn-day').forEach(b => {
             b.classList.remove('active');
-            if(b.id === `btn-${dia}`) b.classList.add('active');
+            if(b.id === `btn-${diaNombre}`) b.classList.add('active');
         });
         // Vistas
-        document.querySelectorAll('.day-view').forEach(v => {
+        document.querySelectorAll('.day-content').forEach(v => {
             v.classList.remove('active');
-            if(v.id === `view-${dia}`) v.classList.add('active');
+            if(v.id === `view-${diaNombre}`) v.classList.add('active');
         });
     }
 
-    init();
+    // Arrancar
+    document.addEventListener('DOMContentLoaded', iniciar);
 </script>
 
 </body>
