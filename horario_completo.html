@@ -3,71 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda Profesor - Proxy</title>
+    <title>Planning General - Carriles Estables</title>
+    
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #003366; --bg: #f4f7f9; --light: #ffffff; }
+        :root { --primary: #003366; --bg: #f2f4f7; --border: #dde2e5; --time-bg: #e9ecef; }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             background-color: var(--bg); 
             margin: 0; padding: 20px; color: #333;
         }
 
-        .container { max-width: 800px; margin: 0 auto; background: var(--light); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .container { max-width: 1400px; margin: 0 auto; }
 
         /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
-        h1 { color: var(--primary); margin: 0; font-size: 22px; }
-        .btn-print { background: #555; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; }
-        .btn-print:hover { background: #333; }
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 15px 25px; border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
+        }
+        h1 { color: var(--primary); margin: 0; font-size: 24px; }
+        
+        button.btn-print {
+            background-color: var(--primary); color: white; border: none;
+            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
+        }
+        button.btn-print:hover { opacity: 0.9; }
+
+        /* BARRA DE PROGRESO */
+        #loading-bar-container { width: 100%; background: #e0e0e0; height: 6px; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        #loading-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        #status-text { text-align: center; font-size: 13px; color: #666; margin-bottom: 10px; font-weight: bold; }
 
         /* BOTONERA */
-        .nav-days { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
-        .btn-day {
-            flex: 1; padding: 10px; border: 1px solid #ddd; background: white; 
-            border-radius: 6px; cursor: pointer; font-weight: 600; color: #555; white-space: nowrap;
+        .days-nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .nav-btn {
+            padding: 10px 20px; border: 1px solid transparent; background: white;
+            color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
+            transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 100px;
         }
-        .btn-day.active { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .nav-btn:hover { background: #e2e6ea; }
+        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0,51,102,0.3); }
 
-        /* VISTA DÍA */
-        .day-content { display: none; animation: fade 0.3s; }
-        .day-content.active { display: block; }
-        @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
-
-        /* FILA DE HORARIO */
-        .time-row { display: flex; border-bottom: 1px solid #f0f0f0; padding: 10px 0; align-items: flex-start; }
-        .time-row:hover { background: #fcfcfc; }
-        
-        .col-hora { 
-            width: 70px; font-weight: bold; color: var(--primary); font-size: 15px; 
-            padding-top: 5px; border-right: 3px solid #eee; margin-right: 15px; text-align: center;
+        /* PLANNING CONTAINER */
+        .planning-container {
+            display: none; background: white; border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
+            animation: fadeIn 0.3s ease; margin-bottom: 30px;
         }
-        
-        .col-alumnos { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; }
-        
-        .tag-alumno {
-            background: #eef4ff; color: var(--primary); padding: 5px 12px; border-radius: 20px;
-            font-size: 14px; border: 1px solid #dce8f7; display: flex; align-items: center;
+        .planning-container.visible { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* TABLA DE CARRILES */
+        .timetable {
+            display: grid;
+            /* Hora (70px) + 6 Columnas Flexibles */
+            grid-template-columns: 70px repeat(6, 1fr); 
+            width: 100%;
+            border-right: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
         }
 
-        /* LOG DE DEBUG (Para ver errores) */
-        #debug { 
-            margin-top: 30px; padding: 10px; background: #333; color: #0f0; 
-            font-family: monospace; font-size: 11px; max-height: 150px; overflow-y: auto; border-radius: 6px;
-            display: none; /* Oculto por defecto, se activa si hay error */
+        .header-cell {
+            background: var(--primary); color: white; padding: 10px 2px;
+            font-weight: bold; text-align: center; font-size: 13px;
+            border-right: 1px solid rgba(255,255,255,0.2); text-transform: uppercase;
         }
-        .error-txt { color: #ff5555; }
 
-        /* IMPRESIÓN */
+        .time-cell {
+            background: var(--time-bg); color: var(--primary);
+            font-weight: bold; display: flex; align-items: center; justify-content: center;
+            border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
+            font-size: 12px; min-height: 42px; 
+        }
+
+        .slot-cell {
+            border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;
+            background: white; padding: 3px; position: relative;
+        }
+
+        .student-block {
+            height: 100%; width: 100%;
+            border-radius: 4px; padding: 0 6px;
+            display: flex; align-items: center; justify-content: flex-start;
+            font-size: 12px; font-weight: 600; color: #333;
+            box-sizing: border-box; border-left: 5px solid rgba(0,0,0,0.2);
+            overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+            cursor: default;
+        }
+        .student-block:hover { opacity: 0.8; }
+
+        .break-row {
+            grid-column: 1 / -1; background: #eef4fa; color: #8898aa;
+            text-align: center; padding: 5px; font-size: 11px; letter-spacing: 1px; font-weight: bold;
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+        }
+
+        /* LOG DE ERRORES */
+        #error-log { color: red; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
+
         @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; max-width: 100%; margin: 0; padding: 0; }
-            .nav-days, .btn-print, #debug { display: none; }
-            .day-content { display: block !important; break-inside: avoid; margin-bottom: 30px; }
-            .day-title { display: block; font-size: 20px; font-weight: bold; border-bottom: 2px solid black; margin-bottom: 10px; }
+            body { background: white; padding: 0; font-size: 9pt; }
+            header, .days-nav, button.btn-print, #loading-bar-container, #status-text { display: none; }
+            .container { max-width: 100%; margin: 0; }
+            .planning-container { display: block !important; break-inside: avoid; margin-bottom: 20px; page-break-after: always; box-shadow: none; border: none; }
+            .timetable { border: 1px solid #000; }
+            .time-cell, .slot-cell { border-color: #999; }
+            .header-cell { background: #ddd !important; color: black !important; -webkit-print-color-adjust: exact; }
+            .student-block { border: 1px solid #666 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -75,169 +122,236 @@
 
 <div class="container">
     <header>
-        <h1>Agenda Diaria</h1>
+        <div>
+            <h1>Planning Semanal</h1>
+            <div style="color:#666; font-size:14px">Vista de Carriles</div>
+        </div>
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
-    <div id="nav" class="nav-days"></div>
-    <div id="content">
-        <p style="text-align:center; color:#666">Cargando datos...</p>
-    </div>
+    <div id="status-text">Iniciando sistema...</div>
+    <div id="loading-bar-container"><div id="loading-bar"></div></div>
+    <div id="error-log"></div>
 
-    <div id="debug">LOG DEL SISTEMA:<br></div>
+    <div id="days-buttons" class="days-nav"></div>
+    <div id="schedule-container"></div>
 </div>
 
 <script>
-    // 1. DEFINIMOS LAS URLs (Forzamos output=csv en todas para evitar errores de formato)
-    const baseID = "2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx";
-    const diasConfig = [
-        { nombre: "Lunes",     gid: "0" },
-        { nombre: "Martes",    gid: "1905233272" },
+    // Configuración de Hojas
+    const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?single=true&output=csv";
+    const DIAS = [
+        { nombre: "Lunes", gid: "0" },
+        { nombre: "Martes", gid: "1905233272" },
         { nombre: "Miércoles", gid: "745373517" },
-        { nombre: "Jueves",    gid: "314818236" },
-        { nombre: "Viernes",   gid: "1396865785" }
+        { nombre: "Jueves", gid: "314818236" },
+        { nombre: "Viernes", gid: "1396865785" }
     ];
 
-    function log(msg, esError = false) {
-        const d = document.getElementById('debug');
-        if(esError) {
-            d.style.display = 'block'; // Mostrar consola si hay error
-            d.innerHTML += `<span class="error-txt">[ERROR] ${msg}</span><br>`;
-        } else {
-            d.innerHTML += `<span>[INFO] ${msg}</span><br>`;
+    // Utilidades de color
+    function stringToColor(str) {
+        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return `hsl(${Math.abs(hash) % 360}, 75%, 92%)`; 
+    }
+    function stringToBorder(str) {
+        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return `hsl(${Math.abs(hash) % 360}, 60%, 40%)`;
+    }
+    function cleanTime(t) {
+        if(!t) return "";
+        return t.trim().split(":").slice(0,2).join(":");
+    }
+
+    // --- CARGA CON REINTENTOS Y PROXY ---
+    async function fetchWithRetry(url, retries = 3, delay = 1000) {
+        // Usamos proxy para evitar CORS
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url + "&t=" + Date.now())}`;
+        
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.text();
+            } catch (err) {
+                if (i === retries - 1) throw err; // Si es el último intento, lanzamos error
+                await new Promise(res => setTimeout(res, delay)); // Esperamos antes de reintentar
+            }
         }
     }
 
-    // 2. FUNCIÓN DE CARGA BLINDADA (Usa Proxy AllOrigins)
-    async function cargarDia(diaObj) {
-        // Construimos la URL oficial de Google CSV
-        const googleUrl = `https://docs.google.com/spreadsheets/d/e/${baseID}/pub?gid=${diaObj.gid}&single=true&output=csv`;
-        
-        // Pasamos esa URL por el Proxy para evitar bloqueo CORS
-        // Añadimos timestamp para evitar caché vieja
-        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(googleUrl)}&t=${Date.now()}`;
-
-        try {
-            log(`Solicitando ${diaObj.nombre}...`);
-            const response = await fetch(proxyUrl);
-            
-            if (!response.ok) throw new Error("Error de red: " + response.status);
-            
-            const textoCSV = await response.text();
-            
-            // Verificamos si Google nos devolvió un HTML de error en vez de CSV
-            if(textoCSV.trim().startsWith("<!DOCTYPE")) {
-                throw new Error("Google devolvió una página de error (posiblemente ID incorrecto)");
-            }
-
-            // Parseamos
-            const resultado = Papa.parse(textoCSV, { header: false, skipEmptyLines: true });
-            
-            if (resultado.errors.length > 0) {
-                log(`Error parseando ${diaObj.nombre}: ${JSON.stringify(resultado.errors)}`, true);
-                return null;
-            }
-
-            log(`${diaObj.nombre} cargado: ${resultado.data.length} filas.`);
-            return { nombre: diaObj.nombre, data: resultado.data };
-
-        } catch (error) {
-            log(`Fallo al cargar ${diaObj.nombre}: ${error.message}`, true);
-            return null;
+    // Generar franjas horarias
+    function generarFranjas() {
+        let f = [];
+        f.push("11:00", "11:30", "12:00", "BREAK");
+        let h = 15, m = 0;
+        while(true) {
+            let time = `${h}:${m===0?'00':'30'}`;
+            f.push(time);
+            if(h===20 && m===30) break;
+            m+=30; if(m===60) { m=0; h++; }
         }
+        return f;
     }
 
-    async function iniciar() {
-        const nav = document.getElementById('nav');
-        const content = document.getElementById('content');
+    async function cargarTodo() {
+        const status = document.getElementById('status-text');
+        const bar = document.getElementById('loading-bar');
+        const container = document.getElementById('schedule-container');
+        const btnContainer = document.getElementById('days-buttons');
+        const errorLog = document.getElementById('error-log');
         
-        // Generar botones
-        let botonesHTML = "";
-        diasConfig.forEach(d => {
-            botonesHTML += `<button class="btn-day" id="btn-${d.nombre}" onclick="verDia('${d.nombre}')">${d.nombre}</button>`;
-        });
-        nav.innerHTML = botonesHTML;
+        const franjasMaestras = generarFranjas();
+        let datosCargados = {};
+        
+        // 1. CARGA SECUENCIAL (UNO A UNO)
+        for (let i = 0; i < DIAS.length; i++) {
+            const dia = DIAS[i];
+            const progreso = ((i) / DIAS.length) * 100;
+            
+            status.innerText = `Cargando ${dia.nombre}... (${i+1}/${DIAS.length})`;
+            bar.style.width = `${progreso}%`;
 
-        // Cargar datos
-        const promesas = diasConfig.map(d => cargarDia(d));
-        const resultados = await Promise.all(promesas);
-
-        content.innerHTML = ""; // Limpiar mensaje de carga
-
-        resultados.forEach(res => {
-            if(!res) {
-                // Si falló la carga de este día
-                return; 
-            }
-
-            const nombre = res.nombre;
-            const filas = res.data;
-            let hayClases = false;
-            let htmlFilas = "";
-
-            // Saltamos la fila 0 (cabeceras)
-            for(let i=1; i<filas.length; i++) {
-                const fila = filas[i];
-                // Asumimos Col 1 = Hora, Col 2+ = Alumnos
-                let hora = fila[1] ? fila[1].trim() : "";
+            try {
+                const url = `${SHEET_BASE}&gid=${dia.gid}`;
+                const csvText = await fetchWithRetry(url);
                 
-                // Limpiar hora (16:00:00 -> 16:00)
-                if(hora.length > 5) hora = hora.substring(0, 5);
+                // Parsear CSV
+                const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true });
+                datosCargados[dia.nombre] = parsed.data;
 
+            } catch (e) {
+                console.error(`Error en ${dia.nombre}:`, e);
+                errorLog.style.display = "block";
+                errorLog.innerHTML += `Falló carga de ${dia.nombre} (Reintentos agotados)<br>`;
+                datosCargados[dia.nombre] = []; // Array vacío para no romper la web
+            }
+            
+            // Pequeña pausa para no saturar
+            await new Promise(r => setTimeout(r, 300));
+        }
+
+        // Finalizar carga
+        bar.style.width = "100%";
+        status.innerText = "Procesando visualización...";
+        setTimeout(() => { document.getElementById('loading-bar-container').style.display='none'; status.style.display='none'; }, 1000);
+
+        // 2. GENERAR BOTONES
+        let btns = DIAS.map(d => `<button class="nav-btn" onclick="cambiarDia('${d.nombre}')">${d.nombre}</button>`).join('');
+        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
+        btnContainer.innerHTML = btns;
+
+        // 3. RENDERIZAR VISTAS
+        DIAS.forEach(dia => {
+            const data = datosCargados[dia.nombre];
+            if(!data || data.length < 2) {
+                 // Si falló, mostramos mensaje en la pestaña
+                 container.innerHTML += `<div id="view-${dia.nombre}" class="planning-container" style="padding:20px;text-align:center;color:red">No se pudo cargar información para este día.</div>`;
+                 return;
+            }
+
+            // Mapeo: Hora -> [Alumnos]
+            let mapa = {};
+            for(let row of data) {
+                if(!row[1]) continue; // Col B es hora
+                let hora = cleanTime(row[1]);
                 let alumnos = [];
-                for(let c=2; c<fila.length; c++) {
-                    if(fila[c] && fila[c].trim()) alumnos.push(fila[c].trim());
+                for(let c=2; c<row.length; c++) {
+                    if(row[c] && row[c].trim()) alumnos.push(row[c].trim());
+                }
+                if(alumnos.length>0) mapa[hora] = alumnos;
+            }
+
+            let html = `
+            <div id="view-${dia.nombre}" class="planning-container">
+                <div style="padding:15px; border-bottom:1px solid #eee;">
+                    <h2 style="margin:0; font-size:18px; color:#003366;">📅 ${dia.nombre}</h2>
+                </div>
+                <div class="timetable">
+                    <div class="header-cell">Hora</div>
+                    <div class="header-cell">Carril 1</div>
+                    <div class="header-cell">Carril 2</div>
+                    <div class="header-cell">Carril 3</div>
+                    <div class="header-cell">Carril 4</div>
+                    <div class="header-cell">Carril 5</div>
+                    <div class="header-cell">Carril 6</div>
+            `;
+
+            // Algoritmo de Carriles
+            let lastLaneMap = {}; 
+
+            franjasMaestras.forEach(hora => {
+                if(hora === "BREAK") {
+                    html += `<div class="break-row">--- MEDIODÍA ---</div>`;
+                    return;
                 }
 
-                if(hora && alumnos.length > 0) {
-                    hayClases = true;
-                    htmlFilas += `
-                        <div class="time-row">
-                            <div class="col-hora">${hora}</div>
-                            <div class="col-alumnos">
-                                ${alumnos.map(al => `<span class="tag-alumno">👤 ${al}</span>`).join('')}
+                let alumnos = mapa[hora] || [];
+                let slots = [null, null, null, null, null, null]; // 6 Huecos
+
+                let porColocar = [];
+
+                // 1. Mantener posición anterior si es posible
+                alumnos.forEach(al => {
+                    let prev = lastLaneMap[al];
+                    if(prev !== undefined && slots[prev] === null) {
+                        slots[prev] = al;
+                    } else {
+                        porColocar.push(al);
+                    }
+                });
+
+                // 2. Rellenar huecos libres
+                porColocar.forEach(al => {
+                    let idx = slots.indexOf(null);
+                    if(idx !== -1) {
+                        slots[idx] = al;
+                        lastLaneMap[al] = idx;
+                    }
+                });
+
+                // 3. Generar HTML Fila
+                html += `<div class="time-cell">${hora}</div>`;
+                slots.forEach(al => {
+                    if(al) {
+                        let bg = stringToColor(al);
+                        let brd = stringToBorder(al);
+                        html += `
+                        <div class="slot-cell">
+                            <div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">
+                                ${al}
                             </div>
-                        </div>
-                    `;
-                }
-            }
+                        </div>`;
+                    } else {
+                        html += `<div class="slot-cell"></div>`;
+                    }
+                });
+            });
 
-            if(!hayClases) {
-                htmlFilas = "<p style='padding:20px; color:#999; text-align:center'>No hay clases programadas.</p>";
-            }
-
-            // Crear contenedor del día
-            const divDia = document.createElement('div');
-            divDia.id = `view-${nombre}`;
-            divDia.className = "day-content";
-            divDia.innerHTML = `<div class="day-title" style="display:none">${nombre}</div>` + htmlFilas;
-            content.appendChild(divDia);
+            html += `</div></div>`;
+            container.innerHTML += html;
         });
 
-        // Activar día actual o Lunes por defecto
-        const map = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = map[new Date().getDay()];
-        let diaInicial = diasConfig.find(d => d.nombre === hoy) ? hoy : "Lunes";
-        
-        verDia(diaInicial);
+        // Activar día actual
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
+        cambiarDia(DIAS.find(d=>d.nombre===hoy) ? hoy : "Lunes");
     }
 
-    // Función global para cambiar pestaña
-    window.verDia = function(diaNombre) {
-        // Botones
-        document.querySelectorAll('.btn-day').forEach(b => {
-            b.classList.remove('active');
-            if(b.id === `btn-${diaNombre}`) b.classList.add('active');
+    function cambiarDia(dia) {
+        document.querySelectorAll('.nav-btn').forEach(b => {
+            let match = (b.innerText === dia) || (dia === 'Todo' && b.innerText === 'Ver Todo');
+            if(match) b.classList.add('active'); else b.classList.remove('active');
         });
-        // Vistas
-        document.querySelectorAll('.day-content').forEach(v => {
-            v.classList.remove('active');
-            if(v.id === `view-${diaNombre}`) v.classList.add('active');
+        document.querySelectorAll('.planning-container').forEach(div => {
+            if(dia === 'Todo') div.classList.add('visible');
+            else {
+                if(div.id === `view-${dia}`) div.classList.add('visible');
+                else div.classList.remove('visible');
+            }
         });
     }
 
-    // Arrancar
-    document.addEventListener('DOMContentLoaded', iniciar);
+    document.addEventListener('DOMContentLoaded', cargarTodo);
 </script>
 
 </body>
