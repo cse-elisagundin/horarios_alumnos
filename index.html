@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; --error: #dc3545; }
+        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; }
         
         body { 
             font-family: 'Segoe UI', Tahoma, sans-serif; 
@@ -33,21 +33,22 @@
             text-align: center;
         }
 
-        /* LOGO CORREGIDO: Bloque sólido para evitar duplicados */
-        .logo-img { 
-            max-width: 180px; 
-            display: block; 
-            margin: 0 auto 20px auto; 
-        }
-
+        .logo-img { max-width: 180px; margin-bottom: 20px; }
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
         /* INPUTS Y BOTONES */
         input { 
             width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
-            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
+            font-size: 16px; margin-bottom: 10px; box-sizing: border-box; text-align: center;
         }
         input:focus { border-color: var(--primary); outline: none; }
+
+        /* Estilo específico para que el campo contraseña sea más discreto */
+        #passwordInput {
+            margin-bottom: 20px;
+            font-size: 14px;
+            background-color: #fafafa;
+        }
 
         .btn-main { 
             width: 100%; padding: 14px; background: var(--primary); color: white; 
@@ -92,8 +93,11 @@
     
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
-        <input type="text" id="alumnoInput" placeholder="Introduce nombre o clave..." autocomplete="off">
-        <button id="btnBuscar" class="btn-main">ENTRAR / BUSCAR</button>
+        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
+        
+        <input type="password" id="passwordInput" placeholder="Clave de acceso (Opcional)" autocomplete="off">
+
+        <button id="btnBuscar" class="btn-main">VER HORARIO</button>
     </div>
 
     <div id="loading-spinner" class="spinner"></div>
@@ -109,14 +113,12 @@
 </div>
 
 <script>
-    // --- CONFIGURACIÓN ---
-    const PASSWORD_SECRET = "1234"; // TU CONTRASEÑA
-    const INDICE_COLUMNA_HORA = 1;  // 1 = Columna B
-    
-    // Variable que controla si el usuario tiene permiso (empieza en FALSE)
-    let modoProfesorActivo = false; 
-    let memoriaCache = {}; 
+    // ==========================================
+    // CONFIGURACIÓN DE SEGURIDAD
+    // ==========================================
+    const CLAVE_PROFESOR = "1234"; // <--- CAMBIA ESTO POR TU CONTRASEÑA
 
+    // 1. CONFIGURACIÓN DE DATOS
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -125,38 +127,9 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    // --- LÓGICA DE BOTÓN ---
-    function manejarClick() {
-        const input = document.getElementById('alumnoInput');
-        const valor = input.value.trim();
-        const errBox = document.getElementById('error-msg');
+    let memoriaCache = {}; 
 
-        if (!valor) return alert("Por favor, escribe algo.");
-
-        // 1. COMPROBAR SI ES LA CONTRASEÑA
-        if (valor === PASSWORD_SECRET) {
-            modoProfesorActivo = true;
-            alert("✅ MODO PROFESOR ACTIVADO\nAhora puedes buscar alumnos.");
-            input.value = ""; // Limpiamos la caja
-            input.placeholder = "Escribe el nombre del alumno...";
-            errBox.style.display = 'none';
-            return;
-        }
-
-        // 2. SI NO ES CONTRASEÑA, ¿TENEMOS PERMISO?
-        if (modoProfesorActivo) {
-            // Sí -> Buscamos
-            ejecutarBusqueda(valor, true);
-        } else {
-            // No -> Error
-            errBox.innerHTML = "🔒 <b>ACCESO DENEGADO</b><br>Debes introducir la contraseña de profesor primero.";
-            errBox.style.display = 'block';
-            // Limpiamos resultados anteriores si los hubiera
-            document.getElementById('resultado').innerHTML = ""; 
-        }
-    }
-
-    // --- FUNCIONES DE CARGA Y BÚSQUEDA (MOTOR) ---
+    // 2. UTILIDADES
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     
@@ -171,21 +144,30 @@
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
 
+    // 3. LECTURA DE HOJAS
     function leerHoja(url) {
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
-            if (typeof Papa === 'undefined') { alert("Error: Librería no cargada."); return resolve([]); }
+            if (typeof Papa === 'undefined') {
+                alert("Error crítico: La librería PapaParse no ha cargado.");
+                return resolve([]);
+            }
             const urlFresca = url + "&t=" + Date.now();
             Papa.parse(urlFresca, { 
                 download:true, header:false, skipEmptyLines:true, 
-                complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
+                complete: res => {
+                    memoriaCache[url] = res.data;
+                    resolve(res.data);
+                }, 
                 error: e => resolve([]) 
             });
         });
     }
 
+    // 4. FUNCIÓN MAESTRA
     async function ejecutarBusqueda(nombre, esProfesor) {
-        document.getElementById('search-area').style.display = 'none'; // Ocultamos buscador mientras carga
+        // UI RESET
+        document.getElementById('search-area').style.display = 'none';
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
@@ -193,8 +175,8 @@
 
         let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
         let encontrado = false;
+        
         const nombreBuscado = nombre.toLowerCase().trim();
-
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
@@ -202,6 +184,7 @@
         dias.forEach((dia, index) => {
             const data = resultados[index];
             if(!data || data.length === 0) return;
+
             let horas = [];
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
@@ -210,10 +193,11 @@
                     if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
                 }
                 if(esta) {
-                    let h = row[INDICE_COLUMNA_HORA] ? row[INDICE_COLUMNA_HORA].toString().trim().substring(0,5) : "";
+                    let h = row[1] ? row[1].toString().trim().substring(0,5) : "";
                     if(h.includes(":")) horas.push(h);
                 }
             }
+
             if(horas.length > 0) {
                 encontrado = true;
                 const bloques = agruparHoras(horas);
@@ -225,31 +209,78 @@
 
         if(encontrado) {
             document.getElementById('resultado').innerHTML = html;
-            // Si es profesor (o se desbloqueó), mostramos botones
-            if(esProfesor || modoProfesorActivo) {
-                 document.getElementById('actions-panel').style.display = 'block';
+            // AQUI ESTA LA MAGIA: Solo mostramos acciones si esProfesor es true
+            if(esProfesor) {
+                document.getElementById('actions-panel').style.display = 'block';
             }
         } else {
             const err = document.getElementById('error-msg');
-            err.innerHTML = "❌ No se encontraron clases.<br><small>Revisa el nombre.</small>";
+            err.innerText = "❌ No se encontraron clases. Revisa el nombre.";
             err.style.display = 'block';
             document.getElementById('search-area').style.display = 'block';
         }
     }
 
-    // --- INICIALIZACIÓN DE EVENTOS ---
+    // 5. EVENTOS
     document.addEventListener('DOMContentLoaded', () => {
-        const input = document.getElementById('alumnoInput');
+        const inputNombre = document.getElementById('alumnoInput');
+        const inputPass = document.getElementById('passwordInput'); // NUEVO
         const btnBuscar = document.getElementById('btnBuscar');
         const btnCopiar = document.getElementById('btnCopiar');
         const btnReset = document.getElementById('btnReset');
 
-        // ASIGNAR EVENTO AL BOTÓN PRINCIPAL
-        btnBuscar.addEventListener('click', manejarClick);
-        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') manejarClick(); });
+        const buscarClick = () => {
+            const val = inputNombre.value.trim();
+            const pass = inputPass.value.trim();
+            
+            // VERIFICAMOS LA CONTRASEÑA AQUÍ
+            const esAdmin = (pass === CLAVE_PROFESOR);
 
-        // BOTÓN COPIAR
+            if(val) {
+                ejecutarBusqueda(val, esAdmin);
+            } else {
+                alert("Escribe un nombre primero.");
+            }
+        };
+
+        btnBuscar.addEventListener('click', buscarClick);
+
+        // Permitir Enter en ambos campos
+        inputNombre.addEventListener('keypress', (e) => { if (e.key === 'Enter') buscarClick(); });
+        inputPass.addEventListener('keypress', (e) => { if (e.key === 'Enter') buscarClick(); });
+
         btnCopiar.addEventListener('click', () => {
-            // Guardamos el nombre que buscamos antes, no lo que haya en el input ahora mismo
-            const nombreActual = document.querySelector('#resultado h3').innerText.replace('Horario: ', '');
-            const url = window.location.href.split('?')
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(inputNombre.value.trim());
+            navigator.clipboard.writeText(url)
+                .then(() => { 
+                    const original = btnCopiar.innerText;
+                    btnCopiar.innerText = "✅ ENLACE COPIADO";
+                    setTimeout(() => btnCopiar.innerText = original, 2000);
+                })
+                .catch(() => prompt("Copia este enlace:", url));
+        });
+
+        btnReset.addEventListener('click', () => {
+            window.history.pushState({}, document.title, window.location.pathname);
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('actions-panel').style.display = 'none';
+            document.getElementById('search-area').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'none';
+            
+            inputNombre.value = ""; 
+            inputPass.value = ""; // Limpiamos la contraseña también
+            inputNombre.focus();
+        });
+
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        if (alumnoURL) {
+            inputNombre.value = alumnoURL;
+            // Si viene por URL, asumimos que NO es profesor (seguridad básica)
+            ejecutarBusqueda(alumnoURL, false);
+        }
+    });
+</script>
+
+</body>
+</html>
