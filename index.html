@@ -33,7 +33,9 @@
             text-align: center;
         }
 
-        .logo-img { max-width: 180px; margin-bottom: 20px; }
+        /* CORRECCIÓN LOGO: Para que no se duplique ni se mueva */
+        .logo-img { max-width: 180px; display: block; margin: 0 auto 20px auto; }
+        
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
         /* INPUTS Y BOTONES */
@@ -77,9 +79,6 @@
         .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
         
         #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
-
-        /* ESTILO MÍNIMO PARA EL ÁREA DE CONTRASEÑA (Para que no se vea al cargar) */
-        #password-area { display: none; }
     </style>
 </head>
 <body>
@@ -87,13 +86,6 @@
 <div class="container">
     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
     
-    <div id="password-area">
-        <h2>Acceso Privado</h2>
-        <input type="password" id="passInput" placeholder="Introduce la clave...">
-        <button id="btnUnlock" class="btn-main">ENTRAR</button>
-        <p id="pass-error" style="color:red; display:none; margin-top:10px; font-size:14px;">Clave incorrecta</p>
-    </div>
-
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
         <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
@@ -113,8 +105,9 @@
 </div>
 
 <script>
-    // --- CLAVE DEL PROFESOR ---
-    const PASSWORD_PROFE = "1234"; 
+    // --- SEGURIDAD INVISIBLE ---
+    const PASSWORD_SECRET = "1234"; // Tu contraseña
+    let accesoDesbloqueado = false; // Por defecto está bloqueado
 
     // 1. CONFIGURACIÓN
     const urls = {
@@ -124,8 +117,9 @@
         "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
-
+    
     let memoriaCache = {}; 
+    const INDICE_COLUMNA_HORA = 1;
 
     // 2. UTILIDADES
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
@@ -142,7 +136,7 @@
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
 
-    // 3. LECTURA DE HOJAS
+    // 3. LECTURA (OPTIMIZADA)
     function leerHoja(url) {
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
@@ -158,7 +152,7 @@
 
     // 4. FUNCIÓN MAESTRA
     async function ejecutarBusqueda(nombre, esProfesor) {
-        document.getElementById('password-area').style.display = 'none';
+        // UI RESET
         document.getElementById('search-area').style.display = 'none';
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
@@ -184,4 +178,27 @@
                     if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
                 }
                 if(esta) {
-                    let
+                    let h = row[INDICE_COLUMNA_HORA] ? row[INDICE_COLUMNA_HORA].toString().trim().substring(0,5) : "";
+                    if(h.includes(":")) horas.push(h);
+                }
+            }
+            if(horas.length > 0) {
+                encontrado = true;
+                const bloques = agruparHoras(horas);
+                html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
+            }
+        });
+
+        document.getElementById('loading-spinner').style.display = 'none';
+
+        if(encontrado) {
+            document.getElementById('resultado').innerHTML = html;
+            if(esProfesor) {
+                document.getElementById('actions-panel').style.display = 'block';
+                document.getElementById('search-area').style.display = 'block'; // Volver a mostrar buscador para seguir
+            }
+        } else {
+            const err = document.getElementById('error-msg');
+            err.innerText = "❌ No se encontraron clases. Revisa el nombre.";
+            err.style.display = 'block';
+            if(esProfesor) document.getElementById('search-area').style.display = '
