@@ -20,7 +20,7 @@
         }
 
         .container { 
-            max-width: 1100px; /* Un poco más ancho para que quepan bien los cuadrados */
+            max-width: 1100px; 
             margin: 0 auto; 
         }
 
@@ -53,14 +53,14 @@
         }
         button.btn-print:hover { background-color: #2d3748; }
 
-        /* BOTONERA DE DÍAS (Estilo Pestañas) */
+        /* BOTONERA DE DÍAS */
         .days-nav {
             display: flex;
             gap: 10px;
             margin-bottom: 25px;
             overflow-x: auto;
             padding: 5px;
-            justify-content: center; /* Centrado para estética */
+            justify-content: center; 
         }
 
         .nav-btn {
@@ -68,7 +68,7 @@
             border: none;
             background-color: white;
             color: #555;
-            border-radius: 50px; /* Botones redondeados modernos */
+            border-radius: 50px; 
             cursor: pointer;
             font-weight: 600;
             font-size: 15px;
@@ -92,7 +92,7 @@
 
         /* CONTENEDOR DEL DÍA */
         .day-container {
-            display: none; /* Oculto por defecto */
+            display: none; 
             animation: slideUp 0.4s ease-out;
         }
         .day-container.visible { display: block; }
@@ -111,15 +111,14 @@
             border-left: 5px solid var(--secondary);
         }
 
-        /* GRID SYSTEM (LA CLAVE DEL DISEÑO A CUADRADOS) */
+        /* GRID SYSTEM */
         .schedule-grid {
             display: grid;
-            /* Crea columnas automáticas de mínimo 280px */
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
             gap: 20px;
         }
 
-        /* TARJETA INDIVIDUAL (EL CUADRADO) */
+        /* TARJETA INDIVIDUAL (CUADRADO) */
         .class-card {
             background: white;
             border-radius: 12px;
@@ -136,7 +135,7 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
 
-        /* CABECERA DE LA TARJETA (HORA) */
+        /* CABECERA DE LA TARJETA */
         .card-header {
             background: var(--primary);
             color: white;
@@ -150,10 +149,10 @@
 
         .card-icon { opacity: 0.7; font-size: 14px; }
 
-        /* CUERPO DE LA TARJETA (ALUMNOS) */
+        /* CUERPO DE LA TARJETA */
         .card-body {
             padding: 15px;
-            flex-grow: 1; /* Para que todos los cuadrados tengan altura consistente */
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -169,8 +168,12 @@
             display: flex;
             align-items: center;
         }
+
+        .error-msg {
+            text-align: center; color: red; padding: 20px; font-weight: bold;
+        }
         
-        /* Spinner de carga */
+        /* Spinner */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
@@ -184,11 +187,8 @@
             .container { max-width: 100%; margin: 0; }
             .day-container { display: block !important; break-before: page; }
             .day-title { border-bottom: 2px solid #000; margin-bottom: 10px; }
-            
-            /* Al imprimir, mantenemos el grid o lo hacemos lista según preferencia. 
-               El grid suele ahorrar papel. */
             .schedule-grid {
-                grid-template-columns: repeat(3, 1fr) !important; /* Forzamos 3 col en papel */
+                grid-template-columns: repeat(3, 1fr) !important; 
                 gap: 10px;
             }
             .class-card {
@@ -219,7 +219,157 @@
 </div>
 
 <script>
-    // URLS (Sin cambios)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    // --- FUNCIÓN MEJORADA PARA EVITAR EL BLOQUEO ---
+    async function leerHoja(url) {
+        try {
+            // Añadimos cache-buster para evitar caché
+            const response = await fetch(url + "&t=" + Date.now());
+            
+            if (!response.ok) {
+                console.error("Error al cargar URL: " + url, response.status, response.statusText);
+                return []; // Si falla, devolvemos array vacío para no bloquear
+            }
+
+            const texto = await response.text();
+            
+            // Procesamos el texto con PapaParse
+            const resultado = Papa.parse(texto, {
+                header: false,
+                skipEmptyLines: true
+            });
+
+            return resultado.data;
+
+        } catch (error) {
+            console.error("Error de red o parsing: ", error);
+            return [];
+        }
+    }
+
+    function cambiarDia(diaSeleccionado) {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            if(btn.innerText === diaSeleccionado || (diaSeleccionado === 'Todo' && btn.innerText === 'Ver Todo')) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        document.querySelectorAll('.day-container').forEach(cont => {
+            if(diaSeleccionado === 'Todo') {
+                cont.classList.add('visible');
+            } else {
+                if(cont.id === `day-${diaSeleccionado}`) {
+                    cont.classList.add('visible');
+                } else {
+                    cont.classList.remove('visible');
+                }
+            }
+        });
+    }
+
+    async function cargarTodo() {
+        const container = document.getElementById('schedule-container');
+        const btnContainer = document.getElementById('days-buttons');
+        const dias = Object.keys(urls);
+        
+        try {
+            const promesas = dias.map(dia => leerHoja(urls[dia]));
+            const resultados = await Promise.all(promesas);
+
+            document.getElementById('loading').style.display = 'none';
+
+            // Configurar día inicial
+            const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+            const hoy = diasSemana[new Date().getDay()];
+            let diaInicial = dias.includes(hoy) ? hoy : "Lunes";
+
+            // BOTONES
+            let botonesHTML = ``;
+            dias.forEach(dia => {
+                botonesHTML += `<button class="nav-btn" onclick="cambiarDia('${dia}')">${dia}</button>`;
+            });
+            botonesHTML += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
+            btnContainer.innerHTML = botonesHTML;
+
+            // DATOS
+            let datosEncontrados = false;
+            
+            dias.forEach((dia, index) => {
+                const data = resultados[index];
+                if(!data || data.length < 2) return; 
+
+                let diaHTML = `
+                    <div id="day-${dia}" class="day-container">
+                        <div class="day-title">${dia}</div>
+                        <div class="schedule-grid">`;
+                
+                let hayClases = false;
+
+                for(let i=1; i < data.length; i++) {
+                    const row = data[i];
+                    let hora = row[1] ? row[1].trim() : "";
+                    
+                    let alumnos = [];
+                    for(let c=2; c < row.length; c++) {
+                        if(row[c] && row[c].trim() !== "") {
+                            alumnos.push(row[c].trim());
+                        }
+                    }
+
+                    if(hora && alumnos.length > 0) {
+                        hayClases = true;
+                        datosEncontrados = true;
+                        hora = hora.substring(0, 5);
+
+                        diaHTML += `
+                            <div class="class-card">
+                                <div class="card-header">
+                                    <span>${hora}</span>
+                                    <span class="card-icon">🕒</span>
+                                </div>
+                                <div class="card-body">
+                                    ${alumnos.map(al => `
+                                        <div class="student-item">
+                                            <span>👤 ${al}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                diaHTML += `</div></div>`;
+
+                if(hayClases) {
+                    container.innerHTML += diaHTML;
+                }
+            });
+
+            if(!datosEncontrados) {
+                container.innerHTML = "<div class='error-msg'>No se pudieron cargar los datos o las hojas están vacías.<br>Revisa que las hojas de Google estén 'Publicadas en la Web'.</div>";
+            } else {
+                cambiarDia(diaInicial);
+            }
+
+        } catch (e) {
+            console.error("Error critico:", e);
+            document.getElementById('loading').style.display = 'none';
+            container.innerHTML = "<div class='error-msg'>Ocurrió un error cargando los datos. Revisa la consola (F12).</div>";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarTodo);
+</script>
+
+</body>
+</html>
