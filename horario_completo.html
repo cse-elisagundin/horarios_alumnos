@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Carriles</title>
+    <title>Planning Semanal - Carriles</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -20,7 +20,7 @@
         }
 
         .container { 
-            max-width: 1400px; /* Ancho para que quepan las columnas */
+            max-width: 1400px; 
             margin: 0 auto; 
         }
 
@@ -43,17 +43,22 @@
             padding: 10px 20px; border: 1px solid transparent; background: white;
             color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
             transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 100px;
         }
         .nav-btn:hover { background: #e2e6ea; }
         .nav-btn.active {
             background: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0,51,102,0.3);
         }
 
-        /* ESTRUCTURA DEL PLANNING (GRID) */
+        /* MENSAJES DE ESTADO */
+        #status-msg { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+        .error { color: red !important; font-weight: bold; }
+
+        /* ESTRUCTURA DEL PLANNING */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.3s ease; margin-bottom: 30px;
         }
         .planning-container.visible { display: block; }
 
@@ -62,18 +67,19 @@
         /* TABLA DE CARRILES */
         .timetable {
             display: grid;
-            /* Columna Hora (80px) + 5 Columnas de Alumnos (flexibles) */
-            grid-template-columns: 80px repeat(5, 1fr); 
+            /* 1 Columna Hora (70px) + 5 Columnas Alumnos */
+            grid-template-columns: 70px repeat(5, 1fr); 
             width: 100%;
             border-right: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
         }
 
-        /* CABECERAS DE COLUMNA */
+        /* CABECERAS */
         .header-cell {
-            background: var(--primary); color: white; padding: 10px;
-            font-weight: bold; text-align: center; font-size: 14px;
+            background: var(--primary); color: white; padding: 12px 5px;
+            font-weight: bold; text-align: center; font-size: 13px;
             border-right: 1px solid rgba(255,255,255,0.2);
+            text-transform: uppercase;
         }
 
         /* CELDAS DE HORA */
@@ -81,49 +87,48 @@
             background: var(--time-bg); color: var(--primary);
             font-weight: bold; display: flex; align-items: center; justify-content: center;
             border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
-            font-size: 13px; min-height: 50px; /* Altura mínima de la fila */
+            font-size: 12px; min-height: 45px; 
         }
 
-        /* CELDAS DE ALUMNO (VACÍAS) */
+        /* CELDAS DE ALUMNO (HUECOS) */
         .slot-cell {
             border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;
-            background: white; padding: 4px; position: relative;
+            background: white; padding: 2px; position: relative;
         }
 
         /* BLOQUE DE ALUMNO (LLENO) */
         .student-block {
             height: 100%; width: 100%;
-            border-radius: 6px; padding: 0 8px;
-            display: flex; align-items: center;
+            border-radius: 4px; padding: 0 8px;
+            display: flex; align-items: center; justify-content: flex-start;
             font-size: 13px; font-weight: 600; color: #333;
-            box-sizing: border-box; border-left: 4px solid rgba(0,0,0,0.1);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-sizing: border-box; border-left: 5px solid rgba(0,0,0,0.2);
             overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
 
-        /* SEPARADOR MAÑANA/TARDE */
+        /* SEPARADOR */
         .break-row {
-            grid-column: 1 / -1; background: #f1f8ff; color: #666;
-            text-align: center; padding: 5px; font-size: 12px; letter-spacing: 1px;
-            border-top: 2px solid var(--border); border-bottom: 2px solid var(--border);
+            grid-column: 1 / -1; background: #eef4fa; color: #8898aa;
+            text-align: center; padding: 4px; font-size: 11px; letter-spacing: 1px; font-weight: bold;
+            border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 50px auto;
+            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* IMPRESIÓN */
         @media print {
-            body { background: white; padding: 0; font-size: 10pt; }
-            header, .days-nav, button.btn-print { display: none; }
+            body { background: white; padding: 0; font-size: 9pt; }
+            header, .days-nav, button.btn-print, #status-msg { display: none; }
             .container { max-width: 100%; margin: 0; }
-            .planning-container { display: block !important; break-inside: avoid; margin-bottom: 20px; page-break-after: always; }
-            .timetable { border: 1px solid #999; }
-            .time-cell, .slot-cell { border-color: #ccc; }
-            .student-block { border: 1px solid #666 !important; box-shadow: none; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
-            /* Forzar colores de fondo al imprimir */
+            .planning-container { display: block !important; break-inside: avoid; margin-bottom: 20px; page-break-after: always; box-shadow: none; border: none; }
+            .timetable { border: 1px solid #000; }
+            .time-cell, .slot-cell { border-color: #999; }
+            .header-cell { background: #ddd !important; color: black !important; -webkit-print-color-adjust: exact; }
+            .student-block { border: 1px solid #666 !important; -webkit-print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -133,13 +138,19 @@
     <header>
         <div>
             <h1>Planning Semanal</h1>
-            <div style="color:#666; font-size:14px">Vista de Carriles</div>
+            <div style="color:#666; font-size:14px">Vista de Carriles (Columnas Fijas)</div>
         </div>
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
     <div id="days-buttons" class="days-nav"></div>
-    <div id="loading" class="spinner"></div>
+    
+    <div id="loading">
+        <div class="spinner"></div>
+        <div id="loading-text" style="text-align:center; color:#666;">Cargando horarios...</div>
+    </div>
+    <div id="status-msg"></div>
+    
     <div id="schedule-container"></div>
 </div>
 
@@ -149,12 +160,4 @@
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
         "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
         "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
-    };
-
-    // Generar color pastel basado en el nombre (para que Sancho siempre sea el mismo color)
-    function stringToColor(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
-        const h = Math.abs(hash) % 360;
-        return `hsl(${h}, 70%, 90%)`; //
+        "Viernes": "
