@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel General Profesor - Por Días</title>
+    <title>Panel General - Vista Bloques</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #003366; --bg: #f4f7f9; --light: #ffffff; --border: #e0e0e0; --active: #0055aa; }
+        :root { --primary: #003366; --secondary: #0055aa; --bg: #f0f2f5; --light: #ffffff; --border: #e0e0e0; }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: var(--bg); 
             margin: 0; 
             padding: 20px;
@@ -20,7 +20,7 @@
         }
 
         .container { 
-            max-width: 900px; 
+            max-width: 1100px; /* Un poco más ancho para que quepan bien los cuadrados */
             margin: 0 auto; 
         }
 
@@ -30,159 +30,174 @@
             justify-content: space-between;
             align-items: center;
             background: var(--light);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            padding: 20px 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
             flex-wrap: wrap;
             gap: 15px;
         }
 
-        h1 { color: var(--primary); margin: 0; font-size: 24px; }
-        .subtitle { color: #666; font-size: 14px; margin-top: 5px; }
+        h1 { color: var(--primary); margin: 0; font-size: 26px; font-weight: 700; }
+        .subtitle { color: #777; font-size: 15px; margin-top: 5px; }
 
         button.btn-print {
-            background-color: #666;
+            background-color: #4a5568;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
         }
-        button.btn-print:hover { background-color: #444; }
+        button.btn-print:hover { background-color: #2d3748; }
 
-        /* NUEVA BOTONERA DE DÍAS */
+        /* BOTONERA DE DÍAS (Estilo Pestañas) */
         .days-nav {
             display: flex;
             gap: 10px;
             margin-bottom: 25px;
-            overflow-x: auto; /* Para scroll en móvil si hace falta */
-            padding-bottom: 5px;
+            overflow-x: auto;
+            padding: 5px;
+            justify-content: center; /* Centrado para estética */
         }
 
         .nav-btn {
-            flex: 1;
-            padding: 12px 10px;
+            padding: 12px 25px;
             border: none;
             background-color: white;
-            color: var(--primary);
-            border-radius: 8px;
+            color: #555;
+            border-radius: 50px; /* Botones redondeados modernos */
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 15px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             white-space: nowrap;
-            border: 1px solid transparent;
         }
 
         .nav-btn:hover {
             background-color: #eef2f7;
             transform: translateY(-2px);
+            color: var(--primary);
         }
 
         .nav-btn.active {
             background-color: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(0, 51, 102, 0.3);
+            box-shadow: 0 5px 15px rgba(0, 51, 102, 0.4);
             transform: translateY(-2px);
         }
 
-        /* TARJETAS DE DÍA */
-        .day-card {
-            background: var(--light);
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            margin-bottom: 25px;
-            overflow: hidden;
-            border-top: 5px solid var(--primary);
+        /* CONTENEDOR DEL DÍA */
+        .day-container {
             display: none; /* Oculto por defecto */
-            animation: fadeIn 0.4s ease-in-out;
+            animation: slideUp 0.4s ease-out;
         }
-        
-        /* Clase para mostrar tarjeta */
-        .day-card.visible {
-            display: block;
-        }
+        .day-container.visible { display: block; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .day-header {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            font-size: 18px;
+        .day-title {
+            font-size: 22px;
             font-weight: bold;
             color: var(--primary);
-            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            padding-left: 10px;
+            border-left: 5px solid var(--secondary);
+        }
+
+        /* GRID SYSTEM (LA CLAVE DEL DISEÑO A CUADRADOS) */
+        .schedule-grid {
+            display: grid;
+            /* Crea columnas automáticas de mínimo 280px */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 20px;
+        }
+
+        /* TARJETA INDIVIDUAL (EL CUADRADO) */
+        .class-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .class-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        /* CABECERA DE LA TARJETA (HORA) */
+        .card-header {
+            background: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            font-weight: bold;
+            font-size: 18px;
             display: flex;
             justify-content: space-between;
-        }
-
-        .class-row {
-            display: flex;
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
             align-items: center;
         }
-        .class-row:last-child { border-bottom: none; }
-        .class-row:hover { background-color: #fafafa; }
 
-        .time-col {
-            font-weight: bold;
-            color: var(--primary);
-            background: #eef2f7;
-            padding: 5px 10px;
-            border-radius: 4px;
-            min-width: 60px;
-            text-align: center;
-            margin-right: 20px;
-            font-size: 15px;
+        .card-icon { opacity: 0.7; font-size: 14px; }
+
+        /* CUERPO DE LA TARJETA (ALUMNOS) */
+        .card-body {
+            padding: 15px;
+            flex-grow: 1; /* Para que todos los cuadrados tengan altura consistente */
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .students-col {
-            flex-grow: 1;
-            line-height: 1.6;
-        }
-
-        .student-tag {
-            display: inline-block;
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 3px 10px;
-            border-radius: 15px;
-            margin: 3px;
+        .student-item {
+            background-color: #f8f9fa;
+            border-left: 3px solid var(--secondary);
+            padding: 8px 12px;
+            border-radius: 0 6px 6px 0;
             font-size: 14px;
-            color: #444;
+            color: #333;
+            display: flex;
+            align-items: center;
         }
-
+        
+        /* Spinner de carga */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ESTILOS DE IMPRESIÓN */
+        /* IMPRESIÓN */
         @media print {
             body { background-color: white; padding: 0; }
-            header, .days-nav, button.btn-print { display: none; } /* Ocultamos botones al imprimir */
-            .container { max-width: 100%; width: 100%; box-shadow: none; margin: 0; }
-            .day-card { 
-                display: block !important; /* Al imprimir mostramos TODOS los días */
-                box-shadow: none; 
-                border: 1px solid #ccc; 
-                break-inside: avoid; 
-                margin-bottom: 20px;
+            header, .days-nav, button.btn-print { display: none; }
+            .container { max-width: 100%; margin: 0; }
+            .day-container { display: block !important; break-before: page; }
+            .day-title { border-bottom: 2px solid #000; margin-bottom: 10px; }
+            
+            /* Al imprimir, mantenemos el grid o lo hacemos lista según preferencia. 
+               El grid suele ahorrar papel. */
+            .schedule-grid {
+                grid-template-columns: repeat(3, 1fr) !important; /* Forzamos 3 col en papel */
+                gap: 10px;
             }
-            .day-header { background-color: #ddd !important; -webkit-print-color-adjust: exact; }
-            .time-col { background-color: #eee !important; -webkit-print-color-adjust: exact; border: 1px solid #999; }
-            .student-tag { border: none; padding: 0; margin-right: 10px; font-size: 12px; }
-            .student-tag::after { content: ","; }
-            .student-tag:last-child::after { content: ""; }
+            .class-card {
+                box-shadow: none; border: 1px solid #999; break-inside: avoid;
+            }
+            .card-header {
+                background-color: #ddd !important; color: black !important;
+                -webkit-print-color-adjust: exact;
+            }
         }
     </style>
 </head>
@@ -191,145 +206,20 @@
 <div class="container">
     <header>
         <div>
-            <h1>Vista General Profesor</h1>
-            <div class="subtitle">Horario y Grupos</div>
+            <h1>Panel de Horarios</h1>
+            <div class="subtitle">Vista General por Bloques</div>
         </div>
-        <button class="btn-print" onclick="window.print()">🖨️ Imprimir Todo</button>
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
-    <div id="days-buttons" class="days-nav">
-        </div>
+    <div id="days-buttons" class="days-nav"></div>
 
     <div id="loading" class="spinner"></div>
     <div id="schedule-container"></div>
 </div>
 
 <script>
-    // URLs de datos
+    // URLS (Sin cambios)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
-    };
-
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, header:false, skipEmptyLines:true, 
-                complete: res => resolve(res.data), 
-                error: e => resolve([]) 
-            });
-        });
-    }
-
-    function cambiarDia(diaSeleccionado) {
-        // 1. Gestionar estado de los botones
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            if(btn.innerText === diaSeleccionado || (diaSeleccionado === 'Todo' && btn.innerText === 'Ver Todo')) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
-
-        // 2. Gestionar visibilidad de las tarjetas
-        document.querySelectorAll('.day-card').forEach(card => {
-            if(diaSeleccionado === 'Todo') {
-                card.classList.add('visible');
-            } else {
-                // Comprobamos si el ID de la tarjeta coincide con el día
-                if(card.id === `card-${diaSeleccionado}`) {
-                    card.classList.add('visible');
-                } else {
-                    card.classList.remove('visible');
-                }
-            }
-        });
-    }
-
-    async function cargarTodo() {
-        const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
-        
-        // Cargar datos
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
-        const resultados = await Promise.all(promesas);
-
-        document.getElementById('loading').style.display = 'none';
-
-        // Determinar qué día es hoy para seleccionarlo por defecto
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        const hoy = diasSemana[new Date().getDay()];
-        let diaInicial = dias.includes(hoy) ? hoy : "Lunes"; // Si es finde, mostramos Lunes
-
-        // GENERAR BOTONES
-        let botonesHTML = ``;
-        dias.forEach(dia => {
-            botonesHTML += `<button class="nav-btn" onclick="cambiarDia('${dia}')">${dia}</button>`;
-        });
-        // Botón extra para ver todo (útil para imprimir visualmente)
-        botonesHTML += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
-        btnContainer.innerHTML = botonesHTML;
-
-        // GENERAR TARJETAS (ocultas por defecto)
-        dias.forEach((dia, index) => {
-            const data = resultados[index];
-            if(!data || data.length < 2) return; 
-
-            // Creamos la tarjeta con un ID específico: card-Lunes, card-Martes, etc.
-            let diaHTML = `<div id="card-${dia}" class="day-card">
-                            <div class="day-header">
-                                <span>${dia}</span>
-                            </div>`;
-            
-            let hayClases = false;
-
-            for(let i=1; i < data.length; i++) {
-                const row = data[i];
-                let hora = row[1] ? row[1].trim() : "";
-                
-                let alumnos = [];
-                for(let c=2; c < row.length; c++) {
-                    if(row[c] && row[c].trim() !== "") {
-                        alumnos.push(row[c].trim());
-                    }
-                }
-
-                if(hora && alumnos.length > 0) {
-                    hayClases = true;
-                    hora = hora.substring(0, 5);
-
-                    diaHTML += `
-                        <div class="class-row">
-                            <div class="time-col">${hora}</div>
-                            <div class="students-col">
-                                ${alumnos.map(al => `<span class="student-tag">${al}</span>`).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-            }
-
-            diaHTML += `</div>`;
-
-            if(hayClases) {
-                container.innerHTML += diaHTML;
-            }
-        });
-
-        if(container.innerHTML === "") {
-            container.innerHTML = "<p style='text-align:center'>No se encontraron datos.</p>";
-        } else {
-            // Una vez cargado todo, activamos el día actual
-            cambiarDia(diaInicial);
-        }
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-
-</body>
-</html>
+        "Martes": "
