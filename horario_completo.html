@@ -50,10 +50,6 @@
             background: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0,51,102,0.3);
         }
 
-        /* MENSAJES DE ESTADO */
-        #status-msg { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
-        .error { color: red !important; font-weight: bold; }
-
         /* ESTRUCTURA DEL PLANNING */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
@@ -67,8 +63,8 @@
         /* TABLA DE CARRILES */
         .timetable {
             display: grid;
-            /* 1 Columna Hora (70px) + 5 Columnas Alumnos */
-            grid-template-columns: 70px repeat(5, 1fr); 
+            /* 1 Columna Hora (70px) + 6 Columnas Alumnos (Carriles) */
+            grid-template-columns: 70px repeat(6, 1fr); 
             width: 100%;
             border-right: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
@@ -76,7 +72,7 @@
 
         /* CABECERAS */
         .header-cell {
-            background: var(--primary); color: white; padding: 12px 5px;
+            background: var(--primary); color: white; padding: 10px 2px;
             font-weight: bold; text-align: center; font-size: 13px;
             border-right: 1px solid rgba(255,255,255,0.2);
             text-transform: uppercase;
@@ -87,7 +83,7 @@
             background: var(--time-bg); color: var(--primary);
             font-weight: bold; display: flex; align-items: center; justify-content: center;
             border-bottom: 1px solid var(--border); border-right: 1px solid var(--border);
-            font-size: 12px; min-height: 45px; 
+            font-size: 12px; min-height: 40px; 
         }
 
         /* CELDAS DE ALUMNO (HUECOS) */
@@ -101,7 +97,7 @@
             height: 100%; width: 100%;
             border-radius: 4px; padding: 0 8px;
             display: flex; align-items: center; justify-content: flex-start;
-            font-size: 13px; font-weight: 600; color: #333;
+            font-size: 12px; font-weight: 600; color: #333;
             box-sizing: border-box; border-left: 5px solid rgba(0,0,0,0.2);
             overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
@@ -113,6 +109,13 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
+        /* LOG DE DEBUG */
+        #debug-log {
+            font-family: monospace; font-size: 10px; color: #888;
+            margin-top: 50px; border-top: 1px solid #ddd; padding-top: 10px;
+            max-height: 100px; overflow-y: auto;
+        }
+
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%;
             width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
@@ -122,7 +125,7 @@
         /* IMPRESIÓN */
         @media print {
             body { background: white; padding: 0; font-size: 9pt; }
-            header, .days-nav, button.btn-print, #status-msg { display: none; }
+            header, .days-nav, button.btn-print, #debug-log { display: none; }
             .container { max-width: 100%; margin: 0; }
             .planning-container { display: block !important; break-inside: avoid; margin-bottom: 20px; page-break-after: always; box-shadow: none; border: none; }
             .timetable { border: 1px solid #000; }
@@ -138,7 +141,7 @@
     <header>
         <div>
             <h1>Planning Semanal</h1>
-            <div style="color:#666; font-size:14px">Vista de Carriles (Columnas Fijas)</div>
+            <div style="color:#666; font-size:14px">Vista de Carriles</div>
         </div>
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
@@ -147,11 +150,11 @@
     
     <div id="loading">
         <div class="spinner"></div>
-        <div id="loading-text" style="text-align:center; color:#666;">Cargando horarios...</div>
+        <div id="loading-text" style="text-align:center; color:#666;">Conectando con Google Sheets...</div>
     </div>
-    <div id="status-msg"></div>
     
     <div id="schedule-container"></div>
+    <div id="debug-log">Iniciando sistema...<br></div>
 </div>
 
 <script>
@@ -159,5 +162,4 @@
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
         "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "
+        "Jueves": "
