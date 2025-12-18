@@ -116,9 +116,127 @@
 </div>
 
 <script>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horarios Academia</title>
+    
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <style>
+        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; --error: #dc3545; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh;
+        }
+
+        .container { 
+            background-color: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            width: 100%; 
+            max-width: 500px; 
+            text-align: center;
+        }
+
+        .logo-img { max-width: 180px; margin-bottom: 20px; }
+        h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
+        
+        /* INPUTS Y BOTONES */
+        input { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
+        }
+        input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-main { 
+            width: 100%; padding: 14px; background: var(--primary); color: white; 
+            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+        }
+        .btn-main:hover { background: #002244; }
+
+        /* SPINNER DE CARGA */
+        .spinner {
+            border: 5px solid #f3f3f3; 
+            border-top: 5px solid var(--primary); 
+            border-radius: 50%;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* RESULTADOS */
+        #resultado { margin-top: 20px; text-align: left; }
+        .dia-card { 
+            background: #eef2f7; margin-bottom: 10px; padding: 15px; 
+            border-radius: 8px; border-left: 5px solid var(--primary);
+        }
+        .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
+        .hora-tag { font-size: 18px; color: #333; display: block; }
+
+        /* BOTONES EXTRA (SOLO PROFESOR) */
+        #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-share:hover { background: #218838; }
+        .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
+        
+        #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
+
+        /* PANTALLA DE CONTRASEÑA (NUEVO) */
+        #password-area { display: none; }
+        .lock-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+    
+    <div id="password-area">
+        <span class="lock-icon">🔒</span>
+        <h2>Acceso Profesor</h2>
+        <p style="color:#666; font-size:14px; margin-bottom:20px;">Introduce la clave para buscar alumnos.</p>
+        <input type="password" id="passInput" placeholder="Contraseña...">
+        <button id="btnUnlock" class="btn-main">ENTRAR</button>
+        <p id="pass-error" style="color:red; display:none; margin-top:10px;">Contraseña incorrecta</p>
+    </div>
+
+    <div id="search-area" style="display:none;">
+        <h2>Consulta tu Horario</h2>
+        <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
+        <button id="btnBuscar" class="btn-main">VER MI HORARIO</button>
+    </div>
+
+    <div id="loading-spinner" class="spinner"></div>
+
+    <p id="error-msg"></p>
+    <div id="resultado"></div>
+    
+    <div id="actions-panel">
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+        <br>
+        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
+    </div>
+</div>
+
+<script>
     // --- 0. SEGURIDAD ---
     // CAMBIA ESTO POR TU CONTRASEÑA DESEADA
-    const PASSWORD_PROFE = "010523"; 
+    const PASSWORD_PROFE = "1234"; 
 
     // 1. CONFIGURACIÓN EXCEL
     const INDICE_COLUMNA_HORA = 1; 
@@ -309,3 +427,8 @@
 
 </body>
 </html>
+</script>
+
+</body>
+</html>
+
