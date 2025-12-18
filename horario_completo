@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel General Profesor</title>
+    
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <style>
+        :root { --primary: #003366; --bg: #f4f7f9; --light: #ffffff; --border: #e0e0e0; }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; 
+            padding: 20px;
+            color: #333;
+        }
+
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+        }
+
+        /* HEADER */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        h1 { color: var(--primary); margin: 0; font-size: 24px; }
+        .subtitle { color: #666; font-size: 14px; margin-top: 5px; }
+
+        button.btn-print {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button.btn-print:hover { background-color: #002244; }
+
+        /* TARJETAS DE DÍA */
+        .day-card {
+            background: var(--light);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+            overflow: hidden;
+            border-top: 5px solid var(--primary);
+        }
+
+        .day-header {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .class-row {
+            display: flex;
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            align-items: center;
+        }
+        .class-row:last-child { border-bottom: none; }
+        .class-row:hover { background-color: #fafafa; }
+
+        .time-col {
+            font-weight: bold;
+            color: var(--primary);
+            background: #eef2f7;
+            padding: 5px 10px;
+            border-radius: 4px;
+            min-width: 80px;
+            text-align: center;
+            margin-right: 20px;
+        }
+
+        .students-col {
+            flex-grow: 1;
+            line-height: 1.5;
+        }
+
+        .student-tag {
+            display: inline-block;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 2px 8px;
+            border-radius: 12px;
+            margin: 2px;
+            font-size: 14px;
+        }
+
+        .spinner {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
+            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ESTILOS DE IMPRESIÓN */
+        @media print {
+            body { background-color: white; }
+            button.btn-print { display: none; }
+            .container { max-width: 100%; width: 100%; box-shadow: none; }
+            .day-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+            .day-header { background-color: #ddd !important; -webkit-print-color-adjust: exact; }
+            .time-col { background-color: #eee !important; -webkit-print-color-adjust: exact; border: 1px solid #999; }
+            .student-tag { border: none; padding: 0; margin-right: 10px; }
+            .student-tag::after { content: ","; }
+            .student-tag:last-child::after { content: ""; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Vista General Semanal</h1>
+            <div class="subtitle">Listado completo de grupos y alumnos</div>
+        </div>
+        <button class="btn-print" onclick="window.print()">🖨️ Imprimir / PDF</button>
+    </header>
+
+    <div id="loading" class="spinner"></div>
+    <div id="schedule-container"></div>
+</div>
+
+<script>
+    // TUS URLs (Las mismas que antes)
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    function leerHoja(url) {
+        return new Promise(resolve => {
+            // Añadimos timestamp para evitar caché
+            Papa.parse(url + "&t=" + Date.now(), { 
+                download:true, header:false, skipEmptyLines:true, 
+                complete: res => resolve(res.data), 
+                error: e => resolve([]) 
+            });
+        });
+    }
+
+    async function cargarTodo() {
+        const container = document.getElementById('schedule-container');
+        const dias = Object.keys(urls);
+        
+        // Cargar todas las hojas en paralelo
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const resultados = await Promise.all(promesas);
+
+        document.getElementById('loading').style.display = 'none';
+
+        dias.forEach((dia, index) => {
+            const data = resultados[index];
+            if(!data || data.length < 2) return; // Si está vacío o solo tiene cabecera, saltar
+
+            let diaHTML = `<div class="day-card">
+                            <div class="day-header">
+                                <span>${dia}</span>
+                            </div>`;
+            
+            let hayClases = false;
+
+            // Empezamos en i=1 para saltar la cabecera (fila 0)
+            for(let i=1; i < data.length; i++) {
+                const row = data[i];
+                
+                // Asumimos que la columna 1 (B) es la HORA
+                let hora = row[1] ? row[1].trim() : "";
+                
+                // Recogemos todos los alumnos (desde la columna 2 en adelante)
+                // Filtramos celdas vacías
+                let alumnos = [];
+                for(let c=2; c < row.length; c++) {
+                    if(row[c] && row[c].trim() !== "") {
+                        alumnos.push(row[c].trim());
+                    }
+                }
+
+                // Solo pintamos la fila si tiene hora Y tiene al menos 1 alumno
+                if(hora && alumnos.length > 0) {
+                    hayClases = true;
+                    // Limpiamos formato de hora (ej: 16:00:00 -> 16:00)
+                    hora = hora.substring(0, 5);
+
+                    diaHTML += `
+                        <div class="class-row">
+                            <div class="time-col">${hora}</div>
+                            <div class="students-col">
+                                ${alumnos.map(al => `<span class="student-tag">${al}</span>`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            diaHTML += `</div>`;
+
+            if(hayClases) {
+                container.innerHTML += diaHTML;
+            }
+        });
+
+        if(container.innerHTML === "") {
+            container.innerHTML = "<p style='text-align:center'>No se encontraron datos en las hojas.</p>";
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarTodo);
+</script>
+
+</body>
+</html>
