@@ -103,7 +103,7 @@
 </div>
 
 <script>
-    // 1. CONFIGURACIÓN
+// 1. CONFIGURACIÓN
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -112,8 +112,7 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    // --- MEJORA: MEMORIA CACHÉ ---
-    // Aquí guardaremos los datos para no descargarlos dos veces
+    // MEMORIA CACHÉ (Para que sea rápido si vuelves a buscar lo mismo)
     let memoriaCache = {}; 
 
     // 2. UTILIDADES DE TIEMPO
@@ -131,26 +130,30 @@
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
 
-    // 3. LECTURA DE HOJAS (OPTIMIZADA)
+    // 3. LECTURA DE HOJAS (CON TRUCO ANTI-CACHÉ GOOGLE)
     function leerHoja(url) {
-        // Si ya lo tenemos en memoria, lo devolvemos INSTANTÁNEAMENTE
+        // Si ya lo tenemos guardado en memoria de esta sesión, lo usamos (velocidad)
         if (memoriaCache[url]) {
             return Promise.resolve(memoriaCache[url]);
         }
 
-        // Si no, lo descargamos
         return new Promise(resolve => {
             if (typeof Papa === 'undefined') {
                 alert("Error crítico: La librería PapaParse no ha cargado.");
                 return resolve([]);
             }
-            Papa.parse(url, { 
+            
+            // AQUÍ ESTÁ LA MEJORA:
+            // Añadimos "&refresh=NUMERO_ALEATORIO" al final del enlace.
+            // Esto engaña a Google para que piense que es una petición nueva y nos dé los datos YA.
+            const urlFresca = url + "&refresh=" + Date.now();
+
+            Papa.parse(urlFresca, { 
                 download:true, 
                 header:false, 
                 skipEmptyLines:true, 
                 complete: res => {
-                    // Guardamos en caché para la próxima vez
-                    memoriaCache[url] = res.data;
+                    memoriaCache[url] = res.data; // Guardamos para no recargar en la misma búsqueda
                     resolve(res.data);
                 }, 
                 error: e => resolve([]) 
@@ -158,7 +161,7 @@
         });
     }
 
-    // 4. FUNCIÓN MAESTRA (AHORA EN PARALELO)
+    // 4. FUNCIÓN MAESTRA (PARALELA)
     async function ejecutarBusqueda(nombre, esProfesor) {
         // UI RESET
         document.getElementById('search-area').style.display = 'none';
@@ -169,14 +172,15 @@
 
         let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
         let encontrado = false;
-        const nombreBuscado = nombre.toLowerCase();
+        
+        // Búsqueda EXACTA (sin normalizar tildes, como pediste)
+        const nombreBuscado = nombre.toLowerCase().trim();
 
-        // --- TRUCO DE VELOCIDAD: Cargar todo a la vez ---
+        // Carga simultánea de los 5 días
         const dias = Object.keys(urls);
-        const promesas = dias.map(dia => leerHoja(urls[dia])); // Lanza las 5 peticiones a la vez
-        const resultados = await Promise.all(promesas); // Espera a que lleguen todas
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const resultados = await Promise.all(promesas);
 
-        // Procesar datos
         dias.forEach((dia, index) => {
             const data = resultados[index];
             if(!data || data.length === 0) return;
@@ -186,6 +190,7 @@
                 const row = data[i];
                 let esta = false;
                 for(let c=0; c < row.length; c++) {
+                    // Comparación estricta
                     if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
                 }
                 if(esta) {
@@ -214,29 +219,25 @@
         }
     }
 
-    // 5. ASIGNACIÓN DE EVENTOS
+    // 5. EVENTOS
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('alumnoInput');
         const btnBuscar = document.getElementById('btnBuscar');
         const btnCopiar = document.getElementById('btnCopiar');
         const btnReset = document.getElementById('btnReset');
 
-        // Función wrapper para validar
         const buscarClick = () => {
             const val = input.value.trim();
             if(val) ejecutarBusqueda(val, true);
             else alert("Escribe un nombre primero.");
         };
 
-        // Click botón
         btnBuscar.addEventListener('click', buscarClick);
 
-        // Enter en Input
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') buscarClick();
         });
 
-        // Copiar Enlace
         btnCopiar.addEventListener('click', () => {
             const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
             navigator.clipboard.writeText(url)
@@ -248,21 +249,20 @@
                 .catch(() => prompt("Copia este enlace:", url));
         });
 
-        // Reset
         btnReset.addEventListener('click', () => {
             window.location.href = window.location.pathname;
         });
 
-        // Auto-Carga si es Padre (viene por URL)
         const params = new URLSearchParams(window.location.search);
         const alumnoURL = params.get('alumno');
         if (alumnoURL) {
             input.value = alumnoURL;
-            ejecutarBusqueda(alumnoURL, false); // false = modo padre
+            ejecutarBusqueda(alumnoURL, false);
         }
     });
 </script>
 
 </body>
 </html>
+
 
