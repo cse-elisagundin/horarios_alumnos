@@ -112,10 +112,10 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
-    // MEMORIA CACHÉ (Para que sea rápido si vuelves a buscar lo mismo)
+    // MEMORIA CACHÉ (Para no descargar dos veces lo mismo en la misma sesión)
     let memoriaCache = {}; 
 
-    // 2. UTILIDADES DE TIEMPO
+    // 2. UTILIDADES
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     
@@ -130,12 +130,10 @@
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
 
-    // 3. LECTURA DE HOJAS (CON TRUCO ANTI-CACHÉ GOOGLE)
+    // 3. LECTURA DE HOJAS (OPTIMIZADA + ANTI-CACHÉ)
     function leerHoja(url) {
-        // Si ya lo tenemos guardado en memoria de esta sesión, lo usamos (velocidad)
-        if (memoriaCache[url]) {
-            return Promise.resolve(memoriaCache[url]);
-        }
+        // Si ya está en memoria, devolver instantáneamente
+        if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
 
         return new Promise(resolve => {
             if (typeof Papa === 'undefined') {
@@ -143,17 +141,15 @@
                 return resolve([]);
             }
             
-            // AQUÍ ESTÁ LA MEJORA:
-            // Añadimos "&refresh=NUMERO_ALEATORIO" al final del enlace.
-            // Esto engaña a Google para que piense que es una petición nueva y nos dé los datos YA.
-            const urlFresca = url + "&refresh=" + Date.now();
+            // DIFERENCIA CLAVE: Añadimos timestamp para evitar datos viejos de Google
+            const urlFresca = url + "&t=" + Date.now();
 
             Papa.parse(urlFresca, { 
                 download:true, 
                 header:false, 
                 skipEmptyLines:true, 
                 complete: res => {
-                    memoriaCache[url] = res.data; // Guardamos para no recargar en la misma búsqueda
+                    memoriaCache[url] = res.data; // Guardar en memoria
                     resolve(res.data);
                 }, 
                 error: e => resolve([]) 
@@ -173,10 +169,10 @@
         let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
         let encontrado = false;
         
-        // Búsqueda EXACTA (sin normalizar tildes, como pediste)
+        // Búsqueda exacta (respetando tildes como pediste)
         const nombreBuscado = nombre.toLowerCase().trim();
 
-        // Carga simultánea de los 5 días
+        // DIFERENCIA CLAVE: Carga Paralela (Promise.all) en vez de bucle for-await
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
@@ -190,7 +186,7 @@
                 const row = data[i];
                 let esta = false;
                 for(let c=0; c < row.length; c++) {
-                    // Comparación estricta
+                    // Comparación exacta
                     if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
                 }
                 if(esta) {
@@ -250,7 +246,14 @@
         });
 
         btnReset.addEventListener('click', () => {
-            window.location.href = window.location.pathname;
+            // Limpia la URL y vuelve al inicio
+            window.history.pushState({}, document.title, window.location.pathname);
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('actions-panel').style.display = 'none';
+            document.getElementById('search-area').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'none';
+            input.value = ""; 
+            input.focus();
         });
 
         const params = new URLSearchParams(window.location.search);
@@ -264,5 +267,6 @@
 
 </body>
 </html>
+
 
 
