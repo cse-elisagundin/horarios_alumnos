@@ -33,13 +33,7 @@
             text-align: center;
         }
 
-        /* --- CORRECCIÓN LOGO (Para que no se duplique) --- */
-        .logo-img { 
-            max-width: 180px; 
-            display: block; 
-            margin: 0 auto 20px auto; 
-        }
-
+        .logo-img { max-width: 180px; margin-bottom: 20px; }
         h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
         
         /* INPUTS Y BOTONES */
@@ -84,9 +78,8 @@
         
         #error-msg { color: red; font-weight: bold; display: none; margin-top: 20px; }
 
-        /* --- ESTILOS CANDADO --- */
-        #password-area { display: none; } /* Oculto por defecto */
-        .lock-icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        /* ESTILO MÍNIMO PARA EL ÁREA DE CONTRASEÑA (Para que no se vea al cargar) */
+        #password-area { display: none; }
     </style>
 </head>
 <body>
@@ -95,15 +88,13 @@
     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
     
     <div id="password-area">
-        <span class="lock-icon">🔒</span>
-        <h2>Acceso Profesor</h2>
-        <p style="color:#666; font-size:14px; margin-bottom:20px;">Introduce la clave para buscar.</p>
-        <input type="password" id="passInput" placeholder="Contraseña...">
+        <h2>Acceso Privado</h2>
+        <input type="password" id="passInput" placeholder="Introduce la clave...">
         <button id="btnUnlock" class="btn-main">ENTRAR</button>
-        <p id="pass-error" style="color:red; display:none; margin-top:10px;">Contraseña incorrecta</p>
+        <p id="pass-error" style="color:red; display:none; margin-top:10px; font-size:14px;">Clave incorrecta</p>
     </div>
 
-    <div id="search-area" style="display:none;">
+    <div id="search-area">
         <h2>Consulta tu Horario</h2>
         <input type="text" id="alumnoInput" placeholder="Nombre completo exacto..." autocomplete="off">
         <button id="btnBuscar" class="btn-main">VER MI HORARIO</button>
@@ -122,8 +113,8 @@
 </div>
 
 <script>
-    // --- SEGURIDAD ---
-    const PASSWORD_PROFE = "1234"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
+    // --- CLAVE DEL PROFESOR ---
+    const PASSWORD_PROFE = "1234"; 
 
     // 1. CONFIGURACIÓN
     const urls = {
@@ -136,7 +127,7 @@
 
     let memoriaCache = {}; 
 
-    // 2. UTILIDADES DE TIEMPO
+    // 2. UTILIDADES
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     
@@ -151,16 +142,11 @@
         res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
     }
 
-    // 3. LECTURA DE HOJAS (OPTIMIZADA)
+    // 3. LECTURA DE HOJAS
     function leerHoja(url) {
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
-
         return new Promise(resolve => {
-            if (typeof Papa === 'undefined') {
-                alert("Error crítico: PapaParse no cargó.");
-                return resolve([]);
-            }
-            // Truco para datos frescos
+            if (typeof Papa === 'undefined') { alert("Error crítico: PapaParse no ha cargado."); return resolve([]); }
             const urlFresca = url + "&t=" + Date.now();
             Papa.parse(urlFresca, { 
                 download:true, header:false, skipEmptyLines:true, 
@@ -172,7 +158,6 @@
 
     // 4. FUNCIÓN MAESTRA
     async function ejecutarBusqueda(nombre, esProfesor) {
-        // Ocultar todo
         document.getElementById('password-area').style.display = 'none';
         document.getElementById('search-area').style.display = 'none';
         document.getElementById('error-msg').style.display = 'none';
@@ -184,7 +169,6 @@
         let encontrado = false;
         const nombreBuscado = nombre.toLowerCase().trim();
 
-        // Carga rápida en paralelo
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
@@ -192,7 +176,6 @@
         dias.forEach((dia, index) => {
             const data = resultados[index];
             if(!data || data.length === 0) return;
-
             let horas = [];
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
@@ -201,57 +184,4 @@
                     if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
                 }
                 if(esta) {
-                    let h = row[1] ? row[1].toString().trim().substring(0,5) : "";
-                    if(h.includes(":")) horas.push(h);
-                }
-            }
-
-            if(horas.length > 0) {
-                encontrado = true;
-                const bloques = agruparHoras(horas);
-                html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
-            }
-        });
-
-        document.getElementById('loading-spinner').style.display = 'none';
-
-        if(encontrado) {
-            document.getElementById('resultado').innerHTML = html;
-            if(esProfesor) {
-                 document.getElementById('actions-panel').style.display = 'block';
-                 // Si es profe, mostramos el buscador abajo para seguir buscando
-                 document.getElementById('search-area').style.display = 'block';
-            }
-        } else {
-            const err = document.getElementById('error-msg');
-            err.innerText = "❌ No se encontraron clases. Revisa el nombre.";
-            err.style.display = 'block';
-            if(esProfesor) document.getElementById('search-area').style.display = 'block';
-        }
-    }
-
-    // 5. EVENTOS E INICIO
-    document.addEventListener('DOMContentLoaded', () => {
-        const passArea = document.getElementById('password-area');
-        const searchArea = document.getElementById('search-area');
-        
-        const inputAlumno = document.getElementById('alumnoInput');
-        const btnBuscar = document.getElementById('btnBuscar');
-        const btnCopiar = document.getElementById('btnCopiar');
-        const btnReset = document.getElementById('btnReset');
-
-        const inputPass = document.getElementById('passInput');
-        const btnUnlock = document.getElementById('btnUnlock');
-        const passError = document.getElementById('pass-error');
-
-        // ¿HAY ENLACE DE ALUMNO?
-        const params = new URLSearchParams(window.location.search);
-        const alumnoURL = params.get('alumno');
-
-        if (alumnoURL) {
-            // MODO PADRE (Sin contraseña)
-            passArea.style.display = 'none';
-            searchArea.style.display = 'none';
-            ejecutarBusqueda(alumnoURL, false); 
-        } else {
-            // MODO PROFESOR (Pide contraseña)
+                    let
