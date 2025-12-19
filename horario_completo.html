@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Ajuste Impresión</title>
+    <title>Planning General - Ajuste Final Impresión</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -56,7 +56,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
             animation: fadeIn 0.3s ease; margin-bottom: 30px;
         }
-        
         .planning-container.visible { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -104,32 +103,34 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN AJUSTADA --- */
+        /* --- AJUSTE CRÍTICO DE IMPRESIÓN --- */
         @page {
-            size: landscape; 
-            margin: 5mm; /* Margen muy pequeño para aprovechar la hoja */
+            size: landscape;     /* Fuerza horizontal */
+            margin: 0;           /* Respetamos que tú pones "Margen: Ninguno" en el diálogo */
         }
 
         @media print {
-            body { 
-                background: white; padding: 0; font-size: 10pt;
-                /* El Zoom es la clave: reducimos al 80% para que quepa seguro */
-                zoom: 80%; 
+            body {
+                background: white; 
+                /* AJUSTE CLAVE: Zoom al 60%. Esto encoge todo para que quepa seguro en el A4 */
+                zoom: 60%; 
+                
+                /* Añadimos relleno manual ya que los márgenes de impresión están a 0 */
+                padding: 15mm !important; 
+                
+                width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
-                width: 100%;
             }
-            
+
             /* Ocultar interfaz */
             header, .days-nav, button.btn-print, #loading { display: none; }
             
             .container { 
-                width: 100% !important; 
-                max-width: none !important; 
-                margin: 0; padding: 0; 
+                width: 100% !important; max-width: none !important; margin: 0; padding: 0; 
             }
             
-            /* Lógica de visualización */
+            /* Visualización */
             .planning-container { display: none !important; }
             .planning-container.visible { 
                 display: block !important; 
@@ -139,21 +140,29 @@
             }
             .planning-container.visible:last-child { page-break-after: auto; }
 
-            /* Grid Ajustado para Papel */
+            /* Grid para papel */
             .timetable {
                 display: grid !important;
-                /* Reducimos la columna hora a 50px para dar más sitio a los carriles */
-                grid-template-columns: 50px repeat(6, 1fr) !important;
-                border: 1px solid #000; 
-                width: 99%; /* Un pelín menos del 100% para evitar borde derecho cortado */
-                margin: 0 auto; /* Centrado */
+                /* Columnas equilibradas */
+                grid-template-columns: 60px repeat(6, 1fr) !important;
+                border: 2px solid #333; 
+                width: 100%;
             }
 
-            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 9pt; }
-            .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
-            .student-block { border: 1px solid #000 !important; color: #000 !important; background-color: #f0f0f0 !important; font-weight: bold; }
-            .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
+            .header-cell { background: #ddd !important; color: #000 !important; border: 1px solid #333; border-bottom: 2px solid #333; font-size: 14pt; }
+            .time-cell { border: 1px solid #666; background: #f0f0f0 !important; color: #000 !important; font-size: 12pt; }
+            .slot-cell { border: 1px solid #666; border-right: 1px solid #666; }
+            
+            /* Bloques de alumno con borde más fuerte para que se vea bien impreso */
+            .student-block { 
+                border: 2px solid #555 !important; 
+                color: #000 !important; 
+                background-color: #f9f9f9 !important; 
+                font-weight: bold;
+                font-size: 11pt; /* Letra un poco más grande al haber hecho zoom out */
+            }
+            
+            .break-row { border: 1px solid #333; background: #eee !important; color: black; font-size: 10pt; }
         }
     </style>
 </head>
@@ -174,7 +183,7 @@
 </div>
 
 <script>
-    // URLs (Carga Directa)
+    // URLs de Datos (Directas, las que funcionan)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
