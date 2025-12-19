@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín</title>
+    <title>Horario Semanal CSE Elisa Gundín - Con Notas</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -55,6 +55,7 @@
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
             animation: fadeIn 0.3s ease; margin-bottom: 30px;
+            padding-bottom: 20px; /* Espacio extra abajo */
         }
         .planning-container.visible { display: block; }
 
@@ -103,7 +104,29 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* --- IMPRESIÓN (Versión Maestra Segura) --- */
+        /* ESTILOS CAJA DE NOTAS (PANTALLA) */
+        .notes-box {
+            margin-top: 20px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #fff;
+            width: 98%; /* Mismo ancho que la tabla al imprimir */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .notes-header {
+            background: var(--primary);
+            color: white;
+            padding: 5px 10px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .notes-body {
+            height: 80px;
+            background: white;
+        }
+
+        /* --- IMPRESIÓN --- */
         @page {
             size: landscape;
             margin: 0; 
@@ -112,7 +135,7 @@
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 60%; /* CLAVE: Escala reducida para que entre todo */
+                zoom: 60%; 
                 padding: 10mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
@@ -133,8 +156,7 @@
 
             .timetable {
                 display: grid !important;
-                /* Hora a 50px, suficiente para verla, deja espacio a alumnos */
-                grid-template-columns: 50px repeat(6, 1fr) !important;
+                grid-template-columns: 55px repeat(6, 1fr) !important;
                 width: 98% !important;
                 margin: 0 auto !important;
                 border: 2px solid #000; 
@@ -142,17 +164,35 @@
             }
 
             .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 14pt; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 12pt; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; }
             .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
-            
             .student-block { 
-                border: 1px solid #000 !important; 
-                color: #000 !important; 
-                background-color: #f0f0f0 !important; 
-                font-weight: bold;
-                font-size: 10pt; /* Tamaño seguro */
+                border: 1px solid #000 !important; color: #000 !important; background-color: #f0f0f0 !important; 
+                font-weight: bold; font-size: 11pt; padding: 0 4px;
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
+
+            /* ESTILOS CAJA DE NOTAS (IMPRESIÓN) */
+            .notes-box {
+                margin-top: 20px !important;
+                border: 2px solid #000 !important; /* Borde negro sólido */
+                border-radius: 0 !important;
+                width: 98% !important;
+                margin-left: auto;
+                margin-right: auto;
+                break-inside: avoid; /* Evita que se corte */
+            }
+            .notes-header {
+                background: #ccc !important; /* Gris impresora */
+                color: #000 !important;
+                border-bottom: 2px solid #000 !important;
+                font-size: 14pt !important;
+                text-transform: uppercase;
+            }
+            .notes-body {
+                height: 180px !important; /* Altura fija para rellenar el folio */
+                background: white !important;
+            }
         }
     </style>
 </head>
@@ -306,7 +346,17 @@
                 });
             });
 
-            html += `</div></div>`;
+            html += `</div>`; // Cierre tabla
+            
+            // --- AQUÍ AÑADIMOS LA CAJA DE NOTAS ---
+            html += `
+                <div class="notes-box">
+                    <div class="notes-header">NOTAS / OBSERVACIONES</div>
+                    <div class="notes-body"></div>
+                </div>
+            `;
+            
+            html += `</div>`; // Cierre container
             container.innerHTML += html;
         });
 
