@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Ajuste Vertical</title>
+    <title>Horario Semanal CSE Elisa Gundín - Ajuste Final Espacio</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -120,7 +120,7 @@
         }
         .notes-body { height: 80px; background: white; }
 
-        /* --- IMPRESIÓN CORREGIDA --- */
+        /* --- IMPRESIÓN --- */
         @page {
             size: landscape;
             margin: 0; 
@@ -129,13 +129,14 @@
         @media print {
             body { 
                 background: white; padding: 0; 
-                /* AJUSTE: Zoom al 55% para ganar espacio vertical seguro */
-                zoom: 55%; 
-                padding: 10mm 15mm !important; 
+                /* Mantenemos Zoom 60% que es el que te gustaba */
+                zoom: 60%; 
+                /* Reducimos el margen superior/inferior para aprovechar más hoja */
+                padding: 5mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
-                display: block !important; /* Quitamos flex para evitar cortes */
+                display: block !important;
             }
             
             header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
@@ -145,7 +146,6 @@
             
             .planning-container.visible { 
                 display: block !important; 
-                /* QUITAMOS LA ALTURA LIMITADA PARA QUE NO CORTE A LAS 19:30 */
                 height: auto !important; 
                 page-break-after: always; 
                 margin-bottom: 0; padding-bottom: 0;
@@ -171,18 +171,22 @@
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
 
-            /* CAJA DE NOTAS: TAMAÑO FIJO Y SEGURO */
+            /* CAJA DE NOTAS AJUSTADA */
             .notes-box {
-                margin-top: 25px !important;
+                /* Forzamos que se muestre en bloque */
+                display: block !important;
+                margin-top: 20px !important;
                 border: 2px solid #000 !important;
                 width: 98% !important;
                 margin-left: auto; margin-right: auto;
-                display: block !important;
                 
-                /* AJUSTE: Altura fija de 250px. 
-                   Suficiente para notas, pero asegura que cabe en la hoja 1 */
-                height: 250px !important; 
-                page-break-inside: avoid !important; /* Evita que se parta */
+                /* AQUÍ ESTÁ EL CAMBIO: Altura fija muy grande */
+                /* En la captura sobraba medio folio. 250px era poco. Ponemos 550px. */
+                height: 550px !important; 
+                
+                /* Evitar particiones */
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
             .notes-header {
                 background: #ccc !important; color: #000 !important;
@@ -193,7 +197,8 @@
             }
             .notes-body {
                 background: white !important;
-                height: 215px !important; /* El resto de la altura */
+                /* El cuerpo ocupa todo el resto menos la cabecera */
+                height: 520px !important; 
             }
         }
     </style>
