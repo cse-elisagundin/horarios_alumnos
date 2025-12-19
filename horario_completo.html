@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning Alumnos - Versión Final Restaurada</title>
+    <title>Planning Alumnos - Logo + Maestra</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -19,7 +19,7 @@
 
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* HEADER */
+        /* HEADER GENERAL (Botón Imprimir) */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -33,7 +33,7 @@
         }
         button.btn-print:hover { opacity: 0.9; }
 
-        /* SPINNER DE CARGA */
+        /* SPINNER */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
@@ -50,7 +50,7 @@
         .nav-btn:hover { background: #e2e6ea; }
         .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0,51,102,0.3); }
 
-        /* PLANNING CONTAINER */
+        /* CONTENEDOR DE LA HOJA (DÍA) */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
@@ -60,10 +60,9 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* TABLA DE CARRILES */
+        /* TABLA */
         .timetable {
             display: grid;
-            /* PANTALLA: Hora 70px */
             grid-template-columns: 70px repeat(6, 1fr); 
             width: 100%;
             border-right: 1px solid var(--border);
@@ -105,15 +104,12 @@
         }
 
         /* --- IMPRESIÓN --- */
-        @page {
-            size: landscape;
-            margin: 0; 
-        }
+        @page { size: landscape; margin: 0; }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 60%; /* Escala reducida para encajar */
+                zoom: 60%; 
                 padding: 10mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
@@ -121,10 +117,9 @@
             }
             
             header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
-            
             .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; }
-            
             .planning-container { display: none !important; }
+            
             .planning-container.visible { 
                 display: block !important; 
                 page-break-after: always; 
@@ -133,27 +128,17 @@
             }
             .planning-container.visible:last-child { page-break-after: auto; }
 
-            /* Grid Ajustado para Papel */
             .timetable {
                 display: grid !important;
-                /* IMPRESIÓN: Hora aumentada a 60px para que se lea bien */
-                grid-template-columns: 60px repeat(6, 1fr) !important;
-                
-                width: 98% !important; /* Mantenemos margen derecho de seguridad */
+                grid-template-columns: 60px repeat(6, 1fr) !important; /* Hora ampliada */
+                width: 98% !important;
                 margin: 0 auto !important;
                 border: 2px solid #000; 
                 border-right: 2px solid #000 !important;
             }
 
             .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 14pt; }
-            
-            .time-cell { 
-                border: 1px solid #000; 
-                background: #eee !important; 
-                color: #000 !important; 
-                font-size: 12pt; /* Letra legible */
-            }
-            
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 12pt; }
             .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
             
             .student-block { 
@@ -184,7 +169,8 @@
 </div>
 
 <script>
-    // URLs ORIGINALES (Las que funcionan siempre)
+    const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
+    
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -206,7 +192,6 @@
         return t.trim().split(":").slice(0,2).join(":");
     }
 
-    // CARGA CLÁSICA (ROBUSTA)
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { 
@@ -236,18 +221,15 @@
         const dias = Object.keys(urls);
         const franjasMaestras = generarFranjas();
 
-        // Carga simultánea
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
 
         document.getElementById('loading').style.display = 'none';
 
-        // Botonera
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        // Render
         dias.forEach((dia, index) => {
             const data = resultados[index];
             if(!data || data.length < 2) return;
@@ -264,10 +246,12 @@
                 if(alumnos.length>0) mapa[hora] = alumnos;
             }
 
+            // AQUI ESTA EL CAMBIO DEL HEADER CON LOGO
             let html = `
             <div id="view-${dia}" class="planning-container">
-                <div style="padding:15px; border-bottom:1px solid #eee;">
-                    <h2 style="margin:0; font-size:18px; color:#003366;">📅 ${dia}</h2>
+                <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="margin:0; font-size:20px; color:#003366;">📅 ${dia}</h2>
+                    <img src="${LOGO_URL}" alt="Logo" style="height:40px;">
                 </div>
                 <div class="timetable">
                     <div class="header-cell">Hora</div>
@@ -324,9 +308,8 @@
             container.innerHTML += html;
         });
 
-        // Día inicial
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[new Date().getDay()];
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
     }
 
