@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Impresión Perfecta</title>
+    <title>Planning General - Márgenes Corregidos</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -105,22 +105,30 @@
 
         #error-log { color: red; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
+        /* --- CONFIGURACIÓN DE IMPRESIÓN (MÁRGENES MEJORADOS) --- */
         @page {
             size: landscape; 
-            margin: 0.5cm;
+            margin: 1.2cm; /* AUMENTADO: Antes 0.5cm, ahora 1.2cm para que respire */
         }
 
         @media print {
             body { 
-                background: white; padding: 0; font-size: 10pt;
+                background: white; 
+                padding: 0; 
+                font-size: 10pt;
+                zoom: 95%; /* TRUCO: Reduce al 95% para alejar el contenido de los bordes */
                 -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
             
             /* Ocultamos elementos de navegación */
             header, .days-nav, button.btn-print, #loading-bar-container, #status-text { display: none; }
             
-            .container { max-width: 100% !important; width: 100% !important; margin: 0; padding: 0; }
+            .container { 
+                max-width: 100% !important; 
+                width: 100% !important; 
+                margin: 0; 
+                padding: 10px; /* Padding extra interno */
+            }
             
             /* REGLA DE ORO: Ocultamos TODOS los contenedores por defecto */
             .planning-container { display: none !important; }
@@ -128,12 +136,11 @@
             /* Solo mostramos el que tenga la clase .visible (el que estás viendo en pantalla) */
             .planning-container.visible { 
                 display: block !important; 
-                page-break-after: always; /* Si hay varios visibles (modo Ver Todo), salta página */
+                page-break-after: always; 
                 margin-bottom: 0;
                 box-shadow: none; border: none;
             }
             
-            /* Evitar página en blanco al final del último visible */
             .planning-container.visible:last-child { page-break-after: auto; }
 
             /* Ajustes visuales para papel */
@@ -348,17 +355,4 @@
             let match = (b.innerText === dia) || (dia === 'Todo' && b.innerText === 'Ver Todo');
             if(match) b.classList.add('active'); else b.classList.remove('active');
         });
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-
-</body>
-</html>
+        document.
