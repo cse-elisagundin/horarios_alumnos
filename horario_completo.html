@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Ajuste Precisión</title>
+    <title>Horario Semanal CSE Elisa Gundín - Final Seguro</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -33,12 +33,10 @@
         }
         button.btn-print:hover { opacity: 0.9; }
 
-        /* SPINNER */
-        .spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* BARRA DE PROGRESO (Rescatada de la versión Maestra) */
+        #loading-bar-container { width: 100%; background: #e0e0e0; height: 6px; border-radius: 3px; margin-bottom: 20px; overflow: hidden; }
+        #loading-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        #status-text { text-align: center; font-size: 13px; color: #666; margin-bottom: 10px; font-weight: bold; }
 
         /* BOTONERA */
         .days-nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
@@ -119,8 +117,10 @@
             padding: 5px 10px; font-weight: bold; font-size: 14px;
         }
         .notes-body { height: 80px; background: white; }
+        
+        #error-log { color: red; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
 
-        /* --- IMPRESIÓN --- */
+        /* --- IMPRESIÓN (DISEÑO PERFECTO) --- */
         @page {
             size: landscape;
             margin: 0; 
@@ -135,10 +135,10 @@
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
                 display: block !important;
-                overflow: visible !important; /* ASEGURA QUE NO SE CORTEN HORAS */
+                overflow: visible !important; 
             }
             
-            header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
+            header, .days-nav, button.btn-print, #loading-bar-container, #status-text { display: none; }
             .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; overflow: visible !important; }
             
             .planning-container { display: none !important; }
@@ -146,7 +146,7 @@
             .planning-container.visible { 
                 display: block !important; 
                 height: auto !important; 
-                overflow: visible !important; /* IMPORTANTE PARA VER HASTA 20:30 */
+                overflow: visible !important; 
                 page-break-after: always; 
                 margin-bottom: 0; padding-bottom: 0;
                 box-shadow: none; border: none;
@@ -171,18 +171,14 @@
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
 
-            /* CAJA DE NOTAS AJUSTADA AL MILÍMETRO */
+            /* CAJA DE NOTAS: 485px */
             .notes-box {
                 display: block !important;
                 margin-top: 25px !important;
                 border: 2px solid #000 !important;
                 width: 98% !important;
                 margin-left: auto; margin-right: auto;
-                
-                /* AJUSTE PRECISIÓN: 485px. 
-                   Llena el hueco blanco de la captura sin pasarse. */
                 height: 485px !important; 
-                
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -195,7 +191,7 @@
             }
             .notes-body {
                 background: white !important;
-                height: 450px !important; /* El cuerpo rellena el resto */
+                height: 450px !important; 
             }
         }
     </style>
@@ -210,21 +206,26 @@
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
-    <div id="loading" class="spinner"></div>
+    <div id="status-text">Iniciando sistema...</div>
+    <div id="loading-bar-container"><div id="loading-bar"></div></div>
+    <div id="error-log"></div>
+
     <div id="days-buttons" class="days-nav"></div>
     <div id="schedule-container"></div>
 </div>
 
 <script>
+    // CONFIGURACIÓN
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
+    const SHEET_BASE = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?single=true&output=csv";
     
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-    };
+    const DIAS = [
+        { nombre: "Lunes", gid: "0" },
+        { nombre: "Martes", gid: "1905233272" },
+        { nombre: "Miércoles", gid: "745373517" },
+        { nombre: "Jueves", gid: "314818236" },
+        { nombre: "Viernes", gid: "1396865785" }
+    ];
 
     function stringToColor(str) {
         let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -239,14 +240,20 @@
         return t.trim().split(":").slice(0,2).join(":");
     }
 
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, header:false, skipEmptyLines:true, 
-                complete: res => resolve(res.data), 
-                error: e => { console.error(e); resolve([]); } 
-            });
-        });
+    // --- CARGA SEGURA (CON PROXY) ---
+    async function fetchWithRetry(url, retries = 3, delay = 1000) {
+        // Usamos allorigins para saltar bloqueos CORS
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url + "&t=" + Date.now())}`;
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.text();
+            } catch (err) {
+                if (i === retries - 1) throw err;
+                await new Promise(res => setTimeout(res, delay));
+            }
+        }
     }
 
     function generarFranjas() {
@@ -263,128 +270,60 @@
     }
 
     async function cargarTodo() {
+        const status = document.getElementById('status-text');
+        const bar = document.getElementById('loading-bar');
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
+        const errorLog = document.getElementById('error-log');
+        
         const franjasMaestras = generarFranjas();
+        let datosCargados = {};
+        
+        // Carga secuencial segura
+        for (let i = 0; i < DIAS.length; i++) {
+            const dia = DIAS[i];
+            const progreso = ((i) / DIAS.length) * 100;
+            
+            status.innerText = `Cargando ${dia.nombre}... (${i+1}/${DIAS.length})`;
+            bar.style.width = `${progreso}%`;
 
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
-        const resultados = await Promise.all(promesas);
+            try {
+                const url = `${SHEET_BASE}&gid=${dia.gid}`;
+                const csvText = await fetchWithRetry(url);
+                const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true });
+                datosCargados[dia.nombre] = parsed.data;
 
-        document.getElementById('loading').style.display = 'none';
+            } catch (e) {
+                console.error(`Error en ${dia.nombre}:`, e);
+                errorLog.style.display = "block";
+                errorLog.innerHTML += `Falló carga de ${dia.nombre}<br>`;
+                datosCargados[dia.nombre] = [];
+            }
+            // Pequeña pausa para no saturar
+            await new Promise(r => setTimeout(r, 50));
+        }
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
+        bar.style.width = "100%";
+        status.innerText = "Procesando...";
+        setTimeout(() => { document.getElementById('loading-bar-container').style.display='none'; status.style.display='none'; }, 500);
+
+        // GENERAR INTERFAZ
+        let btns = DIAS.map(d => `<button class="nav-btn" onclick="cambiarDia('${d.nombre}')">${d.nombre}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        dias.forEach((dia, index) => {
-            const data = resultados[index];
-            if(!data || data.length < 2) return;
+        DIAS.forEach(dia => {
+            const data = datosCargados[dia.nombre];
+            if(!data || data.length < 2) {
+                 // Si no hay datos creamos contenedor vacío para que no rompa
+                 container.innerHTML += `<div id="view-${dia.nombre}" class="planning-container">Sin datos.</div>`;
+                 return;
+            }
 
             let mapa = {};
-            for(let i=1; i<data.length; i++) {
-                let row = data[i];
+            for(let row of data) {
                 if(!row[1]) continue;
                 let hora = cleanTime(row[1]);
                 let alumnos = [];
                 for(let c=2; c<row.length; c++) {
                     if(row[c] && row[c].trim()) alumnos.push(row[c].trim());
-                }
-                if(alumnos.length>0) mapa[hora] = alumnos;
-            }
-
-            let html = `
-            <div id="view-${dia}" class="planning-container">
-                <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="margin:0; font-size:24px; color:#003366;">📅 ${dia}</h2>
-                    <img src="${LOGO_URL}" alt="Logo" style="height:50px;">
-                </div>
-                <div class="timetable">
-                    <div class="header-cell">Hora</div>
-                    <div class="header-cell">Alumno 1</div>
-                    <div class="header-cell">Alumno 2</div>
-                    <div class="header-cell">Alumno 3</div>
-                    <div class="header-cell">Alumno 4</div>
-                    <div class="header-cell">Alumno 5</div>
-                    <div class="header-cell">Alumno 6</div>
-            `;
-
-            let lastLaneMap = {}; 
-
-            franjasMaestras.forEach(hora => {
-                if(hora === "BREAK") {
-                    html += `<div class="break-row">--- MEDIODÍA ---</div>`;
-                    return;
-                }
-
-                let alumnos = mapa[hora] || [];
-                let slots = [null, null, null, null, null, null];
-                let porColocar = [];
-
-                alumnos.forEach(al => {
-                    let prev = lastLaneMap[al];
-                    if(prev !== undefined && slots[prev] === null) {
-                        slots[prev] = al;
-                    } else {
-                        porColocar.push(al);
-                    }
-                });
-
-                porColocar.forEach(al => {
-                    let idx = slots.indexOf(null);
-                    if(idx !== -1) {
-                        slots[idx] = al;
-                        lastLaneMap[al] = idx;
-                    }
-                });
-
-                html += `<div class="time-cell">${hora}</div>`;
-                slots.forEach(al => {
-                    if(al) {
-                        let bg = stringToColor(al);
-                        let brd = stringToBorder(al);
-                        html += `<div class="slot-cell"><div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">${al}</div></div>`;
-                    } else {
-                        html += `<div class="slot-cell"></div>`;
-                    }
-                });
-            });
-
-            html += `</div>`; 
-            
-            // NOTAS
-            html += `
-                <div class="notes-box">
-                    <div class="notes-header">NOTAS / OBSERVACIONES</div>
-                    <div class="notes-body"></div>
-                </div>
-            `;
-            
-            html += `</div>`; 
-            container.innerHTML += html;
-        });
-
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.nav-btn').forEach(b => {
-            let match = (b.innerText === dia) || (dia === 'Todo' && b.innerText === 'Ver Todo');
-            if(match) b.classList.add('active'); else b.classList.remove('active');
-        });
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-
-</body>
-</html>
