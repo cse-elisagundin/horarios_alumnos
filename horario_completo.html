@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Versión Final</title>
+    <title>Planning General - Ajuste Impresión</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -33,7 +33,7 @@
         }
         button.btn-print:hover { opacity: 0.9; }
 
-        /* SPINNER DE CARGA */
+        /* SPINNER */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
@@ -104,24 +104,30 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN SOLICITADA --- */
+        /* --- CONFIGURACIÓN DE IMPRESIÓN AJUSTADA --- */
         @page {
             size: landscape; 
-            margin: 1.2cm; /* Margen amplio para que no corte */
+            margin: 5mm; /* Margen muy pequeño para aprovechar la hoja */
         }
 
         @media print {
             body { 
                 background: white; padding: 0; font-size: 10pt;
-                zoom: 95%; /* Reduce ligeramente para dar aire */
+                /* El Zoom es la clave: reducimos al 80% para que quepa seguro */
+                zoom: 80%; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
+                width: 100%;
             }
             
             /* Ocultar interfaz */
-            header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
+            header, .days-nav, button.btn-print, #loading { display: none; }
             
-            .container { max-width: 100% !important; width: 100% !important; margin: 0; padding: 0; }
+            .container { 
+                width: 100% !important; 
+                max-width: none !important; 
+                margin: 0; padding: 0; 
+            }
             
             /* Lógica de visualización */
             .planning-container { display: none !important; }
@@ -133,15 +139,18 @@
             }
             .planning-container.visible:last-child { page-break-after: auto; }
 
-            /* Bordes sólidos para impresora */
+            /* Grid Ajustado para Papel */
             .timetable {
                 display: grid !important;
-                grid-template-columns: 60px repeat(6, 1fr) !important;
-                border: 2px solid #000; width: 100%;
+                /* Reducimos la columna hora a 50px para dar más sitio a los carriles */
+                grid-template-columns: 50px repeat(6, 1fr) !important;
+                border: 1px solid #000; 
+                width: 99%; /* Un pelín menos del 100% para evitar borde derecho cortado */
+                margin: 0 auto; /* Centrado */
             }
 
             .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 9pt; }
             .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
             .student-block { border: 1px solid #000 !important; color: #000 !important; background-color: #f0f0f0 !important; font-weight: bold; }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
@@ -165,7 +174,7 @@
 </div>
 
 <script>
-    // URLs ORIGINALES (Las que funcionan siempre)
+    // URLs (Carga Directa)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -187,7 +196,6 @@
         return t.trim().split(":").slice(0,2).join(":");
     }
 
-    // CARGA DIRECTA (Sin intermediarios ni proxys complejos)
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { 
@@ -217,18 +225,15 @@
         const dias = Object.keys(urls);
         const franjasMaestras = generarFranjas();
 
-        // Carga simultánea (más rápida y sin bloqueos de proxy)
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
 
         document.getElementById('loading').style.display = 'none';
 
-        // Botonera
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        // Renderizado
         dias.forEach((dia, index) => {
             const data = resultados[index];
             if(!data || data.length < 2) return;
@@ -305,9 +310,8 @@
             container.innerHTML += html;
         });
 
-        // Día inicial
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[new Date().getDay()];
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
     }
 
