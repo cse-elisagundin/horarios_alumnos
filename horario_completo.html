@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Carriles Estables</title>
+    <title>Planning General - Impresión Perfecta</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -54,6 +54,8 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
             animation: fadeIn 0.3s ease; margin-bottom: 30px;
         }
+        
+        /* Esta clase es clave: Solo se muestra si tiene 'visible' */
         .planning-container.visible { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -61,7 +63,6 @@
         /* TABLA DE CARRILES */
         .timetable {
             display: grid;
-            /* Hora (70px) + 6 Columnas Flexibles */
             grid-template-columns: 70px repeat(6, 1fr); 
             width: 100%;
             border-right: 1px solid var(--border);
@@ -95,7 +96,6 @@
             overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
             cursor: default;
         }
-        .student-block:hover { opacity: 0.8; }
 
         .break-row {
             grid-column: 1 / -1; background: #eef4fa; color: #8898aa;
@@ -103,71 +103,50 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* LOG DE ERRORES */
         #error-log { color: red; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
 
-        /* --- AJUSTES DE IMPRESIÓN --- */
+        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
         @page {
-            size: landscape; /* Fuerza orientación horizontal */
-            margin: 1cm;
+            size: landscape; 
+            margin: 0.5cm;
         }
 
         @media print {
             body { 
-                background: white; 
-                padding: 0; 
-                font-size: 10pt; /* Letra un poco más pequeña para asegurar que cabe */
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
+                background: white; padding: 0; font-size: 10pt;
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
             }
             
+            /* Ocultamos elementos de navegación */
             header, .days-nav, button.btn-print, #loading-bar-container, #status-text { display: none; }
             
             .container { max-width: 100% !important; width: 100% !important; margin: 0; padding: 0; }
             
-            .planning-container { 
-                display: block !important; 
-                break-inside: auto; 
-                margin-bottom: 0; 
-                box-shadow: none; 
-                border: none;
-                page-break-after: always; /* Cada día en una hoja nueva */
-            }
+            /* REGLA DE ORO: Ocultamos TODOS los contenedores por defecto */
+            .planning-container { display: none !important; }
 
+            /* Solo mostramos el que tenga la clase .visible (el que estás viendo en pantalla) */
+            .planning-container.visible { 
+                display: block !important; 
+                page-break-after: always; /* Si hay varios visibles (modo Ver Todo), salta página */
+                margin-bottom: 0;
+                box-shadow: none; border: none;
+            }
+            
+            /* Evitar página en blanco al final del último visible */
+            .planning-container.visible:last-child { page-break-after: auto; }
+
+            /* Ajustes visuales para papel */
             .timetable {
                 display: grid !important;
-                /* Forzamos el grid al imprimir para que no se descoloque */
                 grid-template-columns: 60px repeat(6, 1fr) !important;
-                border: 2px solid #000;
-                width: 100%;
+                border: 2px solid #000; width: 100%;
             }
 
-            .header-cell {
-                background: #ccc !important; 
-                color: #000 !important; 
-                border: 1px solid #000;
-                border-bottom: 2px solid #000;
-            }
-
-            .time-cell { 
-                border: 1px solid #000; 
-                background: #eee !important;
-                color: #000 !important;
-            }
-            
-            .slot-cell { 
-                border: 1px solid #000; /* Bordes negros sólidos */
-                border-right: 1px solid #000;
-            }
-
-            .student-block { 
-                border: 1px solid #000 !important; 
-                color: #000 !important;
-                background-color: #f0f0f0 !important; /* Fondo gris claro al imprimir para ahorrar tinta pero diferenciar */
-                font-weight: bold;
-            }
-            
-            /* Ocultar saltos o huecos innecesarios */
+            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; }
+            .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
+            .student-block { border: 1px solid #000 !important; color: #000 !important; background-color: #f0f0f0 !important; font-weight: bold; }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
         }
     </style>
@@ -202,7 +181,6 @@
         { nombre: "Viernes", gid: "1396865785" }
     ];
 
-    // Utilidades de color
     function stringToColor(str) {
         let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
         return `hsl(${Math.abs(hash) % 360}, 75%, 92%)`; 
@@ -216,24 +194,21 @@
         return t.trim().split(":").slice(0,2).join(":");
     }
 
-    // --- CARGA CON REINTENTOS Y PROXY ---
+    // Proxy + Reintentos
     async function fetchWithRetry(url, retries = 3, delay = 1000) {
-        // Usamos proxy para evitar CORS
         const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url + "&t=" + Date.now())}`;
-        
         for (let i = 0; i < retries; i++) {
             try {
                 const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 return await response.text();
             } catch (err) {
-                if (i === retries - 1) throw err; // Si es el último intento, lanzamos error
-                await new Promise(res => setTimeout(res, delay)); // Esperamos antes de reintentar
+                if (i === retries - 1) throw err;
+                await new Promise(res => setTimeout(res, delay));
             }
         }
     }
 
-    // Generar franjas horarias
     function generarFranjas() {
         let f = [];
         f.push("11:00", "11:30", "12:00", "BREAK");
@@ -257,56 +232,44 @@
         const franjasMaestras = generarFranjas();
         let datosCargados = {};
         
-        // 1. CARGA SECUENCIAL (UNO A UNO)
         for (let i = 0; i < DIAS.length; i++) {
             const dia = DIAS[i];
             const progreso = ((i) / DIAS.length) * 100;
-            
             status.innerText = `Cargando ${dia.nombre}... (${i+1}/${DIAS.length})`;
             bar.style.width = `${progreso}%`;
 
             try {
                 const url = `${SHEET_BASE}&gid=${dia.gid}`;
                 const csvText = await fetchWithRetry(url);
-                
-                // Parsear CSV
                 const parsed = Papa.parse(csvText, { header: false, skipEmptyLines: true });
                 datosCargados[dia.nombre] = parsed.data;
-
             } catch (e) {
                 console.error(`Error en ${dia.nombre}:`, e);
                 errorLog.style.display = "block";
-                errorLog.innerHTML += `Falló carga de ${dia.nombre} (Reintentos agotados)<br>`;
-                datosCargados[dia.nombre] = []; // Array vacío para no romper la web
+                errorLog.innerHTML += `Falló carga de ${dia.nombre}<br>`;
+                datosCargados[dia.nombre] = [];
             }
-            
-            // Pequeña pausa para no saturar
             await new Promise(r => setTimeout(r, 100));
         }
 
-        // Finalizar carga
         bar.style.width = "100%";
-        status.innerText = "Procesando visualización...";
-        setTimeout(() => { document.getElementById('loading-bar-container').style.display='none'; status.style.display='none'; }, 1000);
+        status.innerText = "Procesando...";
+        setTimeout(() => { document.getElementById('loading-bar-container').style.display='none'; status.style.display='none'; }, 500);
 
-        // 2. GENERAR BOTONES
         let btns = DIAS.map(d => `<button class="nav-btn" onclick="cambiarDia('${d.nombre}')">${d.nombre}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        // 3. RENDERIZAR VISTAS
         DIAS.forEach(dia => {
             const data = datosCargados[dia.nombre];
             if(!data || data.length < 2) {
-                 // Si falló, mostramos mensaje en la pestaña
-                 container.innerHTML += `<div id="view-${dia.nombre}" class="planning-container" style="padding:20px;text-align:center;color:red">No se pudo cargar información para este día.</div>`;
+                 container.innerHTML += `<div id="view-${dia.nombre}" class="planning-container" style="padding:20px;text-align:center;color:#999">Sin datos.</div>`;
                  return;
             }
 
-            // Mapeo: Hora -> [Alumnos]
             let mapa = {};
             for(let row of data) {
-                if(!row[1]) continue; // Col B es hora
+                if(!row[1]) continue;
                 let hora = cleanTime(row[1]);
                 let alumnos = [];
                 for(let c=2; c<row.length; c++) {
@@ -330,7 +293,6 @@
                     <div class="header-cell">Carril 6</div>
             `;
 
-            // Algoritmo de Carriles
             let lastLaneMap = {}; 
 
             franjasMaestras.forEach(hora => {
@@ -340,11 +302,9 @@
                 }
 
                 let alumnos = mapa[hora] || [];
-                let slots = [null, null, null, null, null, null]; // 6 Huecos
-
+                let slots = [null, null, null, null, null, null];
                 let porColocar = [];
 
-                // 1. Mantener posición anterior si es posible
                 alumnos.forEach(al => {
                     let prev = lastLaneMap[al];
                     if(prev !== undefined && slots[prev] === null) {
@@ -354,7 +314,6 @@
                     }
                 });
 
-                // 2. Rellenar huecos libres
                 porColocar.forEach(al => {
                     let idx = slots.indexOf(null);
                     if(idx !== -1) {
@@ -363,18 +322,12 @@
                     }
                 });
 
-                // 3. Generar HTML Fila
                 html += `<div class="time-cell">${hora}</div>`;
                 slots.forEach(al => {
                     if(al) {
                         let bg = stringToColor(al);
                         let brd = stringToBorder(al);
-                        html += `
-                        <div class="slot-cell">
-                            <div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">
-                                ${al}
-                            </div>
-                        </div>`;
+                        html += `<div class="slot-cell"><div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">${al}</div></div>`;
                     } else {
                         html += `<div class="slot-cell"></div>`;
                     }
@@ -385,7 +338,6 @@
             container.innerHTML += html;
         });
 
-        // Activar día actual
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(DIAS.find(d=>d.nombre===hoy) ? hoy : "Lunes");
