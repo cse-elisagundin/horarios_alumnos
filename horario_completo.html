@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín</title>
+    <title>Horario Semanal CSE Elisa Gundín - Final Sin Bordes</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -104,17 +104,16 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* NOTAS (Estilo Web - Sin bordes laterales) */
-        .notes-box {
+        /* ESTILO NOTAS EN PANTALLA */
+        .notes-section {
             margin-top: 30px;
             width: 98%;
             margin-left: auto; margin-right: auto;
-            border: none; /* Sin borde */
         }
-        .notes-header {
+        .notes-title {
             background: var(--primary); color: white;
             padding: 8px 10px; font-weight: bold; font-size: 14px;
-            border-radius: 4px; /* Un poco redondeado en web */
+            border-radius: 4px;
         }
 
         /* --- IMPRESIÓN --- */
@@ -126,7 +125,8 @@
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 55%; 
+                /* VOLVEMOS AL 60% QUE TE GUSTA */
+                zoom: 60%; 
                 padding: 10mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
@@ -168,25 +168,24 @@
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
 
-            /* CAJA DE NOTAS - SOLO ENCABEZADO */
-            .notes-box {
+            /* SECCIÓN DE NOTAS: SOLO TÍTULO */
+            .notes-section {
                 display: block !important;
                 margin-top: 30px !important;
                 width: 98% !important;
                 margin-left: auto; margin-right: auto;
-                border: none !important; /* Aseguramos que no haya bordes laterales */
-                height: auto !important; /* Altura libre */
+                border: none !important; /* SIN BORDES */
             }
-            .notes-header {
+            .notes-title {
                 background: #ccc !important; color: #000 !important;
-                /* Borde solo alrededor del título para que destaque */
-                border: 1px solid #000 !important; 
+                /* Sin bordes, solo una franja gris */
                 font-size: 14pt !important;
+                font-weight: bold !important;
                 text-transform: uppercase;
                 padding: 5px 10px;
                 border-radius: 0 !important;
             }
-            /* El cuerpo (body) ya no se dibuja, es espacio libre */
+            /* El espacio debajo queda vacío automáticamente */
         }
     </style>
 </head>
@@ -218,164 +217,4 @@
     };
 
     function stringToColor(str) {
-        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash) % 360}, 75%, 92%)`; 
-    }
-    function stringToBorder(str) {
-        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash) % 360}, 60%, 40%)`;
-    }
-    function cleanTime(t) {
-        if(!t) return "";
-        return t.trim().split(":").slice(0,2).join(":");
-    }
-
-    // CARGA DIRECTA
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, header:false, skipEmptyLines:true, 
-                complete: res => resolve(res.data), 
-                error: e => { console.error(e); resolve([]); } 
-            });
-        });
-    }
-
-    function generarFranjas() {
-        let f = [];
-        f.push("11:00", "11:30", "12:00", "BREAK");
-        let h = 15, m = 0;
-        while(true) {
-            let time = `${h}:${m===0?'00':'30'}`;
-            f.push(time);
-            if(h===20 && m===30) break;
-            m+=30; if(m===60) { m=0; h++; }
-        }
-        return f;
-    }
-
-    async function cargarTodo() {
-        const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
-        const franjasMaestras = generarFranjas();
-
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
-        const resultados = await Promise.all(promesas);
-
-        document.getElementById('loading').style.display = 'none';
-
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
-        btnContainer.innerHTML = btns;
-
-        dias.forEach((dia, index) => {
-            const data = resultados[index];
-            if(!data || data.length < 2) return;
-
-            let mapa = {};
-            for(let i=1; i<data.length; i++) {
-                let row = data[i];
-                if(!row[1]) continue;
-                let hora = cleanTime(row[1]);
-                let alumnos = [];
-                for(let c=2; c<row.length; c++) {
-                    if(row[c] && row[c].trim()) alumnos.push(row[c].trim());
-                }
-                if(alumnos.length>0) mapa[hora] = alumnos;
-            }
-
-            let html = `
-            <div id="view-${dia}" class="planning-container">
-                <div style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="margin:0; font-size:24px; color:#003366;">📅 ${dia}</h2>
-                    <img src="${LOGO_URL}" alt="Logo" style="height:50px;">
-                </div>
-                <div class="timetable">
-                    <div class="header-cell">Hora</div>
-                    <div class="header-cell">Alumno 1</div>
-                    <div class="header-cell">Alumno 2</div>
-                    <div class="header-cell">Alumno 3</div>
-                    <div class="header-cell">Alumno 4</div>
-                    <div class="header-cell">Alumno 5</div>
-                    <div class="header-cell">Alumno 6</div>
-            `;
-
-            let lastLaneMap = {}; 
-
-            franjasMaestras.forEach(hora => {
-                if(hora === "BREAK") {
-                    html += `<div class="break-row">--- MEDIODÍA ---</div>`;
-                    return;
-                }
-
-                let alumnos = mapa[hora] || [];
-                let slots = [null, null, null, null, null, null];
-                let porColocar = [];
-
-                alumnos.forEach(al => {
-                    let prev = lastLaneMap[al];
-                    if(prev !== undefined && slots[prev] === null) {
-                        slots[prev] = al;
-                    } else {
-                        porColocar.push(al);
-                    }
-                });
-
-                porColocar.forEach(al => {
-                    let idx = slots.indexOf(null);
-                    if(idx !== -1) {
-                        slots[idx] = al;
-                        lastLaneMap[al] = idx;
-                    }
-                });
-
-                html += `<div class="time-cell">${hora}</div>`;
-                slots.forEach(al => {
-                    if(al) {
-                        let bg = stringToColor(al);
-                        let brd = stringToBorder(al);
-                        html += `<div class="slot-cell"><div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">${al}</div></div>`;
-                    } else {
-                        html += `<div class="slot-cell"></div>`;
-                    }
-                });
-            });
-
-            html += `</div>`; 
-            
-            // CAJA DE NOTAS (SOLO HEADER)
-            html += `
-                <div class="notes-box">
-                    <div class="notes-header">NOTAS / OBSERVACIONES</div>
-                </div>
-            `;
-            
-            html += `</div>`; 
-            container.innerHTML += html;
-        });
-
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.nav-btn').forEach(b => {
-            let match = (b.innerText === dia) || (dia === 'Todo' && b.innerText === 'Ver Todo');
-            if(match) b.classList.add('active'); else b.classList.remove('active');
-        });
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-
-</body>
-</html>
+        let hash = 0; for (
