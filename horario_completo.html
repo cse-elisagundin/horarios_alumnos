@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Ajuste Final Impresión</title>
+    <title>Planning General - Ajuste Final Ancho</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -103,34 +103,25 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* --- AJUSTE CRÍTICO DE IMPRESIÓN --- */
+        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
         @page {
-            size: landscape;     /* Fuerza horizontal */
-            margin: 0;           /* Respetamos que tú pones "Margen: Ninguno" en el diálogo */
+            size: landscape; 
+            margin: 0; /* Sin margen de navegador, lo controlamos nosotros */
         }
 
         @media print {
-            body {
-                background: white; 
-                /* AJUSTE CLAVE: Zoom al 60%. Esto encoge todo para que quepa seguro en el A4 */
-                zoom: 60%; 
-                
-                /* Añadimos relleno manual ya que los márgenes de impresión están a 0 */
-                padding: 15mm !important; 
-                
+            body { 
+                background: white; padding: 0; 
+                zoom: 60%; /* Escala reducida */
+                /* Padding de seguridad: 10mm arriba/abajo, 15mm lados */
+                padding: 10mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
-
-            /* Ocultar interfaz */
+            
             header, .days-nav, button.btn-print, #loading { display: none; }
-            
-            .container { 
-                width: 100% !important; max-width: none !important; margin: 0; padding: 0; 
-            }
-            
-            /* Visualización */
+            .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; }
             .planning-container { display: none !important; }
             .planning-container.visible { 
                 display: block !important; 
@@ -140,29 +131,31 @@
             }
             .planning-container.visible:last-child { page-break-after: auto; }
 
-            /* Grid para papel */
+            /* Grid Ajustado */
             .timetable {
                 display: grid !important;
-                /* Columnas equilibradas */
-                grid-template-columns: 60px repeat(6, 1fr) !important;
-                border: 2px solid #333; 
-                width: 100%;
+                /* AJUSTE CLAVE: Columna hora de 40px y el resto se reparte */
+                grid-template-columns: 40px repeat(6, 1fr) !important;
+                
+                /* AJUSTE CLAVE: Ancho del 96% para dejar hueco a la derecha */
+                width: 96% !important;
+                margin: 0 auto !important; /* Centrar la tabla */
+                
+                border: 2px solid #000; 
+                border-right: 2px solid #000 !important; /* Forzar borde derecho */
             }
 
-            .header-cell { background: #ddd !important; color: #000 !important; border: 1px solid #333; border-bottom: 2px solid #333; font-size: 14pt; }
-            .time-cell { border: 1px solid #666; background: #f0f0f0 !important; color: #000 !important; font-size: 12pt; }
-            .slot-cell { border: 1px solid #666; border-right: 1px solid #666; }
-            
-            /* Bloques de alumno con borde más fuerte para que se vea bien impreso */
+            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 13pt; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; }
+            .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
             .student-block { 
-                border: 2px solid #555 !important; 
+                border: 1px solid #000 !important; 
                 color: #000 !important; 
-                background-color: #f9f9f9 !important; 
+                background-color: #f0f0f0 !important; 
                 font-weight: bold;
-                font-size: 11pt; /* Letra un poco más grande al haber hecho zoom out */
+                font-size: 10pt; /* Letra un poco más pequeña para que quepan nombres */
             }
-            
-            .break-row { border: 1px solid #333; background: #eee !important; color: black; font-size: 10pt; }
+            .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
         }
     </style>
 </head>
@@ -183,7 +176,7 @@
 </div>
 
 <script>
-    // URLs de Datos (Directas, las que funcionan)
+    // URLs de Datos (Directas)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -289,57 +282,3 @@
                 alumnos.forEach(al => {
                     let prev = lastLaneMap[al];
                     if(prev !== undefined && slots[prev] === null) {
-                        slots[prev] = al;
-                    } else {
-                        porColocar.push(al);
-                    }
-                });
-
-                porColocar.forEach(al => {
-                    let idx = slots.indexOf(null);
-                    if(idx !== -1) {
-                        slots[idx] = al;
-                        lastLaneMap[al] = idx;
-                    }
-                });
-
-                html += `<div class="time-cell">${hora}</div>`;
-                slots.forEach(al => {
-                    if(al) {
-                        let bg = stringToColor(al);
-                        let brd = stringToBorder(al);
-                        html += `<div class="slot-cell"><div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">${al}</div></div>`;
-                    } else {
-                        html += `<div class="slot-cell"></div>`;
-                    }
-                });
-            });
-
-            html += `</div></div>`;
-            container.innerHTML += html;
-        });
-
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.nav-btn').forEach(b => {
-            let match = (b.innerText === dia) || (dia === 'Todo' && b.innerText === 'Ver Todo');
-            if(match) b.classList.add('active'); else b.classList.remove('active');
-        });
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-
-</body>
-</html>
