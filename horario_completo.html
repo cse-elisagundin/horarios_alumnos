@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Master Print Fix</title>
+    <title>Planning General - Final Ajustado</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -60,7 +60,7 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* TABLA DE CARRILES */
+        /* TABLA DE CARRILES (PANTALLA) */
         .timetable {
             display: grid;
             grid-template-columns: 70px repeat(6, 1fr); 
@@ -103,35 +103,27 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* --- AQUÍ ESTÁ LA MAGIA DE LA IMPRESIÓN --- */
+        /* --- IMPRESIÓN --- */
         @page {
             size: landscape;
-            margin: 0; /* Control total del margen */
+            margin: 0; 
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                
-                /* 1. HACEMOS TODO MÁS PEQUEÑO PARA QUE QUEPA */
-                zoom: 60%; 
-                
-                /* 2. LE DAMOS MARGEN FALSO CON PADDING */
+                zoom: 60%; /* Escala reducida para encajar */
                 padding: 10mm 15mm !important; 
-                
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
             
-            /* Ocultar cosas que no sirven en papel */
             header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
             
             .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; }
             
-            /* Lógica para imprimir solo lo visible */
             .planning-container { display: none !important; }
-            
             .planning-container.visible { 
                 display: block !important; 
                 page-break-after: always; 
@@ -143,210 +135,25 @@
             /* Grid Ajustado para Papel */
             .timetable {
                 display: grid !important;
-                /* Reducimos la hora a 40px para ganar espacio */
-                grid-template-columns: 40px repeat(6, 1fr) !important;
+                /* AUMENTADO: De 40px a 55px para que la hora respire */
+                grid-template-columns: 55px repeat(6, 1fr) !important;
                 
-                /* IMPORTANTE: Ancho 98% y borde derecho forzado */
-                width: 98% !important;
+                width: 98% !important; /* Mantenemos margen derecho de seguridad */
                 margin: 0 auto !important;
                 border: 2px solid #000; 
                 border-right: 2px solid #000 !important;
             }
 
             .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 14pt; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 12pt; }
+            .time-cell { 
+                border: 1px solid #000; 
+                background: #eee !important; 
+                color: #000 !important; 
+                font-size: 12pt; /* Letra legible */
+                padding: 0 5px; /* Un poco de aire lateral */
+            }
             .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
             
             .student-block { 
                 border: 1px solid #000 !important; 
-                color: #000 !important; 
-                background-color: #f0f0f0 !important; 
-                font-weight: bold;
-                font-size: 11pt;
-            }
-            .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <div>
-            <h1>Planning Semanal</h1>
-            <div style="color:#666; font-size:14px">Vista de Carriles</div>
-        </div>
-        <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
-    </header>
-
-    <div id="loading" class="spinner"></div>
-    <div id="days-buttons" class="days-nav"></div>
-    <div id="schedule-container"></div>
-</div>
-
-<script>
-    // URLs de Datos (MÉTODO CLÁSICO QUE FUNCIONA)
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-    };
-
-    function stringToColor(str) {
-        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash) % 360}, 75%, 92%)`; 
-    }
-    function stringToBorder(str) {
-        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash) % 360}, 60%, 40%)`;
-    }
-    function cleanTime(t) {
-        if(!t) return "";
-        return t.trim().split(":").slice(0,2).join(":");
-    }
-
-    // CARGA DE DATOS ORIGINAL (SIN PROXIES COMPLEJOS)
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, header:false, skipEmptyLines:true, 
-                complete: res => resolve(res.data), 
-                error: e => { console.error(e); resolve([]); } 
-            });
-        });
-    }
-
-    function generarFranjas() {
-        let f = [];
-        f.push("11:00", "11:30", "12:00", "BREAK");
-        let h = 15, m = 0;
-        while(true) {
-            let time = `${h}:${m===0?'00':'30'}`;
-            f.push(time);
-            if(h===20 && m===30) break;
-            m+=30; if(m===60) { m=0; h++; }
-        }
-        return f;
-    }
-
-    async function cargarTodo() {
-        const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
-        const franjasMaestras = generarFranjas();
-
-        // 1. Cargar Datos
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
-        const resultados = await Promise.all(promesas);
-
-        document.getElementById('loading').style.display = 'none';
-
-        // 2. Generar Botones
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
-        btnContainer.innerHTML = btns;
-
-        // 3. Renderizar
-        dias.forEach((dia, index) => {
-            const data = resultados[index];
-            if(!data || data.length < 2) return;
-
-            let mapa = {};
-            for(let i=1; i<data.length; i++) {
-                let row = data[i];
-                if(!row[1]) continue;
-                let hora = cleanTime(row[1]);
-                let alumnos = [];
-                for(let c=2; c<row.length; c++) {
-                    if(row[c] && row[c].trim()) alumnos.push(row[c].trim());
-                }
-                if(alumnos.length>0) mapa[hora] = alumnos;
-            }
-
-            let html = `
-            <div id="view-${dia}" class="planning-container">
-                <div style="padding:15px; border-bottom:1px solid #eee;">
-                    <h2 style="margin:0; font-size:18px; color:#003366;">📅 ${dia}</h2>
-                </div>
-                <div class="timetable">
-                    <div class="header-cell">Hora</div>
-                    <div class="header-cell">Carril 1</div>
-                    <div class="header-cell">Carril 2</div>
-                    <div class="header-cell">Carril 3</div>
-                    <div class="header-cell">Carril 4</div>
-                    <div class="header-cell">Carril 5</div>
-                    <div class="header-cell">Carril 6</div>
-            `;
-
-            let lastLaneMap = {}; 
-
-            franjasMaestras.forEach(hora => {
-                if(hora === "BREAK") {
-                    html += `<div class="break-row">--- MEDIODÍA ---</div>`;
-                    return;
-                }
-
-                let alumnos = mapa[hora] || [];
-                let slots = [null, null, null, null, null, null];
-                let porColocar = [];
-
-                alumnos.forEach(al => {
-                    let prev = lastLaneMap[al];
-                    if(prev !== undefined && slots[prev] === null) {
-                        slots[prev] = al;
-                    } else {
-                        porColocar.push(al);
-                    }
-                });
-
-                porColocar.forEach(al => {
-                    let idx = slots.indexOf(null);
-                    if(idx !== -1) {
-                        slots[idx] = al;
-                        lastLaneMap[al] = idx;
-                    }
-                });
-
-                html += `<div class="time-cell">${hora}</div>`;
-                slots.forEach(al => {
-                    if(al) {
-                        let bg = stringToColor(al);
-                        let brd = stringToBorder(al);
-                        html += `<div class="slot-cell"><div class="student-block" style="background:${bg}; border-color:${brd}; color:${brd}">${al}</div></div>`;
-                    } else {
-                        html += `<div class="slot-cell"></div>`;
-                    }
-                });
-            });
-
-            html += `</div></div>`;
-            container.innerHTML += html;
-        });
-
-        // Activar día actual
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.nav-btn').forEach(b => {
-            let match = (b.innerText === dia) || (dia === 'Todo' && b.innerText === 'Ver Todo');
-            if(match) b.classList.add('active'); else b.classList.remove('active');
-        });
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-
-</body>
-</html>
+                color: #000 !important;
