@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planning General - Conexión Nativa</title>
+    <title>Planning General - Master Print Fix</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
         :root { --primary: #003366; --bg: #f2f4f7; --border: #dde2e5; --time-bg: #e9ecef; }
@@ -32,7 +33,7 @@
         }
         button.btn-print:hover { opacity: 0.9; }
 
-        /* SPINNER */
+        /* SPINNER DE CARGA */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
@@ -102,26 +103,35 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN (MANTENIENDO LO QUE FUNCIONABA) --- */
+        /* --- AQUÍ ESTÁ LA MAGIA DE LA IMPRESIÓN --- */
         @page {
-            size: landscape; 
-            margin: 0; 
+            size: landscape;
+            margin: 0; /* Control total del margen */
         }
 
         @media print {
             body { 
-                background: white; padding: 0; font-size: 10pt;
-                zoom: 60%; /* ZOOM AL 60% */
-                padding: 10mm 15mm !important; /* Relleno manual */
+                background: white; padding: 0; 
+                
+                /* 1. HACEMOS TODO MÁS PEQUEÑO PARA QUE QUEPA */
+                zoom: 60%; 
+                
+                /* 2. LE DAMOS MARGEN FALSO CON PADDING */
+                padding: 10mm 15mm !important; 
+                
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
             
+            /* Ocultar cosas que no sirven en papel */
             header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
             
             .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; }
+            
+            /* Lógica para imprimir solo lo visible */
             .planning-container { display: none !important; }
+            
             .planning-container.visible { 
                 display: block !important; 
                 page-break-after: always; 
@@ -130,24 +140,29 @@
             }
             .planning-container.visible:last-child { page-break-after: auto; }
 
-            /* Grid Ajustado */
+            /* Grid Ajustado para Papel */
             .timetable {
                 display: grid !important;
+                /* Reducimos la hora a 40px para ganar espacio */
                 grid-template-columns: 40px repeat(6, 1fr) !important;
-                width: 97% !important;
+                
+                /* IMPORTANTE: Ancho 98% y borde derecho forzado */
+                width: 98% !important;
                 margin: 0 auto !important;
                 border: 2px solid #000; 
+                border-right: 2px solid #000 !important;
             }
 
-            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 13pt; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; }
+            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 14pt; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 12pt; }
             .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
+            
             .student-block { 
                 border: 1px solid #000 !important; 
                 color: #000 !important; 
                 background-color: #f0f0f0 !important; 
                 font-weight: bold;
-                font-size: 10pt;
+                font-size: 11pt;
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
         }
@@ -165,24 +180,19 @@
     </header>
 
     <div id="loading" class="spinner"></div>
-    <div id="status-text" style="text-align:center; color:#666; margin-bottom:20px">Conectando con Google...</div>
-    
     <div id="days-buttons" class="days-nav"></div>
     <div id="schedule-container"></div>
 </div>
 
 <script>
-    // ID PRINCIPAL DE LA HOJA DE CÁLCULO
-    const SHEET_ID = "2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx";
-    
-    // GIDs DE LAS PESTAÑAS
-    const DIAS = [
-        { nombre: "Lunes", gid: "0" },
-        { nombre: "Martes", gid: "1905233272" },
-        { nombre: "Miércoles", gid: "745373517" },
-        { nombre: "Jueves", gid: "314818236" },
-        { nombre: "Viernes", gid: "1396865785" }
-    ];
+    // URLs de Datos (MÉTODO CLÁSICO QUE FUNCIONA)
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+    };
 
     function stringToColor(str) {
         let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -194,27 +204,18 @@
     }
     function cleanTime(t) {
         if(!t) return "";
-        // Maneja si google devuelve un objeto de hora o string
-        if(typeof t === 'string') return t.trim().split(":").slice(0,2).join(":");
-        return t; 
+        return t.trim().split(":").slice(0,2).join(":");
     }
 
-    // --- NUEVA FUNCIÓN DE CARGA (API NATIVA GOOGLE VIZ) ---
-    // Esta función nunca falla por CORS y devuelve JSON directo
-    async function leerHojaNativa(gid) {
-        const url = `https://docs.google.com/spreadsheets/d/e/${SHEET_ID}/gviz/tq?tqx=out:json&gid=${gid}`;
-        try {
-            const res = await fetch(url);
-            const txt = await res.text();
-            // Google envuelve el JSON en una función, hay que limpiarlo:
-            // "/*O_o*/ google.visualization.Query.setResponse({...});"
-            const jsonString = txt.substring(47).slice(0, -2);
-            const json = JSON.parse(jsonString);
-            return json.table.rows; // Filas en formato Google Viz
-        } catch (e) {
-            console.error("Error cargando GID " + gid, e);
-            return [];
-        }
+    // CARGA DE DATOS ORIGINAL (SIN PROXIES COMPLEJOS)
+    function leerHoja(url) {
+        return new Promise(resolve => {
+            Papa.parse(url + "&t=" + Date.now(), { 
+                download:true, header:false, skipEmptyLines:true, 
+                complete: res => resolve(res.data), 
+                error: e => { console.error(e); resolve([]); } 
+            });
+        });
     }
 
     function generarFranjas() {
@@ -233,50 +234,41 @@
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
-        const status = document.getElementById('status-text');
+        const dias = Object.keys(urls);
         const franjasMaestras = generarFranjas();
 
-        // Carga paralela (Súper rápida con esta API)
-        const promesas = DIAS.map(d => leerHojaNativa(d.gid));
+        // 1. Cargar Datos
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
 
         document.getElementById('loading').style.display = 'none';
-        status.style.display = 'none';
 
-        // Botonera
-        let btns = DIAS.map(d => `<button class="nav-btn" onclick="cambiarDia('${d.nombre}')">${d.nombre}</button>`).join('');
+        // 2. Generar Botones
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        // Renderizado
-        DIAS.forEach((dia, index) => {
-            const rows = resultados[index]; // Ojo: Formato Google Viz, no Array simple
-            
-            if(!rows || rows.length === 0) return;
+        // 3. Renderizar
+        dias.forEach((dia, index) => {
+            const data = resultados[index];
+            if(!data || data.length < 2) return;
 
-            // Mapeo: Hora -> [Alumnos]
             let mapa = {};
-            
-            // Google Viz Rows estructura: row.c[0] = Col A, row.c[1] = Col B (Hora), row.c[2...] = Alumnos
-            rows.forEach(row => {
-                const cells = row.c;
-                if(!cells || !cells[1] || !cells[1].v) return; // Si no hay hora, saltar
-
-                let hora = cleanTime(cells[1].f || cells[1].v); // .f es formatted value, .v es value
-                
+            for(let i=1; i<data.length; i++) {
+                let row = data[i];
+                if(!row[1]) continue;
+                let hora = cleanTime(row[1]);
                 let alumnos = [];
-                for(let c=2; c<cells.length; c++) {
-                    if(cells[c] && cells[c].v) {
-                        alumnos.push(cells[c].v);
-                    }
+                for(let c=2; c<row.length; c++) {
+                    if(row[c] && row[c].trim()) alumnos.push(row[c].trim());
                 }
-                if(alumnos.length > 0) mapa[hora] = alumnos;
-            });
+                if(alumnos.length>0) mapa[hora] = alumnos;
+            }
 
             let html = `
-            <div id="view-${dia.nombre}" class="planning-container">
+            <div id="view-${dia}" class="planning-container">
                 <div style="padding:15px; border-bottom:1px solid #eee;">
-                    <h2 style="margin:0; font-size:18px; color:#003366;">📅 ${dia.nombre}</h2>
+                    <h2 style="margin:0; font-size:18px; color:#003366;">📅 ${dia}</h2>
                 </div>
                 <div class="timetable">
                     <div class="header-cell">Hora</div>
@@ -333,10 +325,10 @@
             container.innerHTML += html;
         });
 
-        // Día inicial
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[new Date().getDay()];
-        cambiarDia(DIAS.find(d => d.nombre === hoy) ? hoy : "Lunes");
+        // Activar día actual
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
+        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
     }
 
     function cambiarDia(dia) {
