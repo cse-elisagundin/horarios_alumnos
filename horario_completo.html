@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Ajuste Final Espacio</title>
+    <title>Horario Semanal CSE Elisa Gundín - Ajuste Exacto</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -129,10 +129,8 @@
         @media print {
             body { 
                 background: white; padding: 0; 
-                /* Mantenemos Zoom 60% que es el que te gustaba */
-                zoom: 60%; 
-                /* Reducimos el margen superior/inferior para aprovechar más hoja */
-                padding: 5mm 15mm !important; 
+                zoom: 55%; /* Zoom calibrado */
+                padding: 10mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -173,18 +171,15 @@
 
             /* CAJA DE NOTAS AJUSTADA */
             .notes-box {
-                /* Forzamos que se muestre en bloque */
                 display: block !important;
-                margin-top: 20px !important;
+                margin-top: 25px !important;
                 border: 2px solid #000 !important;
                 width: 98% !important;
                 margin-left: auto; margin-right: auto;
                 
-                /* AQUÍ ESTÁ EL CAMBIO: Altura fija muy grande */
-                /* En la captura sobraba medio folio. 250px era poco. Ponemos 550px. */
-                height: 550px !important; 
+                /* AJUSTE CLAVE: 420px (Antes 550px) */
+                height: 420px !important; 
                 
-                /* Evitar particiones */
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
             }
@@ -193,12 +188,11 @@
                 border-bottom: 2px solid #000 !important;
                 font-size: 14pt !important;
                 text-transform: uppercase;
-                height: 30px; line-height: 30px;
+                height: 35px; line-height: 35px;
             }
             .notes-body {
                 background: white !important;
-                /* El cuerpo ocupa todo el resto menos la cabecera */
-                height: 520px !important; 
+                height: 385px !important; /* El resto (420 - 35) */
             }
         }
     </style>
