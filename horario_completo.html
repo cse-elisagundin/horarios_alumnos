@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Final Sin Bordes</title>
+    <title>Horario Semanal CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -19,7 +19,6 @@
 
         .container { max-width: 1400px; margin: 0 auto; }
 
-        /* HEADER PANTALLA */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -31,40 +30,31 @@
             background-color: var(--primary); color: white; border: none;
             padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
-        button.btn-print:hover { opacity: 0.9; }
 
-        /* SPINNER */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* BOTONERA */
         .days-nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .nav-btn {
             padding: 10px 20px; border: 1px solid transparent; background: white;
             color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
             transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 100px;
         }
-        .nav-btn:hover { background: #e2e6ea; }
-        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0,51,102,0.3); }
+        .nav-btn.active { background: var(--primary); color: white; }
 
-        /* PLANNING CONTAINER */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
-            animation: fadeIn 0.3s ease; margin-bottom: 30px;
-            padding-bottom: 20px;
+            margin-bottom: 30px;
         }
         .planning-container.visible { display: block; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* TABLA DE CARRILES */
         .timetable {
             display: grid;
-            grid-template-columns: 70px repeat(6, 1fr); 
+            grid-template-columns: 75px repeat(6, 1fr); 
             width: 100%;
             border-right: 1px solid var(--border);
             border-bottom: 1px solid var(--border);
@@ -83,109 +73,57 @@
             font-size: 12px; min-height: 42px; 
         }
 
-        .slot-cell {
-            border-bottom: 1px solid var(--border); border-right: 1px dashed #eee;
-            background: white; padding: 3px; position: relative;
-        }
+        .slot-cell { border-bottom: 1px solid var(--border); border-right: 1px dashed #eee; padding: 3px; }
 
         .student-block {
-            height: 100%; width: 100%;
-            border-radius: 4px; padding: 0 6px;
-            display: flex; align-items: center; justify-content: flex-start;
-            font-size: 12px; font-weight: 600; color: #333;
+            height: 100%; width: 100%; border-radius: 4px; padding: 0 6px;
+            display: flex; align-items: center; font-size: 12px; font-weight: 600;
             box-sizing: border-box; border-left: 5px solid rgba(0,0,0,0.2);
             overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-            cursor: default;
         }
 
         .break-row {
             grid-column: 1 / -1; background: #eef4fa; color: #8898aa;
-            text-align: center; padding: 5px; font-size: 11px; letter-spacing: 1px; font-weight: bold;
+            text-align: center; padding: 5px; font-size: 11px; font-weight: bold;
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* ESTILO NOTAS EN PANTALLA */
+        /* NOTAS SIN LINEAS */
         .notes-section {
-            margin-top: 30px;
-            width: 98%;
-            margin-left: auto; margin-right: auto;
+            margin-top: 25px;
+            width: 100%;
         }
         .notes-title {
-            background: var(--primary); color: white;
-            padding: 8px 10px; font-weight: bold; font-size: 14px;
-            border-radius: 4px;
+            background: #e9ecef; color: #333;
+            padding: 10px 15px; font-weight: bold; font-size: 14px;
+            border-bottom: 2px solid var(--primary);
+            text-transform: uppercase;
         }
 
-        /* --- IMPRESIÓN --- */
-        @page {
-            size: landscape;
-            margin: 0; 
-        }
+        @page { size: landscape; margin: 0; }
 
         @media print {
-            body { 
-                background: white; padding: 0; 
-                /* VOLVEMOS AL 60% QUE TE GUSTA */
-                zoom: 60%; 
-                padding: 10mm 15mm !important; 
-                width: auto !important;
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
-                display: block !important;
-                overflow: visible !important;
-            }
+            body { background: white; padding: 0; zoom: 60%; padding: 10mm 15mm !important; }
+            header, .days-nav, button.btn-print, #loading { display: none; }
+            .container { width: 100% !important; max-width: none !important; }
+            .planning-container { display: none !important; border: none; box-shadow: none; }
+            .planning-container.visible { display: block !important; page-break-after: always; }
             
-            header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
-            .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; overflow: visible !important; }
-            
-            .planning-container { display: none !important; }
-            
-            .planning-container.visible { 
-                display: block !important; 
-                height: auto !important; 
-                overflow: visible !important; 
-                page-break-after: always; 
-                margin-bottom: 0; padding-bottom: 0;
-                box-shadow: none; border: none;
-            }
-            .planning-container.visible:last-child { page-break-after: auto; }
-
             .timetable {
-                display: grid !important;
-                grid-template-columns: 55px repeat(6, 1fr) !important;
-                width: 98% !important;
-                margin: 0 auto !important;
-                border: 2px solid #000; 
-                border-right: 2px solid #000 !important;
+                grid-template-columns: 60px repeat(6, 1fr) !important;
+                border: 2px solid #000;
             }
+            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; font-size: 14pt; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; }
+            .slot-cell { border: 1px solid #000; }
+            .student-block { border: 1px solid #000 !important; color: #000 !important; background: #fff !important; font-size: 11pt; }
+            .break-row { border: 1px solid #000; background: #ddd !important; color: #000 !important; }
 
-            .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 14pt; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; padding: 0 4px;}
-            .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
-            .student-block { 
-                border: 1px solid #000 !important; color: #000 !important; background-color: #f0f0f0 !important; 
-                font-weight: bold; font-size: 11pt; padding: 0 4px;
-            }
-            .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
-
-            /* SECCIÓN DE NOTAS: SOLO TÍTULO */
-            .notes-section {
-                display: block !important;
-                margin-top: 30px !important;
-                width: 98% !important;
-                margin-left: auto; margin-right: auto;
-                border: none !important; /* SIN BORDES */
-            }
             .notes-title {
-                background: #ccc !important; color: #000 !important;
-                /* Sin bordes, solo una franja gris */
+                background: #eee !important; color: #000 !important;
+                border: 2px solid #000 !important;
                 font-size: 14pt !important;
-                font-weight: bold !important;
-                text-transform: uppercase;
-                padding: 5px 10px;
-                border-radius: 0 !important;
             }
-            /* El espacio debajo queda vacío automáticamente */
         }
     </style>
 </head>
@@ -193,9 +131,7 @@
 
 <div class="container">
     <header>
-        <div>
-            <h1>Horario Semanal CSE Elisa Gundín</h1>
-        </div>
+        <h1>Horario Semanal CSE Elisa Gundín</h1>
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
@@ -206,8 +142,6 @@
 
 <script>
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
-    
-    // URLs Directas
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -216,5 +150,66 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    function stringToColor(str) {
-        let hash = 0; for (
+    function stringToColor(s) {
+        let h = 0; for (let i = 0; i < s.length; i++) h = s.charCodeAt(i) + ((h << 5) - h);
+        return `hsl(${Math.abs(h) % 360}, 70%, 90%)`;
+    }
+
+    async function cargarTodo() {
+        const container = document.getElementById('schedule-container');
+        const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
+        
+        for (const [dia, url] of Object.entries(urls)) {
+            Papa.parse(url + "&t=" + Date.now(), {
+                download: true,
+                complete: (res) => {
+                    let mapa = {};
+                    res.data.forEach(row => { if(row[1]) mapa[row[1].trim().substring(0,5)] = row.slice(2); });
+
+                    let html = `<div id="view-${dia}" class="planning-container">
+                        <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                            <h2 style="margin:0; color:#003366;">📅 ${dia}</h2>
+                            <img src="${LOGO_URL}" style="height:45px;">
+                        </div>
+                        <div class="timetable">
+                            <div class="header-cell">Hora</div>
+                            ${[1,2,3,4,5,6].map(i => `<div class="header-cell">Alumno ${i}</div>`).join('')}`;
+
+                    franjas.forEach(f => {
+                        if(f === "BREAK") { html += `<div class="break-row">MEDIODÍA</div>`; return; }
+                        html += `<div class="time-cell">${f}</div>`;
+                        let alumnos = mapa[f] || [];
+                        for(let i=0; i<6; i++) {
+                            let al = alumnos[i] || "";
+                            html += `<div class="slot-cell">${al ? `<div class="student-block" style="background:${stringToColor(al)}">${al}</div>` : ''}</div>`;
+                        }
+                    });
+
+                    html += `</div><div class="notes-section"><div class="notes-title">NOTAS / OBSERVACIONES</div></div></div>`;
+                    container.innerHTML += html;
+                    if(dia === "Viernes") { 
+                        document.getElementById('loading').style.display = 'none';
+                        cambiarDia(new Date().toLocaleDateString('es-ES', {weekday: 'long'}).charAt(0).toUpperCase() + new Date().toLocaleDateString('es-ES', {weekday: 'long'}).slice(1));
+                    }
+                }
+            });
+        }
+    }
+
+    function cambiarDia(dia) {
+        document.querySelectorAll('.planning-container').forEach(div => {
+            div.classList.toggle('visible', div.id === `view-${dia}` || dia === 'Todo');
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.innerText === dia);
+        });
+    }
+
+    const btnNav = document.getElementById('days-buttons');
+    Object.keys(urls).forEach(d => btnNav.innerHTML += `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`);
+    btnNav.innerHTML += `<button class="nav-btn" onclick="cambiarDia('Todo')">Todo</button>`;
+
+    cargarTodo();
+</script>
+</body>
+</html>
