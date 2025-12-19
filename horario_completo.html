@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Ajuste Exacto</title>
+    <title>Horario Semanal CSE Elisa Gundín - Ajuste Precisión</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -129,22 +129,24 @@
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 55%; /* Zoom calibrado */
+                zoom: 55%; 
                 padding: 10mm 15mm !important; 
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
                 display: block !important;
+                overflow: visible !important; /* ASEGURA QUE NO SE CORTEN HORAS */
             }
             
             header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
-            .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; }
+            .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; overflow: visible !important; }
             
             .planning-container { display: none !important; }
             
             .planning-container.visible { 
                 display: block !important; 
                 height: auto !important; 
+                overflow: visible !important; /* IMPORTANTE PARA VER HASTA 20:30 */
                 page-break-after: always; 
                 margin-bottom: 0; padding-bottom: 0;
                 box-shadow: none; border: none;
@@ -169,7 +171,7 @@
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
 
-            /* CAJA DE NOTAS AJUSTADA */
+            /* CAJA DE NOTAS AJUSTADA AL MILÍMETRO */
             .notes-box {
                 display: block !important;
                 margin-top: 25px !important;
@@ -177,8 +179,9 @@
                 width: 98% !important;
                 margin-left: auto; margin-right: auto;
                 
-                /* AJUSTE CLAVE: 420px (Antes 550px) */
-                height: 420px !important; 
+                /* AJUSTE PRECISIÓN: 485px. 
+                   Llena el hueco blanco de la captura sin pasarse. */
+                height: 485px !important; 
                 
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
@@ -192,7 +195,7 @@
             }
             .notes-body {
                 background: white !important;
-                height: 385px !important; /* El resto (420 - 35) */
+                height: 450px !important; /* El cuerpo rellena el resto */
             }
         }
     </style>
