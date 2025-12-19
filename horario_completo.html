@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Con Notas</title>
+    <title>Horario Semanal CSE Elisa Gundín - Full Page</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -55,7 +55,7 @@
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
             animation: fadeIn 0.3s ease; margin-bottom: 30px;
-            padding-bottom: 20px; /* Espacio extra abajo */
+            padding-bottom: 20px; 
         }
         .planning-container.visible { display: block; }
 
@@ -104,57 +104,70 @@
             border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
         }
 
-        /* ESTILOS CAJA DE NOTAS (PANTALLA) */
+        /* NOTAS (Web) */
         .notes-box {
             margin-top: 20px;
             border: 1px solid var(--border);
             border-radius: 4px;
             background: #fff;
-            width: 98%; /* Mismo ancho que la tabla al imprimir */
+            width: 98%;
             margin-left: auto;
             margin-right: auto;
         }
         .notes-header {
-            background: var(--primary);
-            color: white;
-            padding: 5px 10px;
-            font-weight: bold;
-            font-size: 14px;
+            background: var(--primary); color: white;
+            padding: 5px 10px; font-weight: bold; font-size: 14px;
         }
-        .notes-body {
-            height: 80px;
-            background: white;
-        }
+        .notes-body { height: 80px; background: white; }
 
-        /* --- IMPRESIÓN --- */
+        /* --- IMPRESIÓN PRO (FULL PAGE FILLER) --- */
         @page {
             size: landscape;
             margin: 0; 
         }
 
         @media print {
+            html, body {
+                height: 100%; /* Asegurar altura total */
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
             body { 
-                background: white; padding: 0; 
+                background: white; 
                 zoom: 60%; 
+                /* Padding de seguridad del folio */
                 padding: 10mm 15mm !important; 
+                
+                /* Configuración Flex para llenar la página */
+                display: flex;
+                flex-direction: column;
+                
                 width: auto !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
             
             header, .days-nav, button.btn-print, #loading, #status-text { display: none; }
-            .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; }
+            .container { width: 100% !important; max-width: none !important; margin: 0; padding: 0; height: 100%; }
             
             .planning-container { display: none !important; }
+            
+            /* CONTENEDOR FLEXIBLE QUE OCUPA TODO EL FOLIO */
             .planning-container.visible { 
-                display: block !important; 
+                display: flex !important; /* Magia Flexbox */
+                flex-direction: column;
+                height: 95vh; /* Ocupar el 95% de la altura del folio */
+                
                 page-break-after: always; 
-                margin-bottom: 0;
+                margin-bottom: 0; padding-bottom: 0;
                 box-shadow: none; border: none;
             }
             .planning-container.visible:last-child { page-break-after: auto; }
 
+            /* Tabla no crece ni encoge, mantiene su tamaño */
             .timetable {
+                flex-shrink: 0; 
                 display: grid !important;
                 grid-template-columns: 55px repeat(6, 1fr) !important;
                 width: 98% !important;
@@ -164,7 +177,7 @@
             }
 
             .header-cell { background: #ccc !important; color: #000 !important; border: 1px solid #000; border-bottom: 2px solid #000; font-size: 14pt; }
-            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; }
+            .time-cell { border: 1px solid #000; background: #eee !important; color: #000 !important; font-size: 11pt; padding: 0 4px;}
             .slot-cell { border: 1px solid #000; border-right: 1px solid #000; }
             .student-block { 
                 border: 1px solid #000 !important; color: #000 !important; background-color: #f0f0f0 !important; 
@@ -172,26 +185,29 @@
             }
             .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
 
-            /* ESTILOS CAJA DE NOTAS (IMPRESIÓN) */
+            /* CAJA DE NOTAS FLEXIBLE */
             .notes-box {
-                margin-top: 20px !important;
-                border: 2px solid #000 !important; /* Borde negro sólido */
-                border-radius: 0 !important;
+                margin-top: 15px !important;
+                border: 2px solid #000 !important;
                 width: 98% !important;
-                margin-left: auto;
-                margin-right: auto;
-                break-inside: avoid; /* Evita que se corte */
+                margin-left: auto; margin-right: auto;
+                
+                /* ESTO HACE QUE CREZCA HASTA EL FINAL */
+                flex-grow: 1; 
+                display: flex;
+                flex-direction: column;
             }
             .notes-header {
-                background: #ccc !important; /* Gris impresora */
-                color: #000 !important;
+                background: #ccc !important; color: #000 !important;
                 border-bottom: 2px solid #000 !important;
                 font-size: 14pt !important;
                 text-transform: uppercase;
+                flex-shrink: 0; /* El título no encoge */
             }
             .notes-body {
-                height: 180px !important; /* Altura fija para rellenar el folio */
                 background: white !important;
+                flex-grow: 1; /* El cuerpo blanco crece todo lo posible */
+                height: auto !important;
             }
         }
     </style>
@@ -348,7 +364,7 @@
 
             html += `</div>`; // Cierre tabla
             
-            // --- AQUÍ AÑADIMOS LA CAJA DE NOTAS ---
+            // --- CAJA DE NOTAS FLEXIBLE ---
             html += `
                 <div class="notes-box">
                     <div class="notes-header">NOTAS / OBSERVACIONES</div>
