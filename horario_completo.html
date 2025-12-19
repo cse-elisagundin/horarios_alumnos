@@ -106,15 +106,69 @@
         /* LOG DE ERRORES */
         #error-log { color: red; font-size: 12px; margin-top: 10px; display: none; text-align: center; }
 
+        /* --- AJUSTES DE IMPRESIÓN --- */
+        @page {
+            size: landscape; /* Fuerza orientación horizontal */
+            margin: 1cm;
+        }
+
         @media print {
-            body { background: white; padding: 0; font-size: 9pt; }
+            body { 
+                background: white; 
+                padding: 0; 
+                font-size: 10pt; /* Letra un poco más pequeña para asegurar que cabe */
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
             header, .days-nav, button.btn-print, #loading-bar-container, #status-text { display: none; }
-            .container { max-width: 100%; margin: 0; }
-            .planning-container { display: block !important; break-inside: avoid; margin-bottom: 20px; page-break-after: always; box-shadow: none; border: none; }
-            .timetable { border: 1px solid #000; }
-            .time-cell, .slot-cell { border-color: #999; }
-            .header-cell { background: #ddd !important; color: black !important; -webkit-print-color-adjust: exact; }
-            .student-block { border: 1px solid #666 !important; -webkit-print-color-adjust: exact; }
+            
+            .container { max-width: 100% !important; width: 100% !important; margin: 0; padding: 0; }
+            
+            .planning-container { 
+                display: block !important; 
+                break-inside: auto; 
+                margin-bottom: 0; 
+                box-shadow: none; 
+                border: none;
+                page-break-after: always; /* Cada día en una hoja nueva */
+            }
+
+            .timetable {
+                display: grid !important;
+                /* Forzamos el grid al imprimir para que no se descoloque */
+                grid-template-columns: 60px repeat(6, 1fr) !important;
+                border: 2px solid #000;
+                width: 100%;
+            }
+
+            .header-cell {
+                background: #ccc !important; 
+                color: #000 !important; 
+                border: 1px solid #000;
+                border-bottom: 2px solid #000;
+            }
+
+            .time-cell { 
+                border: 1px solid #000; 
+                background: #eee !important;
+                color: #000 !important;
+            }
+            
+            .slot-cell { 
+                border: 1px solid #000; /* Bordes negros sólidos */
+                border-right: 1px solid #000;
+            }
+
+            .student-block { 
+                border: 1px solid #000 !important; 
+                color: #000 !important;
+                background-color: #f0f0f0 !important; /* Fondo gris claro al imprimir para ahorrar tinta pero diferenciar */
+                font-weight: bold;
+            }
+            
+            /* Ocultar saltos o huecos innecesarios */
+            .break-row { border: 1px solid #000; background: #ddd !important; color: black; }
         }
     </style>
 </head>
@@ -227,7 +281,7 @@
             }
             
             // Pequeña pausa para no saturar
-            await new Promise(r => setTimeout(r, 300));
+            await new Promise(r => setTimeout(r, 100));
         }
 
         // Finalizar carga
