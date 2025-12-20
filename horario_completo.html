@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Vertical</title>
+    <title>Horario Semanal CSE Elisa Gundín - Vertical Limpio</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #003366; --bg: #f2f4f7; --border: #dde2e5; --time-bg: #e9ecef; }
+        :root { --primary: #003366; --bg: #f2f4f7; --border: #000; --time-bg: #e9ecef; }
         
         body { 
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
@@ -19,7 +19,7 @@
 
         .container { max-width: 1000px; margin: 0 auto; }
 
-        /* HEADER */
+        /* HEADER PANTALLA */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -32,7 +32,7 @@
             padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
 
-        /* SPINNER DE CARGA */
+        /* SPINNER */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
@@ -48,7 +48,7 @@
         }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* CONTENEDOR DEL DÍA */
+        /* CONTENEDOR */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
@@ -56,16 +56,16 @@
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA AUTO-AJUSTABLE (NO GRID) --- */
+        /* --- TABLA --- */
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto; /* CLAVE: Se ajusta al contenido */
+            table-layout: auto; 
         }
 
         th, td {
-            border: 1px solid var(--border);
-            padding: 6px 4px;
+            border: 1px solid #999; /* Borde gris visible en pantalla */
+            padding: 4px;
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
@@ -73,21 +73,27 @@
 
         th {
             background: var(--primary); color: white;
-            text-transform: uppercase; font-size: 12px;
+            text-transform: uppercase; font-size: 12px; padding: 10px 2px;
         }
 
-        /* Columna Hora: Muy estrecha */
+        /* Columna Hora */
         td.col-hora {
             width: 1%; white-space: nowrap;
             background: var(--time-bg); color: var(--primary); font-weight: bold;
+            padding: 0 8px;
         }
 
-        /* Bloque de alumno */
-        .student-block {
-            display: inline-block; width: 100%;
-            padding: 4px; border-radius: 4px;
-            font-weight: 600; font-size: 12px;
-            white-space: nowrap; /* No partir el nombre */
+        /* ESTILO NUEVO: SOLO SUBRAYADO */
+        .student-name {
+            display: inline-block;
+            padding-bottom: 2px; /* Espacio entre letras y la linea */
+            font-weight: 700; 
+            font-size: 13px;
+            color: #000; /* Texto negro */
+            white-space: nowrap; 
+            /* El borde se pone dinamicamente en JS */
+            border-bottom-width: 3px; 
+            border-bottom-style: solid;
         }
 
         .break-row {
@@ -95,7 +101,7 @@
             font-weight: bold; font-size: 11px; letter-spacing: 1px;
         }
 
-        /* NOTAS (Limpio) */
+        /* NOTAS */
         .notes-section { margin-top: 30px; width: 96%; margin-left: auto; margin-right: auto; }
         .notes-header {
             background: #e9ecef; color: #333;
@@ -104,16 +110,16 @@
             text-transform: uppercase;
         }
 
-        /* --- IMPRESIÓN VERTICAL --- */
+        /* --- IMPRESIÓN --- */
         @page {
             size: portrait; /* Vertical */
-            margin: 10mm;
+            margin: 5mm;    /* Margen mínimo para aprovechar ancho */
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 75%; /* Zoom ideal para A4 Vertical */
+                zoom: 65%; /* REDUCIDO para que no corte columnas */
                 width: 100% !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -131,26 +137,29 @@
                 page-break-after: always; 
             }
 
-            /* Bordes negros */
+            /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
-            th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 11pt; }
-            td.col-hora { background: #eee !important; color: #000 !important; font-size: 10pt; }
             
-            .student-block {
-                border: 1px solid #000 !important; /* Recuadro fino al nombre */
-                color: #000 !important; 
-                background: transparent !important; /* Sin fondo de color para ahorrar tinta */
-                font-size: 10pt;
+            th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
+            td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
+            
+            /* Nombre limpio subrayado */
+            .student-name {
+                color: #000 !important;
+                background: transparent !important;
+                font-size: 11pt;
+                /* El borde inferior (color) se mantiene */
             }
+            
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
-            /* Notas impresión */
+            /* Notas */
             .notes-section { margin-top: 30px !important; }
             .notes-header {
                 background: #eee !important; color: #000 !important;
                 border: 1px solid #000 !important;
                 border-bottom: 1px solid #000 !important;
-                font-size: 11pt !important;
+                font-size: 12pt !important;
             }
         }
     </style>
@@ -171,7 +180,6 @@
 <script>
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
     
-    // URLs de Datos
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -180,18 +188,17 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    // Función para color pastel basado en el nombre
-    function stringToColor(str) {
+    // Función para sacar color del borde (un poco más oscuro para que se vea bien la linea)
+    function stringToBorderColor(str) {
         let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${Math.abs(hash) % 360}, 75%, 92%)`; 
+        // Saturación alta (70%) y Luminosidad media-oscura (45%) para que la línea se vea bien
+        return `hsl(${Math.abs(hash) % 360}, 70%, 45%)`; 
     }
 
-    // Proceso de carga seguro
     function leerHoja(url) {
         return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { // Añadimos timestamp para evitar caché
-                download: true,
-                skipEmptyLines: true,
+            Papa.parse(url + "&t=" + Date.now(), { 
+                download: true, skipEmptyLines: true,
                 complete: res => resolve(res.data),
                 error: e => { console.error(e); resolve([]); }
             });
@@ -202,29 +209,23 @@
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
-        // Franjas horarias fijas
         const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
-        // Botonera
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        // Carga secuencial para evitar bloqueos
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
             
-            // Procesar datos del CSV a un mapa Hora -> Alumnos
             let mapa = {};
             data.forEach(row => {
                 if(row[1]) {
-                    let hora = row[1].trim().substring(0,5); // "16:00"
-                    // Guardamos desde la columna 2 en adelante (los alumnos)
+                    let hora = row[1].trim().substring(0,5);
                     mapa[hora] = row.slice(2); 
                 }
             });
 
-            // Construir HTML del día
             let html = `
             <div id="view-${dia}" class="planning-container">
                 <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
@@ -261,12 +262,14 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // AQUÍ ESTÁ EL RECORTE DE NOMBRE (Pseudónimo)
-                        // Cogemos solo la primera palabra antes del espacio
+                        // Coger solo el nombre (pseudónimo)
                         let soloNombre = alumnoCompleto.split(" ")[0]; 
                         
-                        let bg = stringToColor(soloNombre);
-                        celda = `<div class="student-block" style="background-color:${bg}">${soloNombre}</div>`;
+                        // Generar color para la línea
+                        let colorLinea = stringToBorderColor(soloNombre);
+                        
+                        // ESTILO NUEVO: Texto limpio con border-bottom
+                        celda = `<span class="student-name" style="border-color:${colorLinea}">${soloNombre}</span>`;
                     }
                     html += `<td>${celda}</td>`;
                 }
@@ -285,7 +288,6 @@
 
         document.getElementById('loading').style.display = 'none';
         
-        // Seleccionar día actual o Lunes por defecto
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
@@ -305,7 +307,6 @@
         });
     }
 
-    // Iniciar carga al estar listo el DOM
     document.addEventListener('DOMContentLoaded', cargarTodo);
 
 </script>
