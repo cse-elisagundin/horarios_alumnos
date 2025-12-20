@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Final Limpio - CSE Elisa Gundín</title>
+    <title>Horario Web - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -13,8 +13,8 @@
         :root { 
             --sheet-blue: #184a7e; 
             --bg: #f2f4f7;
-            --highlight-now: #fff8c4; /* Amarillo suave para hora actual */
-            --separator-bg: #eef4fa; /* Fondo separación mañana/tarde */
+            --highlight-now: #fff8c4; 
+            --separator-bg: #eef4fa;
         }
         
         body { 
@@ -25,16 +25,27 @@
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER (Solo botones, centrados) --- */
-        header {
-            display: flex; 
-            justify-content: center; /* Centrado al no haber buscador */
-            align-items: center;
-            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
-            gap: 15px; /* Espacio entre botones */
+        /* --- ZONA LOGO WEB (No se imprime) --- */
+        .web-brand {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #ddd; /* Separador sutil */
+        }
+        .web-logo-img {
+            height: 70px; /* Tamaño del logo en pantalla */
+            object-fit: contain;
         }
 
-        /* Botones */
+        /* --- HEADER BOTONES --- */
+        header {
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+            gap: 15px;
+        }
+
         .btn-action {
             padding: 10px 20px; border-radius: 4px; cursor: pointer; 
             font-weight: bold; font-size: 16px; text-decoration: none; display: inline-block;
@@ -84,17 +95,13 @@
 
         .student-cell {
             font-weight: bold; text-transform: uppercase; min-width: 90px;
-            cursor: help; /* Cursor para indicar que hay tooltip */
-            border-bottom: 1px dotted var(--sheet-blue); 
+            cursor: help; border-bottom: 1px dotted var(--sheet-blue); 
         }
         
-        /* Fila Actual (Resaltado) */
         tr.current-slot { background-color: var(--highlight-now); }
         tr.current-slot .col-turno { background-color: white; }
-
         tr { height: 35px; } 
 
-        /* --- SEPARACIÓN MAÑANA/TARDE --- */
         .gap-row { height: 25px; }
         .gap-row td {
             background-color: var(--separator-bg) !important;
@@ -110,21 +117,19 @@
             body { background: white; padding: 0; margin: 0; zoom: 85%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .container { padding: 0; margin: 0; border: none; max-width: none; }
             
-            /* Ocultar interfaz */
-            header, .days-nav, .spinner { display: none; } 
+            /* OCULTAMOS EL LOGO WEB, HEADER, NAVEGACIÓN Y SPINNER */
+            .web-brand, header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
             th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
             
-            /* Forzar estilos de la separación en impresión */
             .gap-row td { 
                 background-color: #eef4fa !important; 
                 border-top: 2px solid var(--sheet-blue) !important;
                 border-bottom: 2px solid var(--sheet-blue) !important;
             }
 
-            /* Quitar resaltados interactivos */
             tr.current-slot { background-color: transparent !important; }
             .student-cell { border-bottom: none; }
         }
@@ -133,6 +138,11 @@
 <body>
 
 <div class="container">
+    
+    <div class="web-brand">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
+    </div>
+
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
         <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
@@ -239,7 +249,6 @@
                 html += `</tr>`;
             });
 
-            // Separación sólida (invisible &nbsp; para que imprima bordes)
             html += `<tr class="gap-row"><td colspan="8">&nbsp;</td></tr>`;
 
             slotsTarde.forEach((hora, index) => {
@@ -272,7 +281,7 @@
 
             if(nombreFull) {
                 nombreCorto = nombreFull.split(" ")[0]; // Solo Nombre
-                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; // Apellido en Tooltip
+                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; // Tooltip
             }
             html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
         }
