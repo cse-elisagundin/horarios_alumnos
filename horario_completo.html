@@ -9,32 +9,55 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- COLORES --- */
+        /* --- PALETA DE COLORES CORPORATIVA --- */
         :root { 
-            --sheet-blue: #184a7e; 
-            --bg: #f2f4f7;
-            --highlight-now: #fff8c4; 
-            --separator-bg: #eef4fa;
+            --c-primary: #243c7a;  /* Azul Oscuro */
+            --c-secondary: #2b94cc; /* Azul Claro */
+            --c-accent: #fa65c3;    /* Rosa */
+            
+            --bg-body: #f4f6f9;
+            --bg-container: #ffffff;
+            
+            --highlight-row: rgba(250, 101, 195, 0.12); /* Rosa muy suave para la hora actual */
+            --separator-bg: #edf2f7;
         }
         
         body { 
-            font-family: Arial, Helvetica, sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; padding: 20px; color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente más moderna para web */
+            background-color: var(--bg-body); 
+            margin: 0; padding: 25px; color: #333;
         }
 
-        .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .container { 
+            max-width: 1250px; 
+            margin: 0 auto; 
+            background: var(--bg-container); 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); /* Sombra elegante azulada */
+        }
 
-        /* --- ZONA LOGO WEB (No se imprime) --- */
+        /* --- ZONA LOGO WEB --- */
         .web-brand {
             text-align: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px dashed #ddd; /* Separador sutil */
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            position: relative;
         }
         .web-logo-img {
-            height: 70px; /* Tamaño del logo en pantalla */
+            height: 75px; 
             object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .web-logo-img:hover { transform: scale(1.05); }
+
+        /* Línea decorativa con los 3 colores */
+        .brand-line {
+            height: 4px;
+            width: 100px;
+            margin: 15px auto 0;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 2px;
         }
 
         /* --- HEADER BOTONES --- */
@@ -42,96 +65,214 @@
             display: flex; 
             justify-content: center; 
             align-items: center;
-            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
-            gap: 15px;
+            margin-bottom: 30px; 
+            gap: 20px; 
         }
 
+        /* ESTILOS DE BOTONES MODERNOS */
         .btn-action {
-            padding: 10px 20px; border-radius: 4px; cursor: pointer; 
-            font-weight: bold; font-size: 16px; text-decoration: none; display: inline-block;
+            padding: 12px 25px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 15px; 
+            text-decoration: none; 
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn-print { background-color: var(--sheet-blue); color: white; border: none; }
-        .btn-edit { background-color: white; color: var(--sheet-blue); border: 2px solid var(--sheet-blue); }
-        .btn-print:hover, .btn-edit:hover { opacity: 0.9; background-color: #f0f4f8; }
+
+        /* Botón Imprimir: Azul Oscuro */
+        .btn-print { 
+            background-color: var(--c-primary); 
+            color: white; 
+            border: 2px solid var(--c-primary); 
+        }
+        .btn-print:hover { 
+            background-color: #1a2e5e; 
+            border-color: #1a2e5e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(36, 60, 122, 0.2);
+        }
+
+        /* Botón Editar: Azul Claro -> Rosa al hover */
+        .btn-edit { 
+            background-color: white; 
+            color: var(--c-secondary); 
+            border: 2px solid var(--c-secondary); 
+        }
+        .btn-edit:hover { 
+            background-color: var(--c-accent); 
+            color: white; 
+            border-color: var(--c-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
+        }
 
         /* --- TÍTULOS --- */
-        .day-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
-        .day-title { color: var(--sheet-blue); font-size: 36px; font-weight: bold; text-transform: uppercase; line-height: 1.2; }
-        .day-subtitle { color: var(--sheet-blue); font-size: 20px; font-weight: bold; margin-top: 5px; }
+        .day-header { text-align: center; margin-bottom: 25px; margin-top: 10px; }
+        
+        .day-title { 
+            color: var(--c-primary); 
+            font-size: 42px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            letter-spacing: -1px;
+            margin-bottom: 5px;
+        }
+        
+        .day-subtitle { 
+            color: var(--c-secondary); 
+            font-size: 18px; 
+            font-weight: 600; 
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
 
         /* --- NAVEGACIÓN --- */
-        .days-nav { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
-        .nav-btn {
-            padding: 8px 16px; border: 1px solid var(--sheet-blue); background: white;
-            color: var(--sheet-blue); border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;
+        .days-nav { 
+            display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; 
         }
-        .nav-btn.active { background: var(--sheet-blue); color: white; }
+        .nav-btn {
+            padding: 10px 20px; 
+            border: 1px solid #e0e0e0; 
+            background: white;
+            color: #555; 
+            border-radius: 50px; /* Redondeados */
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        /* Estado Activo: Azul Oscuro */
+        .nav-btn.active { 
+            background: var(--c-primary); 
+            color: white; 
+            border-color: var(--c-primary);
+            box-shadow: 0 4px 10px rgba(36, 60, 122, 0.3);
+        }
+        
+        /* Hover: Borde Rosa y Texto Rosa */
+        .nav-btn:hover:not(.active) { 
+            border-color: var(--c-accent); 
+            color: var(--c-accent); 
+            background: #fff5fa;
+        }
 
+        /* Spinner Rosa */
         .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--sheet-blue); border-radius: 50%;
-            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto;
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid var(--c-accent); /* ROSA */
+            border-radius: 50%;
+            width: 40px; height: 40px; 
+            animation: spin 1s linear infinite; 
+            margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* --- TABLA --- */
-        .planning-container { display: none; }
+        .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         table {
             width: 1%; min-width: 80%; margin: 0 auto;
             border-collapse: collapse; 
-            border: 2px solid var(--sheet-blue); 
+            border: 2px solid var(--c-primary); 
             white-space: nowrap;
+            background: white;
         }
 
         th, td {
-            border: 1px solid var(--sheet-blue); padding: 6px 12px;
-            text-align: center; vertical-align: middle; font-size: 13px; color: var(--sheet-blue); 
+            border: 1px solid var(--c-primary); 
+            padding: 8px 15px;
+            text-align: center; vertical-align: middle; 
+            font-size: 13px; 
+            color: var(--c-primary); 
         }
 
-        th { font-weight: bold; text-transform: uppercase; padding: 10px; border-bottom: 2px solid var(--sheet-blue); }
-        .col-turno { font-weight: bold; font-size: 14px; width: 80px; }
-        .col-hora { font-weight: bold; color: #000; width: 60px; }
-
-        .student-cell {
-            font-weight: bold; text-transform: uppercase; min-width: 90px;
-            cursor: help; border-bottom: 1px dotted var(--sheet-blue); 
+        th { 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            padding: 12px; 
+            border-bottom: 3px solid var(--c-primary); 
+            background-color: #f8fbff; /* Fondo muy sutil para cabecera */
         }
         
-        tr.current-slot { background-color: var(--highlight-now); }
-        tr.current-slot .col-turno { background-color: white; }
-        tr { height: 35px; } 
+        .col-turno { font-weight: 800; font-size: 14px; width: 80px; letter-spacing: 0.5px; }
+        .col-hora { font-weight: 700; color: #111; width: 60px; }
 
-        .gap-row { height: 25px; }
+        .student-cell {
+            font-weight: 700; 
+            text-transform: uppercase; 
+            min-width: 90px;
+            cursor: help; 
+            border-bottom: 2px dotted var(--c-secondary); /* Puntos Azul Claro */
+        }
+        
+        /* Fila Actual (Resaltado ROSA SUAVE) */
+        tr.current-slot { background-color: var(--highlight-row); }
+        tr.current-slot .col-turno { background-color: white; }
+
+        tr { height: 40px; transition: background-color 0.3s; } 
+
+        /* --- SEPARACIÓN MAÑANA/TARDE --- */
+        .gap-row { height: 30px; }
         .gap-row td {
             background-color: var(--separator-bg) !important;
-            border-top: 3px double var(--sheet-blue) !important;
-            border-bottom: 3px double var(--sheet-blue) !important;
-            border-left: 2px solid var(--sheet-blue);
-            border-right: 2px solid var(--sheet-blue);
+            border-top: 3px double var(--c-primary) !important;
+            border-bottom: 3px double var(--c-primary) !important;
+            border-left: 2px solid var(--c-primary);
+            border-right: 2px solid var(--c-primary);
         }
 
-        /* --- IMPRESIÓN --- */
+        /* --- IMPRESIÓN (Optimizada para ser limpia y ahorrar tinta) --- */
         @page { size: portrait; margin: 10mm; }
         @media print {
-            body { background: white; padding: 0; margin: 0; zoom: 85%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .container { padding: 0; margin: 0; border: none; max-width: none; }
+            body { 
+                background: white; padding: 0; margin: 0; 
+                zoom: 85%; 
+                color: #000;
+                font-family: Arial, Helvetica, sans-serif; /* Volver a fuente estándar para imprimir */
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
             
-            /* OCULTAMOS EL LOGO WEB, HEADER, NAVEGACIÓN Y SPINNER */
+            .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
+            
+            /* Ocultar elementos web */
             .web-brand, header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
-            table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
-            th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
             
+            /* Forzar colores oscuros para nitidez en papel */
+            table { border: 2px solid var(--c-primary) !important; width: 95% !important; }
+            th, td { 
+                border: 1px solid var(--c-primary) !important; 
+                color: var(--c-primary) !important; 
+                padding: 6px 12px !important;
+            }
+            
+            /* Cabecera limpia */
+            .day-title { font-size: 36px; margin-bottom: 5px; }
+            .day-subtitle { font-size: 20px; color: var(--c-primary); }
+
+            /* Separador */
             .gap-row td { 
-                background-color: #eef4fa !important; 
-                border-top: 2px solid var(--sheet-blue) !important;
-                border-bottom: 2px solid var(--sheet-blue) !important;
+                background-color: #f0f0f0 !important; 
+                border-top: 2px solid var(--c-primary) !important;
+                border-bottom: 2px solid var(--c-primary) !important;
             }
 
+            /* Quitar decoraciones web */
             tr.current-slot { background-color: transparent !important; }
-            .student-cell { border-bottom: none; }
+            .student-cell { border-bottom: none !important; }
+            th { background-color: transparent !important; }
         }
     </style>
 </head>
@@ -141,11 +282,12 @@
     
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
+        <div class="brand-line"></div>
     </div>
 
     <header>
-        <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
-        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
+        <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
+        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar Hoja</a>
     </header>
 
     <div class="days-nav" id="days-buttons"></div>
@@ -205,7 +347,7 @@
         const slotsManana = ["11:00", "11:30", "12:00"];
         const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
 
@@ -280,8 +422,8 @@
             let tooltipAttr = "";
 
             if(nombreFull) {
-                nombreCorto = nombreFull.split(" ")[0]; // Solo Nombre
-                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; // Tooltip
+                nombreCorto = nombreFull.split(" ")[0]; 
+                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
             }
             html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
         }
@@ -295,7 +437,8 @@
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
             let textoBtn = btn.innerText; 
-            let esActivo = (textoBtn === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
+            // Manejar "Lunes" vs "LUNES"
+            let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
         resaltarHoraActual();
