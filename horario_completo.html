@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Calcado (Sin Logo) - CSE Elisa Gundín</title>
+    <title>Horario Calcado Final - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -11,36 +11,39 @@
     <style>
         /* COLORES Y FUENTES EXACTOS DE LA CAPTURA */
         :root { 
-            --sheet-blue: #184a7e; /* El azul oscuro de los bordes y letras */
+            --sheet-blue: #184a7e; 
             --bg: #ffffff;
         }
         
         body { 
-            font-family: Arial, Helvetica, sans-serif; /* Tipografía estilo Excel */
+            font-family: Arial, Helvetica, sans-serif; 
             background-color: #f2f4f7; 
             margin: 0; padding: 20px; color: #333;
         }
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER DE PANTALLA --- */
+        /* --- HEADER PRINCIPAL DE LA PÁGINA --- */
         header {
             display: flex; 
-            justify-content: center; /* Botón centrado */
+            justify-content: center; 
             align-items: center; 
             margin-bottom: 20px;
         }
 
-        /* --- ESTILOS DE TÍTULO (DÍA DE LA SEMANA) --- */
-        .header-title {
-            width: 100%;
+        /* --- TÍTULO DEL DÍA (LUNES, MARTES...) --- */
+        /* Ahora es visible siempre */
+        .day-header {
             text-align: center;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        .day-title {
             color: var(--sheet-blue);
             font-size: 36px; 
             font-weight: bold;
             text-transform: uppercase;
-            margin-top: 10px;
-            margin-bottom: 15px;
         }
 
         /* --- BOTONERA Y SPINNER --- */
@@ -53,7 +56,6 @@
         .nav-btn.active { background: var(--sheet-blue); color: white; }
         .nav-btn:hover { background: #eef4fa; }
 
-        /* Spinner debajo de botones */
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--sheet-blue); border-radius: 50%;
             width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto;
@@ -65,33 +67,31 @@
         .planning-container.visible { display: block; }
 
         table {
-            width: 1%; /* Auto-ajuste ceñido (Shrink to fit) */
-            min-width: 80%; /* Ancho mínimo visual */
+            width: 1%; /* Auto-ajuste ceñido */
+            min-width: 80%; 
             margin: 0 auto;
-            border-collapse: collapse; /* Bordes pegados estilo Excel */
-            border: 2px solid var(--sheet-blue); /* Borde exterior grueso */
+            border-collapse: collapse; 
+            border: 2px solid var(--sheet-blue); 
             white-space: nowrap;
         }
 
         /* Celdas Generales */
         th, td {
-            border: 1px solid var(--sheet-blue); /* Todos los bordes azules */
+            border: 1px solid var(--sheet-blue); 
             padding: 6px 12px;
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            color: var(--sheet-blue); /* Texto azul por defecto */
+            color: var(--sheet-blue); 
         }
 
-        /* Encabezados (TURNO, HORA, ALUMNO...) */
         th {
             font-weight: bold;
             text-transform: uppercase;
             padding: 10px;
-            border-bottom: 2px solid var(--sheet-blue); /* Línea más gruesa bajo header */
+            border-bottom: 2px solid var(--sheet-blue); 
         }
 
-        /* Columna TURNO (Mañana/Tarde) */
         .col-turno {
             font-weight: bold;
             color: var(--sheet-blue);
@@ -100,14 +100,12 @@
             width: 80px;
         }
 
-        /* Columna HORA */
         .col-hora {
             font-weight: bold;
-            color: #000; /* La hora en negro para contraste */
+            color: #000; 
             width: 60px;
         }
 
-        /* Nombres de alumnos (Solo primer nombre) */
         .student-cell {
             font-weight: bold;
             color: var(--sheet-blue); 
@@ -116,20 +114,18 @@
             min-width: 90px; 
         }
 
-        /* FILAS */
         tr { height: 35px; } 
 
-        /* LA FILA DE SEPARACIÓN (Gap) */
         .gap-row {
             height: 15px;
             border: none;
         }
         .gap-row td {
-            border-left: 2px solid var(--sheet-blue); /* Mantiene bordes laterales exteriores */
+            border-left: 2px solid var(--sheet-blue); 
             border-right: 2px solid var(--sheet-blue);
             border-top: none;
             border-bottom: none;
-            background: #fff; /* Fondo blanco vacío */
+            background: #fff; 
         }
 
         button.btn-print {
@@ -147,34 +143,23 @@
         @media print {
             body { 
                 background: white; padding: 0; margin: 0;
-                zoom: 85%; /* Zoom ajustado para llenar hoja vertical */
+                zoom: 85%; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
 
             .container { padding: 0; margin: 0; border: none; max-width: none; }
-            header, .days-nav, .spinner, .btn-print { display: none; } /* Ocultar interfaz */
+            header, .days-nav, .spinner, .btn-print { display: none; } 
             
-            /* Header específico impresión: Solo Título Centrado */
-            .print-header { 
-                display: flex !important; 
-                justify-content: center; 
-                align-items: center; 
-                margin-bottom: 20px; 
-            }
-
+            /* El .day-header se imprime tal cual, centrado */
+            
             .planning-container.visible { display: block !important; page-break-after: always; }
             
-            /* Forzar colores e impresión exacta */
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
             th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
             
-            /* Eliminar bordes internos de la fila gap en impresión */
             .gap-row td { border-top: 1px solid transparent !important; border-bottom: 1px solid transparent !important; }
         }
-        
-        /* Ocultar header de impresión en pantalla normal */
-        .print-header { display: none; }
     </style>
 </head>
 <body>
@@ -190,7 +175,6 @@
 </div>
 
 <script>
-    // URLs
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -210,7 +194,6 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
         
-        // Franjas exactas según tu diseño calcado
         const slotsManana = ["11:00", "11:30", "12:00"];
         const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
@@ -228,11 +211,11 @@
                 }
             });
 
-            // HEADER SOLO TÍTULO (SIN LOGO)
+            // AQUI ESTÁ LA CORRECCIÓN: TÍTULO VISIBLE Y CENTRADO
             let html = `
             <div id="view-${dia}" class="planning-container">
-                <div class="print-header">
-                    <div class="header-title">${dia.toUpperCase()}</div>
+                <div class="day-header">
+                    <div class="day-title">${dia.toUpperCase()}</div>
                 </div>
                 
                 <table>
@@ -250,7 +233,7 @@
                     </thead>
                     <tbody>`;
 
-            // --- BLOQUE MAÑANA ---
+            // MAÑANA
             slotsManana.forEach((hora, index) => {
                 html += `<tr>`;
                 if(index === 0) {
@@ -261,10 +244,10 @@
                 html += `</tr>`;
             });
 
-            // --- GAP ---
+            // GAP
             html += `<tr class="gap-row"><td colspan="8"></td></tr>`;
 
-            // --- BLOQUE TARDE ---
+            // TARDE
             slotsTarde.forEach((hora, index) => {
                 html += `<tr>`;
                 if(index === 0) {
