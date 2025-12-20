@@ -3,79 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín</title>
+    <title>Horario PRO - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* COLORES Y FUENTES EXACTOS */
+        /* COLORES */
         :root { 
             --sheet-blue: #184a7e; 
-            --bg: #ffffff;
+            --bg: #f2f4f7;
+            --highlight-now: #fff8c4; /* Amarillo suave para hora actual */
+            --highlight-search: #ff4757; /* Rojo intenso para búsqueda */
         }
         
         body { 
             font-family: Arial, Helvetica, sans-serif; 
-            background-color: #f2f4f7; 
+            background-color: var(--bg); 
             margin: 0; padding: 20px; color: #333;
         }
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER PRINCIPAL DE PANTALLA --- */
+        /* --- HEADER CON BUSCADOR --- */
         header {
             display: flex; 
-            justify-content: center; 
+            justify-content: space-between; /* Separar controles del buscador */
             align-items: center; 
             margin-bottom: 20px;
-            gap: 15px; /* Espacio entre botones */
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
         }
 
-        /* --- BOTONES DE ACCIÓN --- */
+        .controls-left { display: flex; gap: 15px; }
+
+        /* Buscador Rápido (Idea 3) */
+        .search-container {
+            position: relative;
+        }
+        #searchInput {
+            padding: 10px 15px 10px 35px;
+            border: 2px solid var(--sheet-blue);
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            color: var(--sheet-blue);
+            font-weight: bold;
+            width: 200px;
+            transition: width 0.3s;
+        }
+        #searchInput:focus { width: 250px; }
+        .search-icon {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            font-size: 16px;
+        }
+
+        /* Botones de acción */
         .btn-action {
             padding: 10px 20px; border-radius: 4px; cursor: pointer; 
             font-weight: bold; font-size: 16px; text-decoration: none;
             display: inline-block;
         }
+        .btn-print { background-color: var(--sheet-blue); color: white; border: none; }
+        .btn-edit { background-color: white; color: var(--sheet-blue); border: 2px solid var(--sheet-blue); }
 
-        /* Botón Imprimir (Azul Sólido) */
-        .btn-print {
-            background-color: var(--sheet-blue); color: white; border: none;
-        }
-        .btn-print:hover { opacity: 0.9; }
+        /* --- TÍTULOS --- */
+        .day-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
+        .day-title { color: var(--sheet-blue); font-size: 36px; font-weight: bold; text-transform: uppercase; }
+        .day-subtitle { color: var(--sheet-blue); font-size: 20px; font-weight: bold; margin-top: 5px; }
 
-        /* Botón Editar (Borde Azul) */
-        .btn-edit {
-            background-color: white; 
-            color: var(--sheet-blue); 
-            border: 2px solid var(--sheet-blue);
-        }
-        .btn-edit:hover { background-color: #f0f4f8; }
-
-        /* --- TÍTULO Y SUBTÍTULO DEL DÍA --- */
-        .day-header {
-            text-align: center;
-            margin-bottom: 20px;
-            margin-top: 10px;
-        }
-
-        .day-title {
-            color: var(--sheet-blue);
-            font-size: 36px; 
-            font-weight: bold;
-            text-transform: uppercase;
-            line-height: 1.2;
-        }
-
-        .day-subtitle {
-            color: var(--sheet-blue);
-            font-size: 20px; 
-            font-weight: bold;
-            margin-top: 5px;
-        }
-
-        /* --- BOTONERA NAVEGACIÓN DÍAS --- */
+        /* --- NAVEGACIÓN --- */
         .days-nav { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
             padding: 8px 16px; border: 1px solid var(--sheet-blue); background: white;
@@ -83,102 +80,77 @@
             transition: 0.2s;
         }
         .nav-btn.active { background: var(--sheet-blue); color: white; }
-        .nav-btn:hover { background: #eef4fa; }
 
+        /* Spinner */
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--sheet-blue); border-radius: 50%;
             width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- ESTILOS DE LA TABLA (DISEÑO CALCADO) --- */
+        /* --- TABLA --- */
         .planning-container { display: none; }
         .planning-container.visible { display: block; }
 
         table {
-            width: 1%; 
-            min-width: 80%; 
-            margin: 0 auto;
-            border-collapse: collapse; 
-            border: 2px solid var(--sheet-blue); 
+            width: 1%; min-width: 80%; margin: 0 auto;
+            border-collapse: collapse; border: 2px solid var(--sheet-blue); 
             white-space: nowrap;
         }
 
         th, td {
-            border: 1px solid var(--sheet-blue); 
-            padding: 6px 12px;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 13px;
-            color: var(--sheet-blue); 
+            border: 1px solid var(--sheet-blue); padding: 6px 12px;
+            text-align: center; vertical-align: middle; font-size: 13px; color: var(--sheet-blue); 
         }
 
-        th {
-            font-weight: bold;
-            text-transform: uppercase;
-            padding: 10px;
-            border-bottom: 2px solid var(--sheet-blue); 
-        }
+        th { font-weight: bold; text-transform: uppercase; padding: 10px; border-bottom: 2px solid var(--sheet-blue); }
+        .col-turno { font-weight: bold; font-size: 14px; width: 80px; }
+        .col-hora { font-weight: bold; color: #000; width: 60px; }
 
-        .col-turno {
-            font-weight: bold;
-            color: var(--sheet-blue);
-            text-transform: uppercase;
-            font-size: 14px;
-            width: 80px;
-        }
-
-        .col-hora {
-            font-weight: bold;
-            color: #000; 
-            width: 60px;
-        }
-
+        /* Celdas de alumno */
         .student-cell {
-            font-weight: bold;
-            color: var(--sheet-blue); 
-            text-transform: uppercase; 
-            text-align: center;
-            min-width: 90px; 
+            font-weight: bold; text-transform: uppercase; min-width: 90px;
+            cursor: help; /* Cursor de interrogación para el tooltip (Idea 1) */
+            border-bottom: 1px dotted var(--sheet-blue); /* Indicador visual sutil */
         }
+        
+        /* Resaltado de Búsqueda (Idea 3) */
+        .student-cell.found-student {
+            background-color: var(--highlight-search) !important;
+            color: white !important;
+            border-color: white !important;
+            transition: 0.2s;
+        }
+
+        /* Fila Actual (Idea 2) */
+        tr.current-slot {
+            background-color: var(--highlight-now);
+        }
+        /* Asegurar que el turno no se pinte de amarillo */
+        tr.current-slot .col-turno { background-color: white; }
+
 
         tr { height: 35px; } 
+        .gap-row { height: 15px; border: none; }
+        .gap-row td { border: none; border-left: 2px solid var(--sheet-blue); border-right: 2px solid var(--sheet-blue); background: #fff; }
 
-        .gap-row {
-            height: 15px;
-            border: none;
-        }
-        .gap-row td {
-            border-left: 2px solid var(--sheet-blue); 
-            border-right: 2px solid var(--sheet-blue);
-            border-top: none;
-            border-bottom: none;
-            background: #fff; 
-        }
-
-        /* --- IMPRESIÓN --- */
-        @page {
-            size: portrait;
-            margin: 10mm;
-        }
-
+        /* --- IMPRESIÓN (LIMPIA SIN EXTRAS) --- */
+        @page { size: portrait; margin: 10mm; }
         @media print {
-            body { 
-                background: white; padding: 0; margin: 0;
-                zoom: 85%; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
-            }
-
+            body { background: white; padding: 0; margin: 0; zoom: 85%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .container { padding: 0; margin: 0; border: none; max-width: none; }
+            /* Ocultamos todo el header nuevo, buscador y navegación */
             header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
-            
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
             th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
-            
             .gap-row td { border-top: 1px solid transparent !important; border-bottom: 1px solid transparent !important; }
+
+            /* Reseteamos estilos de búsqueda y hora actual para impresión */
+            tr.current-slot { background-color: transparent !important; }
+            .student-cell.found-student { background-color: transparent !important; color: var(--sheet-blue) !important; }
+            .student-cell { border-bottom: none; }
         }
     </style>
 </head>
@@ -186,8 +158,14 @@
 
 <div class="container">
     <header>
-        <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR HORARIO</button>
-        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
+        <div class="controls-left">
+            <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+            <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
+        </div>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Buscar alumno...">
+        </div>
     </header>
 
     <div class="days-nav" id="days-buttons"></div>
@@ -196,10 +174,8 @@
 </div>
 
 <script>
-    // ⬇️⬇️⬇️ ¡PEGAR AQUI TU ENLACE DE GOOGLE SHEETS! ⬇️⬇️⬇️
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
-    
-    // Configurar el botón de edición
+    // ⬇️⬇️⬇️ PEGAR TU ENLACE DE EDICIÓN AQUÍ ⬇️⬇️⬇️
+    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/TU_ID_DE_HOJA_AQUI/edit"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
     const urls = {
@@ -209,6 +185,60 @@
         "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
+
+    // Lógica del Buscador (Idea 3)
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchText = e.target.value.toLowerCase();
+        const celdasAlumnos = document.querySelectorAll('.student-cell');
+        
+        celdasAlumnos.forEach(celda => {
+            // Buscamos en el nombre completo (guardado en el atributo 'title' del tooltip)
+            const fullName = celda.getAttribute('title') ? celda.getAttribute('title').toLowerCase() : "";
+            
+            if (searchText && fullName.includes(searchText)) {
+                celda.classList.add('found-student');
+            } else {
+                celda.classList.remove('found-student');
+            }
+        });
+    });
+
+    // Lógica de Resaltado de Hora Actual (Idea 2)
+    function resaltarHoraActual() {
+        // 1. Saber qué día es hoy y si se está mostrando
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = diasSemana[new Date().getDay()];
+        
+        // Limpiar resaltados previos
+        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
+
+        // Si hoy no es un día lectivo o no estamos viendo el día "Todo" o el día de hoy, salir.
+        if (!urls[hoy]) return;
+        const contenedorHoy = document.getElementById(`view-${hoy}`);
+        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
+
+        // 2. Calcular hora actual en minutos desde medianoche
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        // 3. Buscar la fila correspondiente
+        const filasHoras = contenedorHoy.querySelectorAll('.col-hora');
+        filasHoras.forEach(tdHora => {
+            const horaStr = tdHora.innerText; // "11:00"
+            const [h, m] = horaStr.split(':').map(Number);
+            const slotStartMinutes = h * 60 + m;
+            const slotEndMinutes = slotStartMinutes + 30; // Franjas de 30 mins
+
+            // Si la hora actual está dentro de esta franja
+            if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
+                tdHora.closest('tr').classList.add('current-slot');
+            }
+        });
+    }
+
+    // Iniciar el check de hora y repetirlo cada minuto
+    setInterval(resaltarHoraActual, 60000);
+
 
     function leerHoja(url) {
         return new Promise(resolve => {
@@ -238,7 +268,6 @@
                 }
             });
 
-            // HEADER + SUBTITULO
             let html = `
             <div id="view-${dia}" class="planning-container">
                 <div class="day-header">
@@ -264,9 +293,7 @@
             // MAÑANA
             slotsManana.forEach((hora, index) => {
                 html += `<tr>`;
-                if(index === 0) {
-                    html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
-                }
+                if(index === 0) html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
                 html += `<td class="col-hora">${hora}</td>`;
                 html += generarCeldasAlumnos(mapa[hora]);
                 html += `</tr>`;
@@ -278,9 +305,7 @@
             // TARDE
             slotsTarde.forEach((hora, index) => {
                 html += `<tr>`;
-                if(index === 0) {
-                    html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
-                }
+                if(index === 0) html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
                 html += `<td class="col-hora">${hora}</td>`;
                 html += generarCeldasAlumnos(mapa[hora]);
                 html += `</tr>`;
@@ -294,6 +319,9 @@
         let hoy = new Date().toLocaleDateString('es-ES', {weekday: 'long'});
         hoy = hoy.charAt(0).toUpperCase() + hoy.slice(1);
         cambiarDia(Object.keys(urls).includes(hoy) ? hoy : "Lunes");
+        
+        // Ejecutar el resaltado de hora una vez al cargar
+        setTimeout(resaltarHoraActual, 1000);
     }
 
     function generarCeldasAlumnos(alumnos) {
@@ -301,8 +329,16 @@
         let lista = alumnos || [];
         for(let i=0; i<6; i++) {
             let nombreFull = (lista[i] || "").trim();
-            let nombreCorto = nombreFull.split(" ")[0]; 
-            html += `<td class="student-cell">${nombreCorto}</td>`;
+            let nombreCorto = "";
+            let tooltipAttr = "";
+
+            if(nombreFull) {
+                nombreCorto = nombreFull.split(" ")[0]; // Solo primer nombre visible
+                // Idea 1: Guardamos el nombre completo en el atributo 'title' para el tooltip
+                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
+            }
+            // Añadimos la clase student-cell y el title
+            html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
         }
         return html;
     }
@@ -317,6 +353,8 @@
             let esActivo = (textoBtn === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
+        // Recalcular hora actual al cambiar de día
+        resaltarHoraActual();
     }
 
     document.addEventListener('DOMContentLoaded', cargarTodo);
