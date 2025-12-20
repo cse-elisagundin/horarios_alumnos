@@ -11,10 +11,9 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS VISUALES (Del diseño corporativo)
+           🎨 ESTILOS VISUALES
            ========================================= */
         :root { 
-            /* Paleta importada del diseño visual */
             --c-primary: #243c7a;   /* Azul Oscuro */
             --c-secondary: #2b94cc; /* Azul Claro */
             --c-accent: #fa65c3;    /* Rosa */
@@ -41,22 +40,15 @@
             background-color: var(--bg-container); 
             padding: 40px; 
             border-radius: 12px; 
-            /* Sombra azulada elegante del diseño original */
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.15); 
             width: 100%; 
             max-width: 500px; 
             text-align: center;
         }
 
-        .web-brand {
-            margin-bottom: 25px;
-        }
+        .web-brand { margin-bottom: 25px; }
+        .logo-img { max-width: 160px; }
 
-        .logo-img { 
-            max-width: 160px; 
-        }
-
-        /* LÍNEA DECORATIVA TRICOLOR (Elemento visual clave) */
         .brand-line {
             height: 4px;
             width: 100px;
@@ -74,7 +66,6 @@
             letter-spacing: -0.5px;
         }
         
-        /* ESTADO DEL SISTEMA */
         #status-indicator {
             font-size: 11px; 
             color: #8898aa; 
@@ -83,10 +74,8 @@
             letter-spacing: 1.5px;
             font-weight: 600;
         }
-        /* El "Unlocked" ahora usa el rosa del diseño visual */
         .unlocked { color: var(--c-accent) !important; font-weight: bold; }
 
-        /* INPUTS */
         input { 
             width: 100%; 
             padding: 15px; 
@@ -100,6 +89,8 @@
             color: var(--c-primary);
             font-weight: 600;
             background-color: #fafbfc;
+            /* AQUÍ ESTÁ EL TRUCO VISUAL: Capitaliza mientras escriben */
+            text-transform: capitalize; 
         }
         input:focus { 
             border-color: var(--c-secondary); 
@@ -119,7 +110,6 @@
             cursor: not-allowed; 
         }
 
-        /* BOTÓN PRINCIPAL */
         .btn-main { 
             width: 100%; 
             padding: 14px; 
@@ -142,7 +132,6 @@
             box-shadow: 0 6px 12px rgba(36, 60, 122, 0.2);
         }
 
-        /* SPINNER DE CARGA (Con borde rosa como el diseño original) */
         .spinner {
             border: 4px solid #f3f3f3; 
             border-top: 4px solid var(--c-accent); 
@@ -154,7 +143,6 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* RESULTADOS */
         #resultado { margin-top: 30px; text-align: left; }
         
         #resultado h3 {
@@ -163,6 +151,8 @@
             padding-bottom: 10px;
             font-size: 18px;
             margin-bottom: 15px;
+            /* AQUÍ ESTÁ EL TRUCO VISUAL: Capitaliza el resultado */
+            text-transform: capitalize;
         }
 
         .dia-card { 
@@ -171,7 +161,7 @@
             padding: 18px; 
             border-radius: 8px; 
             border: 1px solid #f0f0f0;
-            border-left: 5px solid var(--c-accent); /* Borde rosa */
+            border-left: 5px solid var(--c-accent); 
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
             transition: transform 0.2s;
         }
@@ -193,71 +183,34 @@
             display: block; 
         }
 
-        /* BOTONES EXTRA (Estilo moderno) */
         #actions-panel { display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
         
         .btn-share { 
-            width: 100%; 
-            padding: 12px; 
-            background: white; 
-            color: var(--c-secondary); 
-            border: 2px solid var(--c-secondary); 
-            border-radius: 8px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            margin-bottom: 15px; 
-            text-transform: uppercase;
-            transition: all 0.3s ease;
+            width: 100%; padding: 12px; background: white; color: var(--c-secondary); 
+            border: 2px solid var(--c-secondary); border-radius: 8px; font-weight: 700; 
+            cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s ease;
         }
         .btn-share:hover { 
-            background-color: var(--c-accent); 
-            color: white; 
-            border-color: var(--c-accent);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
+            background-color: var(--c-accent); color: white; border-color: var(--c-accent);
+            transform: translateY(-2px); box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
         }
         
         .btn-reset { 
-            background: none; 
-            border: none; 
-            color: var(--c-primary); 
-            font-weight: 600; 
-            font-size: 14px;
-            cursor: pointer; 
-            padding: 8px 16px;
-            transition: color 0.3s;
+            background: none; border: none; color: var(--c-primary); font-weight: 600; 
+            font-size: 14px; cursor: pointer; padding: 8px 16px; transition: color 0.3s;
         }
         .btn-reset:hover { color: var(--c-accent); text-decoration: underline; }
         
         #error-msg { 
-            color: var(--error); 
-            background: #fff5f5;
-            padding: 15px;
-            border-radius: 8px;
-            border: 1px solid #ffebeb;
-            font-weight: 600; 
-            display: none; 
-            margin-top: 20px; 
+            color: var(--error); background: #fff5f5; padding: 15px; border-radius: 8px;
+            border: 1px solid #ffebeb; font-weight: 600; display: none; margin-top: 20px; 
         }
 
-        /* BOTÓN FLOTANTE WHATSAPP */
         .whatsapp-float {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background-color: var(--whatsapp);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
-            z-index: 1000;
-            font-weight: bold;
-            font-size: 15px;
-            transition: all 0.3s ease;
+            position: fixed; bottom: 25px; right: 25px; background-color: var(--whatsapp);
+            color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+            z-index: 1000; font-weight: bold; font-size: 15px; transition: all 0.3s ease;
         }
         .whatsapp-float:hover {
             transform: scale(1.05) translateY(-3px);
@@ -306,7 +259,7 @@
 // ==========================================
 // 🚨 LÓGICA ORIGINAL RESTAURADA
 // ==========================================
-    const CONTRASEÑA_MAESTRA = "010523"; 
+    const CONTRASEÑA_MAESTRA = "1234"; 
     let SISTEMA_DESBLOQUEADO = false; 
 // ==========================================
 
@@ -358,7 +311,8 @@
         // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
-        let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px;'>Horario: ${nombre}</h3>`;
+        // AQUÍ ESTÁ EL CAMBIO VISUAL (text-transform: capitalize)
+        let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px; text-transform: capitalize;'>Horario: ${nombre}</h3>`;
         let encontrado = false;
         
         const nombreBuscado = nombre.toLowerCase().trim();
@@ -486,4 +440,3 @@
 
 </body>
 </html>
-
