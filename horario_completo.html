@@ -32,13 +32,6 @@
             padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
 
-        /* SPINNER */
-        .spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         /* NAVEGACIÓN */
         .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .nav-btn {
@@ -47,6 +40,13 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .nav-btn.active { background: var(--primary); color: white; }
+
+        /* SPINNER (MOVIDO) */
+        .spinner {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
+            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* CONTENEDOR */
         .planning-container {
@@ -178,8 +178,9 @@
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
-    <div id="loading" class="spinner"></div>
     <div class="days-nav" id="days-buttons"></div>
+    <div id="loading" class="spinner"></div>
+    
     <div id="schedule-container"></div>
 </div>
 
@@ -261,11 +262,10 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // AQUÍ YA NO CORTAMOS EL NOMBRE (Sale Jose Manuel entero)
-                        // Si quieres cortar apellidos, habría que usar .split(" ")[0]
-                        // Pero para que la columna se "ciña" a Jose Manuel, mejor dejarlo entero.
+                        // 2. CORTE DE NOMBRE: Coge la primera palabra
+                        let soloNombre = alumnoCompleto.split(" ")[0];
                         
-                        celda = `<span class="student-name">${alumnoCompleto}</span>`;
+                        celda = `<span class="student-name">${soloNombre}</span>`;
                     }
                     html += `<td>${celda}</td>`;
                 }
