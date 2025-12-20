@@ -89,7 +89,6 @@
             color: var(--c-primary);
             font-weight: 600;
             background-color: #fafbfc;
-            /* AQUÍ ESTÁ EL TRUCO VISUAL: Capitaliza mientras escriben */
             text-transform: capitalize; 
         }
         input:focus { 
@@ -151,7 +150,6 @@
             padding-bottom: 10px;
             font-size: 18px;
             margin-bottom: 15px;
-            /* AQUÍ ESTÁ EL TRUCO VISUAL: Capitaliza el resultado */
             text-transform: capitalize;
         }
 
@@ -311,8 +309,10 @@
         // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
-        // AQUÍ ESTÁ EL CAMBIO VISUAL (text-transform: capitalize)
-        let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px; text-transform: capitalize;'>Horario: ${nombre}</h3>`;
+        // AQUÍ ESTÁ EL CAMBIO DE COLOR: Horario en azul, nombre en rosa (#fa65c3)
+        let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px; text-transform: capitalize;'>
+                        Horario: <span style="color: #fa65c3;">${nombre}</span>
+                    </h3>`;
         let encontrado = false;
         
         const nombreBuscado = nombre.toLowerCase().trim();
