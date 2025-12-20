@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Vertical Final</title>
+    <title>Horario Semanal CSE Elisa Gundín - Ajuste Total</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -32,15 +32,8 @@
             padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
 
-        /* SPINNER */
-        .spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* NAVEGACIÓN */
-        .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        /* NAVEGACIÓN (BOTONES) */
+        .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: flex-start; }
         .nav-btn {
             padding: 8px 16px; border: 1px solid transparent; background: white;
             color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
@@ -48,32 +41,39 @@
         }
         .nav-btn.active { background: var(--primary); color: white; }
 
+        /* SPINNER (AHORA DEBAJO DE LOS BOTONES) */
+        .spinner {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
+            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* CONTENEDOR */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
             padding-bottom: 20px; overflow: hidden;
-            /* Centrar contenido (tabla) */
-            text-align: center; 
+            text-align: center; /* Centra la tabla */
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA AUTO-AJUSTABLE --- */
+        /* --- TABLA CON AJUSTE "CEÑIDO" (SHRINK-TO-FIT) --- */
         table {
-            width: auto; /* Se ajusta al contenido real */
-            margin: 0 auto; /* Centrada */
+            width: auto; /* NO ocupa el 100%, solo lo que necesite */
+            margin: 0 auto;
             border-collapse: collapse;
         }
 
         th, td {
             border: 1px solid #999;
-            /* Padding reducido para ganar espacio lateral */
-            padding: 4px 5px; 
+            padding: 4px 6px; 
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            /* OBLIGATORIO: No permite que el nombre se parta, fuerza el ancho de columna */
-            white-space: nowrap; 
+            
+            /* ESTAS DOS PROPIEDADES HACEN LA MAGIA DEL AJUSTE: */
+            white-space: nowrap; /* Obliga a que el nombre esté en una línea */
+            width: 1%; /* Truco: Fuerza a la columna a ser lo más estrecha posible, pero el nowrap la empuja lo justo */
         }
 
         th {
@@ -84,12 +84,11 @@
         /* Columna Hora */
         td.col-hora {
             background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 5px; width: 1%;
         }
 
-        /* NOMBRE LIMPIO (Negro, Negrita, Sin decoraciones) */
+        /* NOMBRE LIMPIO */
         .student-name {
-            font-weight: 800; /* Extra Bold para contraste */
+            font-weight: 800; /* Negrita fuerte */
             font-size: 13px;
             color: #000;
             display: block;
@@ -100,7 +99,7 @@
             font-weight: bold; font-size: 11px; letter-spacing: 1px;
         }
 
-        /* NOTAS */
+        /* NOTAS (SOLO HEADER) */
         .notes-section { margin-top: 30px; width: 95%; margin-left: auto; margin-right: auto; text-align: left;}
         .notes-header {
             background: #e9ecef; color: #333;
@@ -112,14 +111,13 @@
         /* --- IMPRESIÓN --- */
         @page {
             size: portrait; /* Vertical */
-            margin: 8mm;    /* Márgenes estrechos */
+            margin: 8mm;    
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                /* ZOOM 65%: Clave para que entren las 6 columnas + hora sin cortarse */
-                zoom: 65%; 
+                zoom: 70%; 
                 width: 100% !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -137,16 +135,12 @@
                 page-break-after: always; 
             }
 
-            /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
-            
-            /* Ajuste tabla impresión */
             table { width: auto !important; margin: 0 auto !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
-            /* Nombre limpio para imprimir */
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
@@ -157,7 +151,6 @@
             
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
-            /* Notas */
             .notes-section { margin-top: 30px !important; width: 100% !important; }
             .notes-header {
                 background: #eee !important; color: #000 !important;
@@ -176,15 +169,15 @@
         <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
     </header>
 
-    <div id="loading" class="spinner"></div>
     <div class="days-nav" id="days-buttons"></div>
+    <div id="loading" class="spinner"></div>
+    
     <div id="schedule-container"></div>
 </div>
 
 <script>
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
     
-    // URLs ORIGINALES (MAESTRA)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -193,7 +186,6 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    // Función de carga (Wrapper de PapaParse para usar con await)
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { 
@@ -210,16 +202,13 @@
         const dias = Object.keys(urls);
         const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
-        // Generar botones
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
         btnContainer.innerHTML = btns;
 
-        // Bucle de carga secuencial (Seguro y estable)
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
             
-            // Procesar datos
             let mapa = {};
             data.forEach(row => {
                 if(row[1]) {
@@ -228,7 +217,6 @@
                 }
             });
 
-            // HTML Estructura
             let html = `
             <div id="view-${dia}" class="planning-container">
                 <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
@@ -265,13 +253,9 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // LOGICA PSEUDÓNIMO: Cortar al primer espacio
-                        // "Roberto Cremades" -> "Roberto"
+                        // PSEUDÓNIMO: Solo primera palabra
                         let soloNombre = alumnoCompleto.split(" ")[0]; 
-                        
-                        // Si quieres que un nombre compuesto no se corte, 
-                        // en el excel debería estar unido: "JoseManuel".
-                        
+                        // NOMBRE LIMPIO
                         celda = `<span class="student-name">${soloNombre}</span>`;
                     }
                     html += `<td>${celda}</td>`;
@@ -291,7 +275,6 @@
 
         document.getElementById('loading').style.display = 'none';
         
-        // Mostrar día actual
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
