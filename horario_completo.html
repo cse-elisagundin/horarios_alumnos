@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Diseño Calcado - CSE Elisa Gundín</title>
+    <title>Horario Calcado (Sin Logo) - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -23,30 +23,24 @@
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER (Título y Logo) --- */
+        /* --- HEADER DE PANTALLA --- */
         header {
             display: flex; 
-            justify-content: space-between; 
-            align-items: flex-start; /* Alineado arriba como en la captura */
+            justify-content: center; /* Botón centrado */
+            align-items: center; 
             margin-bottom: 20px;
-            position: relative;
         }
-        
+
+        /* --- ESTILOS DE TÍTULO (DÍA DE LA SEMANA) --- */
         .header-title {
             width: 100%;
             text-align: center;
             color: var(--sheet-blue);
-            font-size: 36px; /* Tamaño grande como en la captura */
+            font-size: 36px; 
             font-weight: bold;
             text-transform: uppercase;
             margin-top: 10px;
-        }
-
-        .header-logo {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 80px; /* Logo grande */
+            margin-bottom: 15px;
         }
 
         /* --- BOTONERA Y SPINNER --- */
@@ -59,6 +53,7 @@
         .nav-btn.active { background: var(--sheet-blue); color: white; }
         .nav-btn:hover { background: #eef4fa; }
 
+        /* Spinner debajo de botones */
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--sheet-blue); border-radius: 50%;
             width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto;
@@ -70,8 +65,8 @@
         .planning-container.visible { display: block; }
 
         table {
-            width: 1%; /* Auto-ajuste ceñido */
-            min-width: 80%; /* Que ocupe un ancho decente pero no forzado */
+            width: 1%; /* Auto-ajuste ceñido (Shrink to fit) */
+            min-width: 80%; /* Ancho mínimo visual */
             margin: 0 auto;
             border-collapse: collapse; /* Bordes pegados estilo Excel */
             border: 2px solid var(--sheet-blue); /* Borde exterior grueso */
@@ -108,21 +103,21 @@
         /* Columna HORA */
         .col-hora {
             font-weight: bold;
-            color: #000; /* La hora suele verse mejor en negro o azul oscuro */
+            color: #000; /* La hora en negro para contraste */
             width: 60px;
         }
 
-        /* Nombres de alumnos */
+        /* Nombres de alumnos (Solo primer nombre) */
         .student-cell {
             font-weight: bold;
-            color: var(--sheet-blue); /* Texto azul como en la captura */
-            text-transform: uppercase; /* Nombres en mayúsculas como en la captura */
+            color: var(--sheet-blue); 
+            text-transform: uppercase; 
             text-align: center;
-            min-width: 90px; /* Ancho mínimo para que no se vea ridículo */
+            min-width: 90px; 
         }
 
         /* FILAS */
-        tr { height: 35px; } /* Altura similar a Excel */
+        tr { height: 35px; } 
 
         /* LA FILA DE SEPARACIÓN (Gap) */
         .gap-row {
@@ -138,7 +133,7 @@
         }
 
         button.btn-print {
-            display: block; margin: 20px auto;
+            display: block; margin: 0 auto;
             background-color: var(--sheet-blue); color: white; border: none;
             padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;
         }
@@ -160,9 +155,13 @@
             .container { padding: 0; margin: 0; border: none; max-width: none; }
             header, .days-nav, .spinner, .btn-print { display: none; } /* Ocultar interfaz */
             
-            /* Header específico impresión */
-            .print-header { display: flex !important; justify-content: center; position: relative; margin-bottom: 20px; }
-            .print-logo { position: absolute; right: 0; top: 0; height: 70px; }
+            /* Header específico impresión: Solo Título Centrado */
+            .print-header { 
+                display: flex !important; 
+                justify-content: center; 
+                align-items: center; 
+                margin-bottom: 20px; 
+            }
 
             .planning-container.visible { display: block !important; page-break-after: always; }
             
@@ -170,7 +169,7 @@
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
             th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
             
-            /* Eliminar bordes internos de la fila gap en impresión para que se vea limpia */
+            /* Eliminar bordes internos de la fila gap en impresión */
             .gap-row td { border-top: 1px solid transparent !important; border-bottom: 1px solid transparent !important; }
         }
         
@@ -182,8 +181,8 @@
 
 <div class="container">
     <header>
-        <div></div> <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR HORARIO</button>
-        <div></div> </header>
+        <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR HORARIO</button>
+    </header>
 
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
@@ -191,8 +190,7 @@
 </div>
 
 <script>
-    const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
-    
+    // URLs
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -212,7 +210,7 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
         
-        // Franjas exactas según tu imagen
+        // Franjas exactas según tu diseño calcado
         const slotsManana = ["11:00", "11:30", "12:00"];
         const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
@@ -230,12 +228,11 @@
                 }
             });
 
-            // HEADER PERSONALIZADO PARA IMPRESIÓN (TITULO + LOGO)
+            // HEADER SOLO TÍTULO (SIN LOGO)
             let html = `
             <div id="view-${dia}" class="planning-container">
-                <div class="print-header" style="display:flex; justify-content:center; align-items:start; position:relative; margin-bottom:15px;">
+                <div class="print-header">
                     <div class="header-title">${dia.toUpperCase()}</div>
-                    <img src="${LOGO_URL}" class="print-logo" style="position:absolute; right:0; top:-10px; height:80px;">
                 </div>
                 
                 <table>
@@ -256,7 +253,6 @@
             // --- BLOQUE MAÑANA ---
             slotsManana.forEach((hora, index) => {
                 html += `<tr>`;
-                // Solo en la primera fila de la mañana ponemos el "rowspan"
                 if(index === 0) {
                     html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
                 }
@@ -265,13 +261,12 @@
                 html += `</tr>`;
             });
 
-            // --- FILA DE SEPARACIÓN (GAP) ---
+            // --- GAP ---
             html += `<tr class="gap-row"><td colspan="8"></td></tr>`;
 
             // --- BLOQUE TARDE ---
             slotsTarde.forEach((hora, index) => {
                 html += `<tr>`;
-                // Solo en la primera fila de la tarde ponemos el "rowspan"
                 if(index === 0) {
                     html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
                 }
@@ -295,7 +290,8 @@
         let lista = alumnos || [];
         for(let i=0; i<6; i++) {
             let nombreFull = (lista[i] || "").trim();
-            let nombreCorto = nombreFull.split(" ")[0]; // Solo primer nombre
+            // SOLO PRIMER NOMBRE
+            let nombreCorto = nombreFull.split(" ")[0]; 
             html += `<td class="student-cell">${nombreCorto}</td>`;
         }
         return html;
@@ -308,7 +304,6 @@
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
             let textoBtn = btn.innerText; 
-            // Ajuste porque ahora los botones están en mayúsculas
             let esActivo = (textoBtn === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
