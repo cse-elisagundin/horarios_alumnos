@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Vertical Optimizado</title>
+    <title>Horario Semanal CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -17,7 +17,7 @@
             margin: 0; padding: 20px; color: #333;
         }
 
-        .container { max-width: 1000px; margin: 0 auto; } /* Más estrecho para vista vertical */
+        .container { max-width: 1200px; margin: 0 auto; }
 
         /* HEADER */
         header {
@@ -25,7 +25,7 @@
             background: white; padding: 15px 25px; border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
         }
-        h1 { color: var(--primary); margin: 0; font-size: 22px; }
+        h1 { color: var(--primary); margin: 0; font-size: 24px; }
         
         button.btn-print {
             background-color: var(--primary); color: white; border: none;
@@ -42,13 +42,13 @@
         /* BOTONERA */
         .days-nav { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
         .nav-btn {
-            padding: 8px 15px; border: 1px solid transparent; background: white;
+            padding: 10px 20px; border: 1px solid transparent; background: white;
             color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
-            transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 80px;
+            transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.05); min-width: 100px;
         }
-        .nav-btn.active { background: var(--primary); color: white; }
+        .nav-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 8px rgba(0,51,102,0.3); }
 
-        /* CONTENEDOR PRINCIPAL */
+        /* CONTENEDOR VISUAL */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden;
@@ -56,99 +56,96 @@
         }
         .planning-container.visible { display: block; }
 
-        /* --- NUEVA TABLA OPTIMIZADA (AUTO-WIDTH) --- */
-        table.opt-table {
+        /* --- TABLA AUTO-AJUSTABLE --- */
+        table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: auto; /* ESTO ES LA CLAVE: Ancho automático según contenido */
+            /* Esta propiedad hace la magia: ajusta columnas al contenido */
+            table-layout: auto; 
         }
 
         th, td {
             border: 1px solid var(--border);
-            padding: 4px;
-            text-align: center;
-            font-size: 12px;
+            padding: 5px;
+            text-align: left; /* Alineado izquierda para nombres */
+            vertical-align: middle;
         }
 
         th {
             background: var(--primary); color: white;
-            text-transform: uppercase; font-weight: bold;
-            padding: 8px 2px;
+            text-align: center; font-weight: bold; text-transform: uppercase;
+            font-size: 13px; padding: 10px;
         }
 
-        /* Columna Hora: Lo más pequeña posible, sin romper la línea */
-        td.time-col {
-            background: var(--time-bg); color: var(--primary);
-            font-weight: bold; width: 1%; white-space: nowrap;
+        /* Columna HORA: Ancho mínimo */
+        td:first-child, th:first-child {
+            width: 1%;
+            white-space: nowrap;
+            background: var(--time-bg);
+            color: var(--primary);
+            font-weight: bold;
+            text-align: center;
         }
 
-        /* Celdas de Alumnos */
-        td.slot-col { vertical-align: middle; }
-
+        /* Bloque de estudiante dentro de la celda */
         .student-block {
-            border-radius: 4px; padding: 2px 4px;
-            display: inline-block; width: 100%;
-            font-weight: 600; color: #333;
-            box-sizing: border-box; 
-            white-space: nowrap; /* Evita que el nombre se parta en dos líneas */
+            padding: 4px 8px; border-radius: 4px;
+            font-size: 12px; font-weight: 600;
+            white-space: nowrap; /* No partir nombres */
         }
 
         .break-row {
-            background: #eef4fa; color: #8898aa;
-            text-align: center; font-size: 11px; font-weight: bold; letter-spacing: 2px;
-            padding: 4px;
+            background: #eef4fa; color: #8898aa; text-align: center;
+            font-weight: bold; font-size: 11px; letter-spacing: 1px;
         }
 
         /* NOTAS SIN LINEAS */
-        .notes-section { margin-top: 20px; width: 100%; padding: 0 5px; }
+        .notes-section { margin-top: 30px; width: 98%; margin-left: auto; margin-right: auto; }
         .notes-title {
             background: #e9ecef; color: #333;
-            padding: 8px 10px; font-weight: bold; font-size: 13px;
-            border-bottom: 2px solid var(--primary); text-transform: uppercase;
+            padding: 10px 15px; font-weight: bold; font-size: 14px;
+            border-bottom: 2px solid var(--primary);
+            text-transform: uppercase;
         }
 
-        /* --- CONFIGURACIÓN DE IMPRESIÓN VERTICAL --- */
+        /* --- IMPRESIÓN VERTICAL --- */
         @page {
-            size: portrait; /* HOJA EN VERTICAL */
-            margin: 5mm;    /* Márgenes mínimos */
+            size: portrait; /* VERTICAL */
+            margin: 10mm;
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 75%; /* Zoom ajustado para vertical */
+                zoom: 70%; /* Ajustado para Vertical */
                 width: 100% !important;
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important;
             }
-
+            
             header, .days-nav, button.btn-print, #loading { display: none; }
             .container { width: 100% !important; max-width: none !important; margin: 0; }
             
             .planning-container { display: none !important; margin: 0; padding: 0; box-shadow: none; }
             .planning-container.visible { display: block !important; page-break-after: always; }
 
-            /* Bordes negros para impresión */
-            table.opt-table, th, td { border: 1px solid #000 !important; }
-            
-            th { background: #ccc !important; color: #000 !important; font-size: 11pt; border-bottom: 2px solid #000 !important; }
-            td.time-col { background: #eee !important; color: #000 !important; font-size: 10pt; }
+            /* Bordes negros para imprimir */
+            table, th, td { border: 1px solid #000 !important; }
+            th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
+            td:first-child { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
             .student-block { 
-                background-color: transparent !important; /* Opcional: quitar color de fondo en papel si quieres ahorrar tinta */
-                border: none !important; 
+                border: 1px solid #000 !important; /* Borde fino en cada alumno */
                 color: #000 !important; 
-                font-weight: bold; font-size: 9pt; 
+                background-color: transparent !important; /* Ahorro tinta o mantener color suave */
+                font-size: 10pt;
             }
-            /* Si prefieres mantener el color de fondo pastel, quita el bloque .student-block de arriba */
-
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
-            .notes-section { margin-top: 20px !important; }
+            /* Notas impresión */
+            .notes-section { margin-top: 30px !important; border: none !important; }
             .notes-title {
                 background: #eee !important; color: #000 !important;
-                border: 1px solid #000 !important; /* Borde fino alrededor del título */
-                border-radius: 0;
+                border: 1px solid #000 !important;
+                font-size: 12pt !important;
             }
         }
     </style>
@@ -169,7 +166,7 @@
 <script>
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
     
-    // URLs Directas (Misma lógica Maestra)
+    // URLs ORIGINALES (MAESTRA)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -183,8 +180,8 @@
         return `hsl(${Math.abs(h) % 360}, 70%, 90%)`;
     }
 
-    // CARGA DIRECTA
-    async function cargarTodo() {
+    // LÓGICA DE CARGA MAESTRA (Callback PapaParse)
+    function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
@@ -192,11 +189,11 @@
         let loadedCount = 0;
         const total = Object.keys(urls).length;
 
-        // Generar botones
-        let btnsHtml = "";
-        for(let d in urls) btnsHtml += `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`;
-        btnsHtml += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
-        btnContainer.innerHTML = btnsHtml;
+        // Crear botones
+        let btns = "";
+        for(let d in urls) btns += `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`;
+        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
+        btnContainer.innerHTML = btns;
 
         for (const [dia, url] of Object.entries(urls)) {
             Papa.parse(url + "&t=" + Date.now(), {
@@ -204,23 +201,21 @@
                 skipEmptyLines: true,
                 complete: (res) => {
                     let mapa = {};
-                    // Procesar datos
                     res.data.forEach(row => { 
                         if(row[1]) {
-                            let h = row[1].trim().substring(0,5); // "16:00"
-                            mapa[h] = row.slice(2); // Alumnos
+                            let h = row[1].trim().substring(0,5);
+                            mapa[h] = row.slice(2); 
                         }
                     });
 
-                    // Construir TABLA HTML
-                    let html = `
-                    <div id="view-${dia}" class="planning-container">
-                        <div style="padding:10px 5px; display:flex; justify-content:space-between; align-items:center;">
-                            <h2 style="margin:0; font-size:20px; color:#003366;">📅 ${dia}</h2>
-                            <img src="${LOGO_URL}" style="height:40px;">
+                    // CONSTRUCCIÓN DE TABLA (NO GRID)
+                    let html = `<div id="view-${dia}" class="planning-container">
+                        <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                            <h2 style="margin:0; color:#003366;">📅 ${dia}</h2>
+                            <img src="${LOGO_URL}" style="height:45px;">
                         </div>
                         
-                        <table class="opt-table">
+                        <table>
                             <thead>
                                 <tr>
                                     <th>Hora</th>
@@ -240,19 +235,16 @@
                             return; 
                         }
                         
+                        html += `<tr><td>${f}</td>`;
                         let alumnos = mapa[f] || [];
-                        
-                        html += `<tr>`;
-                        html += `<td class="time-col">${f}</td>`;
                         
                         for(let i=0; i<6; i++) {
                             let al = (alumnos[i] || "").trim();
                             if(al) {
-                                // Background color con borde suave
                                 let bg = stringToColor(al);
-                                html += `<td class="slot-col" style="background-color:${bg}"><div class="student-block">${al}</div></td>`;
+                                html += `<td style="background-color:${bg}"><div class="student-block">${al}</div></td>`;
                             } else {
-                                html += `<td class="slot-col"></td>`;
+                                html += `<td></td>`;
                             }
                         }
                         html += `</tr>`;
@@ -264,15 +256,40 @@
                     
                     container.innerHTML += html;
                     loadedCount++;
-                    
+
                     if(loadedCount === total) {
                         document.getElementById('loading').style.display = 'none';
-                        // Ordenar visualmente (porque las peticiones async pueden llegar desordenadas)
+                        // Ordenar DIVs
                         const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
                         diasOrden.forEach(d => {
                             let div = document.getElementById(`view-${d}`);
                             if(div) container.appendChild(div);
                         });
                         
-                        // Seleccionar día actual
-                        let hoy = new Date().toLocaleDateString('es
+                        // Seleccionar día
+                        let hoy = new Date().toLocaleDateString('es-ES', {weekday: 'long'});
+                        hoy = hoy.charAt(0).toUpperCase() + hoy.slice(1);
+                        if(!urls[hoy]) hoy = "Lunes";
+                        cambiarDia(hoy);
+                    }
+                },
+                error: (e) => console.error("Error en " + dia, e)
+            });
+        }
+    }
+
+    function cambiarDia(dia) {
+        document.querySelectorAll('.planning-container').forEach(div => {
+            let show = (dia === 'Todo') || (div.id === `view-${dia}`);
+            div.classList.toggle('visible', show);
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            let active = btn.innerText === dia || (dia === 'Todo' && btn.innerText === 'Ver Todo');
+            btn.classList.toggle('active', active);
+        });
+    }
+
+    cargarTodo();
+</script>
+</body>
+</html>
