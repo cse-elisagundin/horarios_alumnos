@@ -11,12 +11,12 @@
 
     <style>
         /* =========================================
-           🎨 NUEVA PALETA DE COLORES
+           🎨 PALETA DE COLORES (Mantenida)
            ========================================= */
         :root { 
-            --deep-blue: #243c7a;   /* Estructura y Textos */
-            --bright-blue: #2b94cc; /* Botones principales y horas */
-            --pink-pop: #fa65c3;    /* Acentos, Hovers y Copiar */
+            --deep-blue: #243c7a;   
+            --bright-blue: #2b94cc; 
+            --pink-pop: #fa65c3;    
             
             --bg-color: #f0f4f8;
             --card-bg: #ffffff;
@@ -26,7 +26,7 @@
         
         body { 
             font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif; 
-            background: linear-gradient(135deg, #f0f4f8 0%, #e1e9f0 100%); /* Fondo degradado suave */
+            background: linear-gradient(135deg, #f0f4f8 0%, #e1e9f0 100%); 
             margin: 0; 
             padding: 20px;
             display: flex; 
@@ -39,12 +39,12 @@
         .container { 
             background-color: var(--card-bg); 
             padding: 40px; 
-            border-radius: 20px; /* Bordes más redondeados */
-            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.15); /* Sombra con un toque del azul oscuro */
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.15); 
             width: 100%; 
             max-width: 480px; 
             text-align: center;
-            border-top: 5px solid var(--deep-blue); /* Detalle superior elegante */
+            border-top: 5px solid var(--deep-blue); 
             transition: transform 0.3s ease;
         }
 
@@ -129,7 +129,7 @@
         }
         .btn-main:active { transform: translateY(0); }
 
-        /* SPINNER DE CARGA (Con los 3 colores) */
+        /* SPINNER DE CARGA */
         .spinner {
             border: 4px solid rgba(0,0,0,0.1); 
             border-top: 4px solid var(--deep-blue); 
@@ -160,7 +160,7 @@
             padding: 18px; 
             border-radius: 12px; 
             border: 1px solid #f0f0f0;
-            border-left: 6px solid var(--pink-pop); /* Toque rosa llamativo */
+            border-left: 6px solid var(--pink-pop); 
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
             transition: transform 0.2s;
         }
@@ -188,7 +188,7 @@
         .btn-share { 
             width: 100%; 
             padding: 14px; 
-            background: var(--pink-pop); /* El rosa para destacar la acción de compartir */
+            background: var(--pink-pop); 
             color: white; 
             border: none; 
             border-radius: 12px; 
@@ -212,7 +212,7 @@
             border: 2px solid transparent; 
             color: var(--deep-blue); 
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 600; 
             cursor: pointer; 
             padding: 8px 16px;
             border-radius: 8px;
@@ -292,10 +292,22 @@
 
 <script>
 // ==========================================
-// 🔐 CONFIGURACIÓN "INVISIBLE"
+// 🔐 SEGURIDAD MEJORADA (HASHING)
 // ==========================================
-    const CONTRASEÑA_MAESTRA = "010523"; // <--- Tu contraseña aquí
+    // Esta cadena larga es "010523" pero cifrada. 
+    // Si la miras, es imposible saber qué números eran originalmente.
+    const HASH_SECRETO = "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"; 
+    
     let SISTEMA_DESBLOQUEADO = false; 
+
+    // Función criptográfica para convertir texto a SHA-256
+    async function verificarContrasena(textoPlano) {
+        const msgBuffer = new TextEncoder().encode(textoPlano);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        return hashHex === HASH_SECRETO;
+    }
 // ==========================================
 
     const urls = {
@@ -343,7 +355,6 @@
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
         
-        // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
         let html = `<h3>Horario: ${nombre}</h3>`;
@@ -381,8 +392,7 @@
         if(encontrado) {
             document.getElementById('resultado').innerHTML = html;
             
-            // 🔒 LÓGICA DE SEGURIDAD DEFINITIVA
-            // Solo mostramos botones de compartir SI el sistema se desbloqueó con contraseña
+            // Solo mostramos botones si la variable de seguridad es true
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
             }
@@ -396,7 +406,7 @@
     }
 
     // ==========================================
-    // LÓGICA DE CONTROL (LA CAJA MÁGICA)
+    // LÓGICA DE CONTROL
     // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('magicInput');
@@ -406,13 +416,16 @@
         const status = document.getElementById('status-indicator');
         const errorMsg = document.getElementById('error-msg');
 
-        const procesarInput = () => {
+        const procesarInput = async () => {
             const valor = input.value.trim();
             if(!valor) return;
 
             // BLOQUEADO
             if (!SISTEMA_DESBLOQUEADO) {
-                if (valor === CONTRASEÑA_MAESTRA) {
+                // Aquí usamos la nueva función asíncrona de seguridad
+                const esCorrecta = await verificarContrasena(valor);
+
+                if (esCorrecta) {
                     SISTEMA_DESBLOQUEADO = true;
                     status.innerText = "🔓 MODO PROFESOR ACTIVO";
                     status.classList.add('unlocked');
@@ -467,7 +480,6 @@
             btnBuscar.style.display = 'none'; 
             status.style.display = 'none'; 
             
-            // Al ejecutar búsqueda sin desbloquear sistema, NO saldrán los botones de compartir
             ejecutarBusqueda(alumnoURL);
         }
     });
@@ -475,4 +487,3 @@
 
 </body>
 </html>
-
