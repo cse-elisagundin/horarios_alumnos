@@ -3,185 +3,341 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horarios Alumnos</title>
+    <title>Horarios Academia</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* =========================================
-           🎨 ESTILOS (MANTENIDOS)
-           ========================================= */
-        :root { 
-            --deep-blue: #243c7a;   
-            --bright-blue: #2b94cc; 
-            --pink-pop: #fa65c3;    
-            --bg-color: #f0f4f8;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --whatsapp: #25D366; 
-        }
+        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; --error: #dc3545; --whatsapp: #25D366; }
         
         body { 
-            font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif; 
-            background: linear-gradient(135deg, #f0f4f8 0%, #e1e9f0 100%); 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background-color: var(--bg); 
             margin: 0; 
             padding: 20px;
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh;
-            color: var(--text-main);
         }
 
         .container { 
-            background-color: var(--card-bg); 
-            padding: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.15); 
-            width: 100%; 
-            max-width: 480px; 
-            text-align: center;
-            border-top: 5px solid var(--deep-blue); 
-            transition: transform 0.3s ease;
-        }
-
-        .logo-img { 
-            max-width: 160px; 
-            margin-bottom: 25px; 
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
-        }
-
-        h2 { 
-            color: var(--deep-blue); 
-            margin-bottom: 10px; 
-            font-size: 24px; 
-            font-weight: 700;
-        }
-        
-        #status-indicator {
-            font-size: 11px; 
-            color: #8898aa; 
-            margin-bottom: 25px; 
-            text-transform: uppercase; 
-            letter-spacing: 1.5px;
-            font-weight: 600;
-        }
-        .unlocked { color: var(--pink-pop) !important; font-weight: bold; }
-
-        input { 
-            width: 100%; 
-            padding: 15px; 
-            border: 2px solid #e1e9f0; 
+            background-color: white; 
+            padding: 30px; 
             border-radius: 12px; 
-            font-size: 16px; 
-            margin-bottom: 20px; 
-            box-sizing: border-box; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            width: 100%; 
+            max-width: 500px; 
             text-align: center;
-            transition: all 0.3s ease;
-            color: var(--deep-blue);
-            font-weight: 500;
-            background-color: #fafbfc;
         }
-        input:focus { 
-            border-color: var(--bright-blue); 
-            background-color: #fff;
-            outline: none; 
-            box-shadow: 0 0 0 4px rgba(43, 148, 204, 0.15);
+
+        .logo-img { max-width: 180px; margin-bottom: 20px; }
+        h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
+        
+        /* ESTADO DEL SISTEMA (VISUAL) */
+        #status-indicator {
+            font-size: 12px; color: #999; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
         }
-        input.admin-mode { 
-            border-color: var(--pink-pop); 
-            background-color: #fff0f9; 
-            color: var(--pink-pop);
+        .unlocked { color: var(--success) !important; font-weight: bold; }
+
+        /* INPUTS Y BOTONES */
+        input { 
+            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
+            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
+            transition: border-color 0.3s;
         }
-        input.readonly-mode { 
-            background-color: #e9ecef; 
-            color: #6c757d; 
-            border: 1px dashed #ced4da; 
-            cursor: not-allowed; 
-        }
+        input:focus { border-color: var(--primary); outline: none; }
+        input.admin-mode { border-color: var(--success); background-color: #f0fff4; }
+        input.readonly-mode { background-color: #eee; color: #555; border: 1px solid #ccc; cursor: not-allowed; }
 
         .btn-main { 
-            width: 100%; 
-            padding: 16px; 
-            background: linear-gradient(135deg, var(--deep-blue) 0%, var(--bright-blue) 100%);
-            color: white; 
-            border: none; 
-            border-radius: 12px; 
-            font-size: 16px; 
-            font-weight: 700; 
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(43, 148, 204, 0.3);
-            transition: transform 0.2s;
+            width: 100%; padding: 14px; background: var(--primary); color: white; 
+            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
         }
-        .btn-main:hover { transform: translateY(-2px); }
+        .btn-main:hover { background: #002244; }
 
+        /* SPINNER DE CARGA */
         .spinner {
-            border: 4px solid rgba(0,0,0,0.1); 
-            border-top: 4px solid var(--deep-blue); 
-            border-right: 4px solid var(--bright-blue);
-            border-bottom: 4px solid var(--pink-pop);
+            border: 5px solid #f3f3f3; 
+            border-top: 5px solid var(--primary); 
             border-radius: 50%;
-            width: 45px; height: 45px;
-            animation: spin 0.8s linear infinite;
-            margin: 30px auto;
+            width: 40px; height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
             display: none; 
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #resultado { margin-top: 30px; text-align: left; }
-        #resultado h3 {
-            color: var(--deep-blue);
-            font-size: 18px;
-            border-bottom: 2px solid #f0f0f0;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
+        /* RESULTADOS */
+        #resultado { margin-top: 20px; text-align: left; }
         .dia-card { 
-            background: #ffffff; 
-            margin-bottom: 15px; 
-            padding: 18px; 
-            border-radius: 12px; 
-            border: 1px solid #f0f0f0;
-            border-left: 6px solid var(--pink-pop); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            background: #eef2f7; margin-bottom: 10px; padding: 15px; 
+            border-radius: 8px; border-left: 5px solid var(--primary);
         }
-        .dia-title { 
-            font-weight: 800; 
-            color: var(--deep-blue); 
-            text-transform: uppercase; 
-            font-size: 13px;
-            display: block; 
-            margin-bottom: 8px;
-        }
-        .hora-tag { 
-            font-size: 20px; 
-            color: var(--bright-blue); 
-            font-weight: 600;
-            display: block; 
-        }
+        .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
+        .hora-tag { font-size: 18px; color: #333; display: block; }
 
-        #actions-panel { display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        /* BOTONES EXTRA (SOLO PROFESOR) */
+        #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .btn-share:hover { background: #218838; }
+        .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
         
-        .btn-share { 
-            width: 100%; padding: 14px; background: var(--pink-pop); color: white; 
-            border: none; border-radius: 12px; font-weight: bold; cursor: pointer; 
-            margin-bottom: 15px; box-shadow: 0 4px 12px rgba(250, 101, 195, 0.3);
-        }
-        .btn-share:hover { background: #d64cb2; }
-        
-        .btn-reset { 
-            background: none; border: 2px solid transparent; color: var(--deep-blue); 
-            font-size: 14px; font-weight: 600; cursor: pointer; padding: 8px 16px; border-radius: 8px;
-        }
-        .btn-reset:hover { background: #eef2f7; }
-        
-        #error-msg { 
-            color: #dc3545; background: #fff5f5; padding: 15px; border-radius: 8px;
-            font-weight: 600; display: none; margin-top: 20px; border: 1px solid #ffebeb;
-        }
+        #error-msg { color: var(--error); font-weight: bold; display: none; margin-top: 20px; }
 
+        /* BOTÓN FLOTANTE WHATSAPP */
         .whatsapp-float {
-            position: fixed; bottom: 25px; right: 25px; background-color
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--whatsapp);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-weight: bold;
+            font-size: 14px;
+            transition: transform 0.3s, background-color 0.3s;
+        }
+        .whatsapp-float:hover {
+            transform: scale(1.05);
+            background-color: #1ebe57;
+        }
+        .whatsapp-icon { width: 20px; height: 20px; fill: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+    
+    <div id="search-area">
+        <h2>Consulta tu Horario</h2>
+        <div id="status-indicator">Sistema en espera...</div>
+
+        <input type="text" id="magicInput" placeholder="Nombre del alumno..." autocomplete="off">
+        
+        <button id="btnBuscar" class="btn-main">CONSULTAR</button>
+    </div>
+
+    <div id="loading-spinner" class="spinner"></div>
+
+    <p id="error-msg"></p>
+    <div id="resultado"></div>
+    
+    <div id="actions-panel">
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+        <br>
+        <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
+    </div>
+</div>
+
+<a href="https://wa.me/34600000000" class="whatsapp-float" target="_blank" title="Contactar con la Academia">
+    <svg class="whatsapp-icon" viewBox="0 0 24 24">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+    </svg>
+    Contacto Academia
+</a>
+
+<script>
+// ==========================================
+// 🔐 SEGURIDAD MATEMÁTICA (SIN LIBRERÍAS)
+// ==========================================
+    
+    // Este número es el resultado de la fórmula para "010523"
+    // Si cambias la contraseña, este número dejará de valer.
+    const HASH_CORRECTO = 1450608307;
+    
+    let SISTEMA_DESBLOQUEADO = false; 
+
+    // Fórmula matemática simple (convierte texto a número)
+    const generarHash = (s) => s.split('').reduce((a,b) => {a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+
+// ==========================================
+
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    let memoriaCache = {}; 
+
+    // --- UTILIDADES ---
+    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+    
+    function agruparHoras(lista) {
+        if(!lista.length) return [];
+        let times = lista.map(timeToMins).sort((a,b)=>a-b);
+        let res=[]; let ini=times[0]; let fin=times[0]+30;
+        for(let i=1; i<times.length; i++) { 
+            if(times[i]===fin){fin+=30}
+            else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} 
+        }
+        res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
+    }
+
+    function leerHoja(url) {
+        if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
+        return new Promise(resolve => {
+            if (typeof Papa === 'undefined') {
+                alert("Error: Librería no cargada."); return resolve([]);
+            }
+            Papa.parse(url + "&t=" + Date.now(), { 
+                download:true, header:false, skipEmptyLines:true, 
+                complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
+                error: e => resolve([]) 
+            });
+        });
+    }
+
+    async function ejecutarBusqueda(nombre) {
+        document.getElementById('search-area').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('resultado').innerHTML = '';
+        
+        // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
+        document.getElementById('actions-panel').style.display = 'none';
+
+        let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
+        let encontrado = false;
+        
+        const nombreBuscado = nombre.toLowerCase().trim();
+        const dias = Object.keys(urls);
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const resultados = await Promise.all(promesas);
+
+        dias.forEach((dia, index) => {
+            const data = resultados[index];
+            if(!data || data.length === 0) return;
+            let horas = [];
+            for(let i=1; i < data.length; i++) {
+                const row = data[i];
+                let esta = false;
+                for(let c=0; c < row.length; c++) {
+                    if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
+                }
+                if(esta) {
+                    let h = row[1] ? row[1].toString().trim().substring(0,5) : "";
+                    if(h.includes(":")) horas.push(h);
+                }
+            }
+            if(horas.length > 0) {
+                encontrado = true;
+                const bloques = agruparHoras(horas);
+                html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
+            }
+        });
+
+        document.getElementById('loading-spinner').style.display = 'none';
+
+        if(encontrado) {
+            document.getElementById('resultado').innerHTML = html;
+            
+            // 🔒 LÓGICA DE SEGURIDAD
+            if (SISTEMA_DESBLOQUEADO === true) {
+                document.getElementById('actions-panel').style.display = 'block';
+            }
+
+        } else {
+            const err = document.getElementById('error-msg');
+            err.innerText = "❌ No se encontraron clases para ese alumno.";
+            err.style.display = 'block';
+            document.getElementById('search-area').style.display = 'block';
+        }
+    }
+
+    // ==========================================
+    // LÓGICA DE CONTROL (LA CAJA MÁGICA)
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('magicInput');
+        const btnBuscar = document.getElementById('btnBuscar');
+        const btnCopiar = document.getElementById('btnCopiar');
+        const btnReset = document.getElementById('btnReset');
+        const status = document.getElementById('status-indicator');
+        const errorMsg = document.getElementById('error-msg');
+
+        const procesarInput = () => {
+            const valor = input.value.trim();
+            if(!valor) return;
+
+            // BLOQUEADO
+            if (!SISTEMA_DESBLOQUEADO) {
+                
+                // 🔐 AQUÍ ESTÁ EL CAMBIO: No miramos el texto, miramos el resultado matemático
+                if (generarHash(valor) === HASH_CORRECTO) {
+                    
+                    SISTEMA_DESBLOQUEADO = true;
+                    status.innerText = "🔓 MODO PROFESOR ACTIVO";
+                    status.classList.add('unlocked');
+                    input.classList.add('admin-mode');
+                    input.value = ""; 
+                    input.placeholder = "Escribe el nombre del alumno ahora...";
+                    errorMsg.style.display = 'none'; 
+                    alert("✅ Acceso Correcto.");
+                } else {
+                    errorMsg.innerText = "⚠️ Error: Contraseña incorrecta o servicio no disponible.";
+                    errorMsg.style.display = 'block';
+                }
+            } 
+            // DESBLOQUEADO
+            else {
+                ejecutarBusqueda(valor);
+            }
+        };
+
+        btnBuscar.addEventListener('click', procesarInput);
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') procesarInput(); });
+
+        btnCopiar.addEventListener('click', () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url).then(() => { 
+                const original = btnCopiar.innerText;
+                btnCopiar.innerText = "✅ ENLACE COPIADO";
+                setTimeout(() => btnCopiar.innerText = original, 2000);
+            });
+        });
+
+        btnReset.addEventListener('click', () => {
+            window.history.pushState({}, document.title, window.location.pathname);
+            document.getElementById('resultado').innerHTML = '';
+            document.getElementById('actions-panel').style.display = 'none';
+            document.getElementById('search-area').style.display = 'block';
+            document.getElementById('error-msg').style.display = 'none';
+            input.value = ""; 
+            input.focus();
+        });
+
+        // ===============================================
+        // MODO LECTURA PARA PADRES (Llega por URL)
+        // ===============================================
+        const params = new URLSearchParams(window.location.search);
+        const alumnoURL = params.get('alumno');
+        
+        if (alumnoURL) {
+            input.value = alumnoURL;
+            input.readOnly = true; 
+            input.classList.add('readonly-mode');
+            btnBuscar.style.display = 'none'; 
+            status.style.display = 'none'; 
+            
+            // Al ejecutar búsqueda sin desbloquear sistema, NO saldrán los botones de compartir
+            ejecutarBusqueda(alumnoURL);
+        }
+    });
+</script>
+
+</body>
+</html>
