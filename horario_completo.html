@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Calcado Final - CSE Elisa Gundín</title>
+    <title>Horario Final - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* COLORES Y FUENTES EXACTOS DE LA CAPTURA */
+        /* COLORES Y FUENTES EXACTOS */
         :root { 
             --sheet-blue: #184a7e; 
             --bg: #ffffff;
@@ -23,7 +23,7 @@
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER PRINCIPAL DE LA PÁGINA --- */
+        /* --- HEADER PRINCIPAL DE PANTALLA --- */
         header {
             display: flex; 
             justify-content: center; 
@@ -31,11 +31,10 @@
             margin-bottom: 20px;
         }
 
-        /* --- TÍTULO DEL DÍA (LUNES, MARTES...) --- */
-        /* Ahora es visible siempre */
+        /* --- TÍTULO Y SUBTÍTULO DEL DÍA --- */
         .day-header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 20px; /* Espacio antes de la tabla */
             margin-top: 10px;
         }
 
@@ -44,6 +43,15 @@
             font-size: 36px; 
             font-weight: bold;
             text-transform: uppercase;
+            line-height: 1.2;
+        }
+
+        /* ESTILO NUEVO: SUBTÍTULO */
+        .day-subtitle {
+            color: var(--sheet-blue);
+            font-size: 20px; /* Tamaño menor */
+            font-weight: bold;
+            margin-top: 5px;
         }
 
         /* --- BOTONERA Y SPINNER --- */
@@ -62,12 +70,12 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- ESTILOS DE LA TABLA (EL "CALCADO") --- */
+        /* --- ESTILOS DE LA TABLA (DISEÑO CALCADO) --- */
         .planning-container { display: none; }
         .planning-container.visible { display: block; }
 
         table {
-            width: 1%; /* Auto-ajuste ceñido */
+            width: 1%; 
             min-width: 80%; 
             margin: 0 auto;
             border-collapse: collapse; 
@@ -75,7 +83,6 @@
             white-space: nowrap;
         }
 
-        /* Celdas Generales */
         th, td {
             border: 1px solid var(--sheet-blue); 
             padding: 6px 12px;
@@ -151,8 +158,6 @@
             .container { padding: 0; margin: 0; border: none; max-width: none; }
             header, .days-nav, .spinner, .btn-print { display: none; } 
             
-            /* El .day-header se imprime tal cual, centrado */
-            
             .planning-container.visible { display: block !important; page-break-after: always; }
             
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
@@ -211,11 +216,12 @@
                 }
             });
 
-            // AQUI ESTÁ LA CORRECCIÓN: TÍTULO VISIBLE Y CENTRADO
+            // AQUI ESTÁ EL HEADER: DÍA + SUBTÍTULO
             let html = `
             <div id="view-${dia}" class="planning-container">
                 <div class="day-header">
                     <div class="day-title">${dia.toUpperCase()}</div>
+                    <div class="day-subtitle">CSE Elisa Gundín</div>
                 </div>
                 
                 <table>
@@ -273,7 +279,6 @@
         let lista = alumnos || [];
         for(let i=0; i<6; i++) {
             let nombreFull = (lista[i] || "").trim();
-            // SOLO PRIMER NOMBRE
             let nombreCorto = nombreFull.split(" ")[0]; 
             html += `<td class="student-cell">${nombreCorto}</td>`;
         }
