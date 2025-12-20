@@ -3,177 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín (Maestra)</title>
+    <title>Horario Diseño Calcado - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #003366; --bg: #f2f4f7; --border: #000; --time-bg: #e9ecef; }
+        /* COLORES Y FUENTES EXACTOS DE LA CAPTURA */
+        :root { 
+            --sheet-blue: #184a7e; /* El azul oscuro de los bordes y letras */
+            --bg: #ffffff;
+        }
         
         body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg); 
+            font-family: Arial, Helvetica, sans-serif; /* Tipografía estilo Excel */
+            background-color: #f2f4f7; 
             margin: 0; padding: 20px; color: #333;
         }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* HEADER PRINCIPAL */
+        /* --- HEADER (Título y Logo) --- */
         header {
-            display: flex; justify-content: space-between; align-items: center;
-            background: white; padding: 15px 25px; border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; /* Alineado arriba como en la captura */
+            margin-bottom: 20px;
+            position: relative;
         }
-        h1 { color: var(--primary); margin: 0; font-size: 22px; }
         
-        button.btn-print {
-            background-color: var(--primary); color: white; border: none;
-            padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
+        .header-title {
+            width: 100%;
+            text-align: center;
+            color: var(--sheet-blue);
+            font-size: 36px; /* Tamaño grande como en la captura */
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-top: 10px;
         }
 
-        /* NAVEGACIÓN */
-        .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
+        .header-logo {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 80px; /* Logo grande */
+        }
+
+        /* --- BOTONERA Y SPINNER --- */
+        .days-nav { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
-            padding: 8px 16px; border: 1px solid transparent; background: white;
-            color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 8px 16px; border: 1px solid var(--sheet-blue); background: white;
+            color: var(--sheet-blue); border-radius: 4px; cursor: pointer; font-weight: bold;
+            transition: 0.2s;
         }
-        .nav-btn.active { background: var(--primary); color: white; }
+        .nav-btn.active { background: var(--sheet-blue); color: white; }
+        .nav-btn:hover { background: #eef4fa; }
 
-        /* SPINNER */
         .spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--sheet-blue); border-radius: 50%;
+            width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* CONTENEDOR DE LA TABLA */
-        .planning-container {
-            display: none; background: white; border-radius: 8px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
-            padding-bottom: 20px; overflow: hidden;
-            text-align: center; 
-        }
+        /* --- ESTILOS DE LA TABLA (EL "CALCADO") --- */
+        .planning-container { display: none; }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA CONFIGURADA --- */
         table {
-            width: auto; 
-            margin: 0 auto; 
-            border-collapse: collapse;
+            width: 1%; /* Auto-ajuste ceñido */
+            min-width: 80%; /* Que ocupe un ancho decente pero no forzado */
+            margin: 0 auto;
+            border-collapse: collapse; /* Bordes pegados estilo Excel */
+            border: 2px solid var(--sheet-blue); /* Borde exterior grueso */
+            white-space: nowrap;
         }
 
-        /* FILAS: Altura fija */
-        tr { height: 45px; }
-
+        /* Celdas Generales */
         th, td {
-            border: 1px solid #999;
-            padding: 0 20px; /* Amplitud lateral */
+            border: 1px solid var(--sheet-blue); /* Todos los bordes azules */
+            padding: 6px 12px;
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            white-space: nowrap; /* Mantiene el nombre en una línea */
+            color: var(--sheet-blue); /* Texto azul por defecto */
         }
 
+        /* Encabezados (TURNO, HORA, ALUMNO...) */
         th {
-            background: var(--primary); color: white;
-            text-transform: uppercase; font-size: 12px; padding: 10px 5px;
-            height: auto; 
-        }
-
-        /* Columna Hora */
-        td.col-hora {
-            background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 10px; width: 1%;
-        }
-
-        /* NOMBRE LIMPIO */
-        .student-name {
-            font-weight: 800; 
-            font-size: 14px; /* Un pelín más grande para leer mejor */
-            color: #000;
-            display: block;
-        }
-
-        .break-row {
-            background: #eef4fa; color: #8898aa; 
-            font-weight: bold; font-size: 11px; letter-spacing: 1px;
-            height: 30px; 
-        }
-
-        /* NOTAS */
-        .notes-section { margin-top: 30px; width: 95%; margin-left: auto; margin-right: auto; text-align: left;}
-        .notes-header {
-            background: #e9ecef; color: #333;
-            padding: 8px 10px; font-weight: bold; font-size: 13px;
-            border-bottom: 2px solid var(--primary);
+            font-weight: bold;
             text-transform: uppercase;
+            padding: 10px;
+            border-bottom: 2px solid var(--sheet-blue); /* Línea más gruesa bajo header */
+        }
+
+        /* Columna TURNO (Mañana/Tarde) */
+        .col-turno {
+            font-weight: bold;
+            color: var(--sheet-blue);
+            text-transform: uppercase;
+            font-size: 14px;
+            width: 80px;
+        }
+
+        /* Columna HORA */
+        .col-hora {
+            font-weight: bold;
+            color: #000; /* La hora suele verse mejor en negro o azul oscuro */
+            width: 60px;
+        }
+
+        /* Nombres de alumnos */
+        .student-cell {
+            font-weight: bold;
+            color: var(--sheet-blue); /* Texto azul como en la captura */
+            text-transform: uppercase; /* Nombres en mayúsculas como en la captura */
+            text-align: center;
+            min-width: 90px; /* Ancho mínimo para que no se vea ridículo */
+        }
+
+        /* FILAS */
+        tr { height: 35px; } /* Altura similar a Excel */
+
+        /* LA FILA DE SEPARACIÓN (Gap) */
+        .gap-row {
+            height: 15px;
+            border: none;
+        }
+        .gap-row td {
+            border-left: 2px solid var(--sheet-blue); /* Mantiene bordes laterales exteriores */
+            border-right: 2px solid var(--sheet-blue);
+            border-top: none;
+            border-bottom: none;
+            background: #fff; /* Fondo blanco vacío */
+        }
+
+        button.btn-print {
+            display: block; margin: 20px auto;
+            background-color: var(--sheet-blue); color: white; border: none;
+            padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;
         }
 
         /* --- IMPRESIÓN --- */
         @page {
-            size: portrait; /* Vertical */
-            margin: 8mm;    
+            size: portrait;
+            margin: 10mm;
         }
 
         @media print {
             body { 
-                background: white; padding: 0; 
-                /* ZOOM AUMENTADO CONSIDERABLEMENTE */
-                zoom: 90%; 
-                width: 100% !important;
+                background: white; padding: 0; margin: 0;
+                zoom: 85%; /* Zoom ajustado para llenar hoja vertical */
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
             }
 
-            header, .days-nav, .spinner { display: none; }
-            .container { width: 100% !important; max-width: none !important; margin: 0; }
+            .container { padding: 0; margin: 0; border: none; max-width: none; }
+            header, .days-nav, .spinner, .btn-print { display: none; } /* Ocultar interfaz */
             
-            .planning-container { 
-                display: none !important; 
-                box-shadow: none; margin: 0; border: none;
-            }
+            /* Header específico impresión */
+            .print-header { display: flex !important; justify-content: center; position: relative; margin-bottom: 20px; }
+            .print-logo { position: absolute; right: 0; top: 0; height: 70px; }
+
             .planning-container.visible { display: block !important; page-break-after: always; }
-
-            table, th, td { border: 1px solid #000 !important; }
-            table { width: auto !important; margin: 0 auto !important; }
-            tr { height: 45px !important; }
-
-            th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
-            td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
-            .student-name {
-                color: #000 !important;
-                background: transparent !important;
-                font-size: 12pt; /* Letra más grande al imprimir */
-                text-decoration: none !important;
-                border: none !important;
-            }
+            /* Forzar colores e impresión exacta */
+            table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
+            th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
             
-            .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
-
-            .notes-section { margin-top: 30px !important; width: 100% !important; }
-            .notes-header {
-                background: #eee !important; color: #000 !important;
-                border: 1px solid #000 !important;
-                border-bottom: 1px solid #000 !important;
-                font-size: 12pt !important;
-            }
+            /* Eliminar bordes internos de la fila gap en impresión para que se vea limpia */
+            .gap-row td { border-top: 1px solid transparent !important; border-bottom: 1px solid transparent !important; }
         }
+        
+        /* Ocultar header de impresión en pantalla normal */
+        .print-header { display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>Horario Semanal CSE Elisa Gundín</h1>
-        <button class="btn-print" onclick="window.print()">🖨️ Imprimir</button>
-    </header>
+        <div></div> <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR HORARIO</button>
+        <div></div> </header>
 
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
-    
     <div id="schedule-container"></div>
 </div>
 
@@ -190,11 +203,7 @@
 
     function leerHoja(url) {
         return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download: true, skipEmptyLines: true,
-                complete: res => resolve(res.data),
-                error: e => { console.error(e); resolve([]); }
-            });
+            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
     }
 
@@ -202,15 +211,17 @@
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
-        const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
+        
+        // Franjas exactas según tu imagen
+        const slotsManana = ["11:00", "11:30", "12:00"];
+        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
-            
             let mapa = {};
             data.forEach(row => {
                 if(row[1]) {
@@ -219,85 +230,91 @@
                 }
             });
 
-            // AQUÍ ESTÁ EL HEADER CENTRADO (DÍA Y LOGO)
+            // HEADER PERSONALIZADO PARA IMPRESIÓN (TITULO + LOGO)
             let html = `
             <div id="view-${dia}" class="planning-container">
-                <div style="padding:10px; display:flex; flex-direction: column; justify-content:center; align-items:center; gap: 10px; margin-bottom: 10px;">
-                    <h2 style="margin:0; color:#003366; font-size: 28px;">📅 ${dia}</h2>
-                    <img src="${LOGO_URL}" style="height:60px;">
+                <div class="print-header" style="display:flex; justify-content:center; align-items:start; position:relative; margin-bottom:15px;">
+                    <div class="header-title">${dia.toUpperCase()}</div>
+                    <img src="${LOGO_URL}" class="print-logo" style="position:absolute; right:0; top:-10px; height:80px;">
                 </div>
                 
                 <table>
                     <thead>
                         <tr>
-                            <th>Hora</th>
-                            <th>Alumno 1</th>
-                            <th>Alumno 2</th>
-                            <th>Alumno 3</th>
-                            <th>Alumno 4</th>
-                            <th>Alumno 5</th>
-                            <th>Alumno 6</th>
+                            <th>TURNO</th>
+                            <th>HORA</th>
+                            <th>ALUMNO 1</th>
+                            <th>ALUMNO 2</th>
+                            <th>ALUMNO 3</th>
+                            <th>ALUMNO 4</th>
+                            <th>ALUMNO 5</th>
+                            <th>ALUMNO 6</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
-            franjas.forEach(hora => {
-                if(hora === "BREAK") {
-                    html += `<tr><td colspan="7" class="break-row">--- MEDIODÍA ---</td></tr>`;
-                    return;
+            // --- BLOQUE MAÑANA ---
+            slotsManana.forEach((hora, index) => {
+                html += `<tr>`;
+                // Solo en la primera fila de la mañana ponemos el "rowspan"
+                if(index === 0) {
+                    html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
                 }
-
-                let filaAlumnos = mapa[hora] || [];
-                
-                html += `<tr><td class="col-hora">${hora}</td>`;
-                
-                for(let i=0; i<6; i++) {
-                    let alumnoCompleto = (filaAlumnos[i] || "").trim();
-                    let celda = "";
-
-                    if(alumnoCompleto) {
-                        // Solo Nombre
-                        let soloNombre = alumnoCompleto.split(" ")[0];
-                        celda = `<span class="student-name">${soloNombre}</span>`;
-                    }
-                    html += `<td>${celda}</td>`;
-                }
+                html += `<td class="col-hora">${hora}</td>`;
+                html += generarCeldasAlumnos(mapa[hora]);
                 html += `</tr>`;
             });
 
-            html += `   </tbody>
-                    </table>
-                    <div class="notes-section">
-                        <div class="notes-header">NOTAS / OBSERVACIONES</div>
-                    </div>
-                </div>`;
-            
+            // --- FILA DE SEPARACIÓN (GAP) ---
+            html += `<tr class="gap-row"><td colspan="8"></td></tr>`;
+
+            // --- BLOQUE TARDE ---
+            slotsTarde.forEach((hora, index) => {
+                html += `<tr>`;
+                // Solo en la primera fila de la tarde ponemos el "rowspan"
+                if(index === 0) {
+                    html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
+                }
+                html += `<td class="col-hora">${hora}</td>`;
+                html += generarCeldasAlumnos(mapa[hora]);
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>`;
             container.innerHTML += html;
         }
 
         document.getElementById('loading').style.display = 'none';
-        
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
+        let hoy = new Date().toLocaleDateString('es-ES', {weekday: 'long'});
+        hoy = hoy.charAt(0).toUpperCase() + hoy.slice(1);
+        cambiarDia(Object.keys(urls).includes(hoy) ? hoy : "Lunes");
+    }
+
+    function generarCeldasAlumnos(alumnos) {
+        let html = "";
+        let lista = alumnos || [];
+        for(let i=0; i<6; i++) {
+            let nombreFull = (lista[i] || "").trim();
+            let nombreCorto = nombreFull.split(" ")[0]; // Solo primer nombre
+            html += `<td class="student-cell">${nombreCorto}</td>`;
+        }
+        return html;
     }
 
     function cambiarDia(dia) {
         document.querySelectorAll('.planning-container').forEach(div => {
             if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
+            else div.classList.toggle('visible', div.id === `view-${dia}`);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            let esActivo = btn.innerText === dia || (dia === 'Todo' && btn.innerText === 'Ver Todo');
+            let textoBtn = btn.innerText; 
+            // Ajuste porque ahora los botones están en mayúsculas
+            let esActivo = (textoBtn === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
     }
 
     document.addEventListener('DOMContentLoaded', cargarTodo);
-
 </script>
 </body>
 </html>
