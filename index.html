@@ -148,18 +148,8 @@
 
 <script>
 // ==========================================
-// 🔐 SEGURIDAD MATEMÁTICA (SIN LIBRERÍAS)
-// ==========================================
-    
-    // Este número es el resultado de la fórmula para "010523"
-    // Si cambias la contraseña, este número dejará de valer.
-    const HASH_CORRECTO = 1450608307;
-    
+    const CONTRASEÑA_MAESTRA = "010523"; //
     let SISTEMA_DESBLOQUEADO = false; 
-
-    // Fórmula matemática simple (convierte texto a número)
-    const generarHash = (s) => s.split('').reduce((a,b) => {a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-
 // ==========================================
 
     const urls = {
@@ -245,7 +235,8 @@
         if(encontrado) {
             document.getElementById('resultado').innerHTML = html;
             
-            // 🔒 LÓGICA DE SEGURIDAD
+            // 🔒 LÓGICA DE SEGURIDAD DEFINITIVA
+            // Solo mostramos botones de compartir SI el sistema se desbloqueó con contraseña
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
             }
@@ -275,10 +266,7 @@
 
             // BLOQUEADO
             if (!SISTEMA_DESBLOQUEADO) {
-                
-                // 🔐 AQUÍ ESTÁ EL CAMBIO: No miramos el texto, miramos el resultado matemático
-                if (generarHash(valor) === HASH_CORRECTO) {
-                    
+                if (valor === CONTRASEÑA_MAESTRA) {
                     SISTEMA_DESBLOQUEADO = true;
                     status.innerText = "🔓 MODO PROFESOR ACTIVO";
                     status.classList.add('unlocked');
@@ -288,7 +276,7 @@
                     errorMsg.style.display = 'none'; 
                     alert("✅ Acceso Correcto.");
                 } else {
-                    errorMsg.innerText = "⚠️ Error: Contraseña incorrecta o servicio no disponible.";
+                    errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
                     errorMsg.style.display = 'block';
                 }
             } 
