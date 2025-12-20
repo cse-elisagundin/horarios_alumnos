@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Ajustado - CSE Elisa Gundín</title>
+    <title>Horario Semanal CSE Elisa Gundín - Final Pseudónimos</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -53,29 +53,24 @@
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
             padding-bottom: 20px; overflow: hidden;
-            text-align: center; /* Centra la tabla si es pequeña */
+            text-align: center;
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA SÚPER AJUSTADA --- */
+        /* --- TABLA AUTO-AJUSTADA --- */
         table {
-            /* width: auto y max-content son la CLAVE para que no se estire */
-            width: auto; 
-            min-width: 50%;
-            max-width: 100%;
-            margin: 0 auto; /* Centrar tabla */
+            width: auto; /* Se ajusta al contenido */
+            margin: 0 auto;
             border-collapse: collapse;
         }
 
         th, td {
             border: 1px solid #999;
-            padding: 4px 6px; /* Padding muy pequeño para ceñir */
+            padding: 4px 6px; 
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            
-            /* ESTO IMPIDE QUE EL NOMBRE SE PARTA EN DOS LINEAS */
-            /* Y obliga a la columna a ensancharse lo justo */
+            /* IMPORTANTE: Esto impide que se parta el nombre y ajusta la columna */
             white-space: nowrap; 
         }
 
@@ -92,7 +87,7 @@
 
         /* NOMBRE LIMPIO (Sin rayas, sin colores) */
         .student-name {
-            font-weight: 800; /* Muy negrita para ver bien en B/N */
+            font-weight: 800; /* Muy negrita */
             font-size: 13px;
             color: #000;
             display: block;
@@ -142,13 +137,13 @@
             /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
             
-            /* Ajuste para que la tabla no se estire al 100% del folio, sino al contenido */
+            /* Ajuste para que la tabla no se estire */
             table { width: auto !important; margin: 0 auto !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
-            /* Nombre limpio NEGRO */
+            /* Nombre limpio NEGRO sin decoración */
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
@@ -199,112 +194,4 @@
             Papa.parse(url + "&t=" + Date.now(), { 
                 download: true, skipEmptyLines: true,
                 complete: res => resolve(res.data),
-                error: e => { console.error(e); resolve([]); }
-            });
-        });
-    }
-
-    async function cargarTodo() {
-        const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
-        const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
-        btnContainer.innerHTML = btns;
-
-        for (const dia of dias) {
-            const data = await leerHoja(urls[dia]);
-            
-            let mapa = {};
-            data.forEach(row => {
-                if(row[1]) {
-                    let hora = row[1].trim().substring(0,5);
-                    mapa[hora] = row.slice(2); 
-                }
-            });
-
-            let html = `
-            <div id="view-${dia}" class="planning-container">
-                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="margin:0; color:#003366;">📅 ${dia}</h2>
-                    <img src="${LOGO_URL}" style="height:45px;">
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Hora</th>
-                            <th>Alumno 1</th>
-                            <th>Alumno 2</th>
-                            <th>Alumno 3</th>
-                            <th>Alumno 4</th>
-                            <th>Alumno 5</th>
-                            <th>Alumno 6</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-
-            franjas.forEach(hora => {
-                if(hora === "BREAK") {
-                    html += `<tr><td colspan="7" class="break-row">--- MEDIODÍA ---</td></tr>`;
-                    return;
-                }
-
-                let filaAlumnos = mapa[hora] || [];
-                
-                html += `<tr><td class="col-hora">${hora}</td>`;
-                
-                for(let i=0; i<6; i++) {
-                    let alumnoCompleto = (filaAlumnos[i] || "").trim();
-                    let celda = "";
-
-                    if(alumnoCompleto) {
-                        // AQUÍ YA NO CORTAMOS EL NOMBRE (Sale Jose Manuel entero)
-                        // Si quieres cortar apellidos, habría que usar .split(" ")[0]
-                        // Pero para que la columna se "ciña" a Jose Manuel, mejor dejarlo entero.
-                        
-                        celda = `<span class="student-name">${alumnoCompleto}</span>`;
-                    }
-                    html += `<td>${celda}</td>`;
-                }
-                html += `</tr>`;
-            });
-
-            html += `   </tbody>
-                    </table>
-                    <div class="notes-section">
-                        <div class="notes-header">NOTAS / OBSERVACIONES</div>
-                    </div>
-                </div>`;
-            
-            container.innerHTML += html;
-        }
-
-        document.getElementById('loading').style.display = 'none';
-        
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else {
-                if(div.id === `view-${dia}`) div.classList.add('visible');
-                else div.classList.remove('visible');
-            }
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            let esActivo = btn.innerText === dia || (dia === 'Todo' && btn.innerText === 'Ver Todo');
-            if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-
-</script>
-</body>
-</html>
+                error: e => {
