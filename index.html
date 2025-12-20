@@ -10,58 +10,139 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        :root { --primary: #003366; --bg: #f4f7f9; --success: #28a745; --error: #dc3545; --whatsapp: #25D366; }
+        /* =========================================
+           🎨 ESTILOS VISUALES IMPORTADOS
+           ========================================= */
+        :root { 
+            /* Paleta del primer código */
+            --c-primary: #243c7a;   /* Azul Oscuro */
+            --c-secondary: #2b94cc; /* Azul Claro */
+            --c-accent: #fa65c3;    /* Rosa */
+            
+            --bg-body: #f4f6f9;
+            --bg-container: #ffffff;
+            --whatsapp: #25D366; 
+            --error: #dc3545;
+        }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background-color: var(--bg); 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Tipografía del primer código */
+            background-color: var(--bg-body); 
             margin: 0; 
             padding: 20px;
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh;
+            color: #333;
         }
 
         .container { 
-            background-color: white; 
-            padding: 30px; 
+            background-color: var(--bg-container); 
+            padding: 40px; 
             border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            /* Sombra elegante azulada del primer código */
+            box-shadow: 0 10px 25px rgba(36, 60, 122, 0.15); 
             width: 100%; 
             max-width: 500px; 
             text-align: center;
+            border-top: none; /* Quitamos el borde simple anterior para usar la línea decorativa */
         }
 
-        .logo-img { max-width: 180px; margin-bottom: 20px; }
-        h2 { color: var(--primary); margin-bottom: 20px; font-size: 22px; }
+        .logo-img { 
+            max-width: 160px; 
+            margin-bottom: 5px; 
+        }
+
+        /* LÍNEA DECORATIVA (Elemento visual clave del primer código) */
+        .brand-line {
+            height: 4px;
+            width: 100px;
+            margin: 0 auto 25px;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 2px;
+        }
+
+        h2 { 
+            color: var(--c-primary); 
+            margin-bottom: 10px; 
+            font-size: 24px; 
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
         
-        /* ESTADO DEL SISTEMA (VISUAL) */
+        /* ESTADO DEL SISTEMA */
         #status-indicator {
-            font-size: 12px; color: #999; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
+            font-size: 11px; 
+            color: #8898aa; 
+            margin-bottom: 25px; 
+            text-transform: uppercase; 
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
-        .unlocked { color: var(--success) !important; font-weight: bold; }
+        .unlocked { color: var(--c-accent) !important; font-weight: bold; }
 
-        /* INPUTS Y BOTONES */
+        /* INPUTS */
         input { 
-            width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; 
-            font-size: 16px; margin-bottom: 15px; box-sizing: border-box; text-align: center;
-            transition: border-color 0.3s;
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #e1e9f0; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            margin-bottom: 20px; 
+            box-sizing: border-box; 
+            text-align: center;
+            transition: all 0.3s ease;
+            color: var(--c-primary);
+            font-weight: 600;
+            background-color: #fafbfc;
         }
-        input:focus { border-color: var(--primary); outline: none; }
-        input.admin-mode { border-color: var(--success); background-color: #f0fff4; }
-        input.readonly-mode { background-color: #eee; color: #555; border: 1px solid #ccc; cursor: not-allowed; }
+        input:focus { 
+            border-color: var(--c-secondary); 
+            background-color: #fff;
+            outline: none; 
+            box-shadow: 0 0 0 4px rgba(43, 148, 204, 0.15);
+        }
+        input.admin-mode { 
+            border-color: var(--c-accent); 
+            background-color: #fff0f9; 
+            color: var(--c-accent);
+        }
+        input.readonly-mode { 
+            background-color: #e9ecef; 
+            color: #6c757d; 
+            border: 1px dashed #ced4da; 
+            cursor: not-allowed; 
+        }
 
+        /* BOTÓN PRINCIPAL (Estilo btn-print del primer código) */
         .btn-main { 
-            width: 100%; padding: 14px; background: var(--primary); color: white; 
-            border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;
+            width: 100%; 
+            padding: 14px; 
+            background-color: var(--c-primary); 
+            color: white; 
+            border: 2px solid var(--c-primary);
+            border-radius: 8px; 
+            font-size: 16px; 
+            font-weight: 700; 
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         }
-        .btn-main:hover { background: #002244; }
+        .btn-main:hover { 
+            background-color: #1a2e5e; 
+            border-color: #1a2e5e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(36, 60, 122, 0.2);
+        }
 
-        /* SPINNER DE CARGA */
+        /* SPINNER DE CARGA (Estilo del primer código) */
         .spinner {
-            border: 5px solid #f3f3f3; 
-            border-top: 5px solid var(--primary); 
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid var(--c-accent); /* Rosa */
             border-radius: 50%;
             width: 40px; height: 40px;
             animation: spin 1s linear infinite;
@@ -71,52 +152,121 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* RESULTADOS */
-        #resultado { margin-top: 20px; text-align: left; }
-        .dia-card { 
-            background: #eef2f7; margin-bottom: 10px; padding: 15px; 
-            border-radius: 8px; border-left: 5px solid var(--primary);
-        }
-        .dia-title { font-weight: bold; color: var(--primary); text-transform: uppercase; display: block; margin-bottom: 5px;}
-        .hora-tag { font-size: 18px; color: #333; display: block; }
-
-        /* BOTONES EXTRA (SOLO PROFESOR) */
-        #actions-panel { display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
-        .btn-share { width: 100%; padding: 12px; background: var(--success); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
-        .btn-share:hover { background: #218838; }
-        .btn-reset { background: none; border: none; color: #666; text-decoration: underline; cursor: pointer; }
+        #resultado { margin-top: 30px; text-align: left; }
         
-        #error-msg { color: var(--error); font-weight: bold; display: none; margin-top: 20px; }
+        #resultado h3 {
+            color: var(--c-primary);
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            font-size: 18px;
+        }
 
-        /* BOTÓN FLOTANTE WHATSAPP */
+        .dia-card { 
+            background: #ffffff; 
+            margin-bottom: 15px; 
+            padding: 18px; 
+            border-radius: 8px; 
+            border: 1px solid #f0f0f0;
+            border-left: 5px solid var(--c-accent); /* Borde rosa del primer código */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            transition: transform 0.2s;
+        }
+        .dia-card:hover { transform: translateX(5px); }
+
+        .dia-title { 
+            font-weight: 800; 
+            color: var(--c-primary); 
+            text-transform: uppercase; 
+            font-size: 14px;
+            letter-spacing: 1px;
+            display: block; 
+            margin-bottom: 8px;
+        }
+        .hora-tag { 
+            font-size: 20px; 
+            color: var(--c-secondary); /* Azul claro para la hora */
+            font-weight: 700;
+            display: block; 
+        }
+
+        /* BOTONES EXTRA (Estilo btn-edit del primer código pero adaptado) */
+        #actions-panel { display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+        
+        .btn-share { 
+            width: 100%; 
+            padding: 12px; 
+            background: white; 
+            color: var(--c-secondary); 
+            border: 2px solid var(--c-secondary); 
+            border-radius: 8px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            margin-bottom: 15px; 
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+        .btn-share:hover { 
+            background-color: var(--c-accent); 
+            color: white; 
+            border-color: var(--c-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
+        }
+        
+        .btn-reset { 
+            background: none; 
+            border: none; 
+            color: var(--c-primary); 
+            font-weight: 600; 
+            font-size: 14px;
+            cursor: pointer; 
+            padding: 8px 16px;
+            transition: color 0.3s;
+        }
+        .btn-reset:hover { color: var(--c-accent); text-decoration: underline; }
+        
+        #error-msg { 
+            color: var(--error); 
+            background: #fff5f5;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ffebeb;
+            font-weight: 600; 
+            display: none; 
+            margin-top: 20px; 
+        }
+
+        /* BOTÓN FLOTANTE WHATSAPP (Adaptado) */
         .whatsapp-float {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 25px;
+            right: 25px;
             background-color: var(--whatsapp);
             color: white;
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 50px;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
             z-index: 1000;
             font-weight: bold;
-            font-size: 14px;
-            transition: transform 0.3s, background-color 0.3s;
+            font-size: 15px;
+            transition: all 0.3s ease;
         }
         .whatsapp-float:hover {
-            transform: scale(1.05);
-            background-color: #1ebe57;
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6);
         }
-        .whatsapp-icon { width: 20px; height: 20px; fill: white; }
+        .whatsapp-icon { width: 22px; height: 22px; fill: white; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+    <div class="brand-line"></div>
     
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
@@ -148,8 +298,18 @@
 
 <script>
 // ==========================================
-    const CONTRASEÑA_MAESTRA = "010523"; //
+// 🔐 SEGURIDAD MATEMÁTICA (SIN LIBRERÍAS)
+// ==========================================
+    
+    // Este número es el resultado de la fórmula para "010523"
+    // Si cambias la contraseña, este número dejará de valer.
+    const HASH_CORRECTO = 1450608307;
+    
     let SISTEMA_DESBLOQUEADO = false; 
+
+    // Fórmula matemática simple (convierte texto a número)
+    const generarHash = (s) => s.split('').reduce((a,b) => {a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
+
 // ==========================================
 
     const urls = {
@@ -200,7 +360,7 @@
         // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
-        let html = `<h3 style='color:#003366; border-bottom:1px solid #ddd; padding-bottom:5px;'>Horario: ${nombre}</h3>`;
+        let html = `<h3>Horario: ${nombre}</h3>`;
         let encontrado = false;
         
         const nombreBuscado = nombre.toLowerCase().trim();
@@ -235,8 +395,7 @@
         if(encontrado) {
             document.getElementById('resultado').innerHTML = html;
             
-            // 🔒 LÓGICA DE SEGURIDAD DEFINITIVA
-            // Solo mostramos botones de compartir SI el sistema se desbloqueó con contraseña
+            // 🔒 LÓGICA DE SEGURIDAD
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
             }
@@ -266,7 +425,10 @@
 
             // BLOQUEADO
             if (!SISTEMA_DESBLOQUEADO) {
-                if (valor === CONTRASEÑA_MAESTRA) {
+                
+                // 🔐 SEGURIDAD MATEMÁTICA
+                if (generarHash(valor) === HASH_CORRECTO) {
+                    
                     SISTEMA_DESBLOQUEADO = true;
                     status.innerText = "🔓 MODO PROFESOR ACTIVO";
                     status.classList.add('unlocked');
@@ -276,7 +438,7 @@
                     errorMsg.style.display = 'none'; 
                     alert("✅ Acceso Correcto.");
                 } else {
-                    errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
+                    errorMsg.innerText = "⚠️ Error: Contraseña incorrecta o servicio no disponible.";
                     errorMsg.style.display = 'block';
                 }
             } 
@@ -329,5 +491,3 @@
 
 </body>
 </html>
-
-
