@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Final Pseudónimos</title>
+    <title>Horario Semanal CSE Elisa Gundín - Vertical Final</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -19,7 +19,7 @@
 
         .container { max-width: 1000px; margin: 0 auto; }
 
-        /* HEADER PANTALLA */
+        /* HEADER */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -53,24 +53,26 @@
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
             padding-bottom: 20px; overflow: hidden;
-            text-align: center;
+            /* Centrar contenido (tabla) */
+            text-align: center; 
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA AUTO-AJUSTADA --- */
+        /* --- TABLA AUTO-AJUSTABLE --- */
         table {
-            width: auto; /* Se ajusta al contenido */
-            margin: 0 auto;
+            width: auto; /* Se ajusta al contenido real */
+            margin: 0 auto; /* Centrada */
             border-collapse: collapse;
         }
 
         th, td {
             border: 1px solid #999;
-            padding: 4px 6px; 
+            /* Padding reducido para ganar espacio lateral */
+            padding: 4px 5px; 
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            /* IMPORTANTE: Esto impide que se parta el nombre y ajusta la columna */
+            /* OBLIGATORIO: No permite que el nombre se parta, fuerza el ancho de columna */
             white-space: nowrap; 
         }
 
@@ -82,12 +84,12 @@
         /* Columna Hora */
         td.col-hora {
             background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 5px;
+            padding: 0 5px; width: 1%;
         }
 
-        /* NOMBRE LIMPIO (Sin rayas, sin colores) */
+        /* NOMBRE LIMPIO (Negro, Negrita, Sin decoraciones) */
         .student-name {
-            font-weight: 800; /* Muy negrita */
+            font-weight: 800; /* Extra Bold para contraste */
             font-size: 13px;
             color: #000;
             display: block;
@@ -110,13 +112,14 @@
         /* --- IMPRESIÓN --- */
         @page {
             size: portrait; /* Vertical */
-            margin: 8mm;    
+            margin: 8mm;    /* Márgenes estrechos */
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 70%; 
+                /* ZOOM 65%: Clave para que entren las 6 columnas + hora sin cortarse */
+                zoom: 65%; 
                 width: 100% !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -137,13 +140,13 @@
             /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
             
-            /* Ajuste para que la tabla no se estire */
+            /* Ajuste tabla impresión */
             table { width: auto !important; margin: 0 auto !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
-            /* Nombre limpio NEGRO sin decoración */
+            /* Nombre limpio para imprimir */
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
@@ -181,6 +184,7 @@
 <script>
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
     
+    // URLs ORIGINALES (MAESTRA)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -189,9 +193,126 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
+    // Función de carga (Wrapper de PapaParse para usar con await)
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { 
                 download: true, skipEmptyLines: true,
                 complete: res => resolve(res.data),
-                error: e => {
+                error: e => { console.error(e); resolve([]); }
+            });
+        });
+    }
+
+    async function cargarTodo() {
+        const container = document.getElementById('schedule-container');
+        const btnContainer = document.getElementById('days-buttons');
+        const dias = Object.keys(urls);
+        const franjas = ["11:00", "11:30", "12:00", "BREAK", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
+
+        // Generar botones
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
+        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
+        btnContainer.innerHTML = btns;
+
+        // Bucle de carga secuencial (Seguro y estable)
+        for (const dia of dias) {
+            const data = await leerHoja(urls[dia]);
+            
+            // Procesar datos
+            let mapa = {};
+            data.forEach(row => {
+                if(row[1]) {
+                    let hora = row[1].trim().substring(0,5);
+                    mapa[hora] = row.slice(2); 
+                }
+            });
+
+            // HTML Estructura
+            let html = `
+            <div id="view-${dia}" class="planning-container">
+                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="margin:0; color:#003366;">📅 ${dia}</h2>
+                    <img src="${LOGO_URL}" style="height:45px;">
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Alumno 1</th>
+                            <th>Alumno 2</th>
+                            <th>Alumno 3</th>
+                            <th>Alumno 4</th>
+                            <th>Alumno 5</th>
+                            <th>Alumno 6</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            franjas.forEach(hora => {
+                if(hora === "BREAK") {
+                    html += `<tr><td colspan="7" class="break-row">--- MEDIODÍA ---</td></tr>`;
+                    return;
+                }
+
+                let filaAlumnos = mapa[hora] || [];
+                
+                html += `<tr><td class="col-hora">${hora}</td>`;
+                
+                for(let i=0; i<6; i++) {
+                    let alumnoCompleto = (filaAlumnos[i] || "").trim();
+                    let celda = "";
+
+                    if(alumnoCompleto) {
+                        // LOGICA PSEUDÓNIMO: Cortar al primer espacio
+                        // "Roberto Cremades" -> "Roberto"
+                        let soloNombre = alumnoCompleto.split(" ")[0]; 
+                        
+                        // Si quieres que un nombre compuesto no se corte, 
+                        // en el excel debería estar unido: "JoseManuel".
+                        
+                        celda = `<span class="student-name">${soloNombre}</span>`;
+                    }
+                    html += `<td>${celda}</td>`;
+                }
+                html += `</tr>`;
+            });
+
+            html += `   </tbody>
+                    </table>
+                    <div class="notes-section">
+                        <div class="notes-header">NOTAS / OBSERVACIONES</div>
+                    </div>
+                </div>`;
+            
+            container.innerHTML += html;
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        
+        // Mostrar día actual
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
+        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
+    }
+
+    function cambiarDia(dia) {
+        document.querySelectorAll('.planning-container').forEach(div => {
+            if(dia === 'Todo') div.classList.add('visible');
+            else {
+                if(div.id === `view-${dia}`) div.classList.add('visible');
+                else div.classList.remove('visible');
+            }
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            let esActivo = btn.innerText === dia || (dia === 'Todo' && btn.innerText === 'Ver Todo');
+            if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarTodo);
+
+</script>
+</body>
+</html>
