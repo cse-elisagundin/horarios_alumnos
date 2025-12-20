@@ -8,6 +8,10 @@
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Schoolbell&display=swap" rel="stylesheet">
 
     <style>
         /* =========================================
@@ -151,6 +155,10 @@
             font-size: 18px;
             margin-bottom: 15px;
             text-transform: capitalize;
+            /* Alineación vertical para que la letra escolar cuadre bien */
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
         }
 
         .dia-card { 
@@ -255,7 +263,7 @@
 
 <script>
 // ==========================================
-// 🚨 LÓGICA ORIGINAL RESTAURADA
+// 🚨 LÓGICA ORIGINAL
 // ==========================================
     const CONTRASEÑA_MAESTRA = "1234"; 
     let SISTEMA_DESBLOQUEADO = false; 
@@ -309,9 +317,9 @@
         // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
-        // AQUÍ ESTÁ EL CAMBIO DE COLOR: Ahora usa el azul claro corporativo (#2b94cc)
+        // AQUÍ ESTÁ EL CAMBIO: Color Azul Claro (#2b94cc) y Fuente Escolar
         let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px; text-transform: capitalize;'>
-                        Horario: <span style="color: #2b94cc;">${nombre}</span>
+                        Horario: <span style="color: #2b94cc; font-family: 'Schoolbell', cursive; font-size: 26px;">${nombre}</span>
                     </h3>`;
         let encontrado = false;
         
