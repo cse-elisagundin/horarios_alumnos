@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario PRO (Separación Mejorada)</title>
+    <title>Horario Final Limpio - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -13,9 +13,8 @@
         :root { 
             --sheet-blue: #184a7e; 
             --bg: #f2f4f7;
-            --highlight-now: #fff8c4; 
-            --highlight-search: #ff4757; 
-            --separator-bg: #eef4fa; /* Color de fondo para la separación */
+            --highlight-now: #fff8c4; /* Amarillo suave para hora actual */
+            --separator-bg: #eef4fa; /* Fondo separación mañana/tarde */
         }
         
         body { 
@@ -26,24 +25,14 @@
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER --- */
+        /* --- HEADER (Solo botones, centrados) --- */
         header {
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; 
+            justify-content: center; /* Centrado al no haber buscador */
+            align-items: center;
             margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
+            gap: 15px; /* Espacio entre botones */
         }
-
-        .controls-left { display: flex; gap: 15px; }
-
-        /* Buscador */
-        .search-container { position: relative; }
-        #searchInput {
-            padding: 10px 15px 10px 35px;
-            border: 2px solid var(--sheet-blue); border-radius: 20px;
-            font-size: 14px; outline: none; color: var(--sheet-blue); font-weight: bold;
-            width: 200px; transition: width 0.3s;
-        }
-        #searchInput:focus { width: 250px; }
-        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; }
 
         /* Botones */
         .btn-action {
@@ -52,6 +41,7 @@
         }
         .btn-print { background-color: var(--sheet-blue); color: white; border: none; }
         .btn-edit { background-color: white; color: var(--sheet-blue); border: 2px solid var(--sheet-blue); }
+        .btn-print:hover, .btn-edit:hover { opacity: 0.9; background-color: #f0f4f8; }
 
         /* --- TÍTULOS --- */
         .day-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
@@ -79,7 +69,7 @@
         table {
             width: 1%; min-width: 80%; margin: 0 auto;
             border-collapse: collapse; 
-            border: 2px solid var(--sheet-blue); /* Borde exterior general */
+            border: 2px solid var(--sheet-blue); 
             white-space: nowrap;
         }
 
@@ -94,25 +84,22 @@
 
         .student-cell {
             font-weight: bold; text-transform: uppercase; min-width: 90px;
-            cursor: help; border-bottom: 1px dotted var(--sheet-blue); 
+            cursor: help; /* Cursor para indicar que hay tooltip */
+            border-bottom: 1px dotted var(--sheet-blue); 
         }
         
-        .student-cell.found-student {
-            background-color: var(--highlight-search) !important; color: white !important; border-color: white !important;
-        }
+        /* Fila Actual (Resaltado) */
         tr.current-slot { background-color: var(--highlight-now); }
         tr.current-slot .col-turno { background-color: white; }
 
         tr { height: 35px; } 
 
-        /* --- NUEVO ESTILO DE SEPARACIÓN --- */
-        .gap-row { 
-            height: 25px; /* Altura suficiente para notarse */
-        }
+        /* --- SEPARACIÓN MAÑANA/TARDE --- */
+        .gap-row { height: 25px; }
         .gap-row td {
-            background-color: var(--separator-bg) !important; /* Relleno azul muy suave */
-            border-top: 3px double var(--sheet-blue) !important; /* Borde doble arriba */
-            border-bottom: 3px double var(--sheet-blue) !important; /* Borde doble abajo */
+            background-color: var(--separator-bg) !important;
+            border-top: 3px double var(--sheet-blue) !important;
+            border-bottom: 3px double var(--sheet-blue) !important;
             border-left: 2px solid var(--sheet-blue);
             border-right: 2px solid var(--sheet-blue);
         }
@@ -122,21 +109,23 @@
         @media print {
             body { background: white; padding: 0; margin: 0; zoom: 85%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .container { padding: 0; margin: 0; border: none; max-width: none; }
+            
+            /* Ocultar interfaz */
             header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
             th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
             
-            /* Forzar que la separación se imprima bonita */
+            /* Forzar estilos de la separación en impresión */
             .gap-row td { 
                 background-color: #eef4fa !important; 
                 border-top: 2px solid var(--sheet-blue) !important;
                 border-bottom: 2px solid var(--sheet-blue) !important;
             }
 
+            /* Quitar resaltados interactivos */
             tr.current-slot { background-color: transparent !important; }
-            .student-cell.found-student { background-color: transparent !important; color: var(--sheet-blue) !important; }
             .student-cell { border-bottom: none; }
         }
     </style>
@@ -145,14 +134,8 @@
 
 <div class="container">
     <header>
-        <div class="controls-left">
-            <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
-            <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
-        </div>
-        <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="searchInput" placeholder="Buscar alumno...">
-        </div>
+        <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
+        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
     </header>
 
     <div class="days-nav" id="days-buttons"></div>
@@ -172,19 +155,6 @@
         "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
-
-    document.getElementById('searchInput').addEventListener('input', function(e) {
-        const searchText = e.target.value.toLowerCase();
-        const celdasAlumnos = document.querySelectorAll('.student-cell');
-        celdasAlumnos.forEach(celda => {
-            const fullName = celda.getAttribute('title') ? celda.getAttribute('title').toLowerCase() : "";
-            if (searchText && fullName.includes(searchText)) {
-                celda.classList.add('found-student');
-            } else {
-                celda.classList.remove('found-student');
-            }
-        });
-    });
 
     function resaltarHoraActual() {
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
@@ -269,8 +239,7 @@
                 html += `</tr>`;
             });
 
-            // --- SEPARACIÓN MEJORADA ---
-            // Añadimos un &nbsp; invisible para asegurar que la celda tiene contenido y el borde se imprime bien
+            // Separación sólida (invisible &nbsp; para que imprima bordes)
             html += `<tr class="gap-row"><td colspan="8">&nbsp;</td></tr>`;
 
             slotsTarde.forEach((hora, index) => {
@@ -302,8 +271,8 @@
             let tooltipAttr = "";
 
             if(nombreFull) {
-                nombreCorto = nombreFull.split(" ")[0]; 
-                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
+                nombreCorto = nombreFull.split(" ")[0]; // Solo Nombre
+                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; // Apellido en Tooltip
             }
             html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
         }
