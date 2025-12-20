@@ -11,10 +11,10 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS VISUALES IMPORTADOS
+           🎨 ESTILOS VISUALES (Del diseño corporativo)
            ========================================= */
         :root { 
-            /* Paleta del primer código */
+            /* Paleta importada del diseño visual */
             --c-primary: #243c7a;   /* Azul Oscuro */
             --c-secondary: #2b94cc; /* Azul Claro */
             --c-accent: #fa65c3;    /* Rosa */
@@ -26,7 +26,7 @@
         }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Tipografía del primer código */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: var(--bg-body); 
             margin: 0; 
             padding: 20px;
@@ -41,24 +41,26 @@
             background-color: var(--bg-container); 
             padding: 40px; 
             border-radius: 12px; 
-            /* Sombra elegante azulada del primer código */
+            /* Sombra azulada elegante del diseño original */
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.15); 
             width: 100%; 
             max-width: 500px; 
             text-align: center;
-            border-top: none; /* Quitamos el borde simple anterior para usar la línea decorativa */
+        }
+
+        .web-brand {
+            margin-bottom: 25px;
         }
 
         .logo-img { 
             max-width: 160px; 
-            margin-bottom: 5px; 
         }
 
-        /* LÍNEA DECORATIVA (Elemento visual clave del primer código) */
+        /* LÍNEA DECORATIVA TRICOLOR (Elemento visual clave) */
         .brand-line {
             height: 4px;
             width: 100px;
-            margin: 0 auto 25px;
+            margin: 15px auto 0;
             background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
             border-radius: 2px;
         }
@@ -81,6 +83,7 @@
             letter-spacing: 1.5px;
             font-weight: 600;
         }
+        /* El "Unlocked" ahora usa el rosa del diseño visual */
         .unlocked { color: var(--c-accent) !important; font-weight: bold; }
 
         /* INPUTS */
@@ -116,7 +119,7 @@
             cursor: not-allowed; 
         }
 
-        /* BOTÓN PRINCIPAL (Estilo btn-print del primer código) */
+        /* BOTÓN PRINCIPAL */
         .btn-main { 
             width: 100%; 
             padding: 14px; 
@@ -139,10 +142,10 @@
             box-shadow: 0 6px 12px rgba(36, 60, 122, 0.2);
         }
 
-        /* SPINNER DE CARGA (Estilo del primer código) */
+        /* SPINNER DE CARGA (Con borde rosa como el diseño original) */
         .spinner {
             border: 4px solid #f3f3f3; 
-            border-top: 4px solid var(--c-accent); /* Rosa */
+            border-top: 4px solid var(--c-accent); 
             border-radius: 50%;
             width: 40px; height: 40px;
             animation: spin 1s linear infinite;
@@ -159,6 +162,7 @@
             border-bottom: 2px solid #f0f0f0;
             padding-bottom: 10px;
             font-size: 18px;
+            margin-bottom: 15px;
         }
 
         .dia-card { 
@@ -167,7 +171,7 @@
             padding: 18px; 
             border-radius: 8px; 
             border: 1px solid #f0f0f0;
-            border-left: 5px solid var(--c-accent); /* Borde rosa del primer código */
+            border-left: 5px solid var(--c-accent); /* Borde rosa */
             box-shadow: 0 4px 10px rgba(0,0,0,0.03);
             transition: transform 0.2s;
         }
@@ -184,12 +188,12 @@
         }
         .hora-tag { 
             font-size: 20px; 
-            color: var(--c-secondary); /* Azul claro para la hora */
+            color: var(--c-secondary); 
             font-weight: 700;
             display: block; 
         }
 
-        /* BOTONES EXTRA (Estilo btn-edit del primer código pero adaptado) */
+        /* BOTONES EXTRA (Estilo moderno) */
         #actions-panel { display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
         
         .btn-share { 
@@ -236,7 +240,7 @@
             margin-top: 20px; 
         }
 
-        /* BOTÓN FLOTANTE WHATSAPP (Adaptado) */
+        /* BOTÓN FLOTANTE WHATSAPP */
         .whatsapp-float {
             position: fixed;
             bottom: 25px;
@@ -265,8 +269,10 @@
 <body>
 
 <div class="container">
-    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
-    <div class="brand-line"></div>
+    <div class="web-brand">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+        <div class="brand-line"></div>
+    </div>
     
     <div id="search-area">
         <h2>Consulta tu Horario</h2>
@@ -298,18 +304,10 @@
 
 <script>
 // ==========================================
-// 🔐 SEGURIDAD MATEMÁTICA (SIN LIBRERÍAS)
+// 🚨 LÓGICA ORIGINAL RESTAURADA
 // ==========================================
-    
-    // Este número es el resultado de la fórmula para "010523"
-    // Si cambias la contraseña, este número dejará de valer.
-    const HASH_CORRECTO = 1450608307;
-    
+    const CONTRASEÑA_MAESTRA = "1234"; 
     let SISTEMA_DESBLOQUEADO = false; 
-
-    // Fórmula matemática simple (convierte texto a número)
-    const generarHash = (s) => s.split('').reduce((a,b) => {a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);
-
 // ==========================================
 
     const urls = {
@@ -360,7 +358,7 @@
         // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
-        let html = `<h3>Horario: ${nombre}</h3>`;
+        let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px;'>Horario: ${nombre}</h3>`;
         let encontrado = false;
         
         const nombreBuscado = nombre.toLowerCase().trim();
@@ -395,7 +393,7 @@
         if(encontrado) {
             document.getElementById('resultado').innerHTML = html;
             
-            // 🔒 LÓGICA DE SEGURIDAD
+            // 🔒 LÓGICA DE SEGURIDAD DEFINITIVA
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
             }
@@ -425,10 +423,7 @@
 
             // BLOQUEADO
             if (!SISTEMA_DESBLOQUEADO) {
-                
-                // 🔐 SEGURIDAD MATEMÁTICA
-                if (generarHash(valor) === HASH_CORRECTO) {
-                    
+                if (valor === CONTRASEÑA_MAESTRA) {
                     SISTEMA_DESBLOQUEADO = true;
                     status.innerText = "🔓 MODO PROFESOR ACTIVO";
                     status.classList.add('unlocked');
@@ -438,7 +433,7 @@
                     errorMsg.style.display = 'none'; 
                     alert("✅ Acceso Correcto.");
                 } else {
-                    errorMsg.innerText = "⚠️ Error: Contraseña incorrecta o servicio no disponible.";
+                    errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
                     errorMsg.style.display = 'block';
                 }
             } 
