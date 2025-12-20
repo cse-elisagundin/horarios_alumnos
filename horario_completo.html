@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Vertical Limpio</title>
+    <title>Horario Ajustado - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -53,47 +53,49 @@
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
             padding-bottom: 20px; overflow: hidden;
+            text-align: center; /* Centra la tabla si es pequeña */
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA --- */
+        /* --- TABLA SÚPER AJUSTADA --- */
         table {
-            width: 100%;
+            /* width: auto y max-content son la CLAVE para que no se estire */
+            width: auto; 
+            min-width: 50%;
+            max-width: 100%;
+            margin: 0 auto; /* Centrar tabla */
             border-collapse: collapse;
-            table-layout: auto; 
         }
 
         th, td {
-            border: 1px solid #999; /* Borde gris visible en pantalla */
-            padding: 4px;
+            border: 1px solid #999;
+            padding: 4px 6px; /* Padding muy pequeño para ceñir */
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
+            
+            /* ESTO IMPIDE QUE EL NOMBRE SE PARTA EN DOS LINEAS */
+            /* Y obliga a la columna a ensancharse lo justo */
+            white-space: nowrap; 
         }
 
         th {
             background: var(--primary); color: white;
-            text-transform: uppercase; font-size: 12px; padding: 10px 2px;
+            text-transform: uppercase; font-size: 12px; padding: 8px 4px;
         }
 
         /* Columna Hora */
         td.col-hora {
-            width: 1%; white-space: nowrap;
             background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 8px;
+            padding: 0 5px;
         }
 
-        /* ESTILO NUEVO: SOLO SUBRAYADO */
+        /* NOMBRE LIMPIO (Sin rayas, sin colores) */
         .student-name {
-            display: inline-block;
-            padding-bottom: 2px; /* Espacio entre letras y la linea */
-            font-weight: 700; 
+            font-weight: 800; /* Muy negrita para ver bien en B/N */
             font-size: 13px;
-            color: #000; /* Texto negro */
-            white-space: nowrap; 
-            /* El borde se pone dinamicamente en JS */
-            border-bottom-width: 3px; 
-            border-bottom-style: solid;
+            color: #000;
+            display: block;
         }
 
         .break-row {
@@ -102,7 +104,7 @@
         }
 
         /* NOTAS */
-        .notes-section { margin-top: 30px; width: 96%; margin-left: auto; margin-right: auto; }
+        .notes-section { margin-top: 30px; width: 95%; margin-left: auto; margin-right: auto; text-align: left;}
         .notes-header {
             background: #e9ecef; color: #333;
             padding: 8px 10px; font-weight: bold; font-size: 13px;
@@ -113,13 +115,13 @@
         /* --- IMPRESIÓN --- */
         @page {
             size: portrait; /* Vertical */
-            margin: 5mm;    /* Margen mínimo para aprovechar ancho */
+            margin: 8mm;    
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 65%; /* REDUCIDO para que no corte columnas */
+                zoom: 70%; 
                 width: 100% !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -140,21 +142,25 @@
             /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
             
+            /* Ajuste para que la tabla no se estire al 100% del folio, sino al contenido */
+            table { width: auto !important; margin: 0 auto !important; }
+
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
-            /* Nombre limpio subrayado */
+            /* Nombre limpio NEGRO */
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
                 font-size: 11pt;
-                /* El borde inferior (color) se mantiene */
+                text-decoration: none !important;
+                border: none !important;
             }
             
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
             /* Notas */
-            .notes-section { margin-top: 30px !important; }
+            .notes-section { margin-top: 30px !important; width: 100% !important; }
             .notes-header {
                 background: #eee !important; color: #000 !important;
                 border: 1px solid #000 !important;
@@ -187,13 +193,6 @@
         "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
-
-    // Función para sacar color del borde (un poco más oscuro para que se vea bien la linea)
-    function stringToBorderColor(str) {
-        let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        // Saturación alta (70%) y Luminosidad media-oscura (45%) para que la línea se vea bien
-        return `hsl(${Math.abs(hash) % 360}, 70%, 45%)`; 
-    }
 
     function leerHoja(url) {
         return new Promise(resolve => {
@@ -262,14 +261,11 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // Coger solo el nombre (pseudónimo)
-                        let soloNombre = alumnoCompleto.split(" ")[0]; 
+                        // AQUÍ YA NO CORTAMOS EL NOMBRE (Sale Jose Manuel entero)
+                        // Si quieres cortar apellidos, habría que usar .split(" ")[0]
+                        // Pero para que la columna se "ciña" a Jose Manuel, mejor dejarlo entero.
                         
-                        // Generar color para la línea
-                        let colorLinea = stringToBorderColor(soloNombre);
-                        
-                        // ESTILO NUEVO: Texto limpio con border-bottom
-                        celda = `<span class="student-name" style="border-color:${colorLinea}">${soloNombre}</span>`;
+                        celda = `<span class="student-name">${alumnoCompleto}</span>`;
                     }
                     html += `<td>${celda}</td>`;
                 }
