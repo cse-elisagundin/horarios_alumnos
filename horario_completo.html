@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín</title>
+    <title>Horario Final + Acceso Edición</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -29,12 +29,34 @@
             justify-content: center; 
             align-items: center; 
             margin-bottom: 20px;
+            gap: 15px; /* Espacio entre botones */
         }
+
+        /* --- BOTONES DE ACCIÓN --- */
+        .btn-action {
+            padding: 10px 20px; border-radius: 4px; cursor: pointer; 
+            font-weight: bold; font-size: 16px; text-decoration: none;
+            display: inline-block;
+        }
+
+        /* Botón Imprimir (Azul Sólido) */
+        .btn-print {
+            background-color: var(--sheet-blue); color: white; border: none;
+        }
+        .btn-print:hover { opacity: 0.9; }
+
+        /* Botón Editar (Borde Azul) */
+        .btn-edit {
+            background-color: white; 
+            color: var(--sheet-blue); 
+            border: 2px solid var(--sheet-blue);
+        }
+        .btn-edit:hover { background-color: #f0f4f8; }
 
         /* --- TÍTULO Y SUBTÍTULO DEL DÍA --- */
         .day-header {
             text-align: center;
-            margin-bottom: 20px; /* Espacio antes de la tabla */
+            margin-bottom: 20px;
             margin-top: 10px;
         }
 
@@ -46,15 +68,14 @@
             line-height: 1.2;
         }
 
-        /* ESTILO NUEVO: SUBTÍTULO */
         .day-subtitle {
             color: var(--sheet-blue);
-            font-size: 20px; /* Tamaño menor */
+            font-size: 20px; 
             font-weight: bold;
             margin-top: 5px;
         }
 
-        /* --- BOTONERA Y SPINNER --- */
+        /* --- BOTONERA NAVEGACIÓN DÍAS --- */
         .days-nav { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
             padding: 8px 16px; border: 1px solid var(--sheet-blue); background: white;
@@ -135,12 +156,6 @@
             background: #fff; 
         }
 
-        button.btn-print {
-            display: block; margin: 0 auto;
-            background-color: var(--sheet-blue); color: white; border: none;
-            padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 16px;
-        }
-
         /* --- IMPRESIÓN --- */
         @page {
             size: portrait;
@@ -156,7 +171,7 @@
             }
 
             .container { padding: 0; margin: 0; border: none; max-width: none; }
-            header, .days-nav, .spinner, .btn-print { display: none; } 
+            header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
             
@@ -171,7 +186,8 @@
 
 <div class="container">
     <header>
-        <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR HORARIO</button>
+        <button class="btn-action btn-print" onclick="window.print()">🖨️ IMPRIMIR HORARIO</button>
+        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ EDITAR HOJA</a>
     </header>
 
     <div class="days-nav" id="days-buttons"></div>
@@ -180,6 +196,12 @@
 </div>
 
 <script>
+    // ⬇️⬇️⬇️ ¡PEGAR AQUI TU ENLACE DE GOOGLE SHEETS! ⬇️⬇️⬇️
+    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/TU_ID_DE_HOJA_AQUI/edit"; 
+    
+    // Configurar el botón de edición
+    document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
+
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -216,7 +238,7 @@
                 }
             });
 
-            // AQUI ESTÁ EL HEADER: DÍA + SUBTÍTULO
+            // HEADER + SUBTITULO
             let html = `
             <div id="view-${dia}" class="planning-container">
                 <div class="day-header">
