@@ -60,14 +60,13 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            /* Esta propiedad hace la magia: ajusta columnas al contenido */
             table-layout: auto; 
         }
 
         th, td {
             border: 1px solid var(--border);
             padding: 5px;
-            text-align: left; /* Alineado izquierda para nombres */
+            text-align: left;
             vertical-align: middle;
         }
 
@@ -77,7 +76,7 @@
             font-size: 13px; padding: 10px;
         }
 
-        /* Columna HORA: Ancho mínimo */
+        /* Columna HORA */
         td:first-child, th:first-child {
             width: 1%;
             white-space: nowrap;
@@ -87,11 +86,10 @@
             text-align: center;
         }
 
-        /* Bloque de estudiante dentro de la celda */
         .student-block {
             padding: 4px 8px; border-radius: 4px;
             font-size: 12px; font-weight: 600;
-            white-space: nowrap; /* No partir nombres */
+            white-space: nowrap; 
         }
 
         .break-row {
@@ -110,14 +108,14 @@
 
         /* --- IMPRESIÓN VERTICAL --- */
         @page {
-            size: portrait; /* VERTICAL */
+            size: portrait;
             margin: 10mm;
         }
 
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 70%; /* Ajustado para Vertical */
+                zoom: 70%; 
                 width: 100% !important;
             }
             
@@ -127,20 +125,18 @@
             .planning-container { display: none !important; margin: 0; padding: 0; box-shadow: none; }
             .planning-container.visible { display: block !important; page-break-after: always; }
 
-            /* Bordes negros para imprimir */
             table, th, td { border: 1px solid #000 !important; }
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td:first-child { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
             .student-block { 
-                border: 1px solid #000 !important; /* Borde fino en cada alumno */
+                border: 1px solid #000 !important; 
                 color: #000 !important; 
-                background-color: transparent !important; /* Ahorro tinta o mantener color suave */
+                background-color: transparent !important;
                 font-size: 10pt;
             }
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
-            /* Notas impresión */
             .notes-section { margin-top: 30px !important; border: none !important; }
             .notes-title {
                 background: #eee !important; color: #000 !important;
@@ -166,7 +162,7 @@
 <script>
     const LOGO_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";
     
-    // URLs ORIGINALES (MAESTRA)
+    // URLs
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -180,7 +176,6 @@
         return `hsl(${Math.abs(h) % 360}, 70%, 90%)`;
     }
 
-    // LÓGICA DE CARGA MAESTRA (Callback PapaParse)
     function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
@@ -189,7 +184,6 @@
         let loadedCount = 0;
         const total = Object.keys(urls).length;
 
-        // Crear botones
         let btns = "";
         for(let d in urls) btns += `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`;
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">Ver Todo</button>`;
@@ -208,7 +202,6 @@
                         }
                     });
 
-                    // CONSTRUCCIÓN DE TABLA (NO GRID)
                     let html = `<div id="view-${dia}" class="planning-container">
                         <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
                             <h2 style="margin:0; color:#003366;">📅 ${dia}</h2>
@@ -239,57 +232,12 @@
                         let alumnos = mapa[f] || [];
                         
                         for(let i=0; i<6; i++) {
-                            let al = (alumnos[i] || "").trim();
+                            // AQUÍ ESTÁ EL TRUCO DEL NOMBRE
+                            let alCompleto = (alumnos[i] || "").trim();
+                            
+                            // .split(" ")[0] coge solo la primera palabra (Nombre)
+                            let al = alCompleto.split(" ")[0];
+
                             if(al) {
                                 let bg = stringToColor(al);
-                                html += `<td style="background-color:${bg}"><div class="student-block">${al}</div></td>`;
-                            } else {
-                                html += `<td></td>`;
-                            }
-                        }
-                        html += `</tr>`;
-                    });
-
-                    html += `</tbody></table>
-                             <div class="notes-section"><div class="notes-title">NOTAS / OBSERVACIONES</div></div>
-                             </div>`;
-                    
-                    container.innerHTML += html;
-                    loadedCount++;
-
-                    if(loadedCount === total) {
-                        document.getElementById('loading').style.display = 'none';
-                        // Ordenar DIVs
-                        const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-                        diasOrden.forEach(d => {
-                            let div = document.getElementById(`view-${d}`);
-                            if(div) container.appendChild(div);
-                        });
-                        
-                        // Seleccionar día
-                        let hoy = new Date().toLocaleDateString('es-ES', {weekday: 'long'});
-                        hoy = hoy.charAt(0).toUpperCase() + hoy.slice(1);
-                        if(!urls[hoy]) hoy = "Lunes";
-                        cambiarDia(hoy);
-                    }
-                },
-                error: (e) => console.error("Error en " + dia, e)
-            });
-        }
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.planning-container').forEach(div => {
-            let show = (dia === 'Todo') || (div.id === `view-${dia}`);
-            div.classList.toggle('visible', show);
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            let active = btn.innerText === dia || (dia === 'Todo' && btn.innerText === 'Ver Todo');
-            btn.classList.toggle('active', active);
-        });
-    }
-
-    cargarTodo();
-</script>
-</body>
-</html>
+                                html += `<td style="background-color:${bg}">
