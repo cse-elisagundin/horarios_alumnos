@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal CSE Elisa Gundín - Ajuste Máximo</title>
+    <title>Horario Ajustado (Solo Nombres) - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -19,7 +19,7 @@
 
         .container { max-width: 1000px; margin: 0 auto; }
 
-        /* HEADER */
+        /* HEADER PANTALLA */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -32,8 +32,15 @@
             padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;
         }
 
+        /* SPINNER */
+        .spinner {
+            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
+            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         /* NAVEGACIÓN */
-        .days-nav { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: flex-start; }
+        .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .nav-btn {
             padding: 8px 16px; border: 1px solid transparent; background: white;
             color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
@@ -41,35 +48,28 @@
         }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* SPINNER (Debajo de botones) */
-        .spinner {
-            border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         /* CONTENEDOR */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
             padding-bottom: 20px; overflow: hidden;
-            text-align: center;
+            text-align: center; /* Centra la tabla si es pequeña */
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA CON AJUSTE EXTREMO --- */
+        /* --- TABLA SÚPER AJUSTADA --- */
         table {
-            /* ESTO ES LA CLAVE: */
-            width: 1%; /* Fuerza a la tabla a ser lo más pequeña posible */
-            margin: 0 auto; /* Centrada */
+            /* width: auto y width: 1% son la CLAVE para que no se estire */
+            width: 1%; 
+            min-width: 1%; /* Fuerza el encogimiento máximo */
+            margin: 0 auto; /* Centrar tabla */
             border-collapse: collapse;
-            white-space: nowrap; /* Impide saltos de línea */
+            white-space: nowrap; /* Impide partir líneas */
         }
 
         th, td {
             border: 1px solid #999;
-            /* Padding mínimo para que no haya aire extra */
-            padding: 2px 4px; 
+            padding: 4px 6px; /* Padding muy pequeño para ceñir */
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
@@ -86,9 +86,9 @@
             padding: 0 5px;
         }
 
-        /* NOMBRE LIMPIO */
+        /* NOMBRE LIMPIO (Sin rayas, sin colores) */
         .student-name {
-            font-weight: 800; /* Negrita fuerte */
+            font-weight: 800; /* Muy negrita para ver bien en B/N */
             font-size: 13px;
             color: #000;
             display: block;
@@ -110,7 +110,7 @@
 
         /* --- IMPRESIÓN --- */
         @page {
-            size: portrait;
+            size: portrait; /* Vertical */
             margin: 8mm;    
         }
 
@@ -135,13 +135,16 @@
                 page-break-after: always; 
             }
 
+            /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
-            /* Aseguramos el ajuste en impresión */
-            table { width: 1% !important; min-width: auto !important; margin: 0 auto !important; }
+            
+            /* Ajuste para que la tabla no se estire al 100% del folio, sino al contenido */
+            table { width: 1% !important; margin: 0 auto !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
+            /* Nombre limpio NEGRO */
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
@@ -152,6 +155,7 @@
             
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
+            /* Notas */
             .notes-section { margin-top: 30px !important; width: 100% !important; }
             .notes-header {
                 background: #eee !important; color: #000 !important;
@@ -172,7 +176,6 @@
 
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
-    
     <div id="schedule-container"></div>
 </div>
 
@@ -254,8 +257,10 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // Pseudónimo
-                        let soloNombre = alumnoCompleto.split(" ")[0]; 
+                        // AQUÍ ESTÁ EL CAMBIO: .split(" ")[0]
+                        // Esto coge solo la primera palabra (Nombre) y descarta apellidos
+                        let soloNombre = alumnoCompleto.split(" ")[0];
+                        
                         celda = `<span class="student-name">${soloNombre}</span>`;
                     }
                     html += `<td>${celda}</td>`;
