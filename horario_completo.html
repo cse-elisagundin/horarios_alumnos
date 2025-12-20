@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Ajustado - CSE Elisa Gundín</title>
+    <title>Horario Semanal - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -17,9 +17,9 @@
             margin: 0; padding: 20px; color: #333;
         }
 
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
 
-        /* HEADER PANTALLA */
+        /* HEADER */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -41,10 +41,10 @@
         }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* SPINNER (MOVIDO) */
+        /* SPINNER (Debajo de botones) */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
-            width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto;
+            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
@@ -53,46 +53,47 @@
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
             padding-bottom: 20px; overflow: hidden;
-            text-align: center; /* Centra la tabla si es pequeña */
+            text-align: center; 
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA SÚPER AJUSTADA --- */
+        /* --- TABLA CONFIGURADA PARA AMPLITUD Y ALTURA FIJA --- */
         table {
-            /* width: auto y max-content son la CLAVE para que no se estire */
             width: auto; 
-            min-width: 50%;
-            max-width: 100%;
-            margin: 0 auto; /* Centrar tabla */
+            margin: 0 auto; 
             border-collapse: collapse;
+        }
+
+        /* FILAS: Altura fija obligatoria */
+        tr {
+            height: 45px; /* <--- ESTO SOLUCIONA QUE LAS VACÍAS SE VEAN PEQUEÑAS */
         }
 
         th, td {
             border: 1px solid #999;
-            padding: 4px 6px; /* Padding muy pequeño para ceñir */
+            /* Padding generoso para dar "amplitud" aunque el nombre sea corto */
+            padding: 0 20px; 
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            
-            /* ESTO IMPIDE QUE EL NOMBRE SE PARTA EN DOS LINEAS */
-            /* Y obliga a la columna a ensancharse lo justo */
-            white-space: nowrap; 
+            white-space: nowrap; /* Mantiene el nombre en una línea */
         }
 
         th {
             background: var(--primary); color: white;
-            text-transform: uppercase; font-size: 12px; padding: 8px 4px;
+            text-transform: uppercase; font-size: 12px; padding: 10px 5px;
+            height: auto; /* El header no necesita altura fija */
         }
 
         /* Columna Hora */
         td.col-hora {
             background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 5px;
+            padding: 0 10px; width: 1%;
         }
 
-        /* NOMBRE LIMPIO (Sin rayas, sin colores) */
+        /* NOMBRE LIMPIO */
         .student-name {
-            font-weight: 800; /* Muy negrita para ver bien en B/N */
+            font-weight: 800; 
             font-size: 13px;
             color: #000;
             display: block;
@@ -101,6 +102,7 @@
         .break-row {
             background: #eef4fa; color: #8898aa; 
             font-weight: bold; font-size: 11px; letter-spacing: 1px;
+            height: 30px; /* El break puede ser un poco más fino */
         }
 
         /* NOTAS */
@@ -134,21 +136,17 @@
                 display: none !important; 
                 box-shadow: none; margin: 0; border: none;
             }
-            .planning-container.visible { 
-                display: block !important; 
-                page-break-after: always; 
-            }
+            .planning-container.visible { display: block !important; page-break-after: always; }
 
-            /* Bordes negros sólidos en impresión */
             table, th, td { border: 1px solid #000 !important; }
-            
-            /* Ajuste para que la tabla no se estire al 100% del folio, sino al contenido */
             table { width: auto !important; margin: 0 auto !important; }
+
+            /* Mantenemos la altura fija en impresión */
+            tr { height: 45px !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
             td.col-hora { background: #eee !important; color: #000 !important; font-size: 11pt; }
             
-            /* Nombre limpio NEGRO */
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
@@ -159,7 +157,6 @@
             
             .break-row { background: #ddd !important; color: #000 !important; border: 1px solid #000 !important; }
 
-            /* Notas */
             .notes-section { margin-top: 30px !important; width: 100% !important; }
             .notes-header {
                 background: #eee !important; color: #000 !important;
@@ -262,7 +259,7 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // 2. CORTE DE NOMBRE: Coge la primera palabra
+                        // AQUÍ RECORTAMOS AL PRIMER ESPACIO (Solo Nombre)
                         let soloNombre = alumnoCompleto.split(" ")[0];
                         
                         celda = `<span class="student-name">${soloNombre}</span>`;
