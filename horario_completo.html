@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín</title>
+    <title>Horario Semanal - CSE Elisa Gundín (Maestra)</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -19,7 +19,7 @@
 
         .container { max-width: 1200px; margin: 0 auto; }
 
-        /* HEADER */
+        /* HEADER PRINCIPAL */
         header {
             display: flex; justify-content: space-between; align-items: center;
             background: white; padding: 15px 25px; border-radius: 12px;
@@ -33,7 +33,7 @@
         }
 
         /* NAVEGACIÓN */
-        .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .days-nav { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
             padding: 8px 16px; border: 1px solid transparent; background: white;
             color: #555; border-radius: 6px; cursor: pointer; font-weight: 600;
@@ -41,14 +41,14 @@
         }
         .nav-btn.active { background: var(--primary); color: white; }
 
-        /* SPINNER (Debajo de botones) */
+        /* SPINNER */
         .spinner {
             border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%;
             width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* CONTENEDOR */
+        /* CONTENEDOR DE LA TABLA */
         .planning-container {
             display: none; background: white; border-radius: 8px; 
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; 
@@ -57,28 +57,23 @@
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA CEÑIDA (SHRINK FIT) --- */
+        /* --- TABLA CONFIGURADA --- */
         table {
-            /* Truco del 1%: Fuerza a la tabla a encogerse hasta tocar el texto */
-            width: 1%; 
+            width: auto; 
             margin: 0 auto; 
             border-collapse: collapse;
         }
 
-        /* FILAS: Altura fija para que se vea "tabla" y no se aplaste */
-        tr {
-            height: 45px; 
-        }
+        /* FILAS: Altura fija */
+        tr { height: 45px; }
 
         th, td {
             border: 1px solid #999;
-            /* Padding mínimo para ceñir el borde al texto */
-            padding: 4px 6px; 
+            padding: 0 20px; /* Amplitud lateral */
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            /* CLAVE: Impide que el texto empuje más de lo necesario o se parta */
-            white-space: nowrap; 
+            white-space: nowrap; /* Mantiene el nombre en una línea */
         }
 
         th {
@@ -90,13 +85,13 @@
         /* Columna Hora */
         td.col-hora {
             background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 10px; 
+            padding: 0 10px; width: 1%;
         }
 
         /* NOMBRE LIMPIO */
         .student-name {
             font-weight: 800; 
-            font-size: 13px;
+            font-size: 14px; /* Un pelín más grande para leer mejor */
             color: #000;
             display: block;
         }
@@ -125,7 +120,8 @@
         @media print {
             body { 
                 background: white; padding: 0; 
-                zoom: 70%; 
+                /* ZOOM AUMENTADO CONSIDERABLEMENTE */
+                zoom: 90%; 
                 width: 100% !important;
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -141,11 +137,7 @@
             .planning-container.visible { display: block !important; page-break-after: always; }
 
             table, th, td { border: 1px solid #000 !important; }
-            
-            /* En impresión también forzamos el ancho mínimo */
-            table { width: 1% !important; margin: 0 auto !important; }
-
-            /* Altura fija en impresión */
+            table { width: auto !important; margin: 0 auto !important; }
             tr { height: 45px !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
@@ -154,7 +146,7 @@
             .student-name {
                 color: #000 !important;
                 background: transparent !important;
-                font-size: 11pt;
+                font-size: 12pt; /* Letra más grande al imprimir */
                 text-decoration: none !important;
                 border: none !important;
             }
@@ -227,11 +219,12 @@
                 }
             });
 
+            // AQUÍ ESTÁ EL HEADER CENTRADO (DÍA Y LOGO)
             let html = `
             <div id="view-${dia}" class="planning-container">
-                <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="margin:0; color:#003366;">📅 ${dia}</h2>
-                    <img src="${LOGO_URL}" style="height:45px;">
+                <div style="padding:10px; display:flex; flex-direction: column; justify-content:center; align-items:center; gap: 10px; margin-bottom: 10px;">
+                    <h2 style="margin:0; color:#003366; font-size: 28px;">📅 ${dia}</h2>
+                    <img src="${LOGO_URL}" style="height:60px;">
                 </div>
                 
                 <table>
@@ -263,9 +256,8 @@
                     let celda = "";
 
                     if(alumnoCompleto) {
-                        // AQUÍ RECORTAMOS AL PRIMER ESPACIO (Solo Nombre)
+                        // Solo Nombre
                         let soloNombre = alumnoCompleto.split(" ")[0];
-                        
                         celda = `<span class="student-name">${soloNombre}</span>`;
                     }
                     html += `<td>${celda}</td>`;
