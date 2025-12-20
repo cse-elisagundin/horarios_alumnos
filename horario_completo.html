@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín</title>
+    <title>Horario PRO (Separación Mejorada)</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* COLORES */
+        /* --- COLORES --- */
         :root { 
             --sheet-blue: #184a7e; 
             --bg: #f2f4f7;
-            --highlight-now: #fff8c4; /* Amarillo suave para hora actual */
-            --highlight-search: #ff4757; /* Rojo intenso para búsqueda */
+            --highlight-now: #fff8c4; 
+            --highlight-search: #ff4757; 
+            --separator-bg: #eef4fa; /* Color de fondo para la separación */
         }
         
         body { 
@@ -25,63 +26,46 @@
 
         .container { max-width: 1300px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
 
-        /* --- HEADER CON BUSCADOR --- */
+        /* --- HEADER --- */
         header {
-            display: flex; 
-            justify-content: space-between; /* Separar controles del buscador */
-            align-items: center; 
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;
         }
 
         .controls-left { display: flex; gap: 15px; }
 
-        /* Buscador Rápido (Idea 3) */
-        .search-container {
-            position: relative;
-        }
+        /* Buscador */
+        .search-container { position: relative; }
         #searchInput {
             padding: 10px 15px 10px 35px;
-            border: 2px solid var(--sheet-blue);
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-            color: var(--sheet-blue);
-            font-weight: bold;
-            width: 200px;
-            transition: width 0.3s;
+            border: 2px solid var(--sheet-blue); border-radius: 20px;
+            font-size: 14px; outline: none; color: var(--sheet-blue); font-weight: bold;
+            width: 200px; transition: width 0.3s;
         }
         #searchInput:focus { width: 250px; }
-        .search-icon {
-            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-            font-size: 16px;
-        }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 16px; }
 
-        /* Botones de acción */
+        /* Botones */
         .btn-action {
             padding: 10px 20px; border-radius: 4px; cursor: pointer; 
-            font-weight: bold; font-size: 16px; text-decoration: none;
-            display: inline-block;
+            font-weight: bold; font-size: 16px; text-decoration: none; display: inline-block;
         }
         .btn-print { background-color: var(--sheet-blue); color: white; border: none; }
         .btn-edit { background-color: white; color: var(--sheet-blue); border: 2px solid var(--sheet-blue); }
 
         /* --- TÍTULOS --- */
         .day-header { text-align: center; margin-bottom: 20px; margin-top: 10px; }
-        .day-title { color: var(--sheet-blue); font-size: 36px; font-weight: bold; text-transform: uppercase; }
+        .day-title { color: var(--sheet-blue); font-size: 36px; font-weight: bold; text-transform: uppercase; line-height: 1.2; }
         .day-subtitle { color: var(--sheet-blue); font-size: 20px; font-weight: bold; margin-top: 5px; }
 
         /* --- NAVEGACIÓN --- */
         .days-nav { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
             padding: 8px 16px; border: 1px solid var(--sheet-blue); background: white;
-            color: var(--sheet-blue); border-radius: 4px; cursor: pointer; font-weight: bold;
-            transition: 0.2s;
+            color: var(--sheet-blue); border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s;
         }
         .nav-btn.active { background: var(--sheet-blue); color: white; }
 
-        /* Spinner */
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--sheet-blue); border-radius: 50%;
             width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto;
@@ -94,7 +78,8 @@
 
         table {
             width: 1%; min-width: 80%; margin: 0 auto;
-            border-collapse: collapse; border: 2px solid var(--sheet-blue); 
+            border-collapse: collapse; 
+            border: 2px solid var(--sheet-blue); /* Borde exterior general */
             white-space: nowrap;
         }
 
@@ -107,47 +92,49 @@
         .col-turno { font-weight: bold; font-size: 14px; width: 80px; }
         .col-hora { font-weight: bold; color: #000; width: 60px; }
 
-        /* Celdas de alumno */
         .student-cell {
             font-weight: bold; text-transform: uppercase; min-width: 90px;
-            cursor: help; /* Cursor de interrogación para el tooltip (Idea 1) */
-            border-bottom: 1px dotted var(--sheet-blue); /* Indicador visual sutil */
+            cursor: help; border-bottom: 1px dotted var(--sheet-blue); 
         }
         
-        /* Resaltado de Búsqueda (Idea 3) */
         .student-cell.found-student {
-            background-color: var(--highlight-search) !important;
-            color: white !important;
-            border-color: white !important;
-            transition: 0.2s;
+            background-color: var(--highlight-search) !important; color: white !important; border-color: white !important;
         }
-
-        /* Fila Actual (Idea 2) */
-        tr.current-slot {
-            background-color: var(--highlight-now);
-        }
-        /* Asegurar que el turno no se pinte de amarillo */
+        tr.current-slot { background-color: var(--highlight-now); }
         tr.current-slot .col-turno { background-color: white; }
 
-
         tr { height: 35px; } 
-        .gap-row { height: 15px; border: none; }
-        .gap-row td { border: none; border-left: 2px solid var(--sheet-blue); border-right: 2px solid var(--sheet-blue); background: #fff; }
 
-        /* --- IMPRESIÓN (LIMPIA SIN EXTRAS) --- */
+        /* --- NUEVO ESTILO DE SEPARACIÓN --- */
+        .gap-row { 
+            height: 25px; /* Altura suficiente para notarse */
+        }
+        .gap-row td {
+            background-color: var(--separator-bg) !important; /* Relleno azul muy suave */
+            border-top: 3px double var(--sheet-blue) !important; /* Borde doble arriba */
+            border-bottom: 3px double var(--sheet-blue) !important; /* Borde doble abajo */
+            border-left: 2px solid var(--sheet-blue);
+            border-right: 2px solid var(--sheet-blue);
+        }
+
+        /* --- IMPRESIÓN --- */
         @page { size: portrait; margin: 10mm; }
         @media print {
             body { background: white; padding: 0; margin: 0; zoom: 85%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .container { padding: 0; margin: 0; border: none; max-width: none; }
-            /* Ocultamos todo el header nuevo, buscador y navegación */
             header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
             table { border: 2px solid var(--sheet-blue) !important; width: 95% !important; }
             th, td { border: 1px solid var(--sheet-blue) !important; color: var(--sheet-blue) !important; }
-            .gap-row td { border-top: 1px solid transparent !important; border-bottom: 1px solid transparent !important; }
+            
+            /* Forzar que la separación se imprima bonita */
+            .gap-row td { 
+                background-color: #eef4fa !important; 
+                border-top: 2px solid var(--sheet-blue) !important;
+                border-bottom: 2px solid var(--sheet-blue) !important;
+            }
 
-            /* Reseteamos estilos de búsqueda y hora actual para impresión */
             tr.current-slot { background-color: transparent !important; }
             .student-cell.found-student { background-color: transparent !important; color: var(--sheet-blue) !important; }
             .student-cell { border-bottom: none; }
@@ -175,7 +162,7 @@
 
 <script>
     // ⬇️⬇️⬇️ PEGAR TU ENLACE DE EDICIÓN AQUÍ ⬇️⬇️⬇️
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
+    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/TU_ID_DE_HOJA_AQUI/edit"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
     const urls = {
@@ -186,15 +173,11 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    // Lógica del Buscador (Idea 3)
     document.getElementById('searchInput').addEventListener('input', function(e) {
         const searchText = e.target.value.toLowerCase();
         const celdasAlumnos = document.querySelectorAll('.student-cell');
-        
         celdasAlumnos.forEach(celda => {
-            // Buscamos en el nombre completo (guardado en el atributo 'title' del tooltip)
             const fullName = celda.getAttribute('title') ? celda.getAttribute('title').toLowerCase() : "";
-            
             if (searchText && fullName.includes(searchText)) {
                 celda.classList.add('found-student');
             } else {
@@ -203,42 +186,30 @@
         });
     });
 
-    // Lógica de Resaltado de Hora Actual (Idea 2)
     function resaltarHoraActual() {
-        // 1. Saber qué día es hoy y si se está mostrando
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = diasSemana[new Date().getDay()];
         
-        // Limpiar resaltados previos
         document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-
-        // Si hoy no es un día lectivo o no estamos viendo el día "Todo" o el día de hoy, salir.
         if (!urls[hoy]) return;
         const contenedorHoy = document.getElementById(`view-${hoy}`);
         if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
 
-        // 2. Calcular hora actual en minutos desde medianoche
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        // 3. Buscar la fila correspondiente
         const filasHoras = contenedorHoy.querySelectorAll('.col-hora');
         filasHoras.forEach(tdHora => {
-            const horaStr = tdHora.innerText; // "11:00"
+            const horaStr = tdHora.innerText; 
             const [h, m] = horaStr.split(':').map(Number);
             const slotStartMinutes = h * 60 + m;
-            const slotEndMinutes = slotStartMinutes + 30; // Franjas de 30 mins
-
-            // Si la hora actual está dentro de esta franja
+            const slotEndMinutes = slotStartMinutes + 30; 
             if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
                 tdHora.closest('tr').classList.add('current-slot');
             }
         });
     }
-
-    // Iniciar el check de hora y repetirlo cada minuto
     setInterval(resaltarHoraActual, 60000);
-
 
     function leerHoja(url) {
         return new Promise(resolve => {
@@ -290,7 +261,6 @@
                     </thead>
                     <tbody>`;
 
-            // MAÑANA
             slotsManana.forEach((hora, index) => {
                 html += `<tr>`;
                 if(index === 0) html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
@@ -299,10 +269,10 @@
                 html += `</tr>`;
             });
 
-            // GAP
-            html += `<tr class="gap-row"><td colspan="8"></td></tr>`;
+            // --- SEPARACIÓN MEJORADA ---
+            // Añadimos un &nbsp; invisible para asegurar que la celda tiene contenido y el borde se imprime bien
+            html += `<tr class="gap-row"><td colspan="8">&nbsp;</td></tr>`;
 
-            // TARDE
             slotsTarde.forEach((hora, index) => {
                 html += `<tr>`;
                 if(index === 0) html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
@@ -316,11 +286,10 @@
         }
 
         document.getElementById('loading').style.display = 'none';
-        let hoy = new Date().toLocaleDateString('es-ES', {weekday: 'long'});
-        hoy = hoy.charAt(0).toUpperCase() + hoy.slice(1);
-        cambiarDia(Object.keys(urls).includes(hoy) ? hoy : "Lunes");
         
-        // Ejecutar el resaltado de hora una vez al cargar
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
+        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
         setTimeout(resaltarHoraActual, 1000);
     }
 
@@ -333,11 +302,9 @@
             let tooltipAttr = "";
 
             if(nombreFull) {
-                nombreCorto = nombreFull.split(" ")[0]; // Solo primer nombre visible
-                // Idea 1: Guardamos el nombre completo en el atributo 'title' para el tooltip
+                nombreCorto = nombreFull.split(" ")[0]; 
                 tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
             }
-            // Añadimos la clase student-cell y el title
             html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
         }
         return html;
@@ -353,7 +320,6 @@
             let esActivo = (textoBtn === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
-        // Recalcular hora actual al cambiar de día
         resaltarHoraActual();
     }
 
