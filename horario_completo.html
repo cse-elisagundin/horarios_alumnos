@@ -57,38 +57,40 @@
         }
         .planning-container.visible { display: block; }
 
-        /* --- TABLA CONFIGURADA PARA AMPLITUD Y ALTURA FIJA --- */
+        /* --- TABLA CEÑIDA (SHRINK FIT) --- */
         table {
-            width: auto; 
+            /* Truco del 1%: Fuerza a la tabla a encogerse hasta tocar el texto */
+            width: 1%; 
             margin: 0 auto; 
             border-collapse: collapse;
         }
 
-        /* FILAS: Altura fija obligatoria */
+        /* FILAS: Altura fija para que se vea "tabla" y no se aplaste */
         tr {
-            height: 45px; /* <--- ESTO SOLUCIONA QUE LAS VACÍAS SE VEAN PEQUEÑAS */
+            height: 45px; 
         }
 
         th, td {
             border: 1px solid #999;
-            /* Padding generoso para dar "amplitud" aunque el nombre sea corto */
-            padding: 0 20px; 
+            /* Padding mínimo para ceñir el borde al texto */
+            padding: 4px 6px; 
             text-align: center;
             vertical-align: middle;
             font-size: 13px;
-            white-space: nowrap; /* Mantiene el nombre en una línea */
+            /* CLAVE: Impide que el texto empuje más de lo necesario o se parta */
+            white-space: nowrap; 
         }
 
         th {
             background: var(--primary); color: white;
             text-transform: uppercase; font-size: 12px; padding: 10px 5px;
-            height: auto; /* El header no necesita altura fija */
+            height: auto; 
         }
 
         /* Columna Hora */
         td.col-hora {
             background: var(--time-bg); color: var(--primary); font-weight: bold;
-            padding: 0 10px; width: 1%;
+            padding: 0 10px; 
         }
 
         /* NOMBRE LIMPIO */
@@ -102,7 +104,7 @@
         .break-row {
             background: #eef4fa; color: #8898aa; 
             font-weight: bold; font-size: 11px; letter-spacing: 1px;
-            height: 30px; /* El break puede ser un poco más fino */
+            height: 30px; 
         }
 
         /* NOTAS */
@@ -139,9 +141,11 @@
             .planning-container.visible { display: block !important; page-break-after: always; }
 
             table, th, td { border: 1px solid #000 !important; }
-            table { width: auto !important; margin: 0 auto !important; }
+            
+            /* En impresión también forzamos el ancho mínimo */
+            table { width: 1% !important; margin: 0 auto !important; }
 
-            /* Mantenemos la altura fija en impresión */
+            /* Altura fija en impresión */
             tr { height: 45px !important; }
 
             th { background: #ccc !important; color: #000 !important; border-bottom: 2px solid #000 !important; font-size: 12pt; }
