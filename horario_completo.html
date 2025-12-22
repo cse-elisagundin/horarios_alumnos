@@ -169,7 +169,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- TABLA ORDENADOR --- */
+        /* --- TABLA ORDENADOR (ESTÁNDAR) --- */
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -223,73 +223,81 @@
         }
 
         /* =========================================================
-           📱 ESTILOS MÓVIL (SOLO SE ACTIVAN EN PANTALLAS PEQUEÑAS)
-           Opción 3: Modo Tarjetas (App)
+           📱 ESTILOS MÓVIL (GRID COMPACTO)
+           Solo se activa en pantallas menores de 768px
            ========================================================= */
         @media only screen and (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 15px; width: 95%; max-width: none; }
+            body { padding: 10px; background-color: #f0f2f5; }
+            .container { padding: 10px; width: 100%; box-sizing: border-box; background: transparent; box-shadow: none; }
             
             .day-title { font-size: 28px; }
+            .day-subtitle { font-size: 14px; }
             
-            /* ROMPER LA TABLA: Convertir todo a bloques */
+            /* 1. ROMPER LA TABLA Y CONVERTIRLA EN BLOQUES */
             table, thead, tbody, th, td, tr { 
                 display: block; 
                 width: 100%; 
-                box-sizing: border-box; 
                 border: none;
+                box-sizing: border-box;
             }
             
-            /* Ocultar Cabeceras y Turno (no hacen falta en modo tarjeta) */
+            /* Ocultamos cabeceras y turnos */
             thead, .col-turno { display: none; }
-            
-            /* Cada Fila (Hora) se convierte en una TARJETA */
+            tr.gap-row { display: none; } /* Ocultar separadores de mañana/tarde */
+
+            /* 2. ESTILO DE LA TARJETA (FILA) */
             tr {
-                margin-bottom: 25px;
-                border: 2px solid var(--c-primary);
-                border-radius: 12px;
-                overflow: hidden; /* Para que el borde redondeado corte el fondo */
                 background: white;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-                height: auto; /* Altura automática */
+                margin-bottom: 15px;
+                border-radius: 10px;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+                overflow: hidden; /* Para recortar bordes */
+                display: flex; /* Usamos Flexbox para organizar contenido dentro */
+                flex-wrap: wrap; /* Permitir que los alumnos bajen de línea */
+                border: 1px solid #e1e9f0;
             }
-            
-            /* La celda HORA se convierte en el HEADER de la tarjeta */
+
+            /* 3. CABECERA DE LA TARJETA (HORA) */
             .col-hora {
+                width: 100%; /* Ocupa todo el ancho arriba */
                 background-color: var(--c-primary);
                 color: white !important;
-                font-size: 24px;
+                font-size: 20px;
                 font-weight: 800;
                 text-align: left;
-                padding: 12px 20px;
-                width: 100%;
-                border-bottom: none;
+                padding: 10px 15px;
+                border-bottom: 1px solid rgba(0,0,0,0.1);
             }
-            
-            /* Estilo de los alumnos dentro de la tarjeta */
+
+            /* 4. ALUMNOS EN REJILLA (2 COLUMNAS) */
             .student-cell {
+                width: 50%; /* Cada alumno ocupa la mitad del ancho (2 columnas) */
                 text-align: left;
-                padding: 12px 20px;
-                border: none;
-                border-bottom: 1px solid #eee;
-                font-size: 16px;
-                color: #555;
+                padding: 10px 15px;
+                border-bottom: 1px solid #f0f0f0;
+                border-right: 1px solid #f0f0f0; /* Línea vertical separadora */
+                font-size: 15px;
+                color: #444;
+                height: auto; /* Altura automática */
+                display: flex;
+                align-items: center;
             }
-            .student-cell:last-child { border-bottom: none; }
             
-            /* Ocultar alumnos vacíos para limpiar la tarjeta */
+            /* Quitar el borde derecho de los elementos pares para que no se vea doble borde */
+            .student-cell:nth-of-type(odd) { border-right: none; } /* Ajuste fino */
+
+            /* Ocultar celdas vacías para ahorrar espacio y que se vea limpio */
             .student-cell:empty { display: none; }
-            
-            /* Las filas de separación (huecos) las ocultamos en móvil */
-            tr.gap-row { display: none; }
-            
-            /* Resaltado de hora actual en modo tarjeta */
+
+            /* 5. RESALTADO DE HORA ACTUAL */
             tr.current-slot {
-                border-color: var(--c-accent);
-                box-shadow: 0 0 15px rgba(250, 101, 195, 0.4);
+                border: 2px solid var(--c-accent);
+                box-shadow: 0 4px 12px rgba(250, 101, 195, 0.25);
+                transform: scale(1.02); /* Un pelín más grande */
+                transition: transform 0.3s ease;
             }
             tr.current-slot .col-hora {
-                background-color: var(--c-accent);
+                background-color: var(--c-accent); /* Cabecera rosa */
             }
         }
 
@@ -307,25 +315,27 @@
             
             .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
             .web-brand, header, .days-nav, .spinner { display: none; } 
-            
             .planning-container.visible { display: block !important; page-break-after: always; }
             
-            /* FORZAR VISTA DE TABLA EN PAPEL (aunque estemos en CSS de movil) */
+            /* RESTAURAR TABLA EN PAPEL */
             table, thead, tbody, th, td, tr { display: table-cell; }
             table { display: table !important; border: 2px solid var(--c-primary) !important; width: 95% !important; }
-            tr { display: table-row !important; }
+            tr { display: table-row !important; margin: 0; box-shadow: none; border-radius: 0; }
             thead { display: table-header-group !important; }
             
             th, td { 
                 border: 1px solid var(--c-primary) !important; 
                 color: var(--c-primary) !important; 
                 padding: 6px 12px !important;
+                width: auto !important;
             }
             
             .day-title { font-size: 36px; margin-bottom: 5px; }
             .gap-row { display: table-row !important; }
             .col-turno { display: table-cell !important; }
-            .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; }
+            .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; text-align: center; }
+            .student-cell { width: auto !important; border-bottom: none !important; border-right: 1px solid var(--c-primary) !important; display: table-cell !important; }
+            .student-cell:empty { display: table-cell !important; } /* Mostrar vacíos en papel */
         }
     </style>
 </head>
