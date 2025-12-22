@@ -13,6 +13,7 @@
             --c-secondary: #2b94cc; 
             --c-accent: #fa65c3; 
             --bg-body: #f4f6f9;
+            --error: #dc3545;
         }
 
         body {
@@ -54,6 +55,9 @@
             transition: 0.3s;
         }
         input:focus { border-color: var(--c-secondary); }
+        
+        /* Estilo cuando está bloqueado */
+        input:disabled { background: #eee; cursor: not-allowed; }
 
         .btn-login {
             width: 100%;
@@ -68,6 +72,11 @@
             transition: 0.3s;
         }
         .btn-login:hover { background: #1a2e5e; }
+        
+        .btn-login:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
 
         /* MENÚ OCULTO */
         #menu-panel { display: none; flex-direction: column; gap: 15px; }
@@ -99,7 +108,7 @@
         .menu-btn:active { transform: scale(0.98); }
         .menu-btn span { font-size: 24px; }
 
-        .error { color: red; font-size: 13px; margin-top: 10px; display: none; }
+        .error { color: var(--error); font-size: 14px; margin-top: 15px; display: none; font-weight: 600; }
     </style>
 </head>
 <body>
@@ -110,7 +119,9 @@
         <div id="login-form">
             <h2>Acceso Privado</h2>
             <input type="password" id="passInput" placeholder="Contraseña..." onkeypress="handleEnter(event)">
-            <button class="btn-login" onclick="checkPass()">ENTRAR</button>
+            
+            <button id="btnLogin" class="btn-login" onclick="checkPass()">ENTRAR</button>
+            
             <p id="error-msg" class="error">Contraseña incorrecta</p>
         </div>
 
@@ -128,8 +139,22 @@
     </div>
 
     <script>
-        // Identificador numérico de seguridad (Corregido para 010523)
-        const _0x9A4 = 1420934279; 
+        // --- CONFIGURACIÓN DE SEGURIDAD ---
+        const _0x9A4 = 1420934279; // Hash de la contraseña correcta
+        const MAX_INTENTOS = 3;    // Número máximo de fallos permitidos
+
+        // Recuperar intentos fallidos guardados en la memoria del navegador
+        let intentosFallidos = localStorage.getItem('cse_intentos') || 0;
+
+        // Comprobación inicial al cargar la página
+        window.onload = function() {
+            if (intentosFallidos >= MAX_INTENTOS) {
+                bloquearSistema(true);
+            } else if (sessionStorage.getItem('cse_session_ok') === '1') {
+                // Si ya estaba logueado, mostrar menú directo
+                mostrarMenu();
+            }
+        };
 
         // Algoritmo de verificación matemática
         function _0xVerify(str) {
@@ -143,27 +168,58 @@
         }
 
         function checkPass() {
+            // Si ya está bloqueado, no hacer nada
+            if (intentosFallidos >= MAX_INTENTOS) return;
+
             const input = document.getElementById('passInput');
             const error = document.getElementById('error-msg');
             
             if (_0xVerify(input.value.trim()) === _0x9A4) {
-                document.getElementById('login-form').style.display = 'none';
-                document.getElementById('menu-panel').style.display = 'flex';
+                // CONTRASEÑA CORRECTA
+                // Reiniciamos contador de fallos a 0
+                localStorage.setItem('cse_intentos', 0); 
                 sessionStorage.setItem('cse_session_ok', '1');
+                mostrarMenu();
+
             } else {
-                error.style.display = 'block';
+                // CONTRASEÑA INCORRECTA
+                intentosFallidos++;
+                localStorage.setItem('cse_intentos', intentosFallidos); // Guardar fallo
+                
                 input.value = '';
                 input.focus();
+                
+                if (intentosFallidos >= MAX_INTENTOS) {
+                    bloquearSistema(false);
+                } else {
+                    const restantes = MAX_INTENTOS - intentosFallidos;
+                    error.innerText = `Contraseña incorrecta. (Quedan ${restantes} intentos)`;
+                    error.style.display = 'block';
+                }
             }
+        }
+
+        function bloquearSistema(desdeInicio) {
+            const input = document.getElementById('passInput');
+            const btn = document.getElementById('btnLogin');
+            const error = document.getElementById('error-msg');
+
+            input.disabled = true;
+            btn.disabled = true;
+            input.placeholder = "🔒 ACCESO BLOQUEADO";
+            
+            error.innerText = "⛔ SISTEMA BLOQUEADO POR SEGURIDAD";
+            error.style.color = "#dc3545";
+            error.style.display = 'block';
+        }
+
+        function mostrarMenu() {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('menu-panel').style.display = 'flex';
         }
 
         function handleEnter(e) {
             if (e.key === 'Enter') checkPass();
-        }
-
-        if (sessionStorage.getItem('cse_session_ok') === '1') {
-            document.getElementById('login-form').style.display = 'none';
-            document.getElementById('menu-panel').style.display = 'flex';
         }
     </script>
 
