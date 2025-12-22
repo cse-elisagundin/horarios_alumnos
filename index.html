@@ -3,11 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Horario Alumnos - CSE Elisa Gundín</title>
+    <meta name="theme-color" content="#243c7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -155,7 +162,6 @@
             font-size: 18px;
             margin-bottom: 15px;
             text-transform: capitalize;
-            /* Alineación vertical para que la letra escolar cuadre bien */
             display: flex;
             align-items: baseline;
             gap: 8px;
@@ -201,7 +207,7 @@
             transform: translateY(-2px); box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
         }
 
-        /* 🆕 ESTILOS PARA EL DIRECTORIO */
+        /* Directorio */
         .btn-directory {
             background-color: var(--c-primary); 
             color: white; 
@@ -245,6 +251,20 @@
             transform: translateY(-2px);
         }
         
+        /* Contenedor QR */
+        #qr-container {
+            display: none;
+            margin-top: 15px;
+            padding: 20px;
+            background: white;
+            border: 2px dashed var(--c-primary);
+            border-radius: 12px;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
         .btn-reset { 
             background: none; border: none; color: var(--c-primary); font-weight: 600; 
             font-size: 14px; cursor: pointer; padding: 8px 16px; transition: color 0.3s;
@@ -292,8 +312,11 @@
     <div id="resultado"></div>
     
     <div id="actions-panel">
-        <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE PARA PADRES</button>
+        <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE</button>
         
+        <button id="btnQR" class="btn-share" style="display:none; background-color:#333; border-color:#333; color:white;">📱 VER CÓDIGO QR</button>
+        <div id="qr-container"></div>
+
         <button id="btnDirectorio" class="btn-share btn-directory">📂 VER LISTADO DE ALUMNOS</button>
         <div id="directory-area"></div>
         
@@ -308,6 +331,16 @@
     </svg>
     Contacto Academia
 </a>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then(reg => console.log('SW Registrado!', reg))
+                .catch(err => console.log('Error SW:', err));
+        });
+    }
+</script>
 
 <script>
 // ==========================================
@@ -361,12 +394,12 @@
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
-        document.getElementById('directory-area').style.display = 'none'; // Ocultar directorio al buscar
-        
-        // ASEGURAR QUE EL PANEL DE ACCIONES ESTÁ OCULTO DURANTE LA BÚSQUEDA
+        document.getElementById('directory-area').style.display = 'none'; 
+        document.getElementById('qr-container').style.display = 'none'; 
+        document.getElementById('qr-container').innerHTML = ''; 
+
         document.getElementById('actions-panel').style.display = 'none';
 
-        // AQUÍ ESTÁ EL CAMBIO: Color Azul Claro (#2b94cc) y Fuente Escolar
         let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px; text-transform: capitalize;'>
                         Horario: <span style="color: #2b94cc; font-family: 'Schoolbell', cursive; font-size: 26px;">${nombre}</span>
                     </h3>`;
@@ -407,8 +440,9 @@
             // 🔒 LÓGICA DE SEGURIDAD
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
-                // 👀 MOSTRAR BOTÓN COPIAR (porque ya hay resultados)
+                // 👀 MOSTRAR BOTONES DE COMPARTIR/QR
                 document.getElementById('btnCopiar').style.display = 'block';
+                document.getElementById('btnQR').style.display = 'block';
             }
 
         } else {
@@ -424,6 +458,7 @@
         const dirArea = document.getElementById('directory-area');
         dirArea.innerHTML = "<div style='text-align:center; padding:10px; color:#999'>Cargando nombres...</div>";
         dirArea.style.display = 'block';
+        document.getElementById('qr-container').style.display = 'none';
 
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
@@ -435,7 +470,6 @@
             if(!data) return;
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
-                // Saltamos las 2 primeras columnas (Turno y Hora)
                 for(let c=2; c < row.length; c++) {
                     if(row[c]) {
                         let nombreLimpio = row[c].toString().trim();
@@ -460,21 +494,45 @@
         }
     }
 
-    // Al hacer clic en una etiqueta del directorio
     window.seleccionarAlumno = function(nombre) {
         document.getElementById('magicInput').value = nombre;
         ejecutarBusqueda(nombre);
     };
 
+    function mostrarQR() {
+        const qrContainer = document.getElementById('qr-container');
+        const inputVal = document.getElementById('magicInput').value.trim();
+        
+        if (qrContainer.style.display === 'flex') {
+            qrContainer.style.display = 'none';
+            return;
+        }
+
+        qrContainer.innerHTML = ''; 
+        qrContainer.style.display = 'flex';
+        
+        const urlDestino = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(inputVal);
+        
+        new QRCode(qrContainer, {
+            text: urlDestino,
+            width: 180,
+            height: 180,
+            colorDark : "#243c7a",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+    }
+
     // ==========================================
-    // LÓGICA DE CONTROL (LA CAJA MÁGICA)
+    // LÓGICA DE CONTROL
     // ==========================================
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('magicInput');
         const btnBuscar = document.getElementById('btnBuscar');
         const btnCopiar = document.getElementById('btnCopiar');
+        const btnQR = document.getElementById('btnQR');
         const btnReset = document.getElementById('btnReset');
-        const btnDirectorio = document.getElementById('btnDirectorio'); // Botón nuevo
+        const btnDirectorio = document.getElementById('btnDirectorio');
         const status = document.getElementById('status-indicator');
         const errorMsg = document.getElementById('error-msg');
 
@@ -494,10 +552,9 @@
                     errorMsg.style.display = 'none'; 
                     alert("✅ Acceso Correcto.");
                     
-                    // 🆕 MOSTRAR PANEL DE ACCIONES (para ver el botón de directorio)
                     document.getElementById('actions-panel').style.display = 'block';
-                    // 👁️ OCULTAR BOTÓN DE COPIAR (aún no hemos buscado a nadie)
                     document.getElementById('btnCopiar').style.display = 'none';
+                    document.getElementById('btnQR').style.display = 'none';
                     
                 } else {
                     errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
@@ -513,8 +570,8 @@
         btnBuscar.addEventListener('click', procesarInput);
         input.addEventListener('keypress', (e) => { if (e.key === 'Enter') procesarInput(); });
 
-        // Evento del botón directorio
         btnDirectorio.addEventListener('click', cargarDirectorio);
+        btnQR.addEventListener('click', mostrarQR);
 
         btnCopiar.addEventListener('click', () => {
             const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
@@ -529,9 +586,10 @@
             window.history.pushState({}, document.title, window.location.pathname);
             document.getElementById('resultado').innerHTML = '';
             
-            // 👁️ Si estamos desbloqueados, mantenemos panel visible pero ocultamos botón copiar
             if (SISTEMA_DESBLOQUEADO) {
                 document.getElementById('btnCopiar').style.display = 'none';
+                document.getElementById('btnQR').style.display = 'none';
+                document.getElementById('qr-container').style.display = 'none';
                 document.getElementById('actions-panel').style.display = 'block';
             } else {
                 document.getElementById('actions-panel').style.display = 'none';
@@ -545,7 +603,7 @@
         });
 
         // ===============================================
-        // MODO LECTURA PARA PADRES (Llega por URL)
+        // MODO LECTURA PARA PADRES
         // ===============================================
         const params = new URLSearchParams(window.location.search);
         const alumnoURL = params.get('alumno');
@@ -557,7 +615,6 @@
             btnBuscar.style.display = 'none'; 
             status.style.display = 'none'; 
             
-            // Al ejecutar búsqueda sin desbloquear sistema, NO saldrán los botones de compartir
             ejecutarBusqueda(alumnoURL);
         }
     });
