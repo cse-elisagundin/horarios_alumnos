@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Gestión - CSE</title>
+    
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    
+    <style>
+        :root { 
+            --c-primary: #243c7a; 
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3; 
+            --bg-body: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(36, 60, 122, 0.15);
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            border-top: 5px solid var(--c-primary);
+        }
+
+        .logo { max-width: 120px; margin-bottom: 20px; }
+        
+        h2 { margin: 0 0 20px 0; color: var(--c-primary); font-size: 20px; text-transform: uppercase; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e1e9f0;
+            border-radius: 8px;
+            font-size: 16px;
+            text-align: center;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--c-secondary); }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: var(--c-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-login:hover { background: #1a2e5e; }
+
+        /* MENÚ OCULTO */
+        #menu-panel { display: none; flex-direction: column; gap: 15px; }
+
+        .menu-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: transform 0.2s, box-shadow 0.2s;
+            color: white;
+        }
+        
+        .btn-individual {
+            background: linear-gradient(135deg, var(--c-primary), var(--c-secondary));
+            box-shadow: 0 4px 10px rgba(36, 60, 122, 0.3);
+        }
+        
+        .btn-semanal {
+            background: linear-gradient(135deg, #d63384, var(--c-accent));
+            box-shadow: 0 4px 10px rgba(250, 101, 195, 0.3);
+        }
+
+        .menu-btn:active { transform: scale(0.98); }
+        .menu-btn span { font-size: 24px; }
+
+        .error { color: red; font-size: 13px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo" alt="Logo">
+        
+        <div id="login-form">
+            <h2>Acceso Privado</h2>
+            <input type="password" id="passInput" placeholder="Contraseña..." onkeypress="handleEnter(event)">
+            <button class="btn-login" onclick="checkPass()">ENTRAR</button>
+            <p id="error-msg" class="error">Contraseña incorrecta</p>
+        </div>
+
+        <div id="menu-panel">
+            <h2>Selecciona Herramienta</h2>
+            
+            <a href="horario.html" class="menu-btn btn-individual">
+                <span>🔍</span> Buscador Alumnos
+            </a>
+            
+            <a href="semanal.html" class="menu-btn btn-semanal">
+                <span>📅</span> Horario Semanal
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Contraseña "010523" ofuscada
+        const _SECRET = "MDEwNTIz"; 
+
+        function checkPass() {
+            const input = document.getElementById('passInput');
+            const error = document.getElementById('error-msg');
+            
+            // Comprobar contraseña
+            if (btoa(input.value.trim()) === _SECRET) {
+                // Si es correcta:
+                document.getElementById('login-form').style.display = 'none';
+                document.getElementById('menu-panel').style.display = 'flex';
+                // Guardar sesión para no pedirla cada vez (opcional, dura hasta cerrar navegador)
+                sessionStorage.setItem('cse_auth', 'true');
+            } else {
+                error.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') checkPass();
+        }
+
+        // Comprobar si ya metió la contraseña antes en esta sesión
+        if (sessionStorage.getItem('cse_auth') === 'true') {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('menu-panel').style.display = 'flex';
+        }
+    </script>
+
+</body>
+</html>
