@@ -18,7 +18,7 @@
             --bg-body: #f4f6f9;
             --bg-container: #ffffff;
             
-            --highlight-row: rgba(250, 101, 195, 0.12); /* Rosa muy suave para la hora actual */
+            --highlight-row: rgba(250, 101, 195, 0.12);
             --separator-bg: #edf2f7;
         }
         
@@ -51,7 +51,6 @@
         }
         .web-logo-img:hover { transform: scale(1.05); }
 
-        /* Línea decorativa con los 3 colores */
         .brand-line {
             height: 4px;
             width: 100px;
@@ -69,7 +68,6 @@
             gap: 20px; 
         }
 
-        /* ESTILOS DE BOTONES MODERNOS */
         .btn-action {
             padding: 12px 25px; 
             border-radius: 8px; 
@@ -86,7 +84,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* Botón Imprimir: Azul Oscuro */
         .btn-print { 
             background-color: var(--c-primary); 
             color: white; 
@@ -99,7 +96,6 @@
             box-shadow: 0 6px 12px rgba(36, 60, 122, 0.2);
         }
 
-        /* Botón Editar: Azul Claro -> Rosa al hover */
         .btn-edit { 
             background-color: white; 
             color: var(--c-secondary); 
@@ -142,7 +138,7 @@
             border: 1px solid #e0e0e0; 
             background: white;
             color: #555; 
-            border-radius: 50px; /* Redondeados */
+            border-radius: 50px; 
             cursor: pointer; 
             font-weight: 600; 
             font-size: 14px;
@@ -162,7 +158,7 @@
             background: #fff5fa;
         }
 
-        /* Spinner Rosa */
+        /* Spinner */
         .spinner {
             border: 4px solid #f3f3f3; 
             border-top: 4px solid var(--c-accent); 
@@ -173,7 +169,7 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- TABLA --- */
+        /* --- TABLA ORDENADOR --- */
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -210,16 +206,13 @@
             text-transform: uppercase; 
             min-width: 90px;
             cursor: help; 
-            border-bottom: 2px dotted var(--c-secondary); /* Puntos Azul Claro */
+            border-bottom: 2px dotted var(--c-secondary); 
         }
         
-        /* Fila Actual (Resaltado ROSA SUAVE) */
         tr.current-slot { background-color: var(--highlight-row); }
         tr.current-slot .col-turno { background-color: white; }
-
         tr { height: 40px; transition: background-color 0.3s; } 
 
-        /* --- SEPARACIÓN MAÑANA/TARDE --- */
         .gap-row { height: 30px; }
         .gap-row td {
             background-color: var(--separator-bg) !important;
@@ -231,39 +224,72 @@
 
         /* =========================================================
            📱 ESTILOS MÓVIL (SOLO SE ACTIVAN EN PANTALLAS PEQUEÑAS)
-           Opción 2: Scroll Horizontal + Hora Congelada
+           Opción 3: Modo Tarjetas (App)
            ========================================================= */
         @media only screen and (max-width: 768px) {
             body { padding: 10px; }
             .container { padding: 15px; width: 95%; max-width: none; }
             
             .day-title { font-size: 28px; }
-            .day-subtitle { font-size: 14px; }
             
-            /* Contenedor que permite el scroll horizontal */
-            .planning-container {
-                overflow-x: auto; /* Permite deslizar */
-                -webkit-overflow-scrolling: touch; /* Suavidad en iPhone */
-                margin-left: -15px; margin-right: -15px; /* Aprovechar bordes */
-                padding-left: 15px; /* Espacio inicial */
+            /* ROMPER LA TABLA: Convertir todo a bloques */
+            table, thead, tbody, th, td, tr { 
+                display: block; 
+                width: 100%; 
+                box-sizing: border-box; 
+                border: none;
             }
-
-            /* Ocultamos la columna TURNO para ganar espacio */
-            .col-turno { display: none; }
             
-            /* LA MAGIA: Congelar la columna HORA a la izquierda */
+            /* Ocultar Cabeceras y Turno (no hacen falta en modo tarjeta) */
+            thead, .col-turno { display: none; }
+            
+            /* Cada Fila (Hora) se convierte en una TARJETA */
+            tr {
+                margin-bottom: 25px;
+                border: 2px solid var(--c-primary);
+                border-radius: 12px;
+                overflow: hidden; /* Para que el borde redondeado corte el fondo */
+                background: white;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+                height: auto; /* Altura automática */
+            }
+            
+            /* La celda HORA se convierte en el HEADER de la tarjeta */
             .col-hora {
-                position: sticky;
-                left: 0;
-                background-color: #fff; /* Fondo blanco para tapar lo que pasa por debajo */
-                z-index: 10;
-                border-right: 3px solid var(--c-primary); /* Borde fuerte para separar */
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Sombrita elegante */
+                background-color: var(--c-primary);
+                color: white !important;
+                font-size: 24px;
+                font-weight: 800;
+                text-align: left;
+                padding: 12px 20px;
+                width: 100%;
+                border-bottom: none;
             }
-
-            /* Si la fila está resaltada, el fondo de la hora también debe ser rosa */
+            
+            /* Estilo de los alumnos dentro de la tarjeta */
+            .student-cell {
+                text-align: left;
+                padding: 12px 20px;
+                border: none;
+                border-bottom: 1px solid #eee;
+                font-size: 16px;
+                color: #555;
+            }
+            .student-cell:last-child { border-bottom: none; }
+            
+            /* Ocultar alumnos vacíos para limpiar la tarjeta */
+            .student-cell:empty { display: none; }
+            
+            /* Las filas de separación (huecos) las ocultamos en móvil */
+            tr.gap-row { display: none; }
+            
+            /* Resaltado de hora actual en modo tarjeta */
+            tr.current-slot {
+                border-color: var(--c-accent);
+                box-shadow: 0 0 15px rgba(250, 101, 195, 0.4);
+            }
             tr.current-slot .col-hora {
-                background-color: #fff0f6; /* Un rosa muy clarito sólido */
+                background-color: var(--c-accent);
             }
         }
 
@@ -280,13 +306,16 @@
             }
             
             .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
-            
             .web-brand, header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
-            .planning-container { overflow: visible !important; } /* Resetear scroll en papel */
             
-            table { border: 2px solid var(--c-primary) !important; width: 95% !important; }
+            /* FORZAR VISTA DE TABLA EN PAPEL (aunque estemos en CSS de movil) */
+            table, thead, tbody, th, td, tr { display: table-cell; }
+            table { display: table !important; border: 2px solid var(--c-primary) !important; width: 95% !important; }
+            tr { display: table-row !important; }
+            thead { display: table-header-group !important; }
+            
             th, td { 
                 border: 1px solid var(--c-primary) !important; 
                 color: var(--c-primary) !important; 
@@ -294,21 +323,9 @@
             }
             
             .day-title { font-size: 36px; margin-bottom: 5px; }
-            .day-subtitle { font-size: 20px; color: var(--c-primary); }
-
-            .gap-row td { 
-                background-color: #f0f0f0 !important; 
-                border-top: 2px solid var(--c-primary) !important;
-                border-bottom: 2px solid var(--c-primary) !important;
-            }
-
-            tr.current-slot { background-color: transparent !important; }
-            .student-cell { border-bottom: none !important; }
-            th { background-color: transparent !important; }
-            
-            /* Asegurar que se vean todas las columnas en papel */
+            .gap-row { display: table-row !important; }
             .col-turno { display: table-cell !important; }
-            .col-hora { position: static !important; border-right: 1px solid var(--c-primary) !important; box-shadow: none !important; }
+            .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; }
         }
     </style>
 </head>
@@ -379,3 +396,108 @@
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
+        
+        const slotsManana = ["11:00", "11:30", "12:00"];
+        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
+
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
+        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+        btnContainer.innerHTML = btns;
+
+        for (const dia of dias) {
+            const data = await leerHoja(urls[dia]);
+            let mapa = {};
+            data.forEach(row => {
+                if(row[1]) {
+                    let hora = row[1].trim().substring(0,5);
+                    mapa[hora] = row.slice(2); 
+                }
+            });
+
+            let html = `
+            <div id="view-${dia}" class="planning-container">
+                <div class="day-header">
+                    <div class="day-title">${dia.toUpperCase()}</div>
+                    <div class="day-subtitle">CSE Elisa Gundín</div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-turno">TURNO</th>
+                            <th>HORA</th>
+                            <th>ALUMNO 1</th>
+                            <th>ALUMNO 2</th>
+                            <th>ALUMNO 3</th>
+                            <th>ALUMNO 4</th>
+                            <th>ALUMNO 5</th>
+                            <th>ALUMNO 6</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            slotsManana.forEach((hora, index) => {
+                html += `<tr>`;
+                if(index === 0) html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
+                html += `<td class="col-hora">${hora}</td>`;
+                html += generarCeldasAlumnos(mapa[hora]);
+                html += `</tr>`;
+            });
+
+            html += `<tr class="gap-row"><td colspan="8">&nbsp;</td></tr>`;
+
+            slotsTarde.forEach((hora, index) => {
+                html += `<tr>`;
+                if(index === 0) html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
+                html += `<td class="col-hora">${hora}</td>`;
+                html += generarCeldasAlumnos(mapa[hora]);
+                html += `</tr>`;
+            });
+
+            html += `</tbody></table></div>`;
+            container.innerHTML += html;
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
+        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
+        setTimeout(resaltarHoraActual, 1000);
+    }
+
+    function generarCeldasAlumnos(alumnos) {
+        let html = "";
+        let lista = alumnos || [];
+        for(let i=0; i<6; i++) {
+            let nombreFull = (lista[i] || "").trim();
+            let nombreCorto = "";
+            let tooltipAttr = "";
+
+            if(nombreFull) {
+                nombreCorto = nombreFull.split(" ")[0]; 
+                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
+            }
+            html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
+        }
+        return html;
+    }
+
+    function cambiarDia(dia) {
+        document.querySelectorAll('.planning-container').forEach(div => {
+            if(dia === 'Todo') div.classList.add('visible');
+            else div.classList.toggle('visible', div.id === `view-${dia}`);
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            let textoBtn = btn.innerText; 
+            // Manejar "Lunes" vs "LUNES"
+            let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
+            if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
+        });
+        resaltarHoraActual();
+    }
+
+    document.addEventListener('DOMContentLoaded', cargarTodo);
+</script>
+</body>
+</html>
