@@ -223,12 +223,33 @@
         }
 
         /* =========================================================
-           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS + SEPARADOR LIMPIO)
+           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS + AJUSTES VISUALES)
            ========================================================= */
         @media only screen and (max-width: 768px) {
             body { padding: 10px; background-color: #f0f2f5; }
             .container { padding: 10px; width: 100%; box-sizing: border-box; background: transparent; box-shadow: none; }
             
+            /* --- 1. ARREGLO DEL LOGO EN MÓVIL --- */
+            .web-brand {
+                background: white; /* Fondo blanco para integrar la imagen */
+                border-radius: 12px;
+                padding: 15px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                margin-bottom: 20px;
+            }
+
+            /* --- 2. ARREGLO DE BOTONES DE ACCIÓN EN MÓVIL --- */
+            header {
+                gap: 10px; /* Menos espacio entre botones */
+                margin-bottom: 20px;
+            }
+            .btn-action {
+                padding: 10px 14px; /* Más pequeños (antes 12px 25px) */
+                font-size: 13px;    /* Letra un pelín más pequeña */
+                flex: 1;            /* Que ocupen el mismo ancho */
+                justify-content: center;
+            }
+
             .day-title { font-size: 28px; }
             .day-subtitle { font-size: 14px; }
 
@@ -239,7 +260,6 @@
             thead, .col-turno { display: none; }
 
             /* --- ARREGLO EL ESCALÓN (GAP ROW) --- */
-            /* En lugar de ocultarlo, lo convertimos en un separador visual */
             tr.gap-row { 
                 display: flex !important;
                 height: 20px !important;
@@ -248,16 +268,15 @@
                 box-shadow: none !important;
                 align-items: center;
                 justify-content: center;
-                margin-bottom: 15px; /* Espacio antes de empezar la tarde */
+                margin-bottom: 15px;
                 padding: 0;
             }
-            /* La celda de dentro se convierte en la línea discontinua */
             tr.gap-row td {
                 display: block;
                 width: 100%;
                 background: transparent !important;
                 border: none !important;
-                border-top: 2px dashed #cbd5e0 !important; /* Línea gris punteada */
+                border-top: 2px dashed #cbd5e0 !important;
                 height: 1px;
                 padding: 0;
             }
@@ -272,18 +291,15 @@
                 overflow: hidden;
                 height: auto !important;
                 
-                /* ESTRUCTURA: Grid de 3 Columnas */
                 display: grid !important; 
-                grid-template-columns: repeat(3, 1fr); /* 3 columnas iguales */
-                gap: 5px; /* Espacio entre huecos */
-                padding: 5px; /* Relleno interno */
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 5px; 
+                padding: 5px; 
                 padding-top: 0;
             }
             
-            /* Evitamos que el estilo genérico de 'tr' afecte al gap-row */
             tr.gap-row { display: flex !important; grid-template-columns: none; }
 
-            /* HORA: Ocupa las 3 columnas de arriba */
             .col-hora {
                 grid-column: 1 / -1; 
                 background-color: var(--c-primary);
@@ -297,7 +313,6 @@
                 width: calc(100% + 10px);
             }
 
-            /* ALUMNOS: Cajas compactas */
             .student-cell {
                 width: auto;
                 text-align: center; 
@@ -307,7 +322,7 @@
                 background-color: #fff;
                 font-size: 13px; 
                 color: #333;
-                min-height: 45px; /* Altura fija para uniformidad */
+                min-height: 45px; 
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -315,17 +330,13 @@
                 line-height: 1.2;
             }
             
-            /* CELDAS VACÍAS (HUECOS LIBRES) SIN TEXTO */
             .student-cell:empty {
                 display: flex !important;
-                background-color: #f8f9fa; /* Gris muy claro */
-                border: 1px dashed #ddd; /* Borde discontinuo indicando "vacío" */
+                background-color: #f8f9fa; 
+                border: 1px dashed #ddd; 
             }
-            .student-cell:empty::before {
-                content: ""; /* SIN TEXTO */
-            }
+            .student-cell:empty::before { content: ""; }
 
-            /* RESALTADO HORA ACTUAL */
             tr.current-slot {
                 border: 2px solid var(--c-accent);
                 box-shadow: 0 0 15px rgba(250, 101, 195, 0.25);
@@ -351,7 +362,6 @@
             .web-brand, header, .days-nav, .spinner { display: none; } 
             .planning-container.visible { display: block !important; page-break-after: always; }
             
-            /* RESTAURAR TABLA EN PAPEL */
             table, thead, tbody, th, td, tr { display: table-cell; }
             table { display: table !important; border: 2px solid var(--c-primary) !important; width: 95% !important; white-space: nowrap !important; }
             tr { display: table-row !important; margin: 0; box-shadow: none; border-radius: 0; height: 40px !important; }
@@ -370,6 +380,7 @@
             .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; text-align: center; }
             .student-cell { width: auto !important; border-bottom: none !important; border-right: 1px solid var(--c-primary) !important; display: table-cell !important; }
             .student-cell:empty { display: table-cell !important; }
+            .student-cell:empty::before { content: "" !important; }
         }
     </style>
 </head>
