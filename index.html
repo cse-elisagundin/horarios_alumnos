@@ -200,6 +200,50 @@
             background-color: var(--c-accent); color: white; border-color: var(--c-accent);
             transform: translateY(-2px); box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
         }
+
+        /* 🆕 ESTILOS PARA EL DIRECTORIO */
+        .btn-directory {
+            background-color: var(--c-primary); 
+            color: white; 
+            border-color: var(--c-primary);
+        }
+        .btn-directory:hover {
+            background-color: #1a2e5e;
+            border-color: #1a2e5e;
+        }
+
+        #directory-area {
+            display: none;
+            margin-top: 20px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e1e9f0;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fafbfc;
+        }
+        
+        .student-chip {
+            display: inline-block;
+            background: white;
+            border: 1px solid var(--c-secondary);
+            color: var(--c-secondary);
+            padding: 8px 14px;
+            border-radius: 20px;
+            margin: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: capitalize;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .student-chip:hover {
+            background: var(--c-secondary);
+            color: white;
+            transform: translateY(-2px);
+        }
         
         .btn-reset { 
             background: none; border: none; color: var(--c-primary); font-weight: 600; 
@@ -249,6 +293,10 @@
     
     <div id="actions-panel">
         <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+        
+        <button id="btnDirectorio" class="btn-share btn-directory">📂 VER LISTADO DE ALUMNOS</button>
+        <div id="directory-area"></div>
+        
         <br>
         <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
     </div>
@@ -313,6 +361,7 @@
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
+        document.getElementById('directory-area').style.display = 'none'; // Ocultar directorio al buscar
         
         // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
@@ -368,6 +417,53 @@
         }
     }
 
+    // 🆕 FUNCIÓN: Cargar lista de alumnos
+    async function cargarDirectorio() {
+        const dirArea = document.getElementById('directory-area');
+        dirArea.innerHTML = "<div style='text-align:center; padding:10px; color:#999'>Cargando nombres...</div>";
+        dirArea.style.display = 'block';
+
+        const dias = Object.keys(urls);
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const resultados = await Promise.all(promesas);
+
+        let todosLosAlumnos = new Set();
+
+        resultados.forEach(data => {
+            if(!data) return;
+            for(let i=1; i < data.length; i++) {
+                const row = data[i];
+                // Saltamos las 2 primeras columnas (Turno y Hora)
+                for(let c=2; c < row.length; c++) {
+                    if(row[c]) {
+                        let nombreLimpio = row[c].toString().trim();
+                        if(nombreLimpio.length > 2) { 
+                            todosLosAlumnos.add(nombreLimpio.toLowerCase());
+                        }
+                    }
+                }
+            }
+        });
+
+        const listaOrdenada = Array.from(todosLosAlumnos).sort();
+
+        if (listaOrdenada.length === 0) {
+            dirArea.innerHTML = "No se encontraron alumnos.";
+        } else {
+            let htmlDir = "";
+            listaOrdenada.forEach(nombre => {
+                htmlDir += `<span class="student-chip" onclick="seleccionarAlumno('${nombre}')">${nombre}</span>`;
+            });
+            dirArea.innerHTML = htmlDir;
+        }
+    }
+
+    // Al hacer clic en una etiqueta del directorio
+    window.seleccionarAlumno = function(nombre) {
+        document.getElementById('magicInput').value = nombre;
+        ejecutarBusqueda(nombre);
+    };
+
     // ==========================================
     // LÓGICA DE CONTROL (LA CAJA MÁGICA)
     // ==========================================
@@ -376,6 +472,7 @@
         const btnBuscar = document.getElementById('btnBuscar');
         const btnCopiar = document.getElementById('btnCopiar');
         const btnReset = document.getElementById('btnReset');
+        const btnDirectorio = document.getElementById('btnDirectorio'); // Botón nuevo
         const status = document.getElementById('status-indicator');
         const errorMsg = document.getElementById('error-msg');
 
@@ -394,6 +491,10 @@
                     input.placeholder = "Escribe el nombre del alumno ahora...";
                     errorMsg.style.display = 'none'; 
                     alert("✅ Acceso Correcto.");
+                    
+                    // 🆕 MOSTRAR PANEL DE ACCIONES (para ver el botón de directorio)
+                    document.getElementById('actions-panel').style.display = 'block';
+                    
                 } else {
                     errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
                     errorMsg.style.display = 'block';
@@ -408,6 +509,9 @@
         btnBuscar.addEventListener('click', procesarInput);
         input.addEventListener('keypress', (e) => { if (e.key === 'Enter') procesarInput(); });
 
+        // Evento del botón directorio
+        btnDirectorio.addEventListener('click', cargarDirectorio);
+
         btnCopiar.addEventListener('click', () => {
             const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
             navigator.clipboard.writeText(url).then(() => { 
@@ -420,7 +524,13 @@
         btnReset.addEventListener('click', () => {
             window.history.pushState({}, document.title, window.location.pathname);
             document.getElementById('resultado').innerHTML = '';
-            document.getElementById('actions-panel').style.display = 'none';
+            
+            // Si estamos desbloqueados, mantenemos el panel de acciones visible para ver el botón de directorio
+            if (!SISTEMA_DESBLOQUEADO) {
+                document.getElementById('actions-panel').style.display = 'none';
+            }
+            
+            document.getElementById('directory-area').style.display = 'none';
             document.getElementById('search-area').style.display = 'block';
             document.getElementById('error-msg').style.display = 'none';
             input.value = ""; 
@@ -448,6 +558,3 @@
 
 </body>
 </html>
-
-
-
