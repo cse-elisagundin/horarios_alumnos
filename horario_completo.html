@@ -223,7 +223,7 @@
         }
 
         /* =========================================================
-           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS)
+           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS + SEPARADOR LIMPIO)
            ========================================================= */
         @media only screen and (max-width: 768px) {
             body { padding: 10px; background-color: #f0f2f5; }
@@ -237,7 +237,30 @@
             thead, tbody, th, td, tr { display: block; border: none; width: 100%; box-sizing: border-box; }
             
             thead, .col-turno { display: none; }
-            tr.gap-row { display: none; } 
+
+            /* --- ARREGLO EL ESCALÓN (GAP ROW) --- */
+            /* En lugar de ocultarlo, lo convertimos en un separador visual */
+            tr.gap-row { 
+                display: flex !important;
+                height: 20px !important;
+                background: transparent !important;
+                border: none !important;
+                box-shadow: none !important;
+                align-items: center;
+                justify-content: center;
+                margin-bottom: 15px; /* Espacio antes de empezar la tarde */
+                padding: 0;
+            }
+            /* La celda de dentro se convierte en la línea discontinua */
+            tr.gap-row td {
+                display: block;
+                width: 100%;
+                background: transparent !important;
+                border: none !important;
+                border-top: 2px dashed #cbd5e0 !important; /* Línea gris punteada */
+                height: 1px;
+                padding: 0;
+            }
 
             /* --- TARJETA GRID 6 HUECOS --- */
             tr {
@@ -256,6 +279,9 @@
                 padding: 5px; /* Relleno interno */
                 padding-top: 0;
             }
+            
+            /* Evitamos que el estilo genérico de 'tr' afecte al gap-row */
+            tr.gap-row { display: flex !important; grid-template-columns: none; }
 
             /* HORA: Ocupa las 3 columnas de arriba */
             .col-hora {
@@ -266,20 +292,20 @@
                 font-weight: 800;
                 text-align: center;
                 padding: 8px;
-                margin-bottom: 5px; /* Separar de los alumnos */
-                margin-left: -5px; margin-right: -5px; margin-top: 0; /* Ajustar bordes */
+                margin-bottom: 5px; 
+                margin-left: -5px; margin-right: -5px; margin-top: 0; 
                 width: calc(100% + 10px);
             }
 
             /* ALUMNOS: Cajas compactas */
             .student-cell {
                 width: auto;
-                text-align: center; /* Centrado para que se vea ordenado */
+                text-align: center; 
                 padding: 8px 4px;
-                border: 1px solid #eef2f5; /* Borde suave en cada caja */
+                border: 1px solid #eef2f5; 
                 border-radius: 6px;
                 background-color: #fff;
-                font-size: 13px; /* Letra un poco más pequeña para que quepa */
+                font-size: 13px; 
                 color: #333;
                 min-height: 45px; /* Altura fija para uniformidad */
                 display: flex;
@@ -289,19 +315,14 @@
                 line-height: 1.2;
             }
             
-            /* CELDAS VACÍAS (HUECOS LIBRES) */
-            /* Las mostramos en gris para ver la capacidad real */
+            /* CELDAS VACÍAS (HUECOS LIBRES) SIN TEXTO */
             .student-cell:empty {
                 display: flex !important;
                 background-color: #f8f9fa; /* Gris muy claro */
                 border: 1px dashed #ddd; /* Borde discontinuo indicando "vacío" */
             }
             .student-cell:empty::before {
-                content: "Libre";
-                color: #ccc;
-                font-size: 10px;
-                text-transform: uppercase;
-                letter-spacing: 1px;
+                content: ""; /* SIN TEXTO */
             }
 
             /* RESALTADO HORA ACTUAL */
@@ -349,7 +370,6 @@
             .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; text-align: center; }
             .student-cell { width: auto !important; border-bottom: none !important; border-right: 1px solid var(--c-primary) !important; display: table-cell !important; }
             .student-cell:empty { display: table-cell !important; }
-            .student-cell:empty::before { content: "" !important; } /* Quitar texto Libre al imprimir */
         }
     </style>
 </head>
