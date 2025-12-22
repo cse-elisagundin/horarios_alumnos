@@ -325,9 +325,10 @@
 
 <script>
 // ==========================================
-// 🚨 LÓGICA ORIGINAL
+// 🔒 SEGURIDAD (Ofuscación Básica)
 // ==========================================
-    const CONTRASEÑA_MAESTRA = "010523"; 
+    // "010523" convertido a Base64 para que no se lea a simple vista
+    const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
 // ==========================================
 
@@ -493,7 +494,8 @@
 
             // BLOQUEADO
             if (!SISTEMA_DESBLOQUEADO) {
-                if (valor === CONTRASEÑA_MAESTRA) {
+                // btoa convierte el texto que escribes a Base64 para compararlo
+                if (btoa(valor) === _0x8F) {
                     SISTEMA_DESBLOQUEADO = true;
                     status.innerText = "🔓 MODO PROFESOR ACTIVO";
                     status.classList.add('unlocked');
@@ -562,7 +564,7 @@
             btnBuscar.style.display = 'none'; 
             status.style.display = 'none'; 
             
-            // Padres ven el botón de instalar si quieren tener la app
+            // Padres ven el panel pero sin opciones de admin
             document.getElementById('actions-panel').style.display = 'block';
             document.getElementById('btnCopiar').style.display = 'none'; 
             document.getElementById('btnDirectorio').style.display = 'none'; 
