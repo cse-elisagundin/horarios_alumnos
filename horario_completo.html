@@ -232,72 +232,81 @@
             
             .day-title { font-size: 28px; }
             .day-subtitle { font-size: 14px; }
-            
-            /* 1. ROMPER LA TABLA Y CONVERTIRLA EN BLOQUES */
-            table, thead, tbody, th, td, tr { 
-                display: block; 
-                width: 100%; 
+
+            /* 1. ROMPER LA ESTRUCTURA DE TABLA */
+            table { 
+                white-space: normal !important; /* IMPORTANTE: Permite que el texto baje de línea */
                 border: none;
+                width: 100%;
+                display: block;
+            }
+            thead, tbody, th, td, tr { 
+                display: block; 
+                border: none;
+                width: 100%;
                 box-sizing: border-box;
             }
             
             /* Ocultamos cabeceras y turnos */
             thead, .col-turno { display: none; }
-            tr.gap-row { display: none; } /* Ocultar separadores de mañana/tarde */
+            tr.gap-row { display: none; } 
 
-            /* 2. ESTILO DE LA TARJETA (FILA) */
+            /* 2. CONVERTIR FILA EN TARJETA GRID */
             tr {
                 background: white;
                 margin-bottom: 15px;
-                border-radius: 10px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.08);
-                overflow: hidden; /* Para recortar bordes */
-                display: flex; /* Usamos Flexbox para organizar contenido dentro */
-                flex-wrap: wrap; /* Permitir que los alumnos bajen de línea */
+                border-radius: 12px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.06);
                 border: 1px solid #e1e9f0;
+                overflow: hidden;
+                
+                /* AQUÍ ESTÁ EL ARREGLO DE ALTURA */
+                height: auto !important; /* Forzamos altura automática para que no corte los nombres */
+                
+                /* Usamos CSS Grid para organizar el contenido */
+                display: grid !important; 
+                grid-template-columns: 1fr 1fr; /* 2 Columnas iguales */
             }
 
             /* 3. CABECERA DE LA TARJETA (HORA) */
             .col-hora {
-                width: 100%; /* Ocupa todo el ancho arriba */
+                grid-column: 1 / -1; /* Que ocupe todo el ancho arriba */
                 background-color: var(--c-primary);
                 color: white !important;
                 font-size: 20px;
                 font-weight: 800;
                 text-align: left;
                 padding: 10px 15px;
-                border-bottom: 1px solid rgba(0,0,0,0.1);
+                width: 100%;
             }
 
-            /* 4. ALUMNOS EN REJILLA (2 COLUMNAS) */
+            /* 4. ALUMNOS EN REJILLA */
             .student-cell {
-                width: 50%; /* Cada alumno ocupa la mitad del ancho (2 columnas) */
+                width: auto; /* Dejar que el Grid controle el ancho */
                 text-align: left;
-                padding: 10px 15px;
+                padding: 12px 15px;
                 border-bottom: 1px solid #f0f0f0;
-                border-right: 1px solid #f0f0f0; /* Línea vertical separadora */
+                border-right: 1px solid #f0f0f0; 
                 font-size: 15px;
                 color: #444;
-                height: auto; /* Altura automática */
+                min-height: 45px; /* Altura mínima para dedo */
                 display: flex;
                 align-items: center;
             }
             
-            /* Quitar el borde derecho de los elementos pares para que no se vea doble borde */
-            .student-cell:nth-of-type(odd) { border-right: none; } /* Ajuste fino */
+            /* Arreglo bordes grid */
+            .student-cell:nth-of-type(odd) { border-right: none; } 
 
-            /* Ocultar celdas vacías para ahorrar espacio y que se vea limpio */
+            /* Ocultar celdas vacías */
             .student-cell:empty { display: none; }
 
             /* 5. RESALTADO DE HORA ACTUAL */
             tr.current-slot {
                 border: 2px solid var(--c-accent);
-                box-shadow: 0 4px 12px rgba(250, 101, 195, 0.25);
-                transform: scale(1.02); /* Un pelín más grande */
-                transition: transform 0.3s ease;
+                box-shadow: 0 0 15px rgba(250, 101, 195, 0.3);
             }
             tr.current-slot .col-hora {
-                background-color: var(--c-accent); /* Cabecera rosa */
+                background-color: var(--c-accent);
             }
         }
 
@@ -319,8 +328,8 @@
             
             /* RESTAURAR TABLA EN PAPEL */
             table, thead, tbody, th, td, tr { display: table-cell; }
-            table { display: table !important; border: 2px solid var(--c-primary) !important; width: 95% !important; }
-            tr { display: table-row !important; margin: 0; box-shadow: none; border-radius: 0; }
+            table { display: table !important; border: 2px solid var(--c-primary) !important; width: 95% !important; white-space: nowrap !important; }
+            tr { display: table-row !important; margin: 0; box-shadow: none; border-radius: 0; height: 40px !important; }
             thead { display: table-header-group !important; }
             
             th, td { 
@@ -335,7 +344,7 @@
             .col-turno { display: table-cell !important; }
             .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; text-align: center; }
             .student-cell { width: auto !important; border-bottom: none !important; border-right: 1px solid var(--c-primary) !important; display: table-cell !important; }
-            .student-cell:empty { display: table-cell !important; } /* Mostrar vacíos en papel */
+            .student-cell:empty { display: table-cell !important; }
         }
     </style>
 </head>
