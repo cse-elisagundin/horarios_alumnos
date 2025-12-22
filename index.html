@@ -53,7 +53,6 @@
             width: 100%; 
             max-width: 500px; 
             text-align: center;
-            position: relative; /* Para el modal */
         }
 
         .web-brand { margin-bottom: 25px; }
@@ -261,40 +260,6 @@
             border: 1px solid #ffebeb; font-weight: 600; display: none; margin-top: 20px; 
         }
 
-        /* 🆕 ESTILOS DEL MODAL DE INSTALACIÓN */
-        .install-modal {
-            display: none; /* Oculto por defecto */
-            position: fixed; z-index: 2000; left: 0; top: 0;
-            width: 100%; height: 100%; overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(5px);
-            align-items: center; justify-content: center;
-        }
-        .install-content {
-            background-color: white; margin: auto; padding: 25px;
-            border-radius: 12px; width: 90%; max-width: 350px;
-            text-align: left; position: relative;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            border-top: 5px solid var(--c-primary);
-        }
-        .install-content h3 { color: var(--c-primary); margin-top: 0; }
-        .install-content p { font-size: 14px; line-height: 1.5; color: #555; }
-        .close-modal {
-            position: absolute; top: 10px; right: 15px;
-            color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer;
-        }
-        .close-modal:hover { color: #000; }
-        .install-step { 
-            display: flex; align-items: center; margin-bottom: 12px; font-size: 14px;
-        }
-        .step-icon { font-size: 20px; margin-right: 10px; }
-
-        /* Botón instalar (Estilo oscuro) */
-        .btn-install {
-            background-color: #333; color: white; border-color: #333;
-        }
-        .btn-install:hover { background-color: #000; border-color: #000; }
-
         .whatsapp-float {
             position: fixed; bottom: 25px; right: 25px; background-color: var(--whatsapp);
             color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
@@ -333,38 +298,11 @@
     <div id="actions-panel">
         <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE PARA PADRES</button>
         
-        <button id="btnInstall" class="btn-share btn-install">📲 INSTALAR APP EN MÓVIL</button>
-
         <button id="btnDirectorio" class="btn-share btn-directory">📂 VER LISTADO DE ALUMNOS</button>
         <div id="directory-area"></div>
         
         <br>
         <button id="btnReset" class="btn-reset">🔄 Buscar otro alumno</button>
-    </div>
-</div>
-
-<div id="installModal" class="install-modal">
-    <div class="install-content">
-        <span class="close-modal">&times;</span>
-        <h3>Cómo Instalar la App</h3>
-        
-        <p><strong>En iPhone (iOS):</strong></p>
-        <div class="install-step">
-            <span class="step-icon">1️⃣</span> Pulsa el botón <strong>Compartir</strong> (abajo).
-        </div>
-        <div class="install-step">
-            <span class="step-icon">2️⃣</span> Busca y pulsa <strong>"Añadir a inicio"</strong>.
-        </div>
-        
-        <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
-        
-        <p><strong>En Android:</strong></p>
-        <div class="install-step">
-            <span class="step-icon">1️⃣</span> Pulsa los <strong>3 puntos</strong> del menú.
-        </div>
-        <div class="install-step">
-            <span class="step-icon">2️⃣</span> Elige <strong>"Instalar aplicación"</strong>.
-        </div>
     </div>
 </div>
 
@@ -482,7 +420,6 @@
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
                 document.getElementById('btnCopiar').style.display = 'block';
-                // El botón de instalar ya se muestra por defecto
             }
 
         } else {
@@ -549,16 +486,6 @@
         const btnDirectorio = document.getElementById('btnDirectorio');
         const status = document.getElementById('status-indicator');
         const errorMsg = document.getElementById('error-msg');
-        
-        // Elementos del Modal
-        const btnInstall = document.getElementById('btnInstall');
-        const modal = document.getElementById('installModal');
-        const spanClose = document.getElementsByClassName("close-modal")[0];
-
-        // Lógica del Modal
-        btnInstall.onclick = function() { modal.style.display = "flex"; }
-        spanClose.onclick = function() { modal.style.display = "none"; }
-        window.onclick = function(event) { if (event.target == modal) { modal.style.display = "none"; } }
 
         const procesarInput = () => {
             const valor = input.value.trim();
@@ -638,7 +565,7 @@
             // Padres ven el botón de instalar si quieren tener la app
             document.getElementById('actions-panel').style.display = 'block';
             document.getElementById('btnCopiar').style.display = 'none'; 
-            document.getElementById('btnDirectorio').style.display = 'none'; // Padres no ven directorio
+            document.getElementById('btnDirectorio').style.display = 'none'; 
             
             ejecutarBusqueda(alumnoURL);
         }
