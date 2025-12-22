@@ -292,7 +292,7 @@
     <div id="resultado"></div>
     
     <div id="actions-panel">
-        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PARA PADRES</button>
+        <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE PARA PADRES</button>
         
         <button id="btnDirectorio" class="btn-share btn-directory">📂 VER LISTADO DE ALUMNOS</button>
         <div id="directory-area"></div>
@@ -363,7 +363,7 @@
         document.getElementById('resultado').innerHTML = '';
         document.getElementById('directory-area').style.display = 'none'; // Ocultar directorio al buscar
         
-        // ASEGURAR QUE ESTÁ OCULTO AL INICIAR BÚSQUEDA
+        // ASEGURAR QUE EL PANEL DE ACCIONES ESTÁ OCULTO DURANTE LA BÚSQUEDA
         document.getElementById('actions-panel').style.display = 'none';
 
         // AQUÍ ESTÁ EL CAMBIO: Color Azul Claro (#2b94cc) y Fuente Escolar
@@ -404,9 +404,11 @@
         if(encontrado) {
             document.getElementById('resultado').innerHTML = html;
             
-            // 🔒 LÓGICA DE SEGURIDAD DEFINITIVA
+            // 🔒 LÓGICA DE SEGURIDAD
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
+                // 👀 MOSTRAR BOTÓN COPIAR (porque ya hay resultados)
+                document.getElementById('btnCopiar').style.display = 'block';
             }
 
         } else {
@@ -494,6 +496,8 @@
                     
                     // 🆕 MOSTRAR PANEL DE ACCIONES (para ver el botón de directorio)
                     document.getElementById('actions-panel').style.display = 'block';
+                    // 👁️ OCULTAR BOTÓN DE COPIAR (aún no hemos buscado a nadie)
+                    document.getElementById('btnCopiar').style.display = 'none';
                     
                 } else {
                     errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
@@ -525,8 +529,11 @@
             window.history.pushState({}, document.title, window.location.pathname);
             document.getElementById('resultado').innerHTML = '';
             
-            // Si estamos desbloqueados, mantenemos el panel de acciones visible para ver el botón de directorio
-            if (!SISTEMA_DESBLOQUEADO) {
+            // 👁️ Si estamos desbloqueados, mantenemos panel visible pero ocultamos botón copiar
+            if (SISTEMA_DESBLOQUEADO) {
+                document.getElementById('btnCopiar').style.display = 'none';
+                document.getElementById('actions-panel').style.display = 'block';
+            } else {
                 document.getElementById('actions-panel').style.display = 'none';
             }
             
