@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín</title>
     
+    <title>Horario Semanal - CSE Elisa Gundín</title>
+    <meta name="theme-color" content="#243c7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link rel="manifest" href="manifest_semanal.json">
+    
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
@@ -223,43 +231,34 @@
         }
 
         /* =========================================================
-           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS + AJUSTES VISUALES)
+           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS + AJUSTES APP)
            ========================================================= */
         @media only screen and (max-width: 768px) {
             body { padding: 10px; background-color: #f0f2f5; }
             .container { padding: 10px; width: 100%; box-sizing: border-box; background: transparent; box-shadow: none; }
             
-            /* --- 1. ARREGLO DEL LOGO EN MÓVIL --- */
+            /* LOGO EN MÓVIL */
             .web-brand {
-                background: white; /* Fondo blanco para integrar la imagen */
+                background: white; 
                 border-radius: 12px;
                 padding: 15px;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.05);
                 margin-bottom: 20px;
             }
 
-            /* --- 2. ARREGLO DE BOTONES DE ACCIÓN EN MÓVIL --- */
-            header {
-                gap: 10px; /* Menos espacio entre botones */
-                margin-bottom: 20px;
-            }
-            .btn-action {
-                padding: 10px 14px; /* Más pequeños (antes 12px 25px) */
-                font-size: 13px;    /* Letra un pelín más pequeña */
-                flex: 1;            /* Que ocupen el mismo ancho */
-                justify-content: center;
-            }
+            /* BOTONES COMPACTOS */
+            header { gap: 10px; margin-bottom: 20px; }
+            .btn-action { padding: 10px 14px; font-size: 13px; flex: 1; justify-content: center; }
 
             .day-title { font-size: 28px; }
             .day-subtitle { font-size: 14px; }
 
-            /* ROMPER TABLA */
+            /* ESTRUCTURA GRID */
             table { white-space: normal !important; border: none; width: 100%; display: block; }
             thead, tbody, th, td, tr { display: block; border: none; width: 100%; box-sizing: border-box; }
-            
             thead, .col-turno { display: none; }
 
-            /* --- ARREGLO EL ESCALÓN (GAP ROW) --- */
+            /* SEPARADOR MAÑANA/TARDE */
             tr.gap-row { 
                 display: flex !important;
                 height: 20px !important;
@@ -272,16 +271,11 @@
                 padding: 0;
             }
             tr.gap-row td {
-                display: block;
-                width: 100%;
-                background: transparent !important;
-                border: none !important;
-                border-top: 2px dashed #cbd5e0 !important;
-                height: 1px;
-                padding: 0;
+                display: block; width: 100%; background: transparent !important; border: none !important;
+                border-top: 2px dashed #cbd5e0 !important; height: 1px; padding: 0;
             }
 
-            /* --- TARJETA GRID 6 HUECOS --- */
+            /* TARJETA PRINCIPAL */
             tr {
                 background: white;
                 margin-bottom: 15px;
@@ -290,74 +284,51 @@
                 border: 1px solid #e1e9f0;
                 overflow: hidden;
                 height: auto !important;
-                
                 display: grid !important; 
                 grid-template-columns: repeat(3, 1fr); 
-                gap: 5px; 
-                padding: 5px; 
-                padding-top: 0;
+                gap: 5px; padding: 5px; padding-top: 0;
             }
-            
             tr.gap-row { display: flex !important; grid-template-columns: none; }
 
+            /* CABECERA HORA */
             .col-hora {
                 grid-column: 1 / -1; 
                 background-color: var(--c-primary);
                 color: white !important;
-                font-size: 18px;
-                font-weight: 800;
-                text-align: center;
-                padding: 8px;
-                margin-bottom: 5px; 
+                font-size: 18px; font-weight: 800; text-align: center;
+                padding: 8px; margin-bottom: 5px; 
                 margin-left: -5px; margin-right: -5px; margin-top: 0; 
                 width: calc(100% + 10px);
             }
 
+            /* CELDAS ALUMNOS */
             .student-cell {
-                width: auto;
-                text-align: center; 
-                padding: 8px 4px;
-                border: 1px solid #eef2f5; 
-                border-radius: 6px;
-                background-color: #fff;
-                font-size: 13px; 
-                color: #333;
-                min-height: 45px; 
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                word-break: break-word;
-                line-height: 1.2;
+                width: auto; text-align: center; padding: 8px 4px;
+                border: 1px solid #eef2f5; border-radius: 6px;
+                background-color: #fff; font-size: 13px; color: #333;
+                min-height: 45px; display: flex; align-items: center; justify-content: center;
+                word-break: break-word; line-height: 1.2;
             }
             
+            /* HUECOS LIBRES (SIN TEXTO) */
             .student-cell:empty {
-                display: flex !important;
-                background-color: #f8f9fa; 
-                border: 1px dashed #ddd; 
+                display: flex !important; background-color: #f8f9fa; border: 1px dashed #ddd; 
             }
             .student-cell:empty::before { content: ""; }
 
-            tr.current-slot {
-                border: 2px solid var(--c-accent);
-                box-shadow: 0 0 15px rgba(250, 101, 195, 0.25);
-            }
-            tr.current-slot .col-hora {
-                background-color: var(--c-accent);
-            }
+            /* RESALTADO */
+            tr.current-slot { border: 2px solid var(--c-accent); box-shadow: 0 0 15px rgba(250, 101, 195, 0.25); }
+            tr.current-slot .col-hora { background-color: var(--c-accent); }
         }
 
         /* --- IMPRESIÓN (Optimizada) --- */
         @page { size: portrait; margin: 10mm; }
         @media print {
             body { 
-                background: white; padding: 0; margin: 0; 
-                zoom: 85%; 
-                color: #000;
+                background: white; padding: 0; margin: 0; zoom: 85%; color: #000;
                 font-family: Arial, Helvetica, sans-serif; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
+                -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; 
             }
-            
             .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
             .web-brand, header, .days-nav, .spinner { display: none; } 
             .planning-container.visible { display: block !important; page-break-after: always; }
@@ -368,10 +339,8 @@
             thead { display: table-header-group !important; }
             
             th, td { 
-                border: 1px solid var(--c-primary) !important; 
-                color: var(--c-primary) !important; 
-                padding: 6px 12px !important;
-                width: auto !important;
+                border: 1px solid var(--c-primary) !important; color: var(--c-primary) !important; 
+                padding: 6px 12px !important; width: auto !important;
             }
             
             .day-title { font-size: 36px; margin-bottom: 5px; }
@@ -402,6 +371,17 @@
     <div id="loading" class="spinner"></div>
     <div id="schedule-container"></div>
 </div>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            // ⚠️ AQUÍ APUNTAMOS AL SERVICE WORKER NUEVO
+            navigator.serviceWorker.register('./sw_semanal.js')
+                .then(reg => console.log('SW Semanal Registrado!', reg))
+                .catch(err => console.log('Error SW:', err));
+        });
+    }
+</script>
 
 <script>
     // ⬇️⬇️⬇️ PEGAR TU ENLACE DE EDICIÓN AQUÍ ⬇️⬇️⬇️
