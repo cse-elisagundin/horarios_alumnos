@@ -98,6 +98,13 @@
         .phone { background-color: #f0f7ff; color: var(--c-secondary); border-color: var(--c-secondary); }
         .location { background-color: #fff0f9; color: var(--c-accent); border-color: var(--c-accent); }
 
+        /* Estilo para la imagen de WhatsApp */
+        .ws-icon {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
         .footer {
             margin-top: 40px;
             font-size: 13px;
@@ -118,7 +125,7 @@
         <div class="content">
             <div class="contact-container">
                 <a href="https://wa.me/34693067214" target="_blank" class="contact-btn whatsapp" aria-label="WhatsApp">
-                    💬
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" class="ws-icon">
                 </a>
                 <a href="tel:+34693067214" class="contact-btn phone" aria-label="Llamar">
                     📞
