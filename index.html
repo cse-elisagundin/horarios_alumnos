@@ -128,20 +128,28 @@
     </div>
 
     <script>
-        // Contraseña "010523" ofuscada
-        const _SECRET = "MDEwNTIz"; 
+        // Identificador numérico de seguridad
+        const _0x9A4 = 1446660420; 
+
+        // Algoritmo de verificación matemática
+        function _0xVerify(str) {
+            let h = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                h = ((h << 5) - h) + char;
+                h = h | 0;
+            }
+            return h;
+        }
 
         function checkPass() {
             const input = document.getElementById('passInput');
             const error = document.getElementById('error-msg');
             
-            // Comprobar contraseña
-            if (btoa(input.value.trim()) === _SECRET) {
-                // Si es correcta:
+            if (_0xVerify(input.value.trim()) === _0x9A4) {
                 document.getElementById('login-form').style.display = 'none';
                 document.getElementById('menu-panel').style.display = 'flex';
-                // Guardar sesión para no pedirla cada vez (opcional, dura hasta cerrar navegador)
-                sessionStorage.setItem('cse_auth', 'true');
+                sessionStorage.setItem('cse_session_ok', '1');
             } else {
                 error.style.display = 'block';
                 input.value = '';
@@ -153,8 +161,7 @@
             if (e.key === 'Enter') checkPass();
         }
 
-        // Comprobar si ya metió la contraseña antes en esta sesión
-        if (sessionStorage.getItem('cse_auth') === 'true') {
+        if (sessionStorage.getItem('cse_session_ok') === '1') {
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('menu-panel').style.display = 'flex';
         }
