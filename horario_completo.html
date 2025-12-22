@@ -11,7 +11,7 @@
     <style>
         /* --- PALETA DE COLORES CORPORATIVA --- */
         :root { 
-            --c-primary: #243c7a;  /* Azul Oscuro */
+            --c-primary: #243c7a;   /* Azul Oscuro */
             --c-secondary: #2b94cc; /* Azul Claro */
             --c-accent: #fa65c3;    /* Rosa */
             
@@ -23,7 +23,7 @@
         }
         
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fuente más moderna para web */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             background-color: var(--bg-body); 
             margin: 0; padding: 25px; color: #333;
         }
@@ -34,7 +34,7 @@
             background: var(--bg-container); 
             padding: 30px; 
             border-radius: 12px; 
-            box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); /* Sombra elegante azulada */
+            box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
         /* --- ZONA LOGO WEB --- */
@@ -149,7 +149,6 @@
             transition: all 0.2s;
         }
         
-        /* Estado Activo: Azul Oscuro */
         .nav-btn.active { 
             background: var(--c-primary); 
             color: white; 
@@ -157,7 +156,6 @@
             box-shadow: 0 4px 10px rgba(36, 60, 122, 0.3);
         }
         
-        /* Hover: Borde Rosa y Texto Rosa */
         .nav-btn:hover:not(.active) { 
             border-color: var(--c-accent); 
             color: var(--c-accent); 
@@ -167,7 +165,7 @@
         /* Spinner Rosa */
         .spinner {
             border: 4px solid #f3f3f3; 
-            border-top: 4px solid var(--c-accent); /* ROSA */
+            border-top: 4px solid var(--c-accent); 
             border-radius: 50%;
             width: 40px; height: 40px; 
             animation: spin 1s linear infinite; 
@@ -201,7 +199,7 @@
             text-transform: uppercase; 
             padding: 12px; 
             border-bottom: 3px solid var(--c-primary); 
-            background-color: #f8fbff; /* Fondo muy sutil para cabecera */
+            background-color: #f8fbff; 
         }
         
         .col-turno { font-weight: 800; font-size: 14px; width: 80px; letter-spacing: 0.5px; }
@@ -231,26 +229,63 @@
             border-right: 2px solid var(--c-primary);
         }
 
-        /* --- IMPRESIÓN (Optimizada para ser limpia y ahorrar tinta) --- */
+        /* =========================================================
+           📱 ESTILOS MÓVIL (SOLO SE ACTIVAN EN PANTALLAS PEQUEÑAS)
+           Opción 2: Scroll Horizontal + Hora Congelada
+           ========================================================= */
+        @media only screen and (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 15px; width: 95%; max-width: none; }
+            
+            .day-title { font-size: 28px; }
+            .day-subtitle { font-size: 14px; }
+            
+            /* Contenedor que permite el scroll horizontal */
+            .planning-container {
+                overflow-x: auto; /* Permite deslizar */
+                -webkit-overflow-scrolling: touch; /* Suavidad en iPhone */
+                margin-left: -15px; margin-right: -15px; /* Aprovechar bordes */
+                padding-left: 15px; /* Espacio inicial */
+            }
+
+            /* Ocultamos la columna TURNO para ganar espacio */
+            .col-turno { display: none; }
+            
+            /* LA MAGIA: Congelar la columna HORA a la izquierda */
+            .col-hora {
+                position: sticky;
+                left: 0;
+                background-color: #fff; /* Fondo blanco para tapar lo que pasa por debajo */
+                z-index: 10;
+                border-right: 3px solid var(--c-primary); /* Borde fuerte para separar */
+                box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Sombrita elegante */
+            }
+
+            /* Si la fila está resaltada, el fondo de la hora también debe ser rosa */
+            tr.current-slot .col-hora {
+                background-color: #fff0f6; /* Un rosa muy clarito sólido */
+            }
+        }
+
+        /* --- IMPRESIÓN (Optimizada) --- */
         @page { size: portrait; margin: 10mm; }
         @media print {
             body { 
                 background: white; padding: 0; margin: 0; 
                 zoom: 85%; 
                 color: #000;
-                font-family: Arial, Helvetica, sans-serif; /* Volver a fuente estándar para imprimir */
+                font-family: Arial, Helvetica, sans-serif; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
             }
             
             .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
             
-            /* Ocultar elementos web */
             .web-brand, header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
+            .planning-container { overflow: visible !important; } /* Resetear scroll en papel */
             
-            /* Forzar colores oscuros para nitidez en papel */
             table { border: 2px solid var(--c-primary) !important; width: 95% !important; }
             th, td { 
                 border: 1px solid var(--c-primary) !important; 
@@ -258,21 +293,22 @@
                 padding: 6px 12px !important;
             }
             
-            /* Cabecera limpia */
             .day-title { font-size: 36px; margin-bottom: 5px; }
             .day-subtitle { font-size: 20px; color: var(--c-primary); }
 
-            /* Separador */
             .gap-row td { 
                 background-color: #f0f0f0 !important; 
                 border-top: 2px solid var(--c-primary) !important;
                 border-bottom: 2px solid var(--c-primary) !important;
             }
 
-            /* Quitar decoraciones web */
             tr.current-slot { background-color: transparent !important; }
             .student-cell { border-bottom: none !important; }
             th { background-color: transparent !important; }
+            
+            /* Asegurar que se vean todas las columnas en papel */
+            .col-turno { display: table-cell !important; }
+            .col-hora { position: static !important; border-right: 1px solid var(--c-primary) !important; box-shadow: none !important; }
         }
     </style>
 </head>
@@ -343,108 +379,3 @@
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
-        
-        const slotsManana = ["11:00", "11:30", "12:00"];
-        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-        btnContainer.innerHTML = btns;
-
-        for (const dia of dias) {
-            const data = await leerHoja(urls[dia]);
-            let mapa = {};
-            data.forEach(row => {
-                if(row[1]) {
-                    let hora = row[1].trim().substring(0,5);
-                    mapa[hora] = row.slice(2); 
-                }
-            });
-
-            let html = `
-            <div id="view-${dia}" class="planning-container">
-                <div class="day-header">
-                    <div class="day-title">${dia.toUpperCase()}</div>
-                    <div class="day-subtitle">CSE Elisa Gundín</div>
-                </div>
-                
-                <table>
-                    <thead>
-                        <tr>
-                            <th>TURNO</th>
-                            <th>HORA</th>
-                            <th>ALUMNO 1</th>
-                            <th>ALUMNO 2</th>
-                            <th>ALUMNO 3</th>
-                            <th>ALUMNO 4</th>
-                            <th>ALUMNO 5</th>
-                            <th>ALUMNO 6</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-
-            slotsManana.forEach((hora, index) => {
-                html += `<tr>`;
-                if(index === 0) html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
-                html += `<td class="col-hora">${hora}</td>`;
-                html += generarCeldasAlumnos(mapa[hora]);
-                html += `</tr>`;
-            });
-
-            html += `<tr class="gap-row"><td colspan="8">&nbsp;</td></tr>`;
-
-            slotsTarde.forEach((hora, index) => {
-                html += `<tr>`;
-                if(index === 0) html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
-                html += `<td class="col-hora">${hora}</td>`;
-                html += generarCeldasAlumnos(mapa[hora]);
-                html += `</tr>`;
-            });
-
-            html += `</tbody></table></div>`;
-            container.innerHTML += html;
-        }
-
-        document.getElementById('loading').style.display = 'none';
-        
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-        setTimeout(resaltarHoraActual, 1000);
-    }
-
-    function generarCeldasAlumnos(alumnos) {
-        let html = "";
-        let lista = alumnos || [];
-        for(let i=0; i<6; i++) {
-            let nombreFull = (lista[i] || "").trim();
-            let nombreCorto = "";
-            let tooltipAttr = "";
-
-            if(nombreFull) {
-                nombreCorto = nombreFull.split(" ")[0]; 
-                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
-            }
-            html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
-        }
-        return html;
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else div.classList.toggle('visible', div.id === `view-${dia}`);
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            let textoBtn = btn.innerText; 
-            // Manejar "Lunes" vs "LUNES"
-            let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
-            if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
-        });
-        resaltarHoraActual();
-    }
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-</body>
-</html>
