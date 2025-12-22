@@ -223,8 +223,7 @@
         }
 
         /* =========================================================
-           📱 ESTILOS MÓVIL (GRID COMPACTO)
-           Solo se activa en pantallas menores de 768px
+           📱 ESTILOS MÓVIL (CUADRÍCULA 6 HUECOS)
            ========================================================= */
         @media only screen and (max-width: 768px) {
             body { padding: 10px; background-color: #f0f2f5; }
@@ -233,77 +232,82 @@
             .day-title { font-size: 28px; }
             .day-subtitle { font-size: 14px; }
 
-            /* 1. ROMPER LA ESTRUCTURA DE TABLA */
-            table { 
-                white-space: normal !important; /* IMPORTANTE: Permite que el texto baje de línea */
-                border: none;
-                width: 100%;
-                display: block;
-            }
-            thead, tbody, th, td, tr { 
-                display: block; 
-                border: none;
-                width: 100%;
-                box-sizing: border-box;
-            }
+            /* ROMPER TABLA */
+            table { white-space: normal !important; border: none; width: 100%; display: block; }
+            thead, tbody, th, td, tr { display: block; border: none; width: 100%; box-sizing: border-box; }
             
-            /* Ocultamos cabeceras y turnos */
             thead, .col-turno { display: none; }
             tr.gap-row { display: none; } 
 
-            /* 2. CONVERTIR FILA EN TARJETA GRID */
+            /* --- TARJETA GRID 6 HUECOS --- */
             tr {
                 background: white;
                 margin-bottom: 15px;
                 border-radius: 12px;
-                box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.08);
                 border: 1px solid #e1e9f0;
                 overflow: hidden;
+                height: auto !important;
                 
-                /* AQUÍ ESTÁ EL ARREGLO DE ALTURA */
-                height: auto !important; /* Forzamos altura automática para que no corte los nombres */
-                
-                /* Usamos CSS Grid para organizar el contenido */
+                /* ESTRUCTURA: Grid de 3 Columnas */
                 display: grid !important; 
-                grid-template-columns: 1fr 1fr; /* 2 Columnas iguales */
+                grid-template-columns: repeat(3, 1fr); /* 3 columnas iguales */
+                gap: 5px; /* Espacio entre huecos */
+                padding: 5px; /* Relleno interno */
+                padding-top: 0;
             }
 
-            /* 3. CABECERA DE LA TARJETA (HORA) */
+            /* HORA: Ocupa las 3 columnas de arriba */
             .col-hora {
-                grid-column: 1 / -1; /* Que ocupe todo el ancho arriba */
+                grid-column: 1 / -1; 
                 background-color: var(--c-primary);
                 color: white !important;
-                font-size: 20px;
+                font-size: 18px;
                 font-weight: 800;
-                text-align: left;
-                padding: 10px 15px;
-                width: 100%;
+                text-align: center;
+                padding: 8px;
+                margin-bottom: 5px; /* Separar de los alumnos */
+                margin-left: -5px; margin-right: -5px; margin-top: 0; /* Ajustar bordes */
+                width: calc(100% + 10px);
             }
 
-            /* 4. ALUMNOS EN REJILLA */
+            /* ALUMNOS: Cajas compactas */
             .student-cell {
-                width: auto; /* Dejar que el Grid controle el ancho */
-                text-align: left;
-                padding: 12px 15px;
-                border-bottom: 1px solid #f0f0f0;
-                border-right: 1px solid #f0f0f0; 
-                font-size: 15px;
-                color: #444;
-                min-height: 45px; /* Altura mínima para dedo */
+                width: auto;
+                text-align: center; /* Centrado para que se vea ordenado */
+                padding: 8px 4px;
+                border: 1px solid #eef2f5; /* Borde suave en cada caja */
+                border-radius: 6px;
+                background-color: #fff;
+                font-size: 13px; /* Letra un poco más pequeña para que quepa */
+                color: #333;
+                min-height: 45px; /* Altura fija para uniformidad */
                 display: flex;
                 align-items: center;
+                justify-content: center;
+                word-break: break-word;
+                line-height: 1.2;
             }
             
-            /* Arreglo bordes grid */
-            .student-cell:nth-of-type(odd) { border-right: none; } 
+            /* CELDAS VACÍAS (HUECOS LIBRES) */
+            /* Las mostramos en gris para ver la capacidad real */
+            .student-cell:empty {
+                display: flex !important;
+                background-color: #f8f9fa; /* Gris muy claro */
+                border: 1px dashed #ddd; /* Borde discontinuo indicando "vacío" */
+            }
+            .student-cell:empty::before {
+                content: "Libre";
+                color: #ccc;
+                font-size: 10px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
 
-            /* Ocultar celdas vacías */
-            .student-cell:empty { display: none; }
-
-            /* 5. RESALTADO DE HORA ACTUAL */
+            /* RESALTADO HORA ACTUAL */
             tr.current-slot {
                 border: 2px solid var(--c-accent);
-                box-shadow: 0 0 15px rgba(250, 101, 195, 0.3);
+                box-shadow: 0 0 15px rgba(250, 101, 195, 0.25);
             }
             tr.current-slot .col-hora {
                 background-color: var(--c-accent);
@@ -345,6 +349,7 @@
             .col-hora { background: transparent !important; color: var(--c-primary) !important; font-size: 13px !important; width: auto !important; text-align: center; }
             .student-cell { width: auto !important; border-bottom: none !important; border-right: 1px solid var(--c-primary) !important; display: table-cell !important; }
             .student-cell:empty { display: table-cell !important; }
+            .student-cell:empty::before { content: "" !important; } /* Quitar texto Libre al imprimir */
         }
     </style>
 </head>
