@@ -76,7 +76,7 @@
             text-transform: uppercase; font-size: 14px; letter-spacing: 1px;
         }
 
-        /* --- TABLAS --- */
+        /* --- TABLAS WEB --- */
         table {
             width: 100%; border-collapse: collapse; 
             background: white; border: 2px solid var(--c-primary);
@@ -94,7 +94,6 @@
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
         
-        /* Estilos Web para Inglés */
         .ing-header { 
             background-color: #f0f4f8 !important; 
             color: var(--c-accent) !important;    
@@ -140,7 +139,7 @@
         }
 
         /* =========================================================
-           🖨️ IMPRESIÓN (OPTIMIZADA Y RESPIRADA)
+           🖨️ IMPRESIÓN (ULTRA-COMPACTA)
            ========================================================= */
         @page { size: landscape; margin: 5mm; }
 
@@ -148,7 +147,7 @@
             body { 
                 background: white; 
                 padding: 0; 
-                zoom: 85%; /* Subido de 80% a 85% para llenar mejor */
+                zoom: 80%; /* Zoom seguro */
             }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
@@ -158,21 +157,21 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* ESTILOS DE TÍTULOS EN PAPEL */
+            /* TÍTULOS MINIMALISTAS (SIN RECUADROS) */
             .print-section-header {
-                font-size: 16px; 
+                font-size: 14px; 
                 font-weight: 800; 
                 color: black; 
-                background: #eee; 
-                padding: 4px 8px;
-                margin-bottom: 0; 
+                background: none; /* Sin fondo */
+                border: none; /* Sin borde */
+                padding: 0;
+                margin-bottom: 2px; 
                 text-transform: uppercase;
-                border: 1px solid #000;
-                border-bottom: none; 
+                text-decoration: underline; /* Subrayado simple */
             }
 
-            /* ⚠️ AJUSTE CLAVE: Espacio extra antes del título de Inglés */
-            .ing-section { margin-top: 30px !important; } 
+            /* AJUSTE CLAVE: Reducción drástica del espacio entre tablas */
+            .ing-section { margin-top: 10px !important; } 
 
             table { 
                 width: 100% !important; border: 1px solid #000 !important; 
@@ -182,20 +181,19 @@
             
             thead { display: table-header-group !important; }
             
-            /* Filas con más altura para que no se vea comprimido */
-            tr { display: table-row !important; height: 26px !important; page-break-inside: avoid; }
+            /* FILAS MÁS BAJITAS PARA AHORRAR ESPACIO */
+            tr { display: table-row !important; height: 22px !important; page-break-inside: avoid; }
             
             th, td { 
                 display: table-cell !important; 
                 border: 1px solid #666 !important; color: black !important; 
-                padding: 3px !important; 
+                padding: 2px !important; 
                 font-size: 12px !important;
                 vertical-align: middle;
             }
 
             .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
             
-            /* Limpieza */
             tr.current-slot .col-hora { background: #ddd !important; color: black !important; }
             .ing-header { color: black !important; }
             .sep-border { border-left: 1px solid #999 !important; }
@@ -312,14 +310,14 @@
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // INGLÉS (Añadimos clase 'ing-section' para darle margen en CSS)
+            // INGLÉS (Pegadito al anterior)
             html += `<div class="print-section-header ing-section">INGLÉS</div>
                      <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
                 html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
             });
-            html += `</tbody></table></div>`; // Fin Print
+            html += `</tbody></table></div>`;
 
             html += `</div>`;
             container.innerHTML += html;
