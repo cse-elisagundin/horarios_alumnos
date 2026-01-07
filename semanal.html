@@ -39,9 +39,27 @@
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* --- HEADER Y BOTONES --- */
-        .web-brand { text-align: center; margin-bottom: 20px; }
-        .web-logo-img { height: 75px; object-fit: contain; }
+        /* --- HEADER Y DECORACIÓN (RECUPERADA) --- */
+        .web-brand {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+        }
+        .web-logo-img {
+            height: 75px; 
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+        .web-logo-img:hover { transform: scale(1.05); }
+
+        /* La línea decorativa tricolor */
+        .brand-line {
+            height: 4px;
+            width: 100px;
+            margin: 15px auto 0;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 2px;
+        }
 
         header { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
 
@@ -110,15 +128,13 @@
         tr.current-slot {
             transition: all 0.3s ease;
         }
-        /* Esto hace que TODAS las celdas de la fila se pongan rosas */
         tr.current-slot td { 
             background-color: var(--c-accent) !important; 
             color: white !important; 
             border-color: white !important;
         }
-        /* Corregimos el color del texto para que se lea bien en blanco */
         tr.current-slot .col-hora {
-             background-color: #d14ca0 !important; /* Un rosa un poco más oscuro para la hora */
+             background-color: #d14ca0 !important; 
              color: white !important;
         }
 
@@ -150,7 +166,6 @@
         @media print {
             body { 
                 background: white; 
-                /* CORRECCIÓN DE CORTE IZQUIERDO */
                 padding-left: 15px !important; 
                 padding-right: 5px !important;
                 padding-top: 0; padding-bottom: 0;
@@ -206,9 +221,10 @@
 <body>
 
 <div class="container">
+    
     <div class="web-brand">
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="web-logo-img">
-    </div>
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
+        <div class="brand-line"></div> </div>
 
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
