@@ -20,7 +20,7 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS VISUALES ACTUALIZADOS
+           🎨 ESTILOS CORPORATIVOS
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -45,8 +45,10 @@
             padding: 40px; border-radius: 20px; 
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
             width: 100%; max-width: 500px; text-align: center;
+            position: relative; z-index: 1;
         }
 
+        /* HEADER */
         .web-brand { margin-bottom: 25px; }
         .logo-img { max-width: 160px; }
 
@@ -67,6 +69,7 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
+        /* INPUTS & BOTONES */
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
             border-radius: 12px; font-size: 16px; margin-bottom: 20px; 
@@ -84,9 +87,7 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
-        /* =========================================
-           ✨ RESULTADOS "AMPLIADOS VISUALMENTE"
-           ========================================= */
+        /* RESULTADOS */
         #resultado { margin-top: 35px; text-align: left; }
         
         .result-card { 
@@ -94,44 +95,28 @@
             margin-bottom: 15px; padding: 20px; border-radius: 15px; 
             border: 1px solid rgba(0,0,0,0.05);
             display: flex; justify-content: space-between; align-items: center;
-            position: relative; overflow: hidden;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
             animation: cardFade 0.4s ease-out;
         }
-        @keyframes cardFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Borde lateral de color según materia */
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
 
         .card-info { display: flex; flex-direction: column; gap: 2px; }
+        .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
         
-        .card-day { 
-            font-weight: 800; color: #a1aab2; font-size: 12px; 
-            text-transform: uppercase; letter-spacing: 1.2px; 
-        }
-        
-        .card-time-wrapper {
-            display: flex; align-items: center; gap: 8px; margin-top: 5px;
-        }
-
-        /* Icono de reloj minimalista */
+        .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
         .clock-icon {
             width: 18px; height: 18px; border: 2px solid var(--c-primary);
             border-radius: 50%; position: relative;
         }
         .clock-icon::after {
             content: ''; position: absolute; width: 6px; height: 2px;
-            background: var(--c-primary); top: 50%; left: 50%; transform-origin: left;
-            transform: rotate(-90deg);
+            background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg);
         }
+        .card-time { font-size: 24px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; }
 
-        .card-time { 
-            font-size: 24px; color: var(--c-primary); font-weight: 800; 
-            letter-spacing: -0.5px;
-        }
-
-        /* ETIQUETAS ELEGANTES */
         .badge {
             padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 800;
             text-transform: uppercase; color: white; letter-spacing: 1px;
@@ -140,18 +125,36 @@
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
 
-        /* ========================================= */
-
+        /* PANEL ACCIONES */
         #actions-panel { display: none; margin-top: 30px; border-top: 2px solid #f0f4f8; padding-top: 25px; }
+        
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; }
         .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
+        /* DIRECTORIO */
         #directory-area { display: none; margin-top: 20px; text-align: left; max-height: 250px; overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; border-radius: 12px; background: #fafbfc; }
-        .student-chip { display: inline-block; background: white; border: 1px solid var(--c-secondary); color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        
+        .student-chip { 
+            display: inline-block; background: white; border: 1px solid var(--c-secondary); 
+            color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; 
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
+            text-transform: capitalize; /* ⚠️ Capitaliza visualmente los nombres */
+        }
         .student-chip:hover { background: var(--c-secondary); color: white; }
 
         .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; }
         .btn-reset:hover { opacity: 1; color: var(--c-accent); }
+
+        /* WHATSAPP CORREGIDO */
+        .whatsapp-float {
+            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; /* Verde WP */
+            color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+            z-index: 9999; font-weight: bold; font-size: 15px; transition: all 0.3s ease;
+        }
+        .whatsapp-float:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
+        .whatsapp-icon { width: 22px; height: 22px; fill: white; }
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -212,6 +215,11 @@
         });
     }
 
+    // Capitalizar nombre para mostrar
+    function formatName(n) {
+        return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+    }
+
     async function ejecutarBusqueda(nombre) {
         document.getElementById('search-area').style.display = 'none';
         document.getElementById('loading-spinner').style.display = 'block';
@@ -243,8 +251,13 @@
         });
 
         document.getElementById('loading-spinner').style.display = 'none';
+        
         if(encontrados.length > 0) {
-            let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Schoolbell', cursive;">Plan de <span style="color:var(--c-accent)">${nombre}</span></h3>`;
+            // "Horario de" + Nombre Capitalizado
+            let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Schoolbell', cursive;">
+                        Horario de <span style="color:var(--c-accent)">${formatName(nombre)}</span>
+                        </h3>`;
+            
             encontrados.forEach(item => {
                 html += `
                     <div class="result-card type-${item.tipo}">
@@ -260,10 +273,18 @@
             });
             document.getElementById('resultado').innerHTML = html;
             document.getElementById('actions-panel').style.display = 'block';
-            if(!SISTEMA_DESBLOQUEADO) {
+
+            // ⚠️ CONTROL DEL BOTÓN COPIAR ENLACE
+            // Solo se muestra si SISTEMA_DESBLOQUEADO es true (Modo Profesor)
+            if(SISTEMA_DESBLOQUEADO) {
+                document.getElementById('btnCopiar').style.display = 'block';
+                document.getElementById('btnDirectorio').style.display = 'block';
+            } else {
+                // Si es un padre (lectura), ocultamos estos botones
                 document.getElementById('btnCopiar').style.display = 'none';
                 document.getElementById('btnDirectorio').style.display = 'none';
             }
+
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
             document.getElementById('error-msg').style.display = 'block';
@@ -277,16 +298,29 @@
         const promesas = Object.values(urls).map(url => leerHoja(url));
         const resultados = await Promise.all(promesas);
         let alumnos = new Set();
+        
+        // Palabras prohibidas (Cabeceras que queremos ignorar)
+        const basura = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "IN1", "IN2", "IN3", "IN4", "IN5", "IN6", "A1", "A2", "A3", "A4", "A5", "A6", "I1", "I2", "I3"];
+
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
+                // Buscar en columnas de alumnos
                 [2,3,4,5,6,7,9,10,11,12,13,14].forEach(c => {
-                    if(row[c] && row[c].trim().length > 2) alumnos.add(row[c].trim().toLowerCase());
+                    let txt = (row[c] || "").trim();
+                    // Filtro: longitud > 2 Y NO está en la lista de basura
+                    if(txt.length > 2 && !basura.includes(txt.toUpperCase())) {
+                        alumnos.add(txt.toLowerCase()); // Guardar en minúsculas para evitar duplicados "Hugo" vs "hugo"
+                    }
                 });
             });
         });
+        
         let html = "";
-        Array.from(alumnos).sort().forEach(n => html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`);
+        // Al mostrar, usamos CSS text-transform: capitalize para que se vea bonito
+        Array.from(alumnos).sort().forEach(n => {
+            html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`;
+        });
         area.innerHTML = html;
     }
 
@@ -295,22 +329,38 @@
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('magicInput');
         const btn = document.getElementById('btnBuscar');
-        
+        const btnCopiar = document.getElementById('btnCopiar');
+
         const login = () => {
             const val = input.value.trim();
             if(!val) return;
+            // Login Profesor
             if(!SISTEMA_DESBLOQUEADO && btoa(val) === _0x8F) {
                 SISTEMA_DESBLOQUEADO = true;
                 document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
                 input.value = ""; input.placeholder = "Nombre del alumno...";
                 document.getElementById('actions-panel').style.display = 'block';
-            } else { ejecutarBusqueda(val); }
+                // Al loguearse, NO buscamos nada aún, solo desbloqueamos
+            } else { 
+                // Búsqueda normal
+                ejecutarBusqueda(val); 
+            }
         };
 
         btn.onclick = login;
         input.onkeypress = e => { if(e.key === 'Enter') login(); };
         document.getElementById('btnDirectorio').onclick = cargarDirectorio;
         document.getElementById('btnReset').onclick = () => location.reload();
+
+        // Botón Copiar
+        btnCopiar.onclick = () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url).then(() => { 
+                const original = btnCopiar.innerText;
+                btnCopiar.innerText = "✅ ENLACE COPIADO";
+                setTimeout(() => btnCopiar.innerText = original, 2000);
+            });
+        };
         
         const p = new URLSearchParams(window.location.search).get('alumno');
         if(p) { input.value = p; ejecutarBusqueda(p); }
