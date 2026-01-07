@@ -138,16 +138,16 @@
             display: inline-block; background: white; border: 1px solid var(--c-secondary); 
             color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; 
             font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
-            text-transform: capitalize; /* ⚠️ Capitaliza visualmente los nombres */
+            text-transform: capitalize; 
         }
         .student-chip:hover { background: var(--c-secondary); color: white; }
 
         .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; }
         .btn-reset:hover { opacity: 1; color: var(--c-accent); }
 
-        /* WHATSAPP CORREGIDO */
+        /* WHATSAPP FIXED */
         .whatsapp-float {
-            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; /* Verde WP */
+            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; 
             color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
             display: flex; align-items: center; gap: 10px; 
             box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
@@ -190,7 +190,6 @@
 
 <a href="https://wa.me/34693067214" class="whatsapp-float" target="_blank">
     <svg class="whatsapp-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-    Ayuda WhatsApp
 </a>
 
 <script>
@@ -215,7 +214,6 @@
         });
     }
 
-    // Capitalizar nombre para mostrar
     function formatName(n) {
         return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
     }
@@ -236,12 +234,10 @@
             data.forEach(row => {
                 if(row[1]) {
                     let h = row[1].trim().substring(0,5);
-                    // Apoyo (2-7)
                     for(let c=2; c<=7; c++) {
                         if((row[c]||"").toLowerCase().includes(nombreBuscado)) 
                             encontrados.push({dia, h, materia: "Apoyo", tipo: "apoyo"});
                     }
-                    // Inglés (9-14)
                     for(let c=9; c<=14; c++) {
                         if((row[c]||"").toLowerCase().includes(nombreBuscado)) 
                             encontrados.push({dia, h, materia: "Inglés", tipo: "ingles"});
@@ -253,7 +249,6 @@
         document.getElementById('loading-spinner').style.display = 'none';
         
         if(encontrados.length > 0) {
-            // "Horario de" + Nombre Capitalizado
             let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Schoolbell', cursive;">
                         Horario de <span style="color:var(--c-accent)">${formatName(nombre)}</span>
                         </h3>`;
@@ -274,15 +269,15 @@
             document.getElementById('resultado').innerHTML = html;
             document.getElementById('actions-panel').style.display = 'block';
 
-            // ⚠️ CONTROL DEL BOTÓN COPIAR ENLACE
-            // Solo se muestra si SISTEMA_DESBLOQUEADO es true (Modo Profesor)
+            // ⚠️ CONTROL BOTONES PADRES vs PROFE
             if(SISTEMA_DESBLOQUEADO) {
                 document.getElementById('btnCopiar').style.display = 'block';
                 document.getElementById('btnDirectorio').style.display = 'block';
+                document.getElementById('btnReset').style.display = 'block'; // Profe SÍ ve el botón de reset
             } else {
-                // Si es un padre (lectura), ocultamos estos botones
                 document.getElementById('btnCopiar').style.display = 'none';
                 document.getElementById('btnDirectorio').style.display = 'none';
+                document.getElementById('btnReset').style.display = 'none'; // PADRE NO VE NADA
             }
 
         } else {
@@ -298,26 +293,21 @@
         const promesas = Object.values(urls).map(url => leerHoja(url));
         const resultados = await Promise.all(promesas);
         let alumnos = new Set();
-        
-        // Palabras prohibidas (Cabeceras que queremos ignorar)
         const basura = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "IN1", "IN2", "IN3", "IN4", "IN5", "IN6", "A1", "A2", "A3", "A4", "A5", "A6", "I1", "I2", "I3"];
 
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
-                // Buscar en columnas de alumnos
                 [2,3,4,5,6,7,9,10,11,12,13,14].forEach(c => {
                     let txt = (row[c] || "").trim();
-                    // Filtro: longitud > 2 Y NO está en la lista de basura
                     if(txt.length > 2 && !basura.includes(txt.toUpperCase())) {
-                        alumnos.add(txt.toLowerCase()); // Guardar en minúsculas para evitar duplicados "Hugo" vs "hugo"
+                        alumnos.add(txt.toLowerCase());
                     }
                 });
             });
         });
         
         let html = "";
-        // Al mostrar, usamos CSS text-transform: capitalize para que se vea bonito
         Array.from(alumnos).sort().forEach(n => {
             html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`;
         });
@@ -334,15 +324,12 @@
         const login = () => {
             const val = input.value.trim();
             if(!val) return;
-            // Login Profesor
             if(!SISTEMA_DESBLOQUEADO && btoa(val) === _0x8F) {
                 SISTEMA_DESBLOQUEADO = true;
                 document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
                 input.value = ""; input.placeholder = "Nombre del alumno...";
                 document.getElementById('actions-panel').style.display = 'block';
-                // Al loguearse, NO buscamos nada aún, solo desbloqueamos
             } else { 
-                // Búsqueda normal
                 ejecutarBusqueda(val); 
             }
         };
@@ -352,7 +339,6 @@
         document.getElementById('btnDirectorio').onclick = cargarDirectorio;
         document.getElementById('btnReset').onclick = () => location.reload();
 
-        // Botón Copiar
         btnCopiar.onclick = () => {
             const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
             navigator.clipboard.writeText(url).then(() => { 
