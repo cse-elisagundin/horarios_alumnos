@@ -108,50 +108,16 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* =========================================================
-           📱 MÓVIL
-           ========================================================= */
-        @media only screen and (max-width: 768px) {
-            .container { padding: 5px; width: 100%; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            
-            .section-title { margin-bottom: 0; border-radius: 8px 8px 0 0; margin-top: 20px; }
-            
-            tr { 
-                margin-bottom: 10px; background: white; border: 1px solid #ddd; 
-                border-top: none; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            }
-            .col-hora { 
-                display: block; width: 100%; background: #eef2f5; color: var(--c-primary); 
-                font-size: 16px; margin-bottom: 10px; padding: 5px; border-radius: 4px;
-            }
-            .mobile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-            td { border: none; padding: 0; min-height: 0; }
-            .std-cell, .ing-cell {
-                border: 1px solid #eee; padding: 8px 2px; border-radius: 4px; font-size: 13px;
-                min-height: 35px; display: flex; align-items: center; justify-content: center;
-            }
-            .mob-label { 
-                grid-column: 1 / -1; font-size: 11px; font-weight: bold; text-transform: uppercase; 
-                margin-top: 10px; margin-bottom: 4px; color: #666; border-bottom: 1px solid #eee;
-            }
-            .mob-label.first { margin-top: 0; }
-        }
-
-        /* =========================================================
-           🖨️ IMPRESIÓN (CORRECCIÓN MARGEN IZQUIERDO)
+           🖨️ IMPRESIÓN MÁXIMO ESPACIO LIBRE
            ========================================================= */
         @page { size: landscape; margin: 5mm; }
 
         @media print {
             body { 
                 background: white; 
-                /* ⚠️ AQUÍ ESTÁ EL ARREGLO: Margin Left extra para que no corte la hora */
-                padding-left: 15px !important; 
+                padding-left: 15px !important; /* Mantenemos corrección de corte izq */
                 padding-right: 5px !important;
                 padding-top: 0; padding-bottom: 0;
-                
-                /* Zoom ajustado para compensar el empujón a la derecha */
                 zoom: 75%; 
             }
             
@@ -162,7 +128,7 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* TÍTULOS MINIMALISTAS */
+            /* TÍTULOS */
             .print-section-header {
                 font-size: 14px; 
                 font-weight: 800; 
@@ -170,12 +136,17 @@
                 background: none; 
                 border: none; 
                 padding: 0;
-                margin-bottom: 2px; 
+                margin: 0; /* Sin margen externo */
                 text-transform: uppercase;
-                text-decoration: underline; 
+                text-decoration: underline;
+                line-height: 1.2;
             }
 
-            .ing-section { margin-top: 10px !important; } 
+            /* ⚠️ AJUSTE FINAL: Margen CERO patatero entre tablas */
+            .ing-section { 
+                margin-top: 0px !important; 
+                padding-top: 5px !important; /* Pequeño respiro interno */
+            } 
 
             table { 
                 width: 100% !important; border: 1px solid #000 !important; 
@@ -314,7 +285,7 @@
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // INGLÉS
+            // INGLÉS (Pegadito al anterior)
             html += `<div class="print-section-header ing-section">INGLÉS</div>
                      <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
