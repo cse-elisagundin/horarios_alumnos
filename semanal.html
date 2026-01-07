@@ -15,7 +15,7 @@
 
     <style>
         /* =========================================
-           1. ESTILOS GENERALES Y COLORES
+           1. ESTILOS GENERALES
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -39,24 +39,13 @@
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* --- HEADER Y DECORACIÓN (RECUPERADA) --- */
-        .web-brand {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-        }
-        .web-logo-img {
-            height: 75px; 
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
+        /* --- HEADER Y DECORACIÓN --- */
+        .web-brand { text-align: center; margin-bottom: 20px; padding-bottom: 10px; }
+        .web-logo-img { height: 75px; object-fit: contain; transition: transform 0.3s ease; }
         .web-logo-img:hover { transform: scale(1.05); }
 
-        /* La línea decorativa tricolor */
         .brand-line {
-            height: 4px;
-            width: 100px;
-            margin: 15px auto 0;
+            height: 4px; width: 100px; margin: 15px auto 0;
             background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
             border-radius: 2px;
         }
@@ -78,11 +67,11 @@
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* --- VISIBILIDAD DE VISTAS --- */
+        /* --- VISIBILIDAD --- */
         .view-print { display: none; } 
         .view-web { display: block; }  
 
-        /* --- ESTRUCTURA TABLAS WEB --- */
+        /* --- ESTRUCTURA --- */
         .planning-container { display: none; margin-bottom: 40px; }
         .planning-container.visible { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -109,40 +98,22 @@
         }
 
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
-        
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
         
-        /* Cabeceras de inglés */
-        .ing-header { 
-            background-color: #f0f4f8 !important; 
-            color: var(--c-accent) !important;    
-            font-weight: 800;
-        }
+        .ing-header { background-color: #f0f4f8 !important; color: var(--c-accent) !important; font-weight: 800; }
         .ing-cell { background-color: white; font-weight: 600; }
         .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        /* =========================================
-           ✨ 2. RESALTADO FILA ACTUAL (WEB)
-           ========================================= */
-        tr.current-slot {
-            transition: all 0.3s ease;
-        }
-        tr.current-slot td { 
-            background-color: var(--c-accent) !important; 
-            color: white !important; 
-            border-color: white !important;
-        }
-        tr.current-slot .col-hora {
-             background-color: #d14ca0 !important; 
-             color: white !important;
-        }
+        /* --- RESALTADO WEB --- */
+        tr.current-slot td { background-color: var(--c-accent) !important; color: white !important; border-color: white !important; }
+        tr.current-slot .col-hora { background-color: #d14ca0 !important; color: white !important; }
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* =========================================
-           📱 3. MÓVIL
+           🖨️ MÓVIL
            ========================================= */
         @media only screen and (max-width: 768px) {
             .container { padding: 5px; width: 100%; }
@@ -159,17 +130,15 @@
         }
 
         /* =========================================
-           🖨️ 4. IMPRESIÓN (OPTIMIZADO)
+           🖨️ IMPRESIÓN A DOBLE CARA (SALTO DE PÁGINA)
            ========================================= */
-        @page { size: landscape; margin: 5mm; }
+        @page { size: landscape; margin: 10mm; }
 
         @media print {
             body { 
                 background: white; 
-                padding-left: 15px !important; 
-                padding-right: 5px !important;
-                padding-top: 0; padding-bottom: 0;
-                zoom: 75%; 
+                padding: 0; 
+                zoom: 95%; /* ¡LETRA GIGANTE! */
                 -webkit-print-color-adjust: exact;
             }
             
@@ -180,37 +149,36 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* TÍTULOS MINIMALISTAS */
+            /* RECUPERAMOS TÍTULOS BONITOS (CAJAS GRISES) */
             .print-section-header {
-                font-size: 14px; font-weight: 800; color: black; 
-                background: none; border: none; padding: 0; margin: 0; 
-                text-transform: uppercase; text-decoration: underline; line-height: 1.2;
+                font-size: 18px; font-weight: 800; color: black; 
+                background: #eee; border: 1px solid #000; padding: 5px 10px;
+                margin-bottom: 10px; text-transform: uppercase; text-align: center;
+                border-bottom: none; /* Pegado a la tabla */
             }
 
-            /* SIN ESPACIO ENTRE TABLAS */
-            .ing-section { margin-top: 0px !important; padding-top: 5px !important; } 
+            /* CLASE MAGICA PARA SALTO DE PAGINA */
+            .page-break { 
+                page-break-after: always; 
+                break-after: page;
+                height: 1px;
+                display: block;
+            }
 
-            table { width: 100% !important; border: 1px solid #000 !important; table-layout: fixed !important; border-collapse: collapse !important; margin-bottom: 0px !important; }
+            table { width: 100% !important; border: 1px solid #000 !important; table-layout: fixed !important; border-collapse: collapse !important; margin-bottom: 0 !important; }
             thead { display: table-header-group !important; }
-            tr { display: table-row !important; height: 22px !important; page-break-inside: avoid; }
+            tr { display: table-row !important; height: 35px !important; page-break-inside: avoid; }
             
             th, td { 
                 display: table-cell !important; border: 1px solid #666 !important; color: black !important; 
-                padding: 2px !important; font-size: 12px !important; vertical-align: middle;
+                padding: 4px !important; font-size: 14px !important; vertical-align: middle;
             }
 
-            .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
+            .col-hora { width: 60px !important; background: #ddd !important; font-weight: bold !important; font-size: 14px !important; }
             
-            /* 🚫 QUITAR EL ROSA EN IMPRESIÓN 🚫 */
-            tr.current-slot td { 
-                background-color: transparent !important; 
-                color: black !important; 
-                border-color: #666 !important;
-            }
-            tr.current-slot .col-hora { 
-                background-color: #ddd !important; 
-                color: black !important;
-            }
+            /* SIN COLOR ROSA */
+            tr.current-slot td { background-color: transparent !important; color: black !important; border-color: #666 !important; }
+            tr.current-slot .col-hora { background-color: #ddd !important; color: black !important; }
             
             .ing-header { color: black !important; }
             .sep-border { border-left: 1px solid #999 !important; }
@@ -221,10 +189,10 @@
 <body>
 
 <div class="container">
-    
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
-        <div class="brand-line"></div> </div>
+        <div class="brand-line"></div>
+    </div>
 
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
@@ -237,11 +205,9 @@
 </div>
 
 <script>
-    // Enlace de edición
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
-    // URLs de datos
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -282,7 +248,6 @@
                 }
             });
 
-            // Generar celdas Apoyo
             const getCellsApoyo = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
@@ -293,7 +258,6 @@
                 return cells;
             };
 
-            // Generar celdas Inglés
             const getCellsIngles = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
@@ -323,36 +287,37 @@
             slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
 
-            // === VISTA IMPRESIÓN ===
+            // === VISTA IMPRESIÓN (DOBLE CARA) ===
             html += `<div class="view-print">`;
             
-            // Tabla Apoyo Completa
+            // --- CARA A: APOYO ---
             html += `<div class="print-section-header">APOYO ESCOLAR</div>
                      <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // Tabla Inglés (Pegada)
-            html += `<div class="print-section-header ing-section">INGLÉS</div>
+            // --- SALTO DE PÁGINA ---
+            html += `<div class="page-break"></div>`;
+
+            // --- CARA B: INGLÉS ---
+            html += `<div class="print-section-header">INGLÉS</div>
                      <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
                 html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
             });
-            html += `</tbody></table></div>`; // Fin view print
+            html += `</tbody></table></div>`; // Fin Print
 
-            html += `</div>`; // Fin container dia
+            html += `</div>`;
             container.innerHTML += html;
         }
 
         document.getElementById('loading').style.display = 'none';
         
-        // Cargar día actual
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
         
-        // Activar reloj
         setInterval(resaltarHora, 60000);
         setTimeout(resaltarHora, 1000);
     }
@@ -375,13 +340,11 @@
         const now = new Date();
         const mins = now.getHours() * 60 + now.getMinutes();
         
-        // Aplicamos a todas las celdas de hora visibles (web y print)
         document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
             let parts = td.innerText.split(':');
             if(parts.length === 2) {
                 let slotMins = parseInt(parts[0])*60 + parseInt(parts[1]);
                 if(mins >= slotMins && mins < slotMins + 30) {
-                    // Añadimos la clase a la fila entera (TR)
                     td.parentElement.classList.add('current-slot');
                 }
             }
