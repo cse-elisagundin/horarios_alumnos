@@ -58,9 +58,9 @@
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* --- CLASES DE VISIBILIDAD (LA CLAVE DEL TRUCO) --- */
-        .view-print { display: none; } /* Oculto en pantalla */
-        .view-web { display: block; }  /* Visible en pantalla */
+        /* --- CLASES DE VISIBILIDAD --- */
+        .view-print { display: none; } 
+        .view-web { display: block; }  
 
         /* --- ESTRUCTURA --- */
         .planning-container { display: none; margin-bottom: 40px; }
@@ -140,46 +140,59 @@
         }
 
         /* =========================================================
-           🖨️ IMPRESIÓN "BLOQUES SEPARADOS" (OPTIMIZADO A4)
+           🖨️ IMPRESIÓN "SÚPER COMPACTA" (Modo Dieta)
            ========================================================= */
-        @page { size: landscape; margin: 8mm; }
+        @page { size: landscape; margin: 5mm; /* Margen mínimo absoluto */ }
 
         @media print {
-            body { background: white; padding: 0; zoom: 95%; /* Zoom casi total, letra grande */ }
+            body { 
+                background: white; 
+                padding: 0; 
+                zoom: 80%; /* REDUCIMOS UN POCO PARA QUE QUEPA SÍ O SÍ */
+            }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
             .planning-container.visible { display: block !important; page-break-after: always; }
 
-            /* INTERCAMBIO DE VISTAS */
-            .view-web { display: none !important; }   /* Ocultamos la web ancha */
-            .view-print { display: block !important; } /* Mostramos la versión optimizada */
+            .view-web { display: none !important; } 
+            .view-print { display: block !important; }
 
-            /* TÍTULOS DE BLOQUE EN PAPEL */
+            /* TÍTULOS SUPER COMPACTOS */
             .print-section-header {
-                font-size: 18px; font-weight: 800; color: black; 
-                border-bottom: 2px solid black; margin-bottom: 5px; margin-top: 10px;
+                font-size: 14px; /* Letra más pequeña en título */
+                font-weight: 800; 
+                color: black; 
+                background: #eee; /* Barrita gris en vez de espacio blanco */
+                padding: 2px 5px;
+                margin-top: 5px; margin-bottom: 0; /* Sin márgenes */
                 text-transform: uppercase;
+                border: 1px solid #000;
+                border-bottom: none; /* Pegado a la tabla */
             }
 
             table { 
                 width: 100% !important; border: 1px solid #000 !important; 
                 table-layout: fixed !important; border-collapse: collapse !important;
-                margin-bottom: 15px;
+                margin-bottom: 0px !important; /* Sin espacio debajo de la tabla */
             }
             
             thead { display: table-header-group !important; }
-            tr { display: table-row !important; height: 26px !important; page-break-inside: avoid; }
+            /* Filas más bajitas para ahorrar espacio vertical */
+            tr { display: table-row !important; height: 20px !important; page-break-inside: avoid; }
+            
             th, td { 
                 display: table-cell !important; 
-                border: 1px solid #999 !important; color: black !important; 
-                padding: 3px !important; font-size: 12px !important; /* Letra legible */
+                border: 1px solid #666 !important; color: black !important; 
+                padding: 2px !important; /* Menos relleno en celdas */
+                font-size: 12px !important;
+                vertical-align: middle;
             }
 
-            .col-hora { width: 50px !important; background: #eee !important; font-weight: bold !important; }
+            .col-hora { width: 45px !important; background: #ddd !important; font-weight: bold !important; font-size: 11px !important; }
             
-            /* Limpieza de estilos web */
-            tr.current-slot .col-hora { background: #eee !important; color: black !important; }
+            /* Limpieza */
+            tr.current-slot .col-hora { background: #ddd !important; color: black !important; }
             .ing-header { color: black !important; }
             .sep-border { border-left: 1px solid #999 !important; }
             .mobile-grid { display: none; }
@@ -247,7 +260,6 @@
                 }
             });
 
-            // Función Helper: Crea celdas de Apoyo
             const getCellsApoyo = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
@@ -258,13 +270,11 @@
                 return cells;
             };
 
-            // Función Helper: Crea celdas de Inglés
             const getCellsIngles = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=9; i<=14; i++) {
                     let nombre = (rowData[i] || "").trim().split(" ")[0];
-                    // Para la vista web, mantenemos la clase sep-border en el primero
                     let classes = "ing-cell"; 
                     if (i===9) classes += " sep-border";
                     cells += `<td class="${classes}">${nombre}</td>`;
@@ -272,62 +282,42 @@
                 return cells;
             };
 
-            // HTML Estructura
             let html = `<div id="view-${dia}" class="planning-container">
                         <div class="day-header"><div class="day-title">${dia}</div></div>`;
 
-            // ============================================
-            // 1. VISTA WEB (Lo que ves en pantalla: Mañana separada, Tarde ancha)
-            // ============================================
+            // === VISTA WEB ===
             html += `<div class="view-web">`;
-            
-            // Web Mañana
             html += `<div class="section-title">MAÑANA</div>
                      <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
-            slotsManana.forEach(h => {
-                html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`;
-            });
+            slotsManana.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
-
-            // Web Tarde (Ancha)
             html += `<div class="section-title">TARDE</div>
                      <table><thead><tr>
-                        <th class="col-hora">H</th>
-                        <th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
-                        <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th>
-                        <th class="ing-header">ING 3</th><th class="ing-header">ING 4</th>
-                        <th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
+                        <th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
+                        <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th><th class="ing-header">ING 3</th><th class="ing-header">ING 4</th><th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
                      </tr></thead><tbody>`;
-            slotsTarde.forEach(h => {
-                html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`;
-            });
-            html += `</tbody></table></div>`; // Fin View Web
+            slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
+            html += `</tbody></table></div>`;
 
-            // ============================================
-            // 2. VISTA IMPRESIÓN (Bloques Separados para A4)
-            // ============================================
+            // === VISTA PRINT (COMPACTA) ===
             html += `<div class="view-print">`;
 
-            // Bloque A: APOYO (Todo el día: Mañana + Tarde)
+            // APOYO (Sin margin-bottom en header)
             html += `<div class="print-section-header">APOYO ESCOLAR</div>
-                     <table><thead><tr><th class="col-hora">HORA</th><th>ALUMNO 1</th><th>ALUMNO 2</th><th>ALUMNO 3</th><th>ALUMNO 4</th><th>ALUMNO 5</th><th>ALUMNO 6</th></tr></thead><tbody>`;
-            todosSlots.forEach(h => {
-                // Solo pintamos fila si hay datos o si es hora clave, pero para mantener orden imprimimos todas
-                html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`;
-            });
+                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
+            todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // Bloque B: INGLÉS (Solo Tarde)
-            html += `<div class="print-section-header" style="margin-top:20px;">INGLÉS / IDIOMAS</div>
-                     <table><thead><tr><th class="col-hora">HORA</th><th>ALUMNO 1</th><th>ALUMNO 2</th><th>ALUMNO 3</th><th>ALUMNO 4</th><th>ALUMNO 5</th><th>ALUMNO 6</th></tr></thead><tbody>`;
+            // INGLÉS (Pegado arriba)
+            html += `<div class="print-section-header">INGLÉS</div>
+                     <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
-                // Quitamos la clase sep-border para imprimir limpio
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
                 html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
             });
-            html += `</tbody></table></div>`; // Fin View Print
+            html += `</tbody></table></div>`; // Fin Print
 
-            html += `</div>`; // Fin Container Día
+            html += `</div>`;
             container.innerHTML += html;
         }
 
@@ -357,8 +347,6 @@
         document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
         const now = new Date();
         const mins = now.getHours() * 60 + now.getMinutes();
-        
-        // Atacamos tanto a vista web como print
         document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
             let parts = td.innerText.split(':');
             if(parts.length === 2) {
