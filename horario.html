@@ -216,41 +216,35 @@
         });
     }
 
-    // Funciones de utilidad para el tiempo
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // Función mágica para agrupar horas consecutivas
+    // 🔥 FILTRO INTELIGENTE PARA NOMBRES
+    // Devuelve TRUE si es un nombre válido, FALSE si es basura (A1, ING 2, Hora, etc.)
+    function esNombreValido(texto) {
+        if (!texto || texto.length < 2) return false;
+        const t = texto.toUpperCase().trim();
+        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE"];
+        if (prohibidos.some(p => t.includes(p))) return false;
+        // Regex: Detecta A, I, IN, ING seguido de números (ej: A1, Ing 5, I 3)
+        if (/^(A|I|IN|ING)\s*\d+$/.test(t)) return false;
+        return true;
+    }
+
     function agruparClases(clases) {
         if(clases.length === 0) return [];
         let grupos = [];
         let actual = null;
-
         clases.forEach(clase => {
             const startMins = timeToMins(clase.h);
-            
             if (actual) {
-                // Si es el mismo día, misma materia, y la hora actual empieza justo cuando acaba la anterior
-                // Asumimos bloques de 30 mins.
                 if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
-                    actual.endMins += 30; // Extendemos el bloque
-                    return;
-                } else {
-                    grupos.push(actual); // Guardamos el anterior y empezamos uno nuevo
-                }
+                    actual.endMins += 30; return;
+                } else { grupos.push(actual); }
             }
-            
-            // Nuevo bloque
-            actual = {
-                dia: clase.dia,
-                startMins: startMins,
-                endMins: startMins + 30, // Duración por defecto de 1 slot
-                materia: clase.materia,
-                tipo: clase.tipo
-            };
+            actual = { dia: clase.dia, startMins: startMins, endMins: startMins + 30, materia: clase.materia, tipo: clase.tipo };
         });
-        
         if (actual) grupos.push(actual);
         return grupos;
     }
@@ -274,12 +268,14 @@
                     let h = row[1].trim().substring(0,5);
                     // Apoyo (2-7)
                     for(let c=2; c<=7; c++) {
-                        if((row[c]||"").toLowerCase().includes(nombreBuscado)) 
+                        let val = row[c] || "";
+                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
                             clasesRaw.push({dia, h, materia: "Apoyo", tipo: "apoyo"});
                     }
                     // Inglés (9-14)
                     for(let c=9; c<=14; c++) {
-                        if((row[c]||"").toLowerCase().includes(nombreBuscado)) 
+                        let val = row[c] || "";
+                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
                             clasesRaw.push({dia, h, materia: "Inglés", tipo: "ingles"});
                     }
                 }
@@ -289,17 +285,13 @@
         document.getElementById('loading-spinner').style.display = 'none';
         
         if(clasesRaw.length > 0) {
-            // Agrupar las clases
             const clasesAgrupadas = agruparClases(clasesRaw);
-
             let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Schoolbell', cursive;">
                         Horario de <span style="color:var(--c-accent)">${formatName(nombre)}</span>
                         </h3>`;
             
             clasesAgrupadas.forEach(item => {
-                // Formateamos la hora: 18:00 - 19:30
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
-                
                 html += `
                     <div class="result-card type-${item.tipo}">
                         <div class="card-info">
@@ -315,18 +307,15 @@
             document.getElementById('resultado').innerHTML = html;
             document.getElementById('actions-panel').style.display = 'block';
 
-            // ⚠️ CONTROL BOTONES PADRES vs PROFE
             if(SISTEMA_DESBLOQUEADO) {
                 document.getElementById('btnCopiar').style.display = 'block';
                 document.getElementById('btnDirectorio').style.display = 'block';
                 document.getElementById('btnReset').style.display = 'block'; 
             } else {
-                // PADRES: Se oculta TODO
                 document.getElementById('btnCopiar').style.display = 'none';
                 document.getElementById('btnDirectorio').style.display = 'none';
                 document.getElementById('btnReset').style.display = 'none'; 
             }
-
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
             document.getElementById('error-msg').style.display = 'block';
@@ -341,14 +330,13 @@
         const resultados = await Promise.all(promesas);
         let alumnos = new Set();
         
-        const basura = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "IN1", "IN2", "IN3", "IN4", "IN5", "IN6", "A1", "A2", "A3", "A4", "A5", "A6", "I1", "I2", "I3"];
-
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
                 [2,3,4,5,6,7,9,10,11,12,13,14].forEach(c => {
                     let txt = (row[c] || "").trim();
-                    if(txt.length > 2 && !basura.includes(txt.toUpperCase())) {
+                    // Usamos la nueva función validadora
+                    if(esNombreValido(txt)) {
                         alumnos.add(txt.toLowerCase());
                     }
                 });
