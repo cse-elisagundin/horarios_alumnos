@@ -58,7 +58,7 @@
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* --- CLASES DE VISIBILIDAD --- */
+        /* --- VISIBILIDAD --- */
         .view-print { display: none; } 
         .view-web { display: block; }  
 
@@ -140,15 +140,15 @@
         }
 
         /* =========================================================
-           🖨️ IMPRESIÓN "SÚPER COMPACTA" (Modo Dieta)
+           🖨️ IMPRESIÓN (OPTIMIZADA Y RESPIRADA)
            ========================================================= */
-        @page { size: landscape; margin: 5mm; /* Margen mínimo absoluto */ }
+        @page { size: landscape; margin: 5mm; }
 
         @media print {
             body { 
                 background: white; 
                 padding: 0; 
-                zoom: 80%; /* REDUCIMOS UN POCO PARA QUE QUEPA SÍ O SÍ */
+                zoom: 85%; /* Subido de 80% a 85% para llenar mejor */
             }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
@@ -158,38 +158,42 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* TÍTULOS SUPER COMPACTOS */
+            /* ESTILOS DE TÍTULOS EN PAPEL */
             .print-section-header {
-                font-size: 14px; /* Letra más pequeña en título */
+                font-size: 16px; 
                 font-weight: 800; 
                 color: black; 
-                background: #eee; /* Barrita gris en vez de espacio blanco */
-                padding: 2px 5px;
-                margin-top: 5px; margin-bottom: 0; /* Sin márgenes */
+                background: #eee; 
+                padding: 4px 8px;
+                margin-bottom: 0; 
                 text-transform: uppercase;
                 border: 1px solid #000;
-                border-bottom: none; /* Pegado a la tabla */
+                border-bottom: none; 
             }
+
+            /* ⚠️ AJUSTE CLAVE: Espacio extra antes del título de Inglés */
+            .ing-section { margin-top: 30px !important; } 
 
             table { 
                 width: 100% !important; border: 1px solid #000 !important; 
                 table-layout: fixed !important; border-collapse: collapse !important;
-                margin-bottom: 0px !important; /* Sin espacio debajo de la tabla */
+                margin-bottom: 0px !important; 
             }
             
             thead { display: table-header-group !important; }
-            /* Filas más bajitas para ahorrar espacio vertical */
-            tr { display: table-row !important; height: 20px !important; page-break-inside: avoid; }
+            
+            /* Filas con más altura para que no se vea comprimido */
+            tr { display: table-row !important; height: 26px !important; page-break-inside: avoid; }
             
             th, td { 
                 display: table-cell !important; 
                 border: 1px solid #666 !important; color: black !important; 
-                padding: 2px !important; /* Menos relleno en celdas */
+                padding: 3px !important; 
                 font-size: 12px !important;
                 vertical-align: middle;
             }
 
-            .col-hora { width: 45px !important; background: #ddd !important; font-weight: bold !important; font-size: 11px !important; }
+            .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
             
             /* Limpieza */
             tr.current-slot .col-hora { background: #ddd !important; color: black !important; }
@@ -299,17 +303,17 @@
             slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
 
-            // === VISTA PRINT (COMPACTA) ===
+            // === VISTA PRINT ===
             html += `<div class="view-print">`;
 
-            // APOYO (Sin margin-bottom en header)
+            // APOYO
             html += `<div class="print-section-header">APOYO ESCOLAR</div>
                      <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // INGLÉS (Pegado arriba)
-            html += `<div class="print-section-header">INGLÉS</div>
+            // INGLÉS (Añadimos clase 'ing-section' para darle margen en CSS)
+            html += `<div class="print-section-header ing-section">INGLÉS</div>
                      <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
