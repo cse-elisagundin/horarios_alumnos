@@ -58,6 +58,10 @@
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
+        /* --- CLASES DE VISIBILIDAD (LA CLAVE DEL TRUCO) --- */
+        .view-print { display: none; } /* Oculto en pantalla */
+        .view-web { display: block; }  /* Visible en pantalla */
+
         /* --- ESTRUCTURA --- */
         .planning-container { display: none; margin-bottom: 40px; }
         .planning-container.visible { display: block; animation: fadeIn 0.4s; }
@@ -90,7 +94,7 @@
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
         
-        /* Estilos Web para Inglés (Una sola fila) */
+        /* Estilos Web para Inglés */
         .ing-header { 
             background-color: #f0f4f8 !important; 
             color: var(--c-accent) !important;    
@@ -136,99 +140,49 @@
         }
 
         /* =========================================================
-           🖨️ IMPRESIÓN "DOBLE PISO" (MAGIA GRID)
+           🖨️ IMPRESIÓN "BLOQUES SEPARADOS" (OPTIMIZADO A4)
            ========================================================= */
-        @page { size: landscape; margin: 10mm; }
+        @page { size: landscape; margin: 8mm; }
 
         @media print {
-            body { background: white; padding: 0; zoom: 100%; /* ¡Zoom al 100% ahora sí! */ }
+            body { background: white; padding: 0; zoom: 95%; /* Zoom casi total, letra grande */ }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
             .planning-container.visible { display: block !important; page-break-after: always; }
 
-            .section-title { 
-                background: white !important; color: black !important; 
-                border-bottom: 2px solid black; text-align: left; padding-left: 0; margin-top: 20px; 
-                font-size: 18px; 
+            /* INTERCAMBIO DE VISTAS */
+            .view-web { display: none !important; }   /* Ocultamos la web ancha */
+            .view-print { display: block !important; } /* Mostramos la versión optimizada */
+
+            /* TÍTULOS DE BLOQUE EN PAPEL */
+            .print-section-header {
+                font-size: 18px; font-weight: 800; color: black; 
+                border-bottom: 2px solid black; margin-bottom: 5px; margin-top: 10px;
+                text-transform: uppercase;
             }
 
             table { 
-                display: block !important; width: 100% !important; 
-                border: none !important;
-                margin-bottom: 10px;
+                width: 100% !important; border: 1px solid #000 !important; 
+                table-layout: fixed !important; border-collapse: collapse !important;
+                margin-bottom: 15px;
             }
-
-            thead, tbody { display: block !important; width: 100% !important; }
             
-            /* --- FILAS MAÑANA (Simples) --- */
-            table:not(.tabla-tarde) tr {
-                display: grid !important;
-                grid-template-columns: 50px repeat(6, 1fr); /* Hora + 6 Alumnos */
-                border-bottom: 1px solid #999;
-            }
-
-            /* --- FILAS TARDE (DOBLE PISO) --- */
-            /* Aquí ocurre la magia: forzamos grid de 2 filas */
-            .tabla-tarde thead tr {
-                display: grid !important;
-                grid-template-columns: 50px repeat(6, 1fr);
-                /* Ocultamos cabeceras de inglés en impresión para no descuadrar, 
-                   se asume que la fila de abajo es inglés */
-            }
-            /* Ocultamos cabeceras 8 a 13 (Inglés) en el thead impreso */
-            .tabla-tarde thead th:nth-child(n+9) { display: none !important; }
-
-            .tabla-tarde tbody tr {
-                display: grid !important;
-                /* Definimos 7 columnas */
-                grid-template-columns: 50px repeat(6, 1fr);
-                /* Definimos que esta fila visual tendrá 2 filas internas de altura */
-                grid-template-rows: auto auto; 
-                border-bottom: 2px solid #000; /* Separador fuerte entre horas */
-                page-break-inside: avoid;
-            }
-
+            thead { display: table-header-group !important; }
+            tr { display: table-row !important; height: 26px !important; page-break-inside: avoid; }
             th, td { 
-                display: flex !important; align-items: center; justify-content: center;
-                border: 1px solid #aaa !important; color: black !important; 
-                padding: 4px !important; font-size: 14px !important; /* ¡LETRA GRANDE! */
-                height: auto !important; min-height: 25px;
+                display: table-cell !important; 
+                border: 1px solid #999 !important; color: black !important; 
+                padding: 3px !important; font-size: 12px !important; /* Letra legible */
             }
 
-            /* POSICIONAMIENTO EN LA REJILLA */
+            .col-hora { width: 50px !important; background: #eee !important; font-weight: bold !important; }
             
-            /* 1. La hora: Ocupa las 2 filas de altura a la izquierda */
-            .tabla-tarde .col-hora { 
-                grid-column: 1; 
-                grid-row: 1 / span 2; 
-                background: #eee !important; font-weight: bold !important; font-size: 16px !important;
-                border-right: 2px solid #000 !important;
-            }
-
-            /* 2. Apoyo: Fila 1, columnas 2 a 7 */
-            .tabla-tarde .std-cell { 
-                grid-row: 1; 
-                /* No hace falta definir columna, fluyen solas */
-            }
-
-            /* 3. Inglés: Fila 2, columnas 2 a 7 */
-            .tabla-tarde .ing-cell { 
-                grid-row: 2; 
-                /* Forzamos que la celda ING empiece en columna 2, el resto fluye */
-                grid-column: auto; 
-                border-top: 1px dashed #666 !important; /* Diferenciar piso de arriba y abajo */
-                font-style: italic; /* Diferencia visual sutil */
-            }
-            
-            /* Truco para que la primera celda de inglés (ING 1) se coloque bien */
-            .tabla-tarde .ing-cell:nth-of-type(8) { grid-column: 2; }
-
-            /* Limpieza general */
-            .sep-border { border-left: 1px solid #aaa !important; }
-            .mobile-grid { display: none; }
+            /* Limpieza de estilos web */
             tr.current-slot .col-hora { background: #eee !important; color: black !important; }
             .ing-header { color: black !important; }
+            .sep-border { border-left: 1px solid #999 !important; }
+            .mobile-grid { display: none; }
         }
     </style>
 </head>
@@ -281,6 +235,7 @@
 
         const slotsManana = ["11:00", "11:30", "12:00"];
         const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
+        const todosSlots = [...slotsManana, ...slotsTarde];
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
@@ -292,71 +247,87 @@
                 }
             });
 
-            // Generador de filas
-            const crearFilas = (horas, esTarde) => {
-                let html = "";
-                horas.forEach(hora => {
-                    let rowData = mapa[hora] || [];
-                    html += `<tr><td class="col-hora">${hora}</td>`;
-                    
-                    // --- MÓVIL ---
-                    let mobileContent = `<div class="mobile-grid">`;
-                    mobileContent += `<div class="mob-label first">APOYO</div>`;
-                    
-                    // --- APOYO ---
-                    for(let i=2; i<=7; i++) {
-                        let nombre = (rowData[i] || "").trim().split(" ")[0];
-                        html += `<td class="std-cell">${nombre}</td>`;
-                        mobileContent += `<div class="std-cell">${nombre}</div>`;
-                    }
-
-                    // --- INGLÉS ---
-                    if(esTarde) {
-                         mobileContent += `<div class="mob-label">INGLÉS</div>`;
-                         for(let i=9; i<=14; i++) {
-                            let nombre = (rowData[i] || "").trim().split(" ")[0];
-                            let classes = "ing-cell" + (i===9 ? " sep-border" : "");
-                            html += `<td class="${classes}">${nombre}</td>`;
-                            mobileContent += `<div class="ing-cell">${nombre}</div>`;
-                        }
-                    }
-                    mobileContent += `</div>`;
-                    html += `</tr>`;
-                });
-                return html;
+            // Función Helper: Crea celdas de Apoyo
+            const getCellsApoyo = (hora) => {
+                let rowData = mapa[hora] || [];
+                let cells = "";
+                for(let i=2; i<=7; i++) {
+                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    cells += `<td class="std-cell">${nombre}</td>`;
+                }
+                return cells;
             };
 
+            // Función Helper: Crea celdas de Inglés
+            const getCellsIngles = (hora) => {
+                let rowData = mapa[hora] || [];
+                let cells = "";
+                for(let i=9; i<=14; i++) {
+                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    // Para la vista web, mantenemos la clase sep-border en el primero
+                    let classes = "ing-cell"; 
+                    if (i===9) classes += " sep-border";
+                    cells += `<td class="${classes}">${nombre}</td>`;
+                }
+                return cells;
+            };
+
+            // HTML Estructura
             let html = `<div id="view-${dia}" class="planning-container">
                         <div class="day-header"><div class="day-title">${dia}</div></div>`;
 
-            // MAÑANA
+            // ============================================
+            // 1. VISTA WEB (Lo que ves en pantalla: Mañana separada, Tarde ancha)
+            // ============================================
+            html += `<div class="view-web">`;
+            
+            // Web Mañana
             html += `<div class="section-title">MAÑANA</div>
-                     <table>
-                        <thead>
-                            <tr>
-                                <th class="col-hora">H</th>
-                                <th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
-                            </tr>
-                        </thead>
-                        <tbody>${crearFilas(slotsManana, false)}</tbody>
-                     </table>`;
+                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
+            slotsManana.forEach(h => {
+                html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`;
+            });
+            html += `</tbody></table>`;
 
-            // TARDE (Añadimos clase 'tabla-tarde' para identificarla en CSS Print)
+            // Web Tarde (Ancha)
             html += `<div class="section-title">TARDE</div>
-                     <table class="tabla-tarde">
-                        <thead>
-                            <tr>
-                                <th class="col-hora">H</th>
-                                <th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
-                                <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th>
-                                <th class="ing-header">ING 3</th><th class="ing-header">ING 4</th>
-                                <th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
-                            </tr>
-                        </thead>
-                        <tbody>${crearFilas(slotsTarde, true)}</tbody>
-                     </table>`;
+                     <table><thead><tr>
+                        <th class="col-hora">H</th>
+                        <th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
+                        <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th>
+                        <th class="ing-header">ING 3</th><th class="ing-header">ING 4</th>
+                        <th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
+                     </tr></thead><tbody>`;
+            slotsTarde.forEach(h => {
+                html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`;
+            });
+            html += `</tbody></table></div>`; // Fin View Web
 
-            html += `</div>`;
+            // ============================================
+            // 2. VISTA IMPRESIÓN (Bloques Separados para A4)
+            // ============================================
+            html += `<div class="view-print">`;
+
+            // Bloque A: APOYO (Todo el día: Mañana + Tarde)
+            html += `<div class="print-section-header">APOYO ESCOLAR</div>
+                     <table><thead><tr><th class="col-hora">HORA</th><th>ALUMNO 1</th><th>ALUMNO 2</th><th>ALUMNO 3</th><th>ALUMNO 4</th><th>ALUMNO 5</th><th>ALUMNO 6</th></tr></thead><tbody>`;
+            todosSlots.forEach(h => {
+                // Solo pintamos fila si hay datos o si es hora clave, pero para mantener orden imprimimos todas
+                html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`;
+            });
+            html += `</tbody></table>`;
+
+            // Bloque B: INGLÉS (Solo Tarde)
+            html += `<div class="print-section-header" style="margin-top:20px;">INGLÉS / IDIOMAS</div>
+                     <table><thead><tr><th class="col-hora">HORA</th><th>ALUMNO 1</th><th>ALUMNO 2</th><th>ALUMNO 3</th><th>ALUMNO 4</th><th>ALUMNO 5</th><th>ALUMNO 6</th></tr></thead><tbody>`;
+            slotsTarde.forEach(h => {
+                // Quitamos la clase sep-border para imprimir limpio
+                let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
+                html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
+            });
+            html += `</tbody></table></div>`; // Fin View Print
+
+            html += `</div>`; // Fin Container Día
             container.innerHTML += html;
         }
 
@@ -387,6 +358,7 @@
         const now = new Date();
         const mins = now.getHours() * 60 + now.getMinutes();
         
+        // Atacamos tanto a vista web como print
         document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
             let parts = td.innerText.split(':');
             if(parts.length === 2) {
