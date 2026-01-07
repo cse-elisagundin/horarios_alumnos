@@ -180,7 +180,190 @@
         /* --- TABLA ORDENADOR (ESTÁNDAR) --- */
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
-        @keyframes fadeIn { from
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        table {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            border-collapse: collapse; 
+            border: 2px solid var(--c-primary); 
+            white-space: nowrap;
+            background: white;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid var(--c-primary); 
+            padding: 8px 5px;
+            text-align: center; vertical-align: middle; 
+            font-size: 13px; 
+            color: var(--c-primary); 
+            overflow: hidden; text-overflow: ellipsis;
+        }
+
+        th { 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            padding: 12px; 
+            border-bottom: 3px solid var(--c-primary); 
+            background-color: #f8fbff; 
+        }
+        
+        .col-turno { font-weight: 800; font-size: 14px; width: 60px; letter-spacing: 0.5px; }
+        .col-hora { font-weight: 700; color: #111; width: 60px; }
+
+        .student-cell {
+            font-weight: 700; 
+            text-transform: uppercase; 
+            cursor: help; 
+            border-bottom: 2px dotted var(--c-secondary); 
+        }
+        
+        tr.current-slot { background-color: var(--highlight-row); }
+        tr.current-slot .col-turno { background-color: white; }
+        tr { height: 40px; transition: background-color 0.3s; } 
+
+        .gap-row { height: 30px; }
+        .gap-row td {
+            background-color: var(--separator-bg) !important;
+            border-top: 3px double var(--c-primary) !important;
+            border-bottom: 3px double var(--c-primary) !important;
+            border-left: 2px solid var(--c-primary);
+            border-right: 2px solid var(--c-primary);
+        }
+
+        /* =========================================================
+           📱 ESTILOS MÓVIL
+           ========================================================= */
+        @media only screen and (max-width: 768px) {
+            body { padding: 10px; background-color: #f0f2f5; }
+            .container { padding: 10px; width: 100%; box-sizing: border-box; background: transparent; box-shadow: none; }
+            
+            .web-brand { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+            header { gap: 10px; margin-bottom: 20px; }
+            .btn-action { padding: 10px 14px; font-size: 13px; flex: 1; justify-content: center; }
+
+            .day-title { font-size: 28px; }
+            .day-subtitle { font-size: 14px; }
+
+            table { white-space: normal !important; border: none; width: 100%; display: block; table-layout: auto; }
+            thead, tbody, th, td, tr { display: block; border: none; width: 100%; box-sizing: border-box; }
+            thead, .col-turno { display: none; }
+
+            tr.gap-row { 
+                display: flex !important; height: 20px !important; background: transparent !important; border: none !important; box-shadow: none !important; align-items: center; justify-content: center; margin-bottom: 15px; padding: 0;
+            }
+            tr.gap-row td {
+                display: block; width: 100%; background: transparent !important; border: none !important; border-top: 2px dashed #cbd5e0 !important; height: 1px; padding: 0;
+            }
+
+            tr {
+                background: white; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); border: 1px solid #e1e9f0; overflow: hidden; height: auto !important;
+                display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; padding-top: 0;
+            }
+
+            .col-hora {
+                grid-column: 1 / -1; background-color: var(--c-primary); color: white !important; font-size: 18px; font-weight: 800; text-align: center; padding: 8px; margin-bottom: 5px; margin-left: -5px; margin-right: -5px; margin-top: 0; width: calc(100% + 10px);
+            }
+
+            .student-cell {
+                width: auto; text-align: center; padding: 8px 4px; border: 1px solid #eef2f5; border-radius: 6px; background-color: #fff; font-size: 13px; color: #333; min-height: 45px; display: flex; align-items: center; justify-content: center; word-break: break-word; line-height: 1.2;
+            }
+            
+            .student-cell:empty { display: flex !important; background-color: #f8f9fa; border: 1px dashed #ddd; }
+            .student-cell:empty::before { content: ""; }
+
+            tr.current-slot { border: 2px solid var(--c-accent); box-shadow: 0 0 15px rgba(250, 101, 195, 0.25); }
+            tr.current-slot .col-hora { background-color: var(--c-accent); }
+        }
+
+        /* =========================================================
+           🖨️ ESTILOS DE IMPRESIÓN (CORREGIDOS)
+           ========================================================= */
+        @page { 
+            size: landscape; 
+            margin: 5mm; 
+        }
+
+        @media print {
+            body { 
+                background: white; 
+                padding: 0; 
+                margin: 0; 
+                color: #000;
+                font-family: Arial, Helvetica, sans-serif; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+
+            .web-brand, header, .days-nav, .spinner, #loading { display: none !important; } 
+            
+            .container { 
+                padding: 0; 
+                margin: 0; 
+                border: none; 
+                max-width: 100%; 
+                width: 100%;
+                box-shadow: none; 
+            }
+
+            .planning-container.visible { 
+                display: block !important; 
+                page-break-after: always;
+                width: 100%;
+            }
+            
+            table { 
+                display: table !important; 
+                border-collapse: collapse !important;
+                width: 100% !important; 
+                table-layout: fixed !important;
+                border: 2px solid var(--c-primary) !important;
+            }
+            
+            thead { display: table-header-group !important; }
+            tbody { display: table-row-group !important; }
+            tr { 
+                display: table-row !important; 
+                height: 35px !important; 
+            }
+            td, th { 
+                display: table-cell !important; 
+            }
+
+            th, td { 
+                border: 1px solid #999 !important; 
+                color: #000 !important; 
+                padding: 4px !important;
+                font-size: 11px !important;
+                white-space: nowrap;
+                overflow: hidden;
+            }
+            
+            .col-turno { 
+                width: 30px !important; 
+                font-size: 10px !important; 
+                writing-mode: vertical-lr; 
+                transform: rotate(180deg);
+                text-align: center;
+            }
+            .col-hora { 
+                width: 50px !important; 
+                background: #eee !important;
+                font-weight: bold;
+            }
+            
+            .day-header { margin-bottom: 10px; margin-top: 0; }
+            .day-title { font-size: 24px; color: black; }
+            .day-subtitle { display: none; }
+
+            .gap-row { height: 15px !important; }
+            .gap-row td { background: #ddd !important; border: 1px solid #999 !important; }
+            
+            .student-cell { border-bottom: 1px solid #999 !important; }
+        }
+    </style>
 </head>
 <body>
 
@@ -204,7 +387,6 @@
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            // ⚠️ AQUÍ APUNTAMOS AL SERVICE WORKER NUEVO
             navigator.serviceWorker.register('./sw_semanal.js')
                 .then(reg => console.log('SW Semanal Registrado!', reg))
                 .catch(err => console.log('Error SW:', err));
