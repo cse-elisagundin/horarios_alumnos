@@ -6,28 +6,22 @@
     
     <title>Horario Semanal - CSE Elisa Gundín</title>
     <meta name="theme-color" content="#243c7a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <link rel="manifest" href="manifest_semanal.json">
-    
     <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- PALETA DE COLORES CORPORATIVA --- */
+        /* --- COLORES --- */
         :root { 
-            --c-primary: #243c7a;   /* Azul Oscuro */
-            --c-secondary: #2b94cc; /* Azul Claro */
-            --c-accent: #fa65c3;    /* Rosa */
-            
+            --c-primary: #243c7a;   
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3;    
             --bg-body: #f4f6f9;
-            --bg-container: #ffffff;
-            
-            --highlight-row: rgba(250, 101, 195, 0.12);
-            --separator-bg: #edf2f7;
+            --bg-eng: #fff8e1; /* Fondo Inglés (Crema) */
+            --border-eng: #ffb74d; 
         }
         
         body { 
@@ -37,359 +31,166 @@
         }
 
         .container { 
-            max-width: 1250px; 
+            max-width: 98%; 
             margin: 0 auto; 
-            background: var(--bg-container); 
-            padding: 30px; 
+            background: #fff; 
+            padding: 20px; 
             border-radius: 12px; 
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* --- ZONA LOGO WEB --- */
-        .web-brand {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            position: relative;
-        }
-        .web-logo-img {
-            height: 75px; 
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
+        /* --- HEADER & BRAND --- */
+        .web-brand { text-align: center; margin-bottom: 20px; }
+        .web-logo-img { height: 75px; object-fit: contain; transition: transform 0.3s; }
         .web-logo-img:hover { transform: scale(1.05); }
 
-        .brand-line {
-            height: 4px;
-            width: 100px;
-            margin: 15px auto 0;
-            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
-            border-radius: 2px;
-        }
-
-        /* --- HEADER BOTONES --- */
-        header {
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            margin-bottom: 30px; 
-            gap: 20px; 
-        }
+        header { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
 
         .btn-action {
-            padding: 12px 25px; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            font-weight: 700; 
-            font-size: 15px; 
-            text-decoration: none; 
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; 
+            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+            text-transform: uppercase; font-size: 14px; transition: all 0.2s;
         }
+        .btn-print { background: var(--c-primary); color: white; border: none; }
+        .btn-edit { background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
 
-        .btn-print { 
-            background-color: var(--c-primary); 
-            color: white; 
-            border: 2px solid var(--c-primary); 
-        }
-        .btn-print:hover { 
-            background-color: #1a2e5e; 
-            border-color: #1a2e5e;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(36, 60, 122, 0.2);
-        }
-
-        .btn-edit { 
-            background-color: white; 
-            color: var(--c-secondary); 
-            border: 2px solid var(--c-secondary); 
-        }
-        .btn-edit:hover { 
-            background-color: var(--c-accent); 
-            color: white; 
-            border-color: var(--c-accent);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(250, 101, 195, 0.3);
-        }
-
-        /* --- TÍTULOS --- */
-        .day-header { text-align: center; margin-bottom: 25px; margin-top: 10px; }
-        
-        .day-title { 
-            color: var(--c-primary); 
-            font-size: 42px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            letter-spacing: -1px;
-            margin-bottom: 5px;
-        }
-        
-        .day-subtitle { 
-            color: var(--c-secondary); 
-            font-size: 18px; 
-            font-weight: 600; 
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        /* --- NAVEGACIÓN --- */
-        .days-nav { 
-            display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; 
-        }
+        /* --- NAVEGACIÓN DÍAS --- */
+        .days-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
-            padding: 10px 20px; 
-            border: 1px solid #e0e0e0; 
-            background: white;
-            color: #555; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 14px;
-            transition: all 0.2s;
+            padding: 8px 16px; border: 1px solid #ddd; background: white; color: #555; 
+            border-radius: 20px; cursor: pointer; font-weight: 600;
         }
-        
-        .nav-btn.active { 
-            background: var(--c-primary); 
-            color: white; 
-            border-color: var(--c-primary);
-            box-shadow: 0 4px 10px rgba(36, 60, 122, 0.3);
-        }
-        
-        .nav-btn:hover:not(.active) { 
-            border-color: var(--c-accent); 
-            color: var(--c-accent); 
-            background: #fff5fa;
-        }
+        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* Spinner */
-        .spinner {
-            border: 4px solid #f3f3f3; 
-            border-top: 4px solid var(--c-accent); 
-            border-radius: 50%;
-            width: 40px; height: 40px; 
-            animation: spin 1s linear infinite; 
-            margin: 20px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* --- TABLA GENERAL --- */
+        .planning-container { display: none; }
+        .planning-container.visible { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- TABLA ORDENADOR (ESTÁNDAR) --- */
-        .planning-container { display: none; animation: fadeIn 0.4s ease; }
-        .planning-container.visible { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .day-header { text-align: center; margin-bottom: 15px; }
+        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 800; text-transform: uppercase; }
 
         table {
-            width: 100%;
-            max-width: 100%;
-            margin: 0 auto;
-            border-collapse: collapse; 
-            border: 2px solid var(--c-primary); 
-            white-space: nowrap;
-            background: white;
-            table-layout: fixed;
+            width: 100%; border-collapse: collapse; 
+            background: white; border: 2px solid var(--c-primary);
+            table-layout: fixed; 
         }
 
         th, td {
-            border: 1px solid var(--c-primary); 
-            padding: 8px 5px;
+            border: 1px solid #ccc; padding: 6px 2px;
             text-align: center; vertical-align: middle; 
-            font-size: 13px; 
-            color: var(--c-primary); 
-            overflow: hidden; text-overflow: ellipsis;
+            font-size: 12px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
 
-        th { 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            padding: 12px; 
-            border-bottom: 3px solid var(--c-primary); 
-            background-color: #f8fbff; 
-        }
+        th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 40px; }
         
-        .col-turno { font-weight: 800; font-size: 14px; width: 60px; letter-spacing: 0.5px; }
-        .col-hora { font-weight: 700; color: #111; width: 60px; }
-
-        .student-cell {
-            font-weight: 700; 
-            text-transform: uppercase; 
-            cursor: help; 
-            border-bottom: 2px dotted var(--c-secondary); 
-        }
+        /* Columnas específicas */
+        .col-turno { width: 30px; font-weight: bold; background: #e3e8ee; }
+        .col-hora { width: 45px; font-weight: bold; background: #fff; }
         
-        tr.current-slot { background-color: var(--highlight-row); }
-        tr.current-slot .col-turno { background-color: white; }
-        tr { height: 40px; transition: background-color 0.3s; } 
+        /* Estilos ALUMNOS */
+        .std-cell { font-weight: 600; cursor: help; }
+        
+        /* ZONA INGLÉS */
+        .ing-header { background-color: #fff3e0 !important; color: #d84315 !important; border-bottom: 2px solid #ff9800; }
+        .ing-cell { background-color: var(--bg-eng); font-weight: 600; }
+        
+        /* Separador visual grueso entre Apoyo e Inglés */
+        .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        .gap-row { height: 30px; }
-        .gap-row td {
-            background-color: var(--separator-bg) !important;
-            border-top: 3px double var(--c-primary) !important;
-            border-bottom: 3px double var(--c-primary) !important;
-            border-left: 2px solid var(--c-primary);
-            border-right: 2px solid var(--c-primary);
-        }
+        /* Filas especiales */
+        .gap-row td { background: #eee; height: 15px; }
+        
+        /* Hora actual */
+        tr.current-slot .col-hora { background-color: var(--c-accent); color: white; }
+        tr.current-slot { box-shadow: inset 0 0 10px rgba(0,0,0,0.1); }
+
+        /* Spinner */
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
 
         /* =========================================================
-           📱 ESTILOS MÓVIL
+           📱 MÓVIL
            ========================================================= */
         @media only screen and (max-width: 768px) {
-            body { padding: 10px; background-color: #f0f2f5; }
-            .container { padding: 10px; width: 100%; box-sizing: border-box; background: transparent; box-shadow: none; }
+            .container { padding: 5px; width: 100%; }
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
             
-            .web-brand { background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
-            header { gap: 10px; margin-bottom: 20px; }
-            .btn-action { padding: 10px 14px; font-size: 13px; flex: 1; justify-content: center; }
-
-            .day-title { font-size: 28px; }
-            .day-subtitle { font-size: 14px; }
-
-            table { white-space: normal !important; border: none; width: 100%; display: block; table-layout: auto; }
-            thead, tbody, th, td, tr { display: block; border: none; width: 100%; box-sizing: border-box; }
-            thead, .col-turno { display: none; }
-
-            tr.gap-row { 
-                display: flex !important; height: 20px !important; background: transparent !important; border: none !important; box-shadow: none !important; align-items: center; justify-content: center; margin-bottom: 15px; padding: 0;
-            }
-            tr.gap-row td {
-                display: block; width: 100%; background: transparent !important; border: none !important; border-top: 2px dashed #cbd5e0 !important; height: 1px; padding: 0;
-            }
-
-            tr {
-                background: white; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 3px 6px rgba(0,0,0,0.08); border: 1px solid #e1e9f0; overflow: hidden; height: auto !important;
-                display: grid !important; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; padding-top: 0;
-            }
-
-            .col-hora {
-                grid-column: 1 / -1; background-color: var(--c-primary); color: white !important; font-size: 18px; font-weight: 800; text-align: center; padding: 8px; margin-bottom: 5px; margin-left: -5px; margin-right: -5px; margin-top: 0; width: calc(100% + 10px);
-            }
-
-            .student-cell {
-                width: auto; text-align: center; padding: 8px 4px; border: 1px solid #eef2f5; border-radius: 6px; background-color: #fff; font-size: 13px; color: #333; min-height: 45px; display: flex; align-items: center; justify-content: center; word-break: break-word; line-height: 1.2;
+            tr { 
+                margin-bottom: 15px; background: white; border: 1px solid #ddd; 
+                border-radius: 8px; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
             
-            .student-cell:empty { display: flex !important; background-color: #f8f9fa; border: 1px dashed #ddd; }
-            .student-cell:empty::before { content: ""; }
+            .col-hora { 
+                display: block; width: 100%; background: var(--c-primary); color: white; 
+                font-size: 16px; margin-bottom: 10px; padding: 5px; border-radius: 4px;
+            }
+            .col-turno { display: none; }
 
-            tr.current-slot { border: 2px solid var(--c-accent); box-shadow: 0 0 15px rgba(250, 101, 195, 0.25); }
-            tr.current-slot .col-hora { background-color: var(--c-accent); }
+            .mobile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+            
+            td { border: none; padding: 0; min-height: 0; }
+            
+            /* Celdas simuladas en móvil */
+            .std-cell, .ing-cell {
+                border: 1px solid #eee; padding: 8px 2px; border-radius: 4px; font-size: 13px;
+                min-height: 35px; display: flex; align-items: center; justify-content: center;
+            }
+            
+            .mob-label { 
+                grid-column: 1 / -1; font-size: 11px; font-weight: bold; text-transform: uppercase; 
+                margin-top: 10px; margin-bottom: 4px; color: #666; border-bottom: 1px solid #eee;
+            }
+            .mob-label.first { margin-top: 0; }
         }
+
 
         /* =========================================================
-           🖨️ ESTILOS DE IMPRESIÓN (AJUSTE FINAL)
+           🖨️ IMPRESIÓN CORREGIDA
            ========================================================= */
-        @page { 
-            size: landscape; 
-            margin: 10mm;
-        }
+        @page { size: landscape; margin: 5mm; }
 
         @media print {
-            body { 
-                background: white; 
-                padding: 10px;
-                margin: 0; 
-                color: #000;
-                font-family: Arial, Helvetica, sans-serif; 
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
-                zoom: 90%; 
-            }
-
-            .web-brand, header, .days-nav, .spinner, #loading { display: none !important; } 
+            body { background: white; padding: 0; zoom: 70%; /* Zoom bajo para que entren las 14 columnas */ }
             
-            .container { 
-                padding: 0; 
-                margin: 0; 
-                border: none; 
-                max-width: 100%; 
-                width: 100%;
-                box-shadow: none; 
-            }
+            .web-brand, header, .days-nav, .spinner { display: none !important; }
+            .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
+            .planning-container.visible { display: block !important; page-break-after: always; }
 
-            .planning-container.visible { 
-                display: block !important; 
-                page-break-after: always;
-                width: 100%;
-            }
-            
             table { 
-                display: table !important; 
-                border-collapse: collapse !important;
-                width: 99% !important;
-                margin: 0 auto !important;
-                table-layout: fixed !important;
-                border: 2px solid var(--c-primary) !important;
+                display: table !important; width: 100% !important; 
+                border: 1px solid #000 !important; table-layout: fixed !important; 
             }
             
             thead { display: table-header-group !important; }
-            tbody { display: table-row-group !important; }
-            tr { 
-                display: table-row !important; 
-                height: 35px !important; 
-            }
-            td, th { 
-                display: table-cell !important; 
-            }
+            tr { display: table-row !important; height: 30px !important; page-break-inside: avoid; }
+            th, td { display: table-cell !important; border: 1px solid #666 !important; color: black !important; padding: 1px !important; font-size: 10px !important; }
 
-            th, td { 
-                border: 1px solid #999 !important; 
-                color: #000 !important; 
-                padding: 4px !important;
-                font-size: 11px !important;
-                white-space: nowrap;
-                overflow: hidden;
-            }
+            .col-turno { width: 20px !important; font-size: 8px !important; writing-mode: vertical-lr; transform: rotate(180deg); }
+            .col-hora { width: 40px !important; background: #eee !important; font-weight: bold !important; }
             
-            .col-turno { 
-                width: 30px !important; 
-                font-size: 10px !important; 
-                writing-mode: vertical-lr; 
-                transform: rotate(180deg);
-                text-align: center;
-            }
-            .col-hora { 
-                width: 50px !important; 
-                background: #eee !important;
-                font-weight: bold;
-            }
+            tr.current-slot .col-hora { background: #eee !important; color: black !important; }
             
-            .day-header { margin-bottom: 10px; margin-top: 0; }
-            .day-title { font-size: 24px; color: black; }
-            .day-subtitle { display: none; }
-
-            .gap-row { height: 15px !important; }
-            .gap-row td { background: #ddd !important; border: 1px solid #999 !important; }
+            .ing-cell { background-color: #fcefe3 !important; } 
+            .sep-border { border-left: 2px solid #000 !important; }
             
-            .student-cell { border-bottom: 1px solid #999 !important; }
-
-            /* ⚠️ ESTA ES LA CORRECCIÓN NUEVA: ELIMINA EL RESALTADO DE HORA ACTUAL EN PAPEL */
-            tr.current-slot { 
-                background-color: transparent !important; 
-                box-shadow: none !important;
-                border: none !important;
-            }
-            tr.current-slot .col-hora { 
-                background-color: #eee !important; 
-                color: black !important;
-            }
+            /* Ocultar elementos móviles en impresión */
+            .mobile-grid, .mob-label { display: none; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div class="web-brand">
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
-        <div class="brand-line"></div>
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="web-logo-img">
     </div>
 
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar Hoja</a>
+        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar</a>
     </header>
 
     <div class="days-nav" id="days-buttons"></div>
@@ -398,17 +199,6 @@
 </div>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw_semanal.js')
-                .then(reg => console.log('SW Semanal Registrado!', reg))
-                .catch(err => console.log('Error SW:', err));
-        });
-    }
-</script>
-
-<script>
-    // ⬇️⬇️⬇️ PEGAR TU ENLACE DE EDICIÓN AQUÍ ⬇️⬇️⬇️
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
@@ -420,34 +210,12 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    function resaltarHoraActual() {
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[new Date().getDay()];
-        
-        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-        if (!urls[hoy]) return;
-        const contenedorHoy = document.getElementById(`view-${hoy}`);
-        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
-
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-        const filasHoras = contenedorHoy.querySelectorAll('.col-hora');
-        filasHoras.forEach(tdHora => {
-            const horaStr = tdHora.innerText; 
-            const [h, m] = horaStr.split(':').map(Number);
-            const slotStartMinutes = h * 60 + m;
-            const slotEndMinutes = slotStartMinutes + 30; 
-            if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
-                tdHora.closest('tr').classList.add('current-slot');
-            }
-        });
-    }
-    setInterval(resaltarHoraActual, 60000);
-
     function leerHoja(url) {
         return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
+            Papa.parse(url + "&t=" + Date.now(), { 
+                download: true, skipEmptyLines: true, 
+                complete: res => resolve(res.data), error: () => resolve([]) 
+            });
         });
     }
 
@@ -456,12 +224,13 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
         
-        const slotsManana = ["11:00", "11:30", "12:00"];
-        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-
+        // Botones
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
+
+        const slotsManana = ["11:00", "11:30", "12:00"];
+        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
@@ -469,48 +238,61 @@
             data.forEach(row => {
                 if(row[1]) {
                     let hora = row[1].trim().substring(0,5);
-                    mapa[hora] = row.slice(2); 
+                    mapa[hora] = row; // Guardamos toda la fila
                 }
             });
 
             let html = `
             <div id="view-${dia}" class="planning-container">
-                <div class="day-header">
-                    <div class="day-title">${dia.toUpperCase()}</div>
-                    <div class="day-subtitle">CSE Elisa Gundín</div>
-                </div>
-                
+                <div class="day-header"><div class="day-title">${dia}</div></div>
                 <table>
                     <thead>
                         <tr>
-                            <th class="col-turno">TURNO</th>
-                            <th>HORA</th>
-                            <th>ALUMNO 1</th>
-                            <th>ALUMNO 2</th>
-                            <th>ALUMNO 3</th>
-                            <th>ALUMNO 4</th>
-                            <th>ALUMNO 5</th>
-                            <th>ALUMNO 6</th>
+                            <th class="col-turno"></th>
+                            <th class="col-hora">H</th>
+                            <th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
+                            <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th>
+                            <th class="ing-header">ING 3</th><th class="ing-header">ING 4</th>
+                            <th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
                         </tr>
                     </thead>
                     <tbody>`;
 
-            slotsManana.forEach((hora, index) => {
+            const pintarFila = (hora) => {
+                let rowData = mapa[hora] || [];
+                // Columna 1 = Hora
+                let tr = `<td class="col-hora">${hora}</td>`;
+                
+                // --- APOYO (Columnas C a H -> Índices 2 al 7) ---
+                for(let i=2; i<=7; i++) {
+                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    tr += `<td class="std-cell">${nombre}</td>`;
+                }
+
+                // --- INGLÉS (Columnas J a O -> Índices 9 al 14) ---
+                // ⚠️ SALTAMOS EL ÍNDICE 8 (Columna I) porque es la hora repetida
+                for(let i=9; i<=14; i++) {
+                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    let classes = "ing-cell" + (i===9 ? " sep-border" : "");
+                    tr += `<td class="${classes}">${nombre}</td>`;
+                }
+                return tr;
+            };
+
+            // Mañana
+            slotsManana.forEach((hora, idx) => {
                 html += `<tr>`;
-                if(index === 0) html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑANA</td>`;
-                html += `<td class="col-hora">${hora}</td>`;
-                html += generarCeldasAlumnos(mapa[hora]);
-                html += `</tr>`;
+                if(idx===0) html += `<td rowspan="${slotsManana.length}" class="col-turno">MAÑ</td>`;
+                html += pintarFila(hora) + `</tr>`;
             });
 
-            html += `<tr class="gap-row"><td colspan="8">&nbsp;</td></tr>`;
+            html += `<tr class="gap-row"><td colspan="14"></td></tr>`;
 
-            slotsTarde.forEach((hora, index) => {
+            // Tarde
+            slotsTarde.forEach((hora, idx) => {
                 html += `<tr>`;
-                if(index === 0) html += `<td rowspan="${slotsTarde.length}" class="col-turno">TARDE</td>`;
-                html += `<td class="col-hora">${hora}</td>`;
-                html += generarCeldasAlumnos(mapa[hora]);
-                html += `</tr>`;
+                if(idx===0) html += `<td rowspan="${slotsTarde.length}" class="col-turno">TAR</td>`;
+                html += pintarFila(hora) + `</tr>`;
             });
 
             html += `</tbody></table></div>`;
@@ -522,24 +304,9 @@
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-        setTimeout(resaltarHoraActual, 1000);
-    }
-
-    function generarCeldasAlumnos(alumnos) {
-        let html = "";
-        let lista = alumnos || [];
-        for(let i=0; i<6; i++) {
-            let nombreFull = (lista[i] || "").trim();
-            let nombreCorto = "";
-            let tooltipAttr = "";
-
-            if(nombreFull) {
-                nombreCorto = nombreFull.split(" ")[0]; 
-                tooltipAttr = `title="${nombreFull.toUpperCase()}"`; 
-            }
-            html += `<td class="student-cell" ${tooltipAttr}>${nombreCorto}</td>`;
-        }
-        return html;
+        
+        setInterval(resaltarHora, 60000);
+        setTimeout(resaltarHora, 1000);
     }
 
     function cambiarDia(dia) {
@@ -548,14 +315,33 @@
             else div.classList.toggle('visible', div.id === `view-${dia}`);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            let textoBtn = btn.innerText; 
-            // Manejar "Lunes" vs "LUNES"
-            let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
-            if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
+            let texto = btn.innerText;
+            if((texto === dia) || (dia === 'Todo' && texto === 'VER TODO')) btn.classList.add('active'); 
+            else btn.classList.remove('active');
         });
-        resaltarHoraActual();
+        resaltarHora();
     }
 
+    function resaltarHora() {
+        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
+        const now = new Date();
+        const mins = now.getHours() * 60 + now.getMinutes();
+        
+        document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
+            let parts = td.innerText.split(':');
+            if(parts.length === 2) {
+                let slotMins = parseInt(parts[0])*60 + parseInt(parts[1]);
+                if(mins >= slotMins && mins < slotMins + 30) {
+                    td.parentElement.classList.add('current-slot');
+                }
+            }
+        });
+    }
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => navigator.serviceWorker.register('./sw_semanal.js'));
+    }
+    
     document.addEventListener('DOMContentLoaded', cargarTodo);
 </script>
 </body>
