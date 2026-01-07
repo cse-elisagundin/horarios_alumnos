@@ -279,23 +279,23 @@
         }
 
         /* =========================================================
-           🖨️ ESTILOS DE IMPRESIÓN (AJUSTE DE MÁRGENES)
+           🖨️ ESTILOS DE IMPRESIÓN (AJUSTE FINAL)
            ========================================================= */
         @page { 
             size: landscape; 
-            margin: 10mm; /* Aumentado margen para que no se coma bordes */
+            margin: 10mm;
         }
 
         @media print {
             body { 
                 background: white; 
-                padding: 10px; /* Buffer interno extra */
+                padding: 10px;
                 margin: 0; 
                 color: #000;
                 font-family: Arial, Helvetica, sans-serif; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important; 
-                zoom: 90%; /* Reducimos al 90% para asegurar que cabe TODO */
+                zoom: 90%; 
             }
 
             .web-brand, header, .days-nav, .spinner, #loading { display: none !important; } 
@@ -318,8 +318,8 @@
             table { 
                 display: table !important; 
                 border-collapse: collapse !important;
-                width: 99% !important; /* NO usar 100% para evitar corte de borde derecho */
-                margin: 0 auto !important; /* Centrar tabla */
+                width: 99% !important;
+                margin: 0 auto !important;
                 table-layout: fixed !important;
                 border: 2px solid var(--c-primary) !important;
             }
@@ -364,6 +364,17 @@
             .gap-row td { background: #ddd !important; border: 1px solid #999 !important; }
             
             .student-cell { border-bottom: 1px solid #999 !important; }
+
+            /* ⚠️ ESTA ES LA CORRECCIÓN NUEVA: ELIMINA EL RESALTADO DE HORA ACTUAL EN PAPEL */
+            tr.current-slot { 
+                background-color: transparent !important; 
+                box-shadow: none !important;
+                border: none !important;
+            }
+            tr.current-slot .col-hora { 
+                background-color: #eee !important; 
+                color: black !important;
+            }
         }
     </style>
 </head>
