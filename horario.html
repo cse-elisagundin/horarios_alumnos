@@ -151,6 +151,9 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* =========================================
+           🆕 ESTILOS PARA RESULTADOS (PADRES)
+           ========================================= */
         #resultado { margin-top: 30px; text-align: left; }
         
         #resultado h3 {
@@ -165,33 +168,33 @@
             gap: 8px;
         }
 
-        .dia-card { 
+        .result-card { 
             background: #ffffff; 
-            margin-bottom: 15px; 
-            padding: 18px; 
-            border-radius: 8px; 
+            margin-bottom: 12px; 
+            padding: 15px; 
+            border-radius: 10px; 
             border: 1px solid #f0f0f0;
-            border-left: 5px solid var(--c-accent); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            transition: transform 0.2s;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
         }
-        .dia-card:hover { transform: translateX(5px); }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .dia-title { 
-            font-weight: 800; 
-            color: var(--c-primary); 
-            text-transform: uppercase; 
-            font-size: 14px;
-            letter-spacing: 1px;
-            display: block; 
-            margin-bottom: 8px;
+        .card-info { display: flex; flex-direction: column; }
+        .card-day { font-weight: 800; color: var(--c-primary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-time { font-size: 16px; color: #555; margin-top: 2px; font-weight: 600; }
+
+        /* ETIQUETAS */
+        .badge {
+            padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800;
+            text-transform: uppercase; color: white; letter-spacing: 0.5px;
         }
-        .hora-tag { 
-            font-size: 20px; 
-            color: var(--c-secondary); 
-            font-weight: 700;
-            display: block; 
-        }
+        .bg-apoyo { background-color: var(--c-secondary); } /* Azul Claro */
+        .bg-ingles { background-color: var(--c-accent); }  /* Rosa */
+
+        /* ========================================= */
 
         #actions-panel { display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; }
         
@@ -327,7 +330,6 @@
 // ==========================================
 // 🔒 SEGURIDAD (Ofuscación Básica)
 // ==========================================
-    // "010523" convertido a Base64 para que no se lea a simple vista
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
 // ==========================================
@@ -341,21 +343,6 @@
     };
 
     let memoriaCache = {}; 
-
-    // --- UTILIDADES ---
-    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
-    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
-    
-    function agruparHoras(lista) {
-        if(!lista.length) return [];
-        let times = lista.map(timeToMins).sort((a,b)=>a-b);
-        let res=[]; let ini=times[0]; let fin=times[0]+30;
-        for(let i=1; i<times.length; i++) { 
-            if(times[i]===fin){fin+=30}
-            else{res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`);ini=times[i];fin=times[i]+30} 
-        }
-        res.push(`${minsToTime(ini)} - ${minsToTime(fin)}`); return res;
-    }
 
     function leerHoja(url) {
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
@@ -371,6 +358,9 @@
         });
     }
 
+    // =======================================================
+    // 🧠 LÓGICA DE BÚSQUEDA INTELIGENTE (Apoyo vs Inglés)
+    // =======================================================
     async function ejecutarBusqueda(nombre) {
         document.getElementById('search-area').style.display = 'none';
         document.getElementById('error-msg').style.display = 'none';
@@ -383,44 +373,76 @@
         let html = `<h3 style='border-bottom:2px solid #eee; padding-bottom:10px; text-transform: capitalize;'>
                         Horario: <span style="color: #2b94cc; font-family: 'Schoolbell', cursive; font-size: 26px;">${nombre}</span>
                     </h3>`;
-        let encontrado = false;
         
         const nombreBuscado = nombre.toLowerCase().trim();
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
 
+        let clasesEncontradas = [];
+
+        // Procesar todos los días
         dias.forEach((dia, index) => {
             const data = resultados[index];
             if(!data || data.length === 0) return;
-            let horas = [];
+            
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
-                let esta = false;
-                for(let c=0; c < row.length; c++) {
-                    if(row[c] && row[c].toString().toLowerCase().trim() === nombreBuscado) { esta = true; break; }
+                if(row[1]) { // Si hay hora
+                    let hora = row[1].trim().substring(0,5);
+
+                    // 1. BUSCAR EN APOYO (Columnas C a H -> Índices 2 al 7)
+                    for(let c=2; c<=7; c++) {
+                        let alumno = (row[c] || "").toLowerCase();
+                        if(alumno.includes(nombreBuscado)) {
+                            clasesEncontradas.push({
+                                dia: dia, hora: hora, materia: "Apoyo Escolar", tipo: "apoyo"
+                            });
+                        }
+                    }
+
+                    // 2. BUSCAR EN INGLÉS (Columnas J a O -> Índices 9 al 14)
+                    // Saltamos índice 8 (Columna I - Hora repetida)
+                    for(let c=9; c<=14; c++) {
+                        let alumno = (row[c] || "").toLowerCase();
+                        if(alumno.includes(nombreBuscado)) {
+                            clasesEncontradas.push({
+                                dia: dia, hora: hora, materia: "Inglés", tipo: "ingles"
+                            });
+                        }
+                    }
                 }
-                if(esta) {
-                    let h = row[1] ? row[1].toString().trim().substring(0,5) : "";
-                    if(h.includes(":")) horas.push(h);
-                }
-            }
-            if(horas.length > 0) {
-                encontrado = true;
-                const bloques = agruparHoras(horas);
-                html += `<div class="dia-card"><span class="dia-title">${dia}</span>${bloques.map(b => `<span class="hora-tag">⏱️ ${b}</span>`).join('')}</div>`;
             }
         });
 
         document.getElementById('loading-spinner').style.display = 'none';
 
-        if(encontrado) {
-            document.getElementById('resultado').innerHTML = html;
+        if(clasesEncontradas.length > 0) {
+            // Renderizar tarjetas
+            let tarjetas = "";
+            clasesEncontradas.forEach(item => {
+                tarjetas += `
+                    <div class="result-card">
+                        <div class="card-info">
+                            <span class="card-day">${item.dia}</span>
+                            <span class="card-time">⏰ ${item.hora}</span>
+                        </div>
+                        <span class="badge bg-${item.tipo}">${item.materia}</span>
+                    </div>
+                `;
+            });
             
-            // 🔒 LÓGICA DE SEGURIDAD
+            document.getElementById('resultado').innerHTML = html + tarjetas;
+            
+            // 🔒 LÓGICA DE SEGURIDAD (Mostrar botones extra solo si es profe)
             if (SISTEMA_DESBLOQUEADO === true) {
                 document.getElementById('actions-panel').style.display = 'block';
                 document.getElementById('btnCopiar').style.display = 'block';
+            } else {
+                // Si es padre, mostramos botón de "buscar otro" pero sin herramientas de profe
+                document.getElementById('actions-panel').style.display = 'block';
+                document.getElementById('btnCopiar').style.display = 'none';
+                document.getElementById('btnDirectorio').style.display = 'none';
             }
 
         } else {
@@ -431,7 +453,7 @@
         }
     }
 
-    // 🆕 FUNCIÓN: Cargar lista de alumnos
+    // 🆕 FUNCIÓN: Cargar lista de alumnos (Búsqueda global)
     async function cargarDirectorio() {
         const dirArea = document.getElementById('directory-area');
         dirArea.innerHTML = "<div style='text-align:center; padding:10px; color:#999'>Cargando nombres...</div>";
@@ -447,14 +469,18 @@
             if(!data) return;
             for(let i=1; i < data.length; i++) {
                 const row = data[i];
-                for(let c=2; c < row.length; c++) {
+                // Buscamos en todas las columnas válidas (Apoyo + Inglés)
+                // Apoyo: 2-7, Inglés: 9-14
+                const colIndex = [2,3,4,5,6,7,9,10,11,12,13,14];
+                
+                colIndex.forEach(c => {
                     if(row[c]) {
                         let nombreLimpio = row[c].toString().trim();
                         if(nombreLimpio.length > 2) { 
                             todosLosAlumnos.add(nombreLimpio.toLowerCase());
                         }
                     }
-                }
+                });
             }
         });
 
@@ -492,7 +518,7 @@
             const valor = input.value.trim();
             if(!valor) return;
 
-            // BLOQUEADO
+            // BLOQUEADO (Login Profe)
             if (!SISTEMA_DESBLOQUEADO) {
                 // btoa convierte el texto que escribes a Base64 para compararlo
                 if (btoa(valor) === _0x8F) {
@@ -509,11 +535,11 @@
                     document.getElementById('btnCopiar').style.display = 'none';
                     
                 } else {
-                    errorMsg.innerText = "⚠️ Error: Servicio no disponible. Contacta administración.";
-                    errorMsg.style.display = 'block';
+                    // Si no es la contraseña, asume que es un padre buscando a su hijo
+                    ejecutarBusqueda(valor);
                 }
             } 
-            // DESBLOQUEADO
+            // DESBLOQUEADO (Ya logueado)
             else {
                 ejecutarBusqueda(valor);
             }
@@ -552,7 +578,7 @@
         });
 
         // ===============================================
-        // MODO LECTURA PARA PADRES
+        // MODO LECTURA PARA PADRES (URL)
         // ===============================================
         const params = new URLSearchParams(window.location.search);
         const alumnoURL = params.get('alumno');
