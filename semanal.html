@@ -139,15 +139,20 @@
         }
 
         /* =========================================================
-           🖨️ IMPRESIÓN (ULTRA-COMPACTA)
+           🖨️ IMPRESIÓN (CORRECCIÓN MARGEN IZQUIERDO)
            ========================================================= */
         @page { size: landscape; margin: 5mm; }
 
         @media print {
             body { 
                 background: white; 
-                padding: 0; 
-                zoom: 80%; /* Zoom seguro */
+                /* ⚠️ AQUÍ ESTÁ EL ARREGLO: Margin Left extra para que no corte la hora */
+                padding-left: 15px !important; 
+                padding-right: 5px !important;
+                padding-top: 0; padding-bottom: 0;
+                
+                /* Zoom ajustado para compensar el empujón a la derecha */
+                zoom: 75%; 
             }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
@@ -157,20 +162,19 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* TÍTULOS MINIMALISTAS (SIN RECUADROS) */
+            /* TÍTULOS MINIMALISTAS */
             .print-section-header {
                 font-size: 14px; 
                 font-weight: 800; 
                 color: black; 
-                background: none; /* Sin fondo */
-                border: none; /* Sin borde */
+                background: none; 
+                border: none; 
                 padding: 0;
                 margin-bottom: 2px; 
                 text-transform: uppercase;
-                text-decoration: underline; /* Subrayado simple */
+                text-decoration: underline; 
             }
 
-            /* AJUSTE CLAVE: Reducción drástica del espacio entre tablas */
             .ing-section { margin-top: 10px !important; } 
 
             table { 
@@ -181,7 +185,7 @@
             
             thead { display: table-header-group !important; }
             
-            /* FILAS MÁS BAJITAS PARA AHORRAR ESPACIO */
+            /* Altura de fila */
             tr { display: table-row !important; height: 22px !important; page-break-inside: avoid; }
             
             th, td { 
@@ -310,14 +314,14 @@
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // INGLÉS (Pegadito al anterior)
+            // INGLÉS
             html += `<div class="print-section-header ing-section">INGLÉS</div>
                      <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
                 html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
             });
-            html += `</tbody></table></div>`;
+            html += `</tbody></table></div>`; // Fin Print
 
             html += `</div>`;
             container.innerHTML += html;
