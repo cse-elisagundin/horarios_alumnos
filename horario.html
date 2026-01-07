@@ -110,17 +110,19 @@
         .clock-icon {
             width: 18px; height: 18px; border: 2px solid var(--c-primary);
             border-radius: 50%; position: relative;
+            flex-shrink: 0;
         }
         .clock-icon::after {
             content: ''; position: absolute; width: 6px; height: 2px;
             background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg);
         }
-        .card-time { font-size: 24px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; }
+        .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
 
         .badge {
             padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 800;
             text-transform: uppercase; color: white; letter-spacing: 1px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center; min-width: 60px;
         }
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
@@ -214,8 +216,43 @@
         });
     }
 
-    function formatName(n) {
-        return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+    // Funciones de utilidad para el tiempo
+    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+    function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
+
+    // Función mágica para agrupar horas consecutivas
+    function agruparClases(clases) {
+        if(clases.length === 0) return [];
+        let grupos = [];
+        let actual = null;
+
+        clases.forEach(clase => {
+            const startMins = timeToMins(clase.h);
+            
+            if (actual) {
+                // Si es el mismo día, misma materia, y la hora actual empieza justo cuando acaba la anterior
+                // Asumimos bloques de 30 mins.
+                if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
+                    actual.endMins += 30; // Extendemos el bloque
+                    return;
+                } else {
+                    grupos.push(actual); // Guardamos el anterior y empezamos uno nuevo
+                }
+            }
+            
+            // Nuevo bloque
+            actual = {
+                dia: clase.dia,
+                startMins: startMins,
+                endMins: startMins + 30, // Duración por defecto de 1 slot
+                materia: clase.materia,
+                tipo: clase.tipo
+            };
+        });
+        
+        if (actual) grupos.push(actual);
+        return grupos;
     }
 
     async function ejecutarBusqueda(nombre) {
@@ -226,7 +263,8 @@
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
-        let encontrados = [];
+        
+        let clasesRaw = [];
 
         dias.forEach((dia, idx) => {
             const data = resultados[idx];
@@ -234,13 +272,15 @@
             data.forEach(row => {
                 if(row[1]) {
                     let h = row[1].trim().substring(0,5);
+                    // Apoyo (2-7)
                     for(let c=2; c<=7; c++) {
                         if((row[c]||"").toLowerCase().includes(nombreBuscado)) 
-                            encontrados.push({dia, h, materia: "Apoyo", tipo: "apoyo"});
+                            clasesRaw.push({dia, h, materia: "Apoyo", tipo: "apoyo"});
                     }
+                    // Inglés (9-14)
                     for(let c=9; c<=14; c++) {
                         if((row[c]||"").toLowerCase().includes(nombreBuscado)) 
-                            encontrados.push({dia, h, materia: "Inglés", tipo: "ingles"});
+                            clasesRaw.push({dia, h, materia: "Inglés", tipo: "ingles"});
                     }
                 }
             });
@@ -248,19 +288,25 @@
 
         document.getElementById('loading-spinner').style.display = 'none';
         
-        if(encontrados.length > 0) {
+        if(clasesRaw.length > 0) {
+            // Agrupar las clases
+            const clasesAgrupadas = agruparClases(clasesRaw);
+
             let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Schoolbell', cursive;">
                         Horario de <span style="color:var(--c-accent)">${formatName(nombre)}</span>
                         </h3>`;
             
-            encontrados.forEach(item => {
+            clasesAgrupadas.forEach(item => {
+                // Formateamos la hora: 18:00 - 19:30
+                const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
+                
                 html += `
                     <div class="result-card type-${item.tipo}">
                         <div class="card-info">
                             <span class="card-day">${item.dia}</span>
                             <div class="card-time-wrapper">
                                 <div class="clock-icon"></div>
-                                <span class="card-time">${item.h}</span>
+                                <span class="card-time">${horarioTexto}</span>
                             </div>
                         </div>
                         <span class="badge bg-${item.tipo}">${item.materia}</span>
@@ -273,11 +319,12 @@
             if(SISTEMA_DESBLOQUEADO) {
                 document.getElementById('btnCopiar').style.display = 'block';
                 document.getElementById('btnDirectorio').style.display = 'block';
-                document.getElementById('btnReset').style.display = 'block'; // Profe SÍ ve el botón de reset
+                document.getElementById('btnReset').style.display = 'block'; 
             } else {
+                // PADRES: Se oculta TODO
                 document.getElementById('btnCopiar').style.display = 'none';
                 document.getElementById('btnDirectorio').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none'; // PADRE NO VE NADA
+                document.getElementById('btnReset').style.display = 'none'; 
             }
 
         } else {
@@ -293,6 +340,7 @@
         const promesas = Object.values(urls).map(url => leerHoja(url));
         const resultados = await Promise.all(promesas);
         let alumnos = new Set();
+        
         const basura = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "IN1", "IN2", "IN3", "IN4", "IN5", "IN6", "A1", "A2", "A3", "A4", "A5", "A6", "I1", "I2", "I3"];
 
         resultados.forEach(data => {
