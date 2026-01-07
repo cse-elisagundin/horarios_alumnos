@@ -130,7 +130,7 @@
         }
 
         /* =========================================
-           🖨️ IMPRESIÓN A DOBLE CARA (SALTO DE PÁGINA)
+           🖨️ IMPRESIÓN LIMPIA (BLANCO Y NEGRO)
            ========================================= */
         @page { size: landscape; margin: 10mm; }
 
@@ -138,7 +138,7 @@
             body { 
                 background: white; 
                 padding: 0; 
-                zoom: 95%; /* ¡LETRA GIGANTE! */
+                zoom: 85%; /* Tamaño moderado */
                 -webkit-print-color-adjust: exact;
             }
             
@@ -149,15 +149,10 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* RECUPERAMOS TÍTULOS BONITOS (CAJAS GRISES) */
-            .print-section-header {
-                font-size: 18px; font-weight: 800; color: black; 
-                background: #eee; border: 1px solid #000; padding: 5px 10px;
-                margin-bottom: 10px; text-transform: uppercase; text-align: center;
-                border-bottom: none; /* Pegado a la tabla */
-            }
+            /* ELIMINAR TÍTULOS */
+            .print-section-header { display: none !important; }
 
-            /* CLASE MAGICA PARA SALTO DE PAGINA */
+            /* SALTO DE PÁGINA */
             .page-break { 
                 page-break-after: always; 
                 break-after: page;
@@ -169,19 +164,31 @@
             thead { display: table-header-group !important; }
             tr { display: table-row !important; height: 35px !important; page-break-inside: avoid; }
             
+            /* TODO BLANCO PARA IMPRIMIR */
             th, td { 
-                display: table-cell !important; border: 1px solid #666 !important; color: black !important; 
+                display: table-cell !important; 
+                border: 1px solid #000 !important; /* Bordes negros */
+                color: black !important; 
+                background-color: white !important; /* Fondo blanco forzado */
                 padding: 4px !important; font-size: 14px !important; vertical-align: middle;
             }
 
-            .col-hora { width: 60px !important; background: #ddd !important; font-weight: bold !important; font-size: 14px !important; }
+            .col-hora { 
+                width: 60px !important; 
+                background-color: white !important; /* Sin gris */
+                font-weight: bold !important; 
+                font-size: 14px !important; 
+            }
             
-            /* SIN COLOR ROSA */
-            tr.current-slot td { background-color: transparent !important; color: black !important; border-color: #666 !important; }
-            tr.current-slot .col-hora { background-color: #ddd !important; color: black !important; }
+            /* ANULAR CUALQUIER COLOR ROSA */
+            tr.current-slot td, tr.current-slot .col-hora { 
+                background-color: white !important; 
+                color: black !important; 
+                border-color: #000 !important; 
+            }
             
-            .ing-header { color: black !important; }
-            .sep-border { border-left: 1px solid #999 !important; }
+            .ing-header { background-color: white !important; color: black !important; }
+            .sep-border { border-left: 1px solid #000 !important; }
             .mobile-grid { display: none; }
         }
     </style>
@@ -273,7 +280,7 @@
             let html = `<div id="view-${dia}" class="planning-container">
                         <div class="day-header"><div class="day-title">${dia}</div></div>`;
 
-            // === VISTA WEB ===
+            // === VISTA WEB (NORMAL) ===
             html += `<div class="view-web">`;
             html += `<div class="section-title">MAÑANA</div>
                      <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
@@ -287,21 +294,19 @@
             slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
 
-            // === VISTA IMPRESIÓN (DOBLE CARA) ===
+            // === VISTA IMPRESIÓN (SIN TÍTULOS, ABREVIADO, BLANCO Y NEGRO) ===
             html += `<div class="view-print">`;
             
-            // --- CARA A: APOYO ---
-            html += `<div class="print-section-header">APOYO ESCOLAR</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
+            // --- CARA A: APOYO (Abreviado A 1, A 2...) ---
+            html += `<table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
             // --- SALTO DE PÁGINA ---
             html += `<div class="page-break"></div>`;
 
-            // --- CARA B: INGLÉS ---
-            html += `<div class="print-section-header">INGLÉS</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
+            // --- CARA B: INGLÉS (Abreviado I 1, I 2...) ---
+            html += `<table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
                 html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
