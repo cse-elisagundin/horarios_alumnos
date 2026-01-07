@@ -102,7 +102,18 @@
         .ing-cell { background-color: white; font-weight: 600; }
         .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        tr.current-slot .col-hora { background-color: var(--c-accent); color: white; }
+        /* ----------------------------------------------------
+           ✨ RESALTADO DE HORA ACTUAL (WEB)
+           ---------------------------------------------------- */
+        tr.current-slot {
+            transition: all 0.3s ease;
+        }
+        /* Esto afecta a TODAS las celdas (td) dentro de la fila resaltada */
+        tr.current-slot td { 
+            background-color: var(--c-accent) !important; 
+            color: white !important; 
+            border-color: white !important; /* Borde sutil para limpieza */
+        }
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -115,10 +126,11 @@
         @media print {
             body { 
                 background: white; 
-                padding-left: 15px !important; /* Mantenemos corrección de corte izq */
+                padding-left: 15px !important; 
                 padding-right: 5px !important;
                 padding-top: 0; padding-bottom: 0;
                 zoom: 75%; 
+                -webkit-print-color-adjust: exact;
             }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
@@ -136,16 +148,15 @@
                 background: none; 
                 border: none; 
                 padding: 0;
-                margin: 0; /* Sin margen externo */
+                margin: 0; 
                 text-transform: uppercase;
                 text-decoration: underline;
                 line-height: 1.2;
             }
 
-            /* ⚠️ AJUSTE FINAL: Margen CERO patatero entre tablas */
             .ing-section { 
                 margin-top: 0px !important; 
-                padding-top: 5px !important; /* Pequeño respiro interno */
+                padding-top: 5px !important; 
             } 
 
             table { 
@@ -169,7 +180,17 @@
 
             .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
             
-            tr.current-slot .col-hora { background: #ddd !important; color: black !important; }
+            /* 🚫 ANULAR RESALTADO DE HORA ACTUAL EN IMPRESIÓN 🚫 */
+            tr.current-slot td { 
+                background-color: transparent !important; 
+                color: black !important; 
+                border-color: #666 !important;
+            }
+            tr.current-slot .col-hora { 
+                background-color: #ddd !important; /* Mantener gris la hora */
+                color: black !important;
+            }
+            
             .ing-header { color: black !important; }
             .sep-border { border-left: 1px solid #999 !important; }
             .mobile-grid { display: none; }
@@ -178,168 +199,4 @@
 </head>
 <body>
 
-<div class="container">
-    <div class="web-brand">
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="web-logo-img">
-    </div>
-
-    <header>
-        <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar</a>
-    </header>
-
-    <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" class="spinner"></div>
-    <div id="schedule-container"></div>
-</div>
-
-<script>
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
-    document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
-
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-    };
-
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download: true, skipEmptyLines: true, 
-                complete: res => resolve(res.data), error: () => resolve([]) 
-            });
-        });
-    }
-
-    async function cargarTodo() {
-        const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
-        
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-        btnContainer.innerHTML = btns;
-
-        const slotsManana = ["11:00", "11:30", "12:00"];
-        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-        const todosSlots = [...slotsManana, ...slotsTarde];
-
-        for (const dia of dias) {
-            const data = await leerHoja(urls[dia]);
-            let mapa = {};
-            data.forEach(row => {
-                if(row[1]) {
-                    let hora = row[1].trim().substring(0,5);
-                    mapa[hora] = row; 
-                }
-            });
-
-            const getCellsApoyo = (hora) => {
-                let rowData = mapa[hora] || [];
-                let cells = "";
-                for(let i=2; i<=7; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
-                    cells += `<td class="std-cell">${nombre}</td>`;
-                }
-                return cells;
-            };
-
-            const getCellsIngles = (hora) => {
-                let rowData = mapa[hora] || [];
-                let cells = "";
-                for(let i=9; i<=14; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
-                    let classes = "ing-cell"; 
-                    if (i===9) classes += " sep-border";
-                    cells += `<td class="${classes}">${nombre}</td>`;
-                }
-                return cells;
-            };
-
-            let html = `<div id="view-${dia}" class="planning-container">
-                        <div class="day-header"><div class="day-title">${dia}</div></div>`;
-
-            // === VISTA WEB ===
-            html += `<div class="view-web">`;
-            html += `<div class="section-title">MAÑANA</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
-            slotsManana.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
-            html += `</tbody></table>`;
-            html += `<div class="section-title">TARDE</div>
-                     <table><thead><tr>
-                        <th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
-                        <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th><th class="ing-header">ING 3</th><th class="ing-header">ING 4</th><th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
-                     </tr></thead><tbody>`;
-            slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
-            html += `</tbody></table></div>`;
-
-            // === VISTA PRINT ===
-            html += `<div class="view-print">`;
-
-            // APOYO
-            html += `<div class="print-section-header">APOYO ESCOLAR</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
-            todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
-            html += `</tbody></table>`;
-
-            // INGLÉS (Pegadito al anterior)
-            html += `<div class="print-section-header ing-section">INGLÉS</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
-            slotsTarde.forEach(h => {
-                let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
-                html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
-            });
-            html += `</tbody></table></div>`; // Fin Print
-
-            html += `</div>`;
-            container.innerHTML += html;
-        }
-
-        document.getElementById('loading').style.display = 'none';
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-        
-        setInterval(resaltarHora, 60000);
-        setTimeout(resaltarHora, 1000);
-    }
-
-    function cambiarDia(dia) {
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else div.classList.toggle('visible', div.id === `view-${dia}`);
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            let texto = btn.innerText;
-            if((texto === dia) || (dia === 'Todo' && texto === 'VER TODO')) btn.classList.add('active'); 
-            else btn.classList.remove('active');
-        });
-        resaltarHora();
-    }
-
-    function resaltarHora() {
-        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-        const now = new Date();
-        const mins = now.getHours() * 60 + now.getMinutes();
-        document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
-            let parts = td.innerText.split(':');
-            if(parts.length === 2) {
-                let slotMins = parseInt(parts[0])*60 + parseInt(parts[1]);
-                if(mins >= slotMins && mins < slotMins + 30) {
-                    td.parentElement.classList.add('current-slot');
-                }
-            }
-        });
-    }
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => navigator.serviceWorker.register('./sw_semanal.js'));
-    }
-    
-    document.addEventListener('DOMContentLoaded', cargarTodo);
-</script>
-</body>
-</html>
+<div class
