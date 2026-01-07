@@ -14,11 +14,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- COLORES CORPORATIVOS --- */
+        /* --- COLORES --- */
         :root { 
-            --c-primary: #243c7a;   /* Azul Oscuro */
-            --c-secondary: #2b94cc; /* Azul Claro */
-            --c-accent: #fa65c3;    /* Rosa */
+            --c-primary: #243c7a;   
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3;    
             --bg-body: #f4f6f9;
         }
         
@@ -58,7 +58,7 @@
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* --- ESTRUCTURA DEL PLANNING --- */
+        /* --- ESTRUCTURA --- */
         .planning-container { display: none; margin-bottom: 40px; }
         .planning-container.visible { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -66,7 +66,6 @@
         .day-header { text-align: center; margin-bottom: 10px; margin-top: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
         .day-title { color: var(--c-primary); font-size: 32px; font-weight: 800; text-transform: uppercase; }
 
-        /* Títulos de sección (Mañana/Tarde) */
         .section-title {
             background: var(--c-primary); color: white; text-align: center;
             font-weight: 700; padding: 5px; margin-top: 15px; border-radius: 4px 4px 0 0;
@@ -86,27 +85,20 @@
             font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
 
-        /* Cabeceras Estándar */
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
         
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
         
-        /* --- ZONA INGLÉS (Estilo Corporativo Limpio) --- */
-        /* Fondo blanco igual que el resto, solo cambia el color del texto del título */
+        /* Estilos Web para Inglés (Una sola fila) */
         .ing-header { 
-            background-color: #f0f4f8 !important; /* Mismo fondo gris claro que el resto de th */
-            color: var(--c-accent) !important;    /* Texto ROSA para diferenciar */
+            background-color: #f0f4f8 !important; 
+            color: var(--c-accent) !important;    
             font-weight: 800;
         }
-        .ing-cell { 
-            background-color: white; /* Fondo blanco normal */
-            font-weight: 600; 
-        }
-        /* Borde separador azul grueso */
+        .ing-cell { background-color: white; font-weight: 600; }
         .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        /* Hora actual */
         tr.current-slot .col-hora { background-color: var(--c-accent); color: white; }
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
@@ -126,21 +118,16 @@
                 margin-bottom: 10px; background: white; border: 1px solid #ddd; 
                 border-top: none; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             }
-            
             .col-hora { 
                 display: block; width: 100%; background: #eef2f5; color: var(--c-primary); 
                 font-size: 16px; margin-bottom: 10px; padding: 5px; border-radius: 4px;
             }
-
             .mobile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-            
             td { border: none; padding: 0; min-height: 0; }
-            
             .std-cell, .ing-cell {
                 border: 1px solid #eee; padding: 8px 2px; border-radius: 4px; font-size: 13px;
                 min-height: 35px; display: flex; align-items: center; justify-content: center;
             }
-            
             .mob-label { 
                 grid-column: 1 / -1; font-size: 11px; font-weight: bold; text-transform: uppercase; 
                 margin-top: 10px; margin-bottom: 4px; color: #666; border-bottom: 1px solid #eee;
@@ -149,12 +136,12 @@
         }
 
         /* =========================================================
-           🖨️ IMPRESIÓN (Blanco y Negro / Limpia)
+           🖨️ IMPRESIÓN "DOBLE PISO" (MAGIA GRID)
            ========================================================= */
-        @page { size: landscape; margin: 8mm; }
+        @page { size: landscape; margin: 10mm; }
 
         @media print {
-            body { background: white; padding: 0; zoom: 85%; }
+            body { background: white; padding: 0; zoom: 100%; /* ¡Zoom al 100% ahora sí! */ }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
@@ -162,32 +149,86 @@
 
             .section-title { 
                 background: white !important; color: black !important; 
-                border-bottom: 2px solid black; text-align: left; padding-left: 0; margin-top: 15px; 
-                font-size: 16px; 
+                border-bottom: 2px solid black; text-align: left; padding-left: 0; margin-top: 20px; 
+                font-size: 18px; 
             }
 
             table { 
-                display: table !important; width: 100% !important; 
-                border: 1px solid #000 !important; table-layout: fixed !important; 
+                display: block !important; width: 100% !important; 
+                border: none !important;
                 margin-bottom: 10px;
             }
-            
-            thead { display: table-header-group !important; }
-            tr { display: table-row !important; height: 28px !important; page-break-inside: avoid; }
-            th, td { display: table-cell !important; border: 1px solid #666 !important; color: black !important; padding: 2px !important; font-size: 11px !important; }
 
-            .col-hora { width: 40px !important; background: #eee !important; font-weight: bold !important; }
-            tr.current-slot .col-hora { background: #eee !important; color: black !important; }
+            thead, tbody { display: block !important; width: 100% !important; }
             
-            /* Eliminamos color de fondo de inglés en impresión */
-            .ing-cell { background-color: white !important; }
-            /* Mantenemos el borde separador */
-            .sep-border { border-left: 2px solid #000 !important; }
-            
-            /* Color de cabecera en impresión: negro o gris oscuro */
-            .ing-header { color: black !important; }
+            /* --- FILAS MAÑANA (Simples) --- */
+            table:not(.tabla-tarde) tr {
+                display: grid !important;
+                grid-template-columns: 50px repeat(6, 1fr); /* Hora + 6 Alumnos */
+                border-bottom: 1px solid #999;
+            }
 
+            /* --- FILAS TARDE (DOBLE PISO) --- */
+            /* Aquí ocurre la magia: forzamos grid de 2 filas */
+            .tabla-tarde thead tr {
+                display: grid !important;
+                grid-template-columns: 50px repeat(6, 1fr);
+                /* Ocultamos cabeceras de inglés en impresión para no descuadrar, 
+                   se asume que la fila de abajo es inglés */
+            }
+            /* Ocultamos cabeceras 8 a 13 (Inglés) en el thead impreso */
+            .tabla-tarde thead th:nth-child(n+9) { display: none !important; }
+
+            .tabla-tarde tbody tr {
+                display: grid !important;
+                /* Definimos 7 columnas */
+                grid-template-columns: 50px repeat(6, 1fr);
+                /* Definimos que esta fila visual tendrá 2 filas internas de altura */
+                grid-template-rows: auto auto; 
+                border-bottom: 2px solid #000; /* Separador fuerte entre horas */
+                page-break-inside: avoid;
+            }
+
+            th, td { 
+                display: flex !important; align-items: center; justify-content: center;
+                border: 1px solid #aaa !important; color: black !important; 
+                padding: 4px !important; font-size: 14px !important; /* ¡LETRA GRANDE! */
+                height: auto !important; min-height: 25px;
+            }
+
+            /* POSICIONAMIENTO EN LA REJILLA */
+            
+            /* 1. La hora: Ocupa las 2 filas de altura a la izquierda */
+            .tabla-tarde .col-hora { 
+                grid-column: 1; 
+                grid-row: 1 / span 2; 
+                background: #eee !important; font-weight: bold !important; font-size: 16px !important;
+                border-right: 2px solid #000 !important;
+            }
+
+            /* 2. Apoyo: Fila 1, columnas 2 a 7 */
+            .tabla-tarde .std-cell { 
+                grid-row: 1; 
+                /* No hace falta definir columna, fluyen solas */
+            }
+
+            /* 3. Inglés: Fila 2, columnas 2 a 7 */
+            .tabla-tarde .ing-cell { 
+                grid-row: 2; 
+                /* Forzamos que la celda ING empiece en columna 2, el resto fluye */
+                grid-column: auto; 
+                border-top: 1px dashed #666 !important; /* Diferenciar piso de arriba y abajo */
+                font-style: italic; /* Diferencia visual sutil */
+            }
+            
+            /* Truco para que la primera celda de inglés (ING 1) se coloque bien */
+            .tabla-tarde .ing-cell:nth-of-type(8) { grid-column: 2; }
+
+            /* Limpieza general */
+            .sep-border { border-left: 1px solid #aaa !important; }
             .mobile-grid { display: none; }
+            tr.current-slot .col-hora { background: #eee !important; color: black !important; }
+            .ing-header { color: black !important; }
         }
     </style>
 </head>
@@ -251,7 +292,7 @@
                 }
             });
 
-            // Generador de filas HTML
+            // Generador de filas
             const crearFilas = (horas, esTarde) => {
                 let html = "";
                 horas.forEach(hora => {
@@ -262,14 +303,14 @@
                     let mobileContent = `<div class="mobile-grid">`;
                     mobileContent += `<div class="mob-label first">APOYO</div>`;
                     
-                    // --- APOYO (Indices 2-7) ---
+                    // --- APOYO ---
                     for(let i=2; i<=7; i++) {
                         let nombre = (rowData[i] || "").trim().split(" ")[0];
                         html += `<td class="std-cell">${nombre}</td>`;
                         mobileContent += `<div class="std-cell">${nombre}</div>`;
                     }
 
-                    // --- INGLÉS (Indices 9-14) SOLO SI ES TARDE ---
+                    // --- INGLÉS ---
                     if(esTarde) {
                          mobileContent += `<div class="mob-label">INGLÉS</div>`;
                          for(let i=9; i<=14; i++) {
@@ -279,7 +320,6 @@
                             mobileContent += `<div class="ing-cell">${nombre}</div>`;
                         }
                     }
-                    
                     mobileContent += `</div>`;
                     html += `</tr>`;
                 });
@@ -289,7 +329,7 @@
             let html = `<div id="view-${dia}" class="planning-container">
                         <div class="day-header"><div class="day-title">${dia}</div></div>`;
 
-            // === TABLA MAÑANA (SOLO 7 COLUMNAS) ===
+            // MAÑANA
             html += `<div class="section-title">MAÑANA</div>
                      <table>
                         <thead>
@@ -301,9 +341,9 @@
                         <tbody>${crearFilas(slotsManana, false)}</tbody>
                      </table>`;
 
-            // === TABLA TARDE (13 COLUMNAS) ===
+            // TARDE (Añadimos clase 'tabla-tarde' para identificarla en CSS Print)
             html += `<div class="section-title">TARDE</div>
-                     <table>
+                     <table class="tabla-tarde">
                         <thead>
                             <tr>
                                 <th class="col-hora">H</th>
@@ -316,7 +356,7 @@
                         <tbody>${crearFilas(slotsTarde, true)}</tbody>
                      </table>`;
 
-            html += `</div>`; // Cierre container día
+            html += `</div>`;
             container.innerHTML += html;
         }
 
