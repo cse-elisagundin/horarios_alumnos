@@ -20,7 +20,7 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS CORPORATIVOS
+           🎨 ESTILOS GENERALES
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -97,7 +97,7 @@
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
             animation: cardFade 0.4s ease-out;
-            cursor: help; /* Cursor de ayuda para indicar tooltip */
+            cursor: help; /* Muestra interrogación/mano al pasar ratón */
         }
         @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -107,6 +107,9 @@
         .card-info { display: flex; flex-direction: column; gap: 2px; }
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
         
+        /* ✅ RECUPERADO: Estilo para el subtitulo CSE Elisa Gundin */
+        .card-sub { font-size: 10px; color: #8898aa; font-weight: 600; text-transform: uppercase; margin-bottom: 4px; }
+
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
         .clock-icon {
             width: 18px; height: 18px; border: 2px solid var(--c-primary);
@@ -259,7 +262,7 @@
             if (actual) {
                 if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
                     actual.endMins += 30; 
-                    // Si el texto completo es distinto (ej: dos alumnos distintos en horas seguidas), lo añadimos al tooltip
+                    // Si el texto completo es distinto, lo añadimos al tooltip
                     if (!actual.fullText.includes(clase.fullText)) {
                         actual.fullText += " / " + clase.fullText;
                     }
@@ -298,23 +301,28 @@
                     let h = row[1].trim().substring(0,5);
                     
                     // ===============================================
-                    // 🔍 BÚSQUEDA AJUSTADA A RANGO A1:O17 (Indices 0-14)
+                    // 🔍 BÚSQUEDA SUAVE DENTRO DE A1:O17 (Indices 2-15)
                     // ===============================================
+                    // Ahora recorremos de columna 2 a la 16 (damos margen de error de +1)
+                    // Así si la columna de inglés se ha movido una a la derecha, la cazamos igual.
                     
-                    // 1. APOYO: Leemos de col 2 (C) a 7 (H)
-                    // (Mantengo el rango habitual de apoyo)
-                    for(let c=2; c<=7; c++) {
+                    for(let c=2; c<=16; c++) {
                         let val = row[c] || "";
-                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
-                            clasesRaw.push({dia, h, materia: "Apoyo", tipo: "apoyo", fullText: val});
-                    }
+                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
+                            // DETERMINAMOS EL TIPO SEGÚN LA POSICIÓN
+                            // Si es columna baja (izquierda) es Apoyo, si es alta (derecha) es Inglés
+                            // Punto de corte aprox: Columna 8/9
+                            let tipoMateria = (c < 9) ? "Apoyo" : "Inglés";
+                            let tipoClase = (c < 9) ? "apoyo" : "ingles";
 
-                    // 2. INGLÉS: Leemos de col 8 (I) a 14 (O)
-                    // (Ampliamos el rango para cubrir hasta la columna O, que es la 14)
-                    for(let c=8; c<=14; c++) {
-                        let val = row[c] || "";
-                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
-                            clasesRaw.push({dia, h, materia: "Inglés", tipo: "ingles", fullText: val});
+                            clasesRaw.push({
+                                dia, 
+                                h, 
+                                materia: tipoMateria, 
+                                tipo: tipoClase, 
+                                fullText: val 
+                            });
+                        }
                     }
                 }
             });
@@ -331,11 +339,13 @@
             clasesAgrupadas.forEach(item => {
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
                 
-                // ✅ RESTAURADO: Atributo title para ver el nombre completo al pasar el ratón
+                // ✅ HTML CON EL TEXTO "CSE Elisa Gundín" RECUPERADO
+                // ✅ Tooltip (title) operativo
                 html += `
                     <div class="result-card type-${item.tipo}" title="${item.fullText}">
                         <div class="card-info">
                             <span class="card-day">${item.dia}</span>
+                            <span class="card-sub">CSE Elisa Gundín</span>
                             <div class="card-time-wrapper">
                                 <div class="clock-icon"></div>
                                 <span class="card-time">${horarioTexto}</span>
@@ -373,8 +383,8 @@
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
-                // Escaneo ajustado 2 a 14 para el directorio también
-                for(let c=2; c<=14; c++){
+                // Escaneo ajustado
+                for(let c=2; c<=16; c++){
                     let txt = (row[c] || "").trim();
                     if(esNombreValido(txt)) {
                         alumnos.add(txt.toLowerCase());
@@ -385,7 +395,6 @@
         
         let html = "";
         Array.from(alumnos).sort().forEach(n => {
-            // ✅ Tooltip en directorio también
             html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')" title="${n}">${n}</span>`;
         });
         area.innerHTML = html;
