@@ -61,8 +61,11 @@
         .day-subtitle { color: var(--c-secondary); font-size: 16px; font-weight: 600; margin-top: 5px; letter-spacing: 1px; text-transform: uppercase; }
 
         /* TABLAS */
-        .table-wrapper { margin-bottom: 30px; }
-        .table-title { background: var(--c-primary); color: white; text-align: center; font-weight: 700; padding: 5px; border-radius: 4px 4px 0 0; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        .table-wrapper { margin-bottom: 40px; }
+        .table-title { 
+            background: var(--c-primary); color: white; text-align: center; font-weight: 700; 
+            padding: 8px; border-radius: 4px 4px 0 0; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; 
+        }
         
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--c-primary); table-layout: fixed; }
         th, td { border: 1px solid #ccc; padding: 6px 2px; text-align: center; vertical-align: middle; font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
@@ -83,26 +86,29 @@
         tr.current-slot td { background-color: var(--c-accent) !important; color: white !important; border-color: white !important; }
         tr.current-slot .col-hora { background-color: #d14ca0 !important; color: white !important; }
 
+        /* SALTO DE PÁGINA OCULTO EN PANTALLA */
+        .page-break { display: none; }
+
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* =========================================
-           🖨️ IMPRESIÓN (ESTRATEGIA 2 HOJAS)
+           🖨️ IMPRESIÓN (ESTRICTA)
            ========================================= */
         @media print {
             @page { size: landscape; margin: 5mm; }
             
             body { background: white; padding: 0; zoom: 90%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            * { color: black !important; text-shadow: none !important; } /* Forzar negro */
+            * { color: black !important; text-shadow: none !important; } /* Todo negro */
 
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
             .planning-container.visible { display: block !important; }
             .day-header { border: none; margin-bottom: 5px; padding-bottom: 0; }
-            .day-subtitle { display: none; } /* Opcional: ocultar subtítulo en papel */
+            .day-subtitle { display: none; } 
 
             /* TÍTULOS DE TABLA */
-            .table-title { background: #ddd !important; color: black !important; border: 1px solid black; }
+            .table-title { background: #e0e0e0 !important; color: black !important; border: 1px solid black; font-weight: bold; }
 
             /* ESTILOS TABLAS */
             table { width: 100% !important; border: 1px solid black !important; margin-bottom: 0; }
@@ -111,10 +117,9 @@
             /* RESET COLORES */
             tr.current-slot td, tr.current-slot .col-hora { background: white !important; color: black !important; }
             
-            /* SALTO DE PÁGINA ENTRE LAS DOS TABLAS */
-            .page-break { page-break-before: always; display: block; height: 1px; }
+            /* ACTIVAR SALTO DE PÁGINA */
+            .page-break { display: block; page-break-after: always; height: 1px; margin: 0; padding: 0; }
             
-            /* Ocultar visualización móvil */
             .mobile-grid { display: none; }
         }
     </style>
@@ -167,9 +172,11 @@
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
 
-        const slotsManana = ["11:00", "11:30", "12:00"];
-        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-        const todosSlots = [...slotsManana, ...slotsTarde];
+        // DEFINIMOS TODAS LAS HORAS SEGUIDAS
+        const todosSlots = [
+            "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", // Mañana
+            "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30" // Tarde
+        ];
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
@@ -179,7 +186,7 @@
             // Buscamos la primera columna después de la 7 que tenga un nombre válido (no hora, no vacío)
             let colInicioIngles = 9; // Valor por defecto
             
-            // Escaneamos la fila 5 (suponiendo que hay datos ahí) para calibrar
+            // Escaneamos la fila 5 para calibrar
             if(data.length > 5) {
                 let rowPrueba = data[5]; 
                 for(let c=8; c<20; c++) {
@@ -192,7 +199,7 @@
             }
             
             data.forEach(row => {
-                // Detección de Hora en columna B (1) o A (0) o donde caiga
+                // Detección de Hora múltiple
                 let horaEncontrada = null;
                 [0, 1, 8, colInicioIngles-1].forEach(idx => {
                     let val = (row[idx] || "").trim().substring(0,5);
@@ -211,7 +218,6 @@
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=0; i<count; i++) {
-                    // Usamos el índice calculado dinámicamente para Inglés
                     let currentIdx = startCol + i;
                     let fullName = (rowData[currentIdx] || "").trim();
                     let shortName = fullName.split(" ")[0];
@@ -226,7 +232,7 @@
                             <div class="day-subtitle">CSE Elisa Gundín</div>
                         </div>`;
 
-            // === TABLA 1: APOYO (MAÑANA Y TARDE) - CARA A ===
+            // === TABLA 1: APOYO (CARA A) - TODAS LAS HORAS ===
             html += `<div class="table-wrapper">
                         <div class="table-title">CLASES DE APOYO (CARA A)</div>
                         <table>
@@ -237,17 +243,16 @@
             });
             html += `</tbody></table></div>`;
 
-            // === SALTO DE PÁGINA ===
+            // === SALTO DE PÁGINA (SOLO EN IMPRESORA) ===
             html += `<div class="page-break"></div>`;
 
-            // === TABLA 2: INGLÉS (SOLO TARDE) - CARA B ===
-            // Aquí usamos 'colInicioIngles' para evitar el fallo del miércoles
+            // === TABLA 2: INGLÉS (CARA B) - TODAS LAS HORAS (Por seguridad) ===
             html += `<div class="table-wrapper">
                         <div class="table-title title-ingles">CLASES DE INGLÉS (CARA B)</div>
                         <table class="table-ingles">
                             <thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead>
                             <tbody>`;
-            slotsTarde.forEach(h => {
+            todosSlots.forEach(h => {
                 html += `<tr><td class="col-hora">${h}</td>${getCells(h, colInicioIngles, 6, "ing-cell")}</tr>`;
             });
             html += `</tbody></table></div>`;
