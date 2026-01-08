@@ -79,7 +79,6 @@
         .day-header { text-align: center; margin-bottom: 15px; margin-top: 10px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
         .day-title { color: var(--c-primary); font-size: 32px; font-weight: 800; text-transform: uppercase; line-height: 1; }
         
-        /* ✅ NUEVO: Estilo para el subtítulo CSE Elisa Gundín */
         .day-subtitle { 
             color: var(--c-secondary); 
             font-size: 16px; 
@@ -107,7 +106,6 @@
             font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
 
-        /* Tooltip nativo */
         td[title] { cursor: help; }
 
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
@@ -118,7 +116,6 @@
         .ing-cell { background-color: white; font-weight: 600; }
         .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        /* --- RESALTADO WEB --- */
         tr.current-slot td { background-color: var(--c-accent) !important; color: white !important; border-color: white !important; }
         tr.current-slot .col-hora { background-color: #d14ca0 !important; color: white !important; }
 
@@ -143,19 +140,20 @@
         }
 
         /* =========================================
-           🖨️ IMPRESIÓN LIMPIA
+           🖨️ IMPRESIÓN LIMPIA - CORREGIDO BLANCO
            ========================================= */
         @page { size: landscape; margin: 10mm; }
 
         @media print {
             body { 
-                background: white; 
-                padding: 0; 
-                zoom: 85%; 
-                -webkit-print-color-adjust: exact; 
-                print-color-adjust: exact;
+                background: white; padding: 0; zoom: 85%; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
             }
             
+            /* 🔥 FORZAR COLOR NEGRO EN TODO TEXTO 🔥 */
+            * { color: black !important; text-shadow: none !important; }
+
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
             .planning-container.visible { display: block !important; }
@@ -163,49 +161,27 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
             
-            /* OCULTAR TÍTULO DÍA EN IMPRESIÓN SI SE DESEA, O DEJARLO. AQUÍ LO DEJAMOS PERO SIN SUBTITULO SI PREFIERES */
-            .day-subtitle { display: none; } /* Ocultamos subtitulo en papel para ahorrar tinta/espacio */
+            .day-subtitle { display: none; }
             .day-header { border: none; margin-bottom: 5px; padding-bottom: 0; }
+            .print-section-header, .section-title { display: none !important; }
 
-            /* ELIMINAR SECCIONES EXTRA */
-            .print-section-header { display: none !important; }
-            .section-title { display: none !important; }
-
-            /* SALTO DE PÁGINA */
-            .page-break { 
-                page-break-after: always; 
-                break-after: page;
-                height: 1px;
-                display: block;
-            }
+            .page-break { page-break-after: always; break-after: page; height: 1px; display: block; }
 
             table { width: 100% !important; border: 1px solid #000 !important; table-layout: fixed !important; border-collapse: collapse !important; margin-bottom: 0 !important; }
             thead { display: table-header-group !important; }
             tr { display: table-row !important; height: 35px !important; page-break-inside: avoid; }
             
-            /* TODO BLANCO PARA IMPRIMIR */
             th, td { 
                 display: table-cell !important; 
                 border: 1px solid #000 !important; 
-                color: black !important; 
                 background-color: white !important; 
                 padding: 4px !important; font-size: 14px !important; vertical-align: middle;
             }
-
-            .col-hora { 
-                width: 60px !important; 
-                background-color: white !important; 
-                font-weight: bold !important; 
-                font-size: 14px !important; 
-            }
+            .col-hora { width: 60px !important; background-color: white !important; font-weight: bold !important; font-size: 14px !important; }
             
-            tr.current-slot td, tr.current-slot .col-hora { 
-                background-color: white !important; 
-                color: black !important; 
-                border-color: #000 !important; 
-            }
+            tr.current-slot td, tr.current-slot .col-hora { background-color: white !important; border-color: #000 !important; }
             
-            .ing-header { background-color: white !important; color: black !important; }
+            .ing-header { background-color: white !important; }
             .sep-border { border-left: 1px solid #000 !important; }
             .mobile-grid { display: none; }
         }
@@ -266,14 +242,24 @@
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
             let mapa = {};
+            
             data.forEach(row => {
-                if(row[1]) {
-                    let hora = row[1].trim().substring(0,5);
-                    mapa[hora] = row; 
+                // 🔥 DETECCIÓN INTELIGENTE DE HORA 🔥
+                // Buscamos una hora válida en la columna 0, 1 u 8 (por si hay doble tabla)
+                let horaEncontrada = null;
+                [0, 1, 8, 9].forEach(idx => {
+                    let val = (row[idx] || "").trim().substring(0,5);
+                    if(val.includes(":") && !isNaN(val.replace(":",""))) {
+                        horaEncontrada = val;
+                    }
+                });
+
+                if(horaEncontrada) {
+                    mapa[horaEncontrada] = row; 
                 }
             });
 
-            // --- FUNCIÓN APOYO (Estable, col 2-7) ---
+            // --- FUNCIÓN APOYO ---
             const getCellsApoyo = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
@@ -285,29 +271,26 @@
                 return cells;
             };
 
-            // --- FUNCIÓN INGLÉS (CORREGIDA - MODO "SABUESO") ---
-            // En lugar de buscar fijo en 9-14, buscamos cualquier nombre válido desde la col 8 en adelante.
+            // --- FUNCIÓN INGLÉS MEJORADA ---
             const getCellsIngles = (hora) => {
                 let rowData = mapa[hora] || [];
                 let alumnosEncontrados = [];
                 
-                // Buscamos desde la columna 8 hasta la 20 (por si se movieron al insertar columnas para imprimir)
-                for(let c=8; c<=20; c++) {
+                // Escaneamos un rango amplio (Col 8 a 22) por si las columnas se movieron
+                for(let c=8; c<=22; c++) {
                     let val = (rowData[c] || "").trim();
-                    // Si la celda tiene texto y no parece una hora ni una cabecera vacía
+                    // Filtramos celdas que NO sean horas y tengan texto
                     if (val.length > 1 && !val.includes(":")) {
                         alumnosEncontrados.push(val);
                     }
                 }
 
                 let cells = "";
-                // Rellenamos las 6 casillas de inglés (ING 1 a ING 6)
                 for(let i=0; i<6; i++) {
-                    let fullName = alumnosEncontrados[i] || ""; // Cogemos el alumno o vacío
+                    let fullName = alumnosEncontrados[i] || ""; 
                     let shortName = fullName.split(" ")[0];
                     let classes = "ing-cell"; 
                     if (i===0) classes += " sep-border";
-                    
                     cells += `<td class="${classes}" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
@@ -335,15 +318,12 @@
 
             // === VISTA IMPRESIÓN ===
             html += `<div class="view-print">`;
-            
-            // Cara A (Apoyo)
             html += `<table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
             html += `<div class="page-break"></div>`;
 
-            // Cara B (Inglés) - Usando la nueva función que detecta columnas movidas
             html += `<table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
