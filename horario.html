@@ -97,7 +97,7 @@
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
             animation: cardFade 0.4s ease-out;
-            cursor: help; /* Cursor ? para indicar tooltip */
+            cursor: help; 
         }
         @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -139,7 +139,7 @@
         
         #dirSearchInput {
             width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;
-            font-size: 14px; margin-bottom: 10px; display: none; /* Se muestra al cargar directorio */
+            font-size: 14px; margin-bottom: 10px; display: none; 
         }
 
         .student-chip { 
@@ -229,7 +229,6 @@
     function leerHoja(url) {
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
-            // Timestamp para evitar caché antigua
             Papa.parse(url + "&t=" + Date.now(), { 
                 download:true, 
                 skipEmptyLines:true, 
@@ -239,18 +238,15 @@
         });
     }
 
-    // Funciones de utilidad
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // 🔥 FILTRO ESTRICTO (ELIMINA HORAS DEL DIRECTORIO)
     function esNombreValido(texto) {
         if (!texto || texto.length < 2) return false;
         const t = texto.toUpperCase().trim();
         const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE"];
         if (prohibidos.some(p => t.includes(p))) return false;
-        // Si contiene números Y dos puntos, es una hora (Ej: 16:30), lo descartamos
         if (/\d/.test(t) && t.includes(':')) return false;
         if (/^(A|I|IN|ING)\s*\d+$/.test(t)) return false;
         return true;
@@ -301,8 +297,6 @@
             data.forEach(row => {
                 if(row[1]) {
                     let h = row[1].trim().substring(0,5);
-                    
-                    // ESCANEO A-O (Indices 2 a 16 para margen)
                     for(let c=2; c<=16; c++) {
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
@@ -321,13 +315,14 @@
         
         if(clasesRaw.length > 0) {
             const clasesAgrupadas = agruparClases(clasesRaw);
-            let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Schoolbell', cursive;">
-                        Horario de <span style="color:var(--c-accent)">${formatName(nombre)}</span>
+            
+            // ✅ CAMBIO DE FUENTE Y SOMBRA
+            let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
+                        Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${formatName(nombre)}</span>
                         </h3>`;
             
             clasesAgrupadas.forEach(item => {
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
-                // Sin subtítulo, con tooltip
                 html += `
                     <div class="result-card type-${item.tipo}" title="${item.fullText}">
                         <div class="card-info">
@@ -364,7 +359,7 @@
         const inputDir = document.getElementById('dirSearchInput');
         
         area.innerHTML = "Cargando..."; area.style.display = 'block';
-        inputDir.style.display = 'block'; // Mostrar buscador al cargar
+        inputDir.style.display = 'block'; 
         inputDir.focus();
 
         const promesas = Object.values(urls).map(url => leerHoja(url));
@@ -390,7 +385,6 @@
         area.innerHTML = html;
     }
 
-    // NUEVA FUNCIÓN: Filtrar en tiempo real
     window.filtrarDirectorio = () => {
         const input = document.getElementById('dirSearchInput');
         const filtro = input.value.toLowerCase();
@@ -422,22 +416,4 @@
         };
 
         btn.onclick = login;
-        input.onkeypress = e => { if(e.key === 'Enter') login(); };
-        document.getElementById('btnDirectorio').onclick = cargarDirectorio;
-        document.getElementById('btnReset').onclick = () => location.reload();
-
-        btnCopiar.onclick = () => {
-            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
-            navigator.clipboard.writeText(url).then(() => { 
-                const original = btnCopiar.innerText;
-                btnCopiar.innerText = "✅ ENLACE COPIADO";
-                setTimeout(() => btnCopiar.innerText = original, 2000);
-            });
-        };
-        
-        const p = new URLSearchParams(window.location.search).get('alumno');
-        if(p) { input.value = p; ejecutarBusqueda(p); }
-    });
-</script>
-</body>
-</html>
+        input.on
