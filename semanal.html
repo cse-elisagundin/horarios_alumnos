@@ -2,177 +2,126 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Horario CSE - Visual</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- PALETA CORPORATIVA --- */
+        /* --- ESTILOS GENERALES --- */
         :root { 
-            --c-primary: #243c7a;   
-            --c-secondary: #2b94cc; 
-            --c-accent: #fa65c3;    
-            
-            --bg-body: #f0f2f5;      
-            --bg-container: #ffffff;
-            
-            --highlight-row: rgba(250, 101, 195, 0.1); 
-            --dynamic-col-width: 70px; /* Se recalcula sola */
+            --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;    
+            --bg-body: #f4f6f9; --bg-container: #ffffff;
+            --highlight-row: rgba(250, 101, 195, 0.12);
+            --dynamic-col-width: 70px;
         }
         
-        body { 
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-            background-color: var(--bg-body); 
-            margin: 0; padding: 20px; color: #333;
-        }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; -webkit-tap-highlight-color: transparent; }
 
-        .container { 
-            width: 95%; 
-            max-width: 1600px;
-            margin: 0 auto; 
-            background: var(--bg-container); 
-            padding: 25px; 
-            border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.08); 
-        }
+        .container { width: 95%; max-width: 1600px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(36, 60, 122, 0.08); }
 
-        /* --- BRANDING --- */
-        .web-brand { text-align: center; margin-bottom: 20px; padding-bottom: 10px; }
-        .web-logo-img { height: 80px; object-fit: contain; transition: transform 0.3s; }
-        .web-logo-img:hover { transform: scale(1.05); }
-        .brand-line { 
-            height: 5px; width: 80px; margin: 10px auto 0; 
-            background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); 
-            border-radius: 10px; 
-        }
+        /* BRANDING */
+        .web-brand { text-align: center; margin-bottom: 20px; }
+        .web-logo-img { height: 70px; object-fit: contain; }
+        .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
 
-        /* --- HEADER BOTONES --- */
-        header { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; gap: 15px; }
-
-        .btn-action {
-            padding: 10px 20px; border-radius: 50px; 
-            cursor: pointer; font-weight: 700; font-size: 14px; 
-            text-decoration: none; display: inline-flex; align-items: center; gap: 8px; 
-            transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-transform: uppercase;
-        }
+        /* HEADER */
+        header { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; gap: 15px; }
+        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; text-transform: uppercase; transition: transform 0.2s; }
+        .btn-action:active { transform: scale(0.95); }
         .btn-print { background-color: var(--c-primary); color: white; border: 2px solid var(--c-primary); }
-        .btn-print:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(36, 60, 122, 0.2); }
-        
         .btn-edit { background-color: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
-        .btn-edit:hover { background-color: var(--c-secondary); color: white; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(43, 148, 204, 0.2); }
 
-        /* --- TÍTULOS --- */
-        .day-header { text-align: center; margin-bottom: 20px; margin-top: 5px; }
-        .day-title { color: var(--c-primary); font-size: 38px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
-        .day-subtitle { color: var(--c-secondary); font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        /* TÍTULOS */
+        .day-header { text-align: center; margin-bottom: 15px; }
+        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
+        .day-subtitle { color: var(--c-secondary); font-size: 14px; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
 
-        /* --- NAVEGACIÓN --- */
-        .days-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
-        .nav-btn {
-            padding: 8px 16px; border: 1px solid #eee; background: white; color: #666; 
-            border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s;
-        }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); box-shadow: 0 4px 12px rgba(36, 60, 122, 0.2); }
-        .nav-btn:hover:not(.active) { color: var(--c-accent); background: #fff0f7; border-color: #ffd6ed; }
+        /* NAVEGACIÓN */
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; justify-content: center; }
+        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
+        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* --- TABLA REDONDEADA --- */
+        /* --- ESTRUCTURA VISUAL --- */
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        table {
-            table-layout: fixed; 
-            width: auto; 
-            margin: 0 auto;
-            border-collapse: separate; 
-            border-spacing: 0;
-            border-radius: 16px; 
-            overflow: hidden; 
-            border: 1px solid #dce1e6; 
-            box-shadow: 0 0 0 1px #dce1e6; 
-        }
-
-        th, td {
-            border-bottom: 1px solid #eaRqf2;
-            border-right: 1px solid #eaRqf2;
-            padding: 6px 5px; 
-            text-align: center; vertical-align: middle; 
-            font-size: 11.5px; 
-            color: #444; 
-            white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; 
-        }
-
-        /* ANCHO DINÁMICO CALCULADO */
-        th:not(.col-hora), td:not(.col-hora) {
-            width: var(--dynamic-col-width);
-            min-width: var(--dynamic-col-width);
-            max-width: var(--dynamic-col-width);
-        }
-
-        th { 
-            background-color: var(--c-primary); 
-            color: white; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            padding: 12px 5px; 
-            letter-spacing: 0.5px;
-            border-right: 1px solid rgba(255,255,255,0.1); 
-            border-bottom: none;
-        }
         
-        .col-hora { 
-            background-color: #f8f9fa; color: var(--c-primary); 
-            font-weight: 800; width: 45px; border-right: 1px solid #dce1e6;
-        }
-        th.col-hora { background-color: #1a2e5e; color: white; }
-        
-        .separator-col { border-left: 3px solid var(--c-primary) !important; }
+        /* Contenedor Flex para PC (uno al lado del otro) */
+        .tables-wrapper { display: flex; gap: 20px; align-items: flex-start; }
+        .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; box-shadow: 0 0 0 1px #dce1e6; }
 
-        .student-cell { font-weight: 600; text-transform: uppercase; cursor: help; color: var(--c-primary); }
-        tr:hover td { background-color: #fafbff; }
+        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid #dce1e6; }
+        .mobile-section-title.ing { color: var(--c-accent); }
+
+        /* --- ESTILOS TABLA PC --- */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 8px 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .col-hora { width: 45px; background: #f8f9fa; font-weight: 800; color: var(--c-primary); border-right: 1px solid #ddd; }
+        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
+        th.col-hora { background: #1a2e5e; }
+
+        /* Nombres */
+        .student-cell { font-weight: 600; text-transform: uppercase; color: var(--c-primary); }
         tr.current-slot td { background-color: var(--highlight-row) !important; }
-        tr { height: 32px; } 
 
-        .spinner {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%;
-            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
+        /* --- 📱 MÓVIL: EL GRID 3x2 --- */
+        @media (max-width: 900px) {
+            body { padding: 10px; }
+            .container { padding: 10px; width: 100%; box-sizing: border-box; }
+            
+            /* Apilamos tablas */
+            .tables-wrapper { flex-direction: column; gap: 30px; }
+            .table-block { width: 100%; }
+            .mobile-section-title { display: block; }
+            
+            /* Ocultamos cabeceras (limpieza) */
+            table thead { display: none; }
+
+            /* LA MAGIA: Convertimos la fila en Grid */
+            table tbody tr {
+                display: grid;
+                /* 1 Columna Hora + 3 Columnas Alumnos */
+                grid-template-columns: 50px 1fr 1fr 1fr;
+                border-bottom: 2px solid #e0e0e0;
+            }
+
+            /* La hora ocupa 2 pisos de alto */
+            table tbody td.col-hora {
+                grid-row: 1 / 3; 
+                grid-column: 1;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 14px; background: #f1f3f7;
+            }
+
+            /* Los alumnos fluyen: 3 arriba, 3 abajo */
+            table tbody td:not(.col-hora) {
+                height: 45px; /* Altura cómoda táctil */
+                display: flex; align-items: center; justify-content: center;
+                font-size: 13px;
+                border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0;
+                white-space: normal; line-height: 1.1;
+            }
         }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- IMPRESIÓN --- */
-        @page { size: landscape; margin: 5mm; } 
+        /* IMPRESIÓN */
         @media print {
             @page { size: landscape; } 
             body { background: white; padding: 0; margin: 0; zoom: 75%; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; width: 100%; }
-            .web-brand, header, .days-nav, .spinner { display: none; } 
+            .container { width: 100%; border: none; box-shadow: none; max-width: none; padding: 0; }
+            .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
             .planning-container.visible { display: block !important; page-break-after: always; }
-            
-            table { 
-                border-collapse: collapse !important; 
-                border-radius: 0 !important; 
-                border: 2px solid var(--c-primary) !important; 
-                box-shadow: none !important;
-                width: 100% !important;
-            }
-            
-            th:not(.col-hora), td:not(.col-hora) { width: var(--dynamic-col-width) !important; }
-
-            th, td { 
-                border: 1px solid var(--c-primary) !important; 
-                color: var(--c-primary) !important; 
-                background: white !important; 
-                padding: 4px !important; 
-            }
-            
-            th { color: black !important; background: #eee !important; border-bottom: 2px solid black !important; }
-            .day-title { font-size: 28px; color: black; }
-            .separator-col { border-left: 3px solid black !important; }
-            tr.current-slot td { background-color: transparent !important; }
-            .student-cell { border-bottom: none !important; }
+            .tables-wrapper { display: block; }
+            table { display: table; border: 2px solid var(--c-primary) !important; width: 100% !important; margin-bottom: 20px; table-layout: fixed; }
+            thead { display: table-header-group !important; }
+            tbody tr { display: table-row !important; border-bottom: 1px solid #ccc; }
+            td, th { display: table-cell !important; border: 1px solid var(--c-primary) !important; color: var(--c-primary) !important; background: white !important; padding: 4px !important; height: auto !important; }
+            .col-hora { grid-row: auto !important; grid-column: auto !important; }
         }
     </style>
 </head>
@@ -195,9 +144,11 @@
 </div>
 
 <script>
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=314818236#gid=314818236"; 
+    // 👇 PEGA AQUÍ TU ENLACE DE EDICIÓN DE GOOGLE SHEETS
+    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/TU_ID_DE_HOJA_AQUI/edit"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
+    // URLs PÚBLICAS (CSV)
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -212,31 +163,26 @@
         });
     }
 
-    // Calcula ancho asegurando espacio para "Nombre + Inicial" si hay duplicados
     function calcularAnchoMaximo(todasLasHojas) {
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
         context.font = "600 11.5px 'Segoe UI'"; 
-
         let maxAncho = 50; 
-
         todasLasHojas.forEach(hoja => {
             for(let i=1; i<hoja.length; i++) {
                 const row = hoja[i];
                 if(!row) continue;
-                const indicesAlumnos = [1,2,3,4,5,6, 8,9,10,11,12,13];
-                indicesAlumnos.forEach(idx => {
+                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let nombreFull = (row[idx] || "").trim();
                     if(nombreFull) {
                         let soloNombre = nombreFull.split(" ")[0].toUpperCase();
-                        // Medimos el nombre + un extra por si acaso se le añade la inicial
-                        let metrics = context.measureText(soloNombre + " M."); 
+                        let metrics = context.measureText(soloNombre + " M.");
                         if(metrics.width > maxAncho) maxAncho = metrics.width;
                     }
                 });
             }
         });
-        return Math.ceil(maxAncho + 20); // Margen seguro
+        return Math.ceil(maxAncho + 20);
     }
 
     async function cargarTodo() {
@@ -247,10 +193,10 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
+        // Ajuste de ancho (para PC)
         const anchoCalculado = calcularAnchoMaximo(todosLosDatos);
         document.documentElement.style.setProperty('--dynamic-col-width', anchoCalculado + 'px');
 
-        // BOTONES CON NOMBRE COMPLETO
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
@@ -258,9 +204,10 @@
         dias.forEach((dia, index) => {
             const data = todosLosDatos[index]; 
             const headers = data[0] || [];
-            const h_apoyo_hora = headers[0] || "HORA";
+            
+            const h_apoyo_hora = headers[0] || "H";
             const h_apoyo_alum = headers.slice(1, 7);
-            const h_ing_hora = headers[7] || "HORA";
+            const h_ing_hora = headers[7] || "H";
             const h_ing_alum = headers.slice(8, 14);
 
             let html = `
@@ -270,29 +217,27 @@
                     <div class="day-subtitle">CSE Elisa Gundín</div>
                 </div>
                 
-                <table>
-                    <thead>
-                        <tr>
-                            <th class="col-hora">${h_apoyo_hora}</th>
-                            ${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}
-                            
-                            <th class="col-hora separator-col">${h_ing_hora}</th>
-                            ${h_ing_alum.map(h => `<th>${h}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody>`;
+                <div class="tables-wrapper">
+                    <div class="table-block">
+                        <div class="mobile-section-title">📚 Apoyo</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="col-hora">${h_apoyo_hora}</th>
+                                    ${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>`;
+
+            let filasIngles = "";
 
             for(let i = 1; i < data.length; i++) {
                 const row = data[i];
-                if(!row || row.length === 0) continue;
-                if(!row[0] && !row[7]) continue;
+                if(!row || (!row[0] && !row[7])) continue;
 
-                // --- LÓGICA DE DUPLICADOS ---
-                // 1. Recopilar nombres de pila de esta fila
+                // DUPLICADOS
                 let nombresPilaMap = {};
-                const indicesAlumnos = [1,2,3,4,5,6, 8,9,10,11,12,13];
-                
-                indicesAlumnos.forEach(idx => {
+                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let full = (row[idx] || "").trim();
                     if(full) {
                         let first = full.split(" ")[0].toUpperCase();
@@ -300,41 +245,47 @@
                     }
                 });
 
-                // Función interna para decidir qué mostrar
-                const obtenerTextoCelda = (full) => {
-                    if(!full) return { text: "", title: "" };
+                const generarCelda = (full) => {
+                    if(!full) return `<td></td>`;
                     full = full.trim();
                     let first = full.split(" ")[0].toUpperCase();
-                    
-                    // Si el nombre aparece más de 1 vez en esta fila, añadimos inicial
-                    let displayText = first;
+                    let display = first;
                     if(nombresPilaMap[first] > 1) {
                         let partes = full.split(" ");
-                        if(partes.length > 1) {
-                            let inicial = partes[1].charAt(0).toUpperCase();
-                            displayText = `${first} ${inicial}.`;
-                        }
+                        if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + ".";
                     }
-                    return { text: displayText, title: full.toUpperCase() };
+                    return `<td class="student-cell" title="${full.toUpperCase()}">${display}</td>`;
                 };
 
-                html += `<tr>`;
-                
-                html += `<td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) {
-                    let info = obtenerTextoCelda(row[k]);
-                    html += `<td class="student-cell" title="${info.title}">${info.text}</td>`;
-                }
-
-                html += `<td class="col-hora separator-col">${row[7] || ""}</td>`;
-                for(let k=8; k<=13; k++) {
-                    let info = obtenerTextoCelda(row[k]);
-                    html += `<td class="student-cell" title="${info.title}">${info.text}</td>`;
-                }
-
+                // APOYO
+                html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
+                for(let k=1; k<=6; k++) html += generarCelda(row[k]);
                 html += `</tr>`;
+
+                // INGLÉS (Guardamos para luego)
+                filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
+                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k]);
+                filasIngles += `</tr>`;
             }
-            html += `</tbody></table></div>`;
+
+            html += `</tbody></table></div>`; // Fin Apoyo
+
+            // INGLÉS
+            html += `
+                    <div class="table-block">
+                        <div class="mobile-section-title ing">🇬🇧 Inglés</div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="col-hora">${h_ing_hora}</th>
+                                    ${h_ing_alum.map(h => `<th>${h}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>${filasIngles}</tbody>
+                        </table>
+                    </div>
+                </div> </div>`;
+
             container.innerHTML += html;
         });
 
@@ -359,8 +310,7 @@
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora:first-child'); 
+        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora'); 
         
         filasHoras.forEach(tdHora => {
             const horaStr = tdHora.innerText; 
