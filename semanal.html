@@ -70,7 +70,7 @@
         table { width: 100%; border-collapse: collapse; background: white; border: 2px solid var(--c-primary); table-layout: fixed; }
         th, td { border: 1px solid #ccc; padding: 6px 2px; text-align: center; vertical-align: middle; font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
         
-        td[title] { cursor: help; } /* Cursor */
+        td[title] { cursor: help; }
 
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
@@ -93,13 +93,13 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* =========================================
-           🖨️ IMPRESIÓN (ESTRICTA)
+           🖨️ IMPRESIÓN
            ========================================= */
         @media print {
             @page { size: landscape; margin: 5mm; }
             
             body { background: white; padding: 0; zoom: 90%; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            * { color: black !important; text-shadow: none !important; } /* Todo negro */
+            * { color: black !important; text-shadow: none !important; }
 
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
@@ -114,7 +114,6 @@
             table { width: 100% !important; border: 1px solid black !important; margin-bottom: 0; }
             th, td { border: 1px solid black !important; background: white !important; color: black !important; padding: 4px !important; }
             
-            /* RESET COLORES */
             tr.current-slot td, tr.current-slot .col-hora { background: white !important; color: black !important; }
             
             /* ACTIVAR SALTO DE PÁGINA */
@@ -172,21 +171,23 @@
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
 
-        // DEFINIMOS TODAS LAS HORAS SEGUIDAS
-        const todosSlots = [
+        // Horarios definidos
+        const slotsApoyo = [
             "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", // Mañana
             "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30" // Tarde
+        ];
+        
+        // Inglés SOLO Tarde como pediste
+        const slotsIngles = [
+            "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"
         ];
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
             let mapa = {};
             
-            // 1. Encontrar dónde empieza la tabla de inglés (para arreglar el Miércoles)
-            // Buscamos la primera columna después de la 7 que tenga un nombre válido (no hora, no vacío)
-            let colInicioIngles = 9; // Valor por defecto
-            
-            // Escaneamos la fila 5 para calibrar
+            // 1. Calibrar columna Inglés (Detector automático para el Miércoles)
+            let colInicioIngles = 9; 
             if(data.length > 5) {
                 let rowPrueba = data[5]; 
                 for(let c=8; c<20; c++) {
@@ -199,10 +200,11 @@
             }
             
             data.forEach(row => {
-                // Detección de Hora múltiple
+                // Buscamos la hora en columna 1 (B), 0 (A) o cerca del inglés
                 let horaEncontrada = null;
                 [0, 1, 8, colInicioIngles-1].forEach(idx => {
                     let val = (row[idx] || "").trim().substring(0,5);
+                    // Aseguramos que es formato hora 00:00
                     if(val.includes(":") && !isNaN(val.replace(":",""))) {
                         horaEncontrada = val;
                     }
@@ -213,7 +215,7 @@
                 }
             });
 
-            // --- GENERAR CELDAS ---
+            // Función para pintar celdas
             const getCells = (hora, startCol, count, cssClass) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
@@ -232,27 +234,27 @@
                             <div class="day-subtitle">CSE Elisa Gundín</div>
                         </div>`;
 
-            // === TABLA 1: APOYO (CARA A) - TODAS LAS HORAS ===
+            // === TABLA 1: APOYO (Incluye MAÑANA y Tarde) ===
             html += `<div class="table-wrapper">
-                        <div class="table-title">CLASES DE APOYO (CARA A)</div>
+                        <div class="table-title">CLASES DE APOYO</div>
                         <table>
                             <thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead>
                             <tbody>`;
-            todosSlots.forEach(h => {
+            slotsApoyo.forEach(h => {
                 html += `<tr><td class="col-hora">${h}</td>${getCells(h, 2, 6, "std-cell")}</tr>`;
             });
             html += `</tbody></table></div>`;
 
-            // === SALTO DE PÁGINA (SOLO EN IMPRESORA) ===
+            // === SALTO DE PÁGINA ===
             html += `<div class="page-break"></div>`;
 
-            // === TABLA 2: INGLÉS (CARA B) - TODAS LAS HORAS (Por seguridad) ===
+            // === TABLA 2: INGLÉS (Solo desde las 15:00) ===
             html += `<div class="table-wrapper">
-                        <div class="table-title title-ingles">CLASES DE INGLÉS (CARA B)</div>
+                        <div class="table-title title-ingles">CLASES DE INGLÉS</div>
                         <table class="table-ingles">
                             <thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead>
                             <tbody>`;
-            todosSlots.forEach(h => {
+            slotsIngles.forEach(h => {
                 html += `<tr><td class="col-hora">${h}</td>${getCells(h, colInicioIngles, 6, "ing-cell")}</tr>`;
             });
             html += `</tbody></table></div>`;
