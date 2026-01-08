@@ -15,7 +15,7 @@
 
     <style>
         /* =========================================
-           1. ESTILOS GENERALES Y COLORES
+           ESTILOS GENERALES
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -39,23 +39,13 @@
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* --- HEADER Y DECORACIÓN --- */
-        .web-brand {
-            text-align: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-        }
-        .web-logo-img {
-            height: 75px; 
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
+        /* HEADER */
+        .web-brand { text-align: center; margin-bottom: 20px; padding-bottom: 10px; }
+        .web-logo-img { height: 75px; object-fit: contain; transition: transform 0.3s ease; }
         .web-logo-img:hover { transform: scale(1.05); }
 
         .brand-line {
-            height: 4px;
-            width: 100px;
-            margin: 15px auto 0;
+            height: 4px; width: 100px; margin: 15px auto 0;
             background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
             border-radius: 2px;
         }
@@ -77,11 +67,10 @@
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* --- VISIBILIDAD DE VISTAS --- */
+        /* VISTAS */
         .view-print { display: none; } 
         .view-web { display: block; }  
 
-        /* --- ESTRUCTURA TABLAS WEB --- */
         .planning-container { display: none; margin-bottom: 40px; }
         .planning-container.visible { display: block; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -106,30 +95,19 @@
             text-align: center; vertical-align: middle; 
             font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
+        td[title] { cursor: help; }
 
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
-        
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
         
-        .ing-header { 
-            background-color: #f0f4f8 !important; 
-            color: var(--c-accent) !important;    
-            font-weight: 800;
-        }
+        .ing-header { background-color: #f0f4f8 !important; color: var(--c-accent) !important; font-weight: 800; }
         .ing-cell { background-color: white; font-weight: 600; }
         .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        /* RESALTADO FILA ACTUAL (WEB) */
-        tr.current-slot td { 
-            background-color: var(--c-accent) !important; 
-            color: white !important; 
-            border-color: white !important;
-        }
-        tr.current-slot .col-hora {
-             background-color: #d14ca0 !important; 
-             color: white !important;
-        }
+        /* RESALTADO */
+        tr.current-slot td { background-color: var(--c-accent) !important; color: white !important; border-color: white !important; }
+        tr.current-slot .col-hora { background-color: #d14ca0 !important; color: white !important; }
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -188,15 +166,8 @@
 
             .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
             
-            tr.current-slot td { 
-                background-color: transparent !important; 
-                color: black !important; 
-                border-color: #666 !important;
-            }
-            tr.current-slot .col-hora { 
-                background-color: #ddd !important; 
-                color: black !important;
-            }
+            tr.current-slot td { background-color: transparent !important; color: black !important; border-color: #666 !important; }
+            tr.current-slot .col-hora { background-color: #ddd !important; color: black !important; }
             
             .ing-header { color: black !important; }
             .sep-border { border-left: 1px solid #999 !important; }
@@ -257,46 +228,50 @@
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
-            let mapa = {};
+            
+            // CREAMOS DOS MAPAS INDEPENDIENTES
+            // mapaApoyo: Usa la hora de la Columna B (índice 1)
+            // mapaIngles: Usa la hora de la Columna I (índice 8)
+            let mapaApoyo = {};
+            let mapaIngles = {};
+
             data.forEach(row => {
-                if(row[1]) {
-                    let hora = row[1].trim().substring(0,5);
-                    mapa[hora] = row; 
+                // 1. Mapear Apoyo (Hora en Columna B)
+                let horaApoyo = (row[1] || "").trim().substring(0,5);
+                if(horaApoyo.includes(":") && !isNaN(horaApoyo.replace(":",""))) {
+                    mapaApoyo[horaApoyo] = row;
+                }
+
+                // 2. Mapear Inglés (Hora en Columna I -> índice 8)
+                let horaIngles = (row[8] || "").trim().substring(0,5);
+                if(horaIngles.includes(":") && !isNaN(horaIngles.replace(":",""))) {
+                    mapaIngles[horaIngles] = row;
                 }
             });
 
-            // Generar celdas Apoyo (ESTAS NO SE TOCAN)
+            // Función Apoyo: Busca en mapaApoyo y lee columnas C-H (índices 2-7)
             const getCellsApoyo = (hora) => {
-                let rowData = mapa[hora] || [];
+                let rowData = mapaApoyo[hora] || [];
                 let cells = "";
                 for(let i=2; i<=7; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
-                    cells += `<td class="std-cell">${nombre}</td>`;
+                    let fullName = (rowData[i] || "").trim();
+                    let shortName = fullName.split(" ")[0];
+                    cells += `<td class="std-cell" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
             };
 
-            // Generar celdas Inglés (MODIFICADO: Escáner inteligente para evitar huecos)
+            // Función Inglés: Busca en mapaIngles y lee columnas J-O (índices 9-14)
             const getCellsIngles = (hora) => {
-                let rowData = mapa[hora] || [];
-                let alumnosEncontrados = [];
-                
-                // Escaneamos desde la columna 8 hasta la 20 buscando nombres
-                // Saltamos las celdas vacías y las que parecen horas (ej: "18:00")
-                for(let c=8; c<=20; c++) {
-                    let val = (rowData[c] || "").trim();
-                    if(val.length > 1 && !val.includes(":")) {
-                        alumnosEncontrados.push(val);
-                    }
-                }
-
+                let rowData = mapaIngles[hora] || []; // ¡Ahora busca por la hora correcta!
                 let cells = "";
-                // Rellenamos las 6 columnas fijas con lo que hayamos encontrado
-                for(let i=0; i<6; i++) {
-                    let nombre = (alumnosEncontrados[i] || "").split(" ")[0];
+                // J es índice 9, O es índice 14. Total 6 columnas.
+                for(let i=9; i<=14; i++) {
+                    let fullName = (rowData[i] || "").trim();
+                    let shortName = fullName.split(" ")[0];
                     let classes = "ing-cell"; 
-                    if (i===0) classes += " sep-border";
-                    cells += `<td class="${classes}">${nombre}</td>`;
+                    if (i===9) classes += " sep-border";
+                    cells += `<td class="${classes}" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
             };
