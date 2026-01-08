@@ -140,7 +140,7 @@
         }
 
         /* =========================================
-           🖨️ IMPRESIÓN LIMPIA - CORREGIDO BLANCO
+           🖨️ IMPRESIÓN LIMPIA
            ========================================= */
         @page { size: landscape; margin: 10mm; }
 
@@ -151,7 +151,6 @@
                 print-color-adjust: exact !important;
             }
             
-            /* 🔥 FORZAR COLOR NEGRO EN TODO TEXTO 🔥 */
             * { color: black !important; text-shadow: none !important; }
 
             .web-brand, header, .days-nav, .spinner { display: none !important; }
@@ -244,8 +243,7 @@
             let mapa = {};
             
             data.forEach(row => {
-                // 🔥 DETECCIÓN INTELIGENTE DE HORA 🔥
-                // Buscamos una hora válida en la columna 0, 1 u 8 (por si hay doble tabla)
+                // DETECCIÓN INTELIGENTE DE HORA
                 let horaEncontrada = null;
                 [0, 1, 8, 9].forEach(idx => {
                     let val = (row[idx] || "").trim().substring(0,5);
@@ -260,6 +258,17 @@
             });
 
             // --- FUNCIÓN APOYO ---
+            // Recogemos los nombres de apoyo para filtrar después
+            const getNombresApoyo = (hora) => {
+                let rowData = mapa[hora] || [];
+                let nombres = [];
+                for(let i=2; i<=7; i++) {
+                    let val = (rowData[i] || "").trim();
+                    if(val) nombres.push(val);
+                }
+                return nombres;
+            };
+
             const getCellsApoyo = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
@@ -271,21 +280,28 @@
                 return cells;
             };
 
-            // --- FUNCIÓN INGLÉS MEJORADA ---
+            // --- FUNCIÓN INGLÉS REPARADA (FILTRO ANTI-MAÑANA Y RECONSTRUCTOR) ---
             const getCellsIngles = (hora) => {
                 let rowData = mapa[hora] || [];
                 let alumnosEncontrados = [];
-                
-                // Escaneamos un rango amplio (Col 8 a 22) por si las columnas se movieron
-                for(let c=8; c<=22; c++) {
+                let alumnosDeApoyo = getNombresApoyo(hora); // Obtenemos los de la mañana para no repetirlos
+
+                // 1. Escaneo inteligente: Miramos desde la col 9 hasta la 30
+                // Saltamos la 8 por seguridad.
+                for(let c=9; c<=30; c++) {
                     let val = (rowData[c] || "").trim();
-                    // Filtramos celdas que NO sean horas y tengan texto
-                    if (val.length > 1 && !val.includes(":")) {
+                    
+                    // FILTROS:
+                    // - Que no sea vacío
+                    // - Que no sea una hora
+                    // - Que NO esté ya en la lista de Apoyo (evita que los de la mañana salgan en la tarde)
+                    if (val.length > 1 && !val.includes(":") && !alumnosDeApoyo.includes(val)) {
                         alumnosEncontrados.push(val);
                     }
                 }
 
                 let cells = "";
+                // Rellenamos las 6 casillas de inglés
                 for(let i=0; i<6; i++) {
                     let fullName = alumnosEncontrados[i] || ""; 
                     let shortName = fullName.split(" ")[0];
