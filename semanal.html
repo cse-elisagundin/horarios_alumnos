@@ -3,25 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario Doble - CSE Elisa Gundín</title>
     
-    <title>Horario Semanal - CSE Elisa Gundín</title>
-    <meta name="theme-color" content="#243c7a">
-    
-    <link rel="manifest" href="manifest_semanal.json">
-    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* =========================================
-           ESTILOS GENERALES
-           ========================================= */
+        /* --- PALETA CORPORATIVA --- */
         :root { 
-            --c-primary: #243c7a;   
-            --c-secondary: #2b94cc; 
-            --c-accent: #fa65c3;    
+            --c-primary: #243c7a;  /* Azul Oscuro */
+            --c-secondary: #2b94cc; /* Azul Claro */
+            --c-accent: #fa65c3;    /* Rosa */
             --bg-body: #f4f6f9;
+            --bg-container: #ffffff;
+            --highlight-row: rgba(250, 101, 195, 0.12);
         }
         
         body { 
@@ -31,147 +26,121 @@
         }
 
         .container { 
-            max-width: 98%; 
+            max-width: 1400px; /* Más ancho para caber los dos horarios */
             margin: 0 auto; 
-            background: #fff; 
-            padding: 20px; 
+            background: var(--bg-container); 
+            padding: 30px; 
             border-radius: 12px; 
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* HEADER */
-        .web-brand { text-align: center; margin-bottom: 20px; padding-bottom: 10px; }
+        /* --- LOGO Y BRANDING --- */
+        .web-brand { text-align: center; margin-bottom: 20px; padding-bottom: 20px; }
         .web-logo-img { height: 75px; object-fit: contain; transition: transform 0.3s ease; }
         .web-logo-img:hover { transform: scale(1.05); }
+        .brand-line { height: 4px; width: 100px; margin: 15px auto 0; background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 2px; }
 
-        .brand-line {
-            height: 4px; width: 100px; margin: 15px auto 0;
-            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
-            border-radius: 2px;
-        }
-
-        header { display: flex; justify-content: center; gap: 20px; margin-bottom: 20px; }
+        /* --- HEADER BOTONES --- */
+        header { display: flex; justify-content: center; align-items: center; margin-bottom: 30px; gap: 20px; }
 
         .btn-action {
-            padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; 
-            text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
-            text-transform: uppercase; font-size: 14px;
+            padding: 12px 25px; border-radius: 8px; cursor: pointer; 
+            font-weight: 700; font-size: 15px; text-decoration: none; 
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-transform: uppercase;
         }
-        .btn-print { background: var(--c-primary); color: white; border: none; }
-        .btn-edit { background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
+        .btn-print { background-color: var(--c-primary); color: white; border: 2px solid var(--c-primary); }
+        .btn-print:hover { background-color: #1a2e5e; transform: translateY(-2px); }
+        .btn-edit { background-color: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
+        .btn-edit:hover { background-color: var(--c-accent); color: white; border-color: var(--c-accent); transform: translateY(-2px); }
 
+        /* --- TÍTULOS --- */
+        .day-header { text-align: center; margin-bottom: 25px; margin-top: 10px; }
+        .day-title { color: var(--c-primary); font-size: 42px; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
+        .day-subtitle { color: var(--c-secondary); font-size: 18px; font-weight: 600; text-transform: uppercase; }
+
+        /* --- NAVEGACIÓN --- */
         .days-nav { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .nav-btn {
-            padding: 8px 16px; border: 1px solid #ddd; background: white; color: #555; 
-            border-radius: 20px; cursor: pointer; font-weight: 600;
+            padding: 10px 20px; border: 1px solid #e0e0e0; background: white; color: #555; 
+            border-radius: 50px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;
         }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
+        .nav-btn:hover:not(.active) { border-color: var(--c-accent); color: var(--c-accent); background: #fff5fa; }
 
-        /* VISTAS */
-        .view-print { display: none; } 
-        .view-web { display: block; }  
-
-        .planning-container { display: none; margin-bottom: 40px; }
-        .planning-container.visible { display: block; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .day-header { text-align: center; margin-bottom: 10px; margin-top: 10px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 800; text-transform: uppercase; }
-
-        .section-title {
-            background: var(--c-primary); color: white; text-align: center;
-            font-weight: 700; padding: 5px; margin-top: 15px; border-radius: 4px 4px 0 0;
-            text-transform: uppercase; font-size: 14px; letter-spacing: 1px;
+        .spinner {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%;
+            width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- TABLA DOBLE --- */
+        .planning-container { display: none; animation: fadeIn 0.4s ease; }
+        .planning-container.visible { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         table {
-            width: 100%; border-collapse: collapse; 
-            background: white; border: 2px solid var(--c-primary);
-            table-layout: fixed;
+            width: 100%; /* Ocupar ancho disponible */
+            margin: 0 auto;
+            border-collapse: collapse; 
+            border: 2px solid var(--c-primary); 
+            white-space: nowrap;
+            background: white;
         }
 
         th, td {
-            border: 1px solid #ccc; padding: 6px 2px;
+            border: 1px solid var(--c-primary); 
+            padding: 6px 8px; /* Padding reducido para que quepan tantas columnas */
             text-align: center; vertical-align: middle; 
-            font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+            font-size: 12px; /* Fuente ligeramente reducida por espacio */
+            color: var(--c-primary); 
         }
-        td[title] { cursor: help; }
 
-        th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
-        .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
-        .std-cell { font-weight: 600; }
+        th { 
+            font-weight: 800; text-transform: uppercase; padding: 10px; 
+            border-bottom: 3px solid var(--c-primary); background-color: #f8fbff; 
+        }
         
-        .ing-header { background-color: #f0f4f8 !important; color: var(--c-accent) !important; font-weight: 800; }
-        .ing-cell { background-color: white; font-weight: 600; }
-        .sep-border { border-left: 3px solid var(--c-primary) !important; }
-
-        /* RESALTADO */
-        tr.current-slot td { background-color: var(--c-accent) !important; color: white !important; border-color: white !important; }
-        tr.current-slot .col-hora { background-color: #d14ca0 !important; color: white !important; }
-
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* MÓVIL */
-        @media only screen and (max-width: 768px) {
-            .container { padding: 5px; width: 100%; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            .section-title { margin-bottom: 0; border-radius: 8px 8px 0 0; margin-top: 20px; }
-            tr { margin-bottom: 10px; background: white; border: 1px solid #ddd; border-top: none; padding: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-            .col-hora { display: block; width: 100%; background: #eef2f5; color: var(--c-primary); font-size: 16px; margin-bottom: 10px; padding: 5px; border-radius: 4px; }
-            .mobile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
-            td { border: none; padding: 0; min-height: 0; }
-            .std-cell, .ing-cell { border: 1px solid #eee; padding: 8px 2px; border-radius: 4px; font-size: 13px; min-height: 35px; display: flex; align-items: center; justify-content: center; }
-            .mob-label { grid-column: 1 / -1; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-top: 10px; margin-bottom: 4px; color: #666; border-bottom: 1px solid #eee; }
-            .mob-label.first { margin-top: 0; }
+        /* Estilos específicos de columna */
+        .col-hora { font-weight: 800; color: #111; background-color: #f4f6f9; width: 50px; }
+        
+        /* SEPARADOR ENTRE APOYO E INGLÉS */
+        .separator-col {
+            border-left: 4px solid var(--c-primary) !important; /* Borde grueso a la izquierda de la hora de inglés */
         }
 
-        /* IMPRESIÓN */
-        @page { size: landscape; margin: 5mm; }
+        .student-cell {
+            font-weight: 700; text-transform: uppercase; cursor: help; 
+            border-bottom: 2px dotted var(--c-secondary);
+        }
+        
+        tr.current-slot { background-color: var(--highlight-row); }
+        tr { height: 35px; } 
 
+        /* --- IMPRESIÓN --- */
+        @page { size: landscape; margin: 5mm; } /* CAMBIO A LANDSCAPE RECOMENDADO POR ANCHURA */
+        
         @media print {
-            body { 
-                background: white; 
-                padding-left: 15px !important; 
-                padding-right: 5px !important;
-                padding-top: 0; padding-bottom: 0;
-                zoom: 75%; 
-                -webkit-print-color-adjust: exact;
-            }
+            /* Forzamos vertical si el usuario prefiere, pero ajustamos zoom */
+            @page { size: landscape; } 
+
+            body { background: white; padding: 0; margin: 0; zoom: 75%; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
+            .web-brand, header, .days-nav, .spinner { display: none; } 
             
-            .web-brand, header, .days-nav, .spinner { display: none !important; }
-            .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
             .planning-container.visible { display: block !important; page-break-after: always; }
-
-            .view-web { display: none !important; } 
-            .view-print { display: block !important; }
-
-            .print-section-header {
-                font-size: 14px; font-weight: 800; color: black; 
-                background: none; border: none; padding: 0; margin: 0; 
-                text-transform: uppercase; text-decoration: underline; line-height: 1.2;
-            }
-
-            .ing-section { margin-top: 0px !important; padding-top: 5px !important; } 
-
-            table { width: 100% !important; border: 1px solid #000 !important; table-layout: fixed !important; border-collapse: collapse !important; margin-bottom: 0px !important; }
-            thead { display: table-header-group !important; }
-            tr { display: table-row !important; height: 22px !important; page-break-inside: avoid; }
+            table { border: 2px solid var(--c-primary) !important; width: 100% !important; }
             
-            th, td { 
-                display: table-cell !important; border: 1px solid #666 !important; color: black !important; 
-                padding: 2px !important; font-size: 12px !important; vertical-align: middle;
-            }
+            th, td { border: 1px solid var(--c-primary) !important; color: var(--c-primary) !important; padding: 4px !important; }
+            
+            .day-title { font-size: 28px; }
+            
+            /* El borde grueso separador en impresión */
+            .separator-col { border-left: 3px solid var(--c-primary) !important; }
 
-            .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
-            
-            tr.current-slot td { background-color: transparent !important; color: black !important; border-color: #666 !important; }
-            tr.current-slot .col-hora { background-color: #ddd !important; color: black !important; }
-            
-            .ing-header { color: black !important; }
-            .sep-border { border-left: 1px solid #999 !important; }
-            .mobile-grid { display: none; }
+            tr.current-slot { background-color: transparent !important; }
+            .student-cell { border-bottom: none !important; }
+            th { background-color: transparent !important; }
         }
     </style>
 </head>
@@ -180,11 +149,12 @@
 <div class="container">
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
-        <div class="brand-line"></div> </div>
+        <div class="brand-line"></div>
+    </div>
 
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar</a>
+        <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar Hoja</a>
     </header>
 
     <div class="days-nav" id="days-buttons"></div>
@@ -193,7 +163,7 @@
 </div>
 
 <script>
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
+    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/TU_ID_DE_HOJA_AQUI/edit"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
     const urls = {
@@ -204,12 +174,39 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
+    function resaltarHoraActual() {
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = diasSemana[new Date().getDay()];
+        
+        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
+        if (!urls[hoy]) return;
+        const contenedorHoy = document.getElementById(`view-${hoy}`);
+        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
+
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        // Buscamos en TODAS las columnas de hora (hay 2 por fila ahora)
+        // Pero basta con mirar la primera para marcar la fila entera
+        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora:first-child'); 
+        
+        filasHoras.forEach(tdHora => {
+            const horaStr = tdHora.innerText; 
+            if(horaStr.includes(":")) {
+                const [h, m] = horaStr.split(':').map(Number);
+                const slotStartMinutes = h * 60 + m;
+                const slotEndMinutes = slotStartMinutes + 30; // Asumimos 30 min
+                if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
+                    tdHora.closest('tr').classList.add('current-slot');
+                }
+            }
+        });
+    }
+    setInterval(resaltarHoraActual, 60000);
+
     function leerHoja(url) {
         return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { 
-                download: true, skipEmptyLines: true, 
-                complete: res => resolve(res.data), error: () => resolve([]) 
-            });
+            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
     }
 
@@ -218,97 +215,79 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
         
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
-
-        const slotsManana = ["11:00", "11:30", "12:00"];
-        const slotsTarde = ["15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30"];
-        const todosSlots = [...slotsManana, ...slotsTarde];
 
         for (const dia of dias) {
             const data = await leerHoja(urls[dia]);
             
-            // CREAMOS DOS MAPAS INDEPENDIENTES
-            // mapaApoyo: Usa la hora de la Columna B (índice 1)
-            // mapaIngles: Usa la hora de la Columna I (índice 8)
-            let mapaApoyo = {};
-            let mapaIngles = {};
+            // FILTRADO DE DATOS: 
+            // Apoyo (A-G): Indices 0 a 6
+            // Inglés (H-N): Indices 7 a 13
+            // Cabeceras están en row 0. Datos row 1 en adelante.
 
-            data.forEach(row => {
-                // 1. Mapear Apoyo (Hora en Columna B)
-                let horaApoyo = (row[1] || "").trim().substring(0,5);
-                if(horaApoyo.includes(":") && !isNaN(horaApoyo.replace(":",""))) {
-                    mapaApoyo[horaApoyo] = row;
+            // Obtenemos cabeceras del CSV (Fila 1 Excel -> index 0 array)
+            const headers = data[0] || [];
+            
+            // Títulos Apoyo
+            const h_apoyo_hora = headers[0] || "HORA";
+            const h_apoyo_alum = headers.slice(1, 7); // B a G
+
+            // Títulos Inglés
+            const h_ing_hora = headers[7] || "HORA";
+            const h_ing_alum = headers.slice(8, 14); // I a N
+
+            let html = `
+            <div id="view-${dia}" class="planning-container">
+                <div class="day-header">
+                    <div class="day-title">${dia.toUpperCase()}</div>
+                    <div class="day-subtitle">CSE Elisa Gundín</div>
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-hora">${h_apoyo_hora}</th>
+                            ${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}
+                            
+                            <th class="col-hora separator-col">${h_ing_hora}</th>
+                            ${h_ing_alum.map(h => `<th>${h}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            // ITERAMOS DESDE LA FILA 1 (DATOS) HASTA EL FINAL
+            // Esto maneja automáticamente si el miércoles tiene 13 filas y el resto 12.
+            for(let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if(!row || row.length === 0) continue;
+
+                // Datos Apoyo
+                const horaApoyo = row[0] || "";
+                
+                // Si la hora de apoyo está vacía, probablemente es una fila fantasma, pero el miércoles 
+                // puede tener datos extra. Lo pintamos si tiene contenido relevante.
+                
+                html += `<tr>`;
+                
+                // --- COLUMNAS APOYO ---
+                html += `<td class="col-hora">${horaApoyo}</td>`;
+                for(let k=1; k<=6; k++) {
+                    html += generarCelda(row[k]);
                 }
 
-                // 2. Mapear Inglés (Hora en Columna I -> índice 8)
-                let horaIngles = (row[8] || "").trim().substring(0,5);
-                if(horaIngles.includes(":") && !isNaN(horaIngles.replace(":",""))) {
-                    mapaIngles[horaIngles] = row;
+                // --- COLUMNAS INGLÉS ---
+                const horaIng = row[7] || "";
+                html += `<td class="col-hora separator-col">${horaIng}</td>`;
+                for(let k=8; k<=13; k++) {
+                    html += generarCelda(row[k]);
                 }
-            });
 
-            // Función Apoyo: Busca en mapaApoyo y lee columnas C-H (índices 2-7)
-            const getCellsApoyo = (hora) => {
-                let rowData = mapaApoyo[hora] || [];
-                let cells = "";
-                for(let i=2; i<=7; i++) {
-                    let fullName = (rowData[i] || "").trim();
-                    let shortName = fullName.split(" ")[0];
-                    cells += `<td class="std-cell" title="${fullName}">${shortName}</td>`;
-                }
-                return cells;
-            };
+                html += `</tr>`;
+            }
 
-            // Función Inglés: Busca en mapaIngles y lee columnas J-O (índices 9-14)
-            const getCellsIngles = (hora) => {
-                let rowData = mapaIngles[hora] || []; // ¡Ahora busca por la hora correcta!
-                let cells = "";
-                // J es índice 9, O es índice 14. Total 6 columnas.
-                for(let i=9; i<=14; i++) {
-                    let fullName = (rowData[i] || "").trim();
-                    let shortName = fullName.split(" ")[0];
-                    let classes = "ing-cell"; 
-                    if (i===9) classes += " sep-border";
-                    cells += `<td class="${classes}" title="${fullName}">${shortName}</td>`;
-                }
-                return cells;
-            };
-
-            let html = `<div id="view-${dia}" class="planning-container">
-                        <div class="day-header"><div class="day-title">${dia}</div></div>`;
-
-            // === VISTA WEB ===
-            html += `<div class="view-web">`;
-            html += `<div class="section-title">MAÑANA</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
-            slotsManana.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
-            html += `</tbody></table>`;
-            html += `<div class="section-title">TARDE</div>
-                     <table><thead><tr>
-                        <th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th>
-                        <th class="ing-header sep-border">ING 1</th><th class="ing-header">ING 2</th><th class="ing-header">ING 3</th><th class="ing-header">ING 4</th><th class="ing-header">ING 5</th><th class="ing-header">ING 6</th>
-                     </tr></thead><tbody>`;
-            slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
-
-            // === VISTA IMPRESIÓN ===
-            html += `<div class="view-print">`;
-            html += `<div class="print-section-header">APOYO ESCOLAR</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
-            todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
-            html += `</tbody></table>`;
-
-            html += `<div class="print-section-header ing-section">INGLÉS</div>
-                     <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
-            slotsTarde.forEach(h => {
-                let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
-                html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
-            });
-            html += `</tbody></table></div>`; 
-
-            html += `</div>`;
             container.innerHTML += html;
         }
 
@@ -317,9 +296,21 @@
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
-        
-        setInterval(resaltarHora, 60000);
-        setTimeout(resaltarHora, 1000);
+        setTimeout(resaltarHoraActual, 1000);
+    }
+
+    function generarCelda(nombreCompleto) {
+        let nombre = (nombreCompleto || "").trim();
+        let tooltip = "";
+        let display = "";
+
+        if(nombre) {
+            display = nombre.split(" ")[0]; // Solo nombre
+            tooltip = `title="${nombre.toUpperCase()}"`;
+            return `<td class="student-cell" ${tooltip}>${display}</td>`;
+        } else {
+            return `<td></td>`;
+        }
     }
 
     function cambiarDia(dia) {
@@ -328,27 +319,11 @@
             else div.classList.toggle('visible', div.id === `view-${dia}`);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            let texto = btn.innerText;
-            if((texto === dia) || (dia === 'Todo' && texto === 'VER TODO')) btn.classList.add('active'); 
-            else btn.classList.remove('active');
+            let textoBtn = btn.innerText; 
+            let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
+            if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
-        resaltarHora();
-    }
-
-    function resaltarHora() {
-        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-        const now = new Date();
-        const mins = now.getHours() * 60 + now.getMinutes();
-        
-        document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
-            let parts = td.innerText.split(':');
-            if(parts.length === 2) {
-                let slotMins = parseInt(parts[0])*60 + parseInt(parts[1]);
-                if(mins >= slotMins && mins < slotMins + 30) {
-                    td.parentElement.classList.add('current-slot');
-                }
-            }
-        });
+        resaltarHoraActual();
     }
 
     document.addEventListener('DOMContentLoaded', cargarTodo);
