@@ -39,7 +39,7 @@
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* --- HEADER Y DECORACIÓN (RECUPERADA) --- */
+        /* --- HEADER Y DECORACIÓN --- */
         .web-brand {
             text-align: center;
             margin-bottom: 20px;
@@ -52,7 +52,6 @@
         }
         .web-logo-img:hover { transform: scale(1.05); }
 
-        /* La línea decorativa tricolor */
         .brand-line {
             height: 4px;
             width: 100px;
@@ -107,6 +106,9 @@
             text-align: center; vertical-align: middle; 
             font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
+        
+        /* Cursor ayuda para ver nombres completos */
+        td[title] { cursor: help; }
 
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
         
@@ -287,8 +289,9 @@
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=2; i<=7; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
-                    cells += `<td class="std-cell">${nombre}</td>`;
+                    let fullName = (rowData[i] || "").trim(); // Nombre completo
+                    let shortName = fullName.split(" ")[0];   // Nombre corto
+                    cells += `<td class="std-cell" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
             };
@@ -298,10 +301,11 @@
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=9; i<=14; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    let fullName = (rowData[i] || "").trim();
+                    let shortName = fullName.split(" ")[0];
                     let classes = "ing-cell"; 
                     if (i===9) classes += " sep-border";
-                    cells += `<td class="${classes}">${nombre}</td>`;
+                    cells += `<td class="${classes}" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
             };
@@ -323,7 +327,7 @@
             slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
 
-            // === VISTA IMPRESIÓN ===
+            // === VISTA IMPRESIÓN (SIN SALTO DE PÁGINA) ===
             html += `<div class="view-print">`;
             
             // Tabla Apoyo Completa
