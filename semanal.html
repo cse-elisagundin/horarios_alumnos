@@ -106,16 +106,12 @@
             text-align: center; vertical-align: middle; 
             font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
-        
-        /* Cursor ayuda para ver nombres completos */
-        td[title] { cursor: help; }
 
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
         
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
         
-        /* Cabeceras de inglés */
         .ing-header { 
             background-color: #f0f4f8 !important; 
             color: var(--c-accent) !important;    
@@ -124,12 +120,7 @@
         .ing-cell { background-color: white; font-weight: 600; }
         .sep-border { border-left: 3px solid var(--c-primary) !important; }
 
-        /* =========================================
-           ✨ 2. RESALTADO FILA ACTUAL (WEB)
-           ========================================= */
-        tr.current-slot {
-            transition: all 0.3s ease;
-        }
+        /* RESALTADO FILA ACTUAL (WEB) */
         tr.current-slot td { 
             background-color: var(--c-accent) !important; 
             color: white !important; 
@@ -143,9 +134,7 @@
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s infinite; margin: 20px auto; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* =========================================
-           📱 3. MÓVIL
-           ========================================= */
+        /* MÓVIL */
         @media only screen and (max-width: 768px) {
             .container { padding: 5px; width: 100%; }
             table, thead, tbody, th, td, tr { display: block; }
@@ -160,9 +149,7 @@
             .mob-label.first { margin-top: 0; }
         }
 
-        /* =========================================
-           🖨️ 4. IMPRESIÓN (OPTIMIZADO)
-           ========================================= */
+        /* IMPRESIÓN */
         @page { size: landscape; margin: 5mm; }
 
         @media print {
@@ -182,14 +169,12 @@
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
 
-            /* TÍTULOS MINIMALISTAS */
             .print-section-header {
                 font-size: 14px; font-weight: 800; color: black; 
                 background: none; border: none; padding: 0; margin: 0; 
                 text-transform: uppercase; text-decoration: underline; line-height: 1.2;
             }
 
-            /* SIN ESPACIO ENTRE TABLAS */
             .ing-section { margin-top: 0px !important; padding-top: 5px !important; } 
 
             table { width: 100% !important; border: 1px solid #000 !important; table-layout: fixed !important; border-collapse: collapse !important; margin-bottom: 0px !important; }
@@ -203,7 +188,6 @@
 
             .col-hora { width: 50px !important; background: #ddd !important; font-weight: bold !important; font-size: 12px !important; }
             
-            /* 🚫 QUITAR EL ROSA EN IMPRESIÓN 🚫 */
             tr.current-slot td { 
                 background-color: transparent !important; 
                 color: black !important; 
@@ -223,7 +207,6 @@
 <body>
 
 <div class="container">
-    
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
         <div class="brand-line"></div> </div>
@@ -239,11 +222,9 @@
 </div>
 
 <script>
-    // Enlace de edición
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
-    // URLs de datos
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -284,28 +265,38 @@
                 }
             });
 
-            // Generar celdas Apoyo
+            // Generar celdas Apoyo (ESTAS NO SE TOCAN)
             const getCellsApoyo = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=2; i<=7; i++) {
-                    let fullName = (rowData[i] || "").trim(); // Nombre completo
-                    let shortName = fullName.split(" ")[0];   // Nombre corto
-                    cells += `<td class="std-cell" title="${fullName}">${shortName}</td>`;
+                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    cells += `<td class="std-cell">${nombre}</td>`;
                 }
                 return cells;
             };
 
-            // Generar celdas Inglés
+            // Generar celdas Inglés (MODIFICADO: Escáner inteligente para evitar huecos)
             const getCellsIngles = (hora) => {
                 let rowData = mapa[hora] || [];
+                let alumnosEncontrados = [];
+                
+                // Escaneamos desde la columna 8 hasta la 20 buscando nombres
+                // Saltamos las celdas vacías y las que parecen horas (ej: "18:00")
+                for(let c=8; c<=20; c++) {
+                    let val = (rowData[c] || "").trim();
+                    if(val.length > 1 && !val.includes(":")) {
+                        alumnosEncontrados.push(val);
+                    }
+                }
+
                 let cells = "";
-                for(let i=9; i<=14; i++) {
-                    let fullName = (rowData[i] || "").trim();
-                    let shortName = fullName.split(" ")[0];
+                // Rellenamos las 6 columnas fijas con lo que hayamos encontrado
+                for(let i=0; i<6; i++) {
+                    let nombre = (alumnosEncontrados[i] || "").split(" ")[0];
                     let classes = "ing-cell"; 
-                    if (i===9) classes += " sep-border";
-                    cells += `<td class="${classes}" title="${fullName}">${shortName}</td>`;
+                    if (i===0) classes += " sep-border";
+                    cells += `<td class="${classes}">${nombre}</td>`;
                 }
                 return cells;
             };
@@ -327,36 +318,31 @@
             slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
 
-            // === VISTA IMPRESIÓN (SIN SALTO DE PÁGINA) ===
+            // === VISTA IMPRESIÓN ===
             html += `<div class="view-print">`;
-            
-            // Tabla Apoyo Completa
             html += `<div class="print-section-header">APOYO ESCOLAR</div>
                      <table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // Tabla Inglés (Pegada)
             html += `<div class="print-section-header ing-section">INGLÉS</div>
                      <table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
                 html += `<tr><td class="col-hora">${h}</td>${celdasIng}</tr>`;
             });
-            html += `</tbody></table></div>`; // Fin view print
+            html += `</tbody></table></div>`; 
 
-            html += `</div>`; // Fin container dia
+            html += `</div>`;
             container.innerHTML += html;
         }
 
         document.getElementById('loading').style.display = 'none';
         
-        // Cargar día actual
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
         
-        // Activar reloj
         setInterval(resaltarHora, 60000);
         setTimeout(resaltarHora, 1000);
     }
@@ -379,13 +365,11 @@
         const now = new Date();
         const mins = now.getHours() * 60 + now.getMinutes();
         
-        // Aplicamos a todas las celdas de hora visibles (web y print)
         document.querySelectorAll('.planning-container.visible .col-hora').forEach(td => {
             let parts = td.innerText.split(':');
             if(parts.length === 2) {
                 let slotMins = parseInt(parts[0])*60 + parseInt(parts[1]);
                 if(mins >= slotMins && mins < slotMins + 30) {
-                    // Añadimos la clase a la fila entera (TR)
                     td.parentElement.classList.add('current-slot');
                 }
             }
