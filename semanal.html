@@ -97,6 +97,9 @@
             font-size: 13px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
         }
 
+        /* Tooltip nativo: cursor puntero al pasar por encima */
+        td[title] { cursor: help; }
+
         th { background: #f0f4f8; color: var(--c-primary); font-weight: 800; text-transform: uppercase; height: 35px; }
         .col-hora { width: 50px; font-weight: bold; background: #fff; color: #444; }
         .std-cell { font-weight: 600; }
@@ -138,13 +141,14 @@
             body { 
                 background: white; 
                 padding: 0; 
-                zoom: 85%; /* Tamaño moderado */
-                -webkit-print-color-adjust: exact;
+                zoom: 85%; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact;
             }
             
             .web-brand, header, .days-nav, .spinner { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
-            .planning-container.visible { display: block !important; page-break-after: always; }
+            .planning-container.visible { display: block !important; }
 
             .view-web { display: none !important; } 
             .view-print { display: block !important; }
@@ -255,12 +259,15 @@
                 }
             });
 
+            // Función corregida: Muestra nombre corto pero guarda nombre completo en tooltip
             const getCellsApoyo = (hora) => {
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=2; i<=7; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
-                    cells += `<td class="std-cell">${nombre}</td>`;
+                    let fullName = (rowData[i] || "").trim(); // Nombre completo
+                    let shortName = fullName.split(" ")[0];   // Nombre corto
+                    // Añadimos title="..." para que salga el nombre completo al pasar el ratón
+                    cells += `<td class="std-cell" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
             };
@@ -269,10 +276,12 @@
                 let rowData = mapa[hora] || [];
                 let cells = "";
                 for(let i=9; i<=14; i++) {
-                    let nombre = (rowData[i] || "").trim().split(" ")[0];
+                    let fullName = (rowData[i] || "").trim();
+                    let shortName = fullName.split(" ")[0];
                     let classes = "ing-cell"; 
                     if (i===9) classes += " sep-border";
-                    cells += `<td class="${classes}">${nombre}</td>`;
+                    // Añadimos title="..." para que salga el nombre completo al pasar el ratón
+                    cells += `<td class="${classes}" title="${fullName}">${shortName}</td>`;
                 }
                 return cells;
             };
@@ -294,18 +303,18 @@
             slotsTarde.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}${getCellsIngles(h)}</tr>`);
             html += `</tbody></table></div>`;
 
-            // === VISTA IMPRESIÓN (SIN TÍTULOS, ABREVIADO, BLANCO Y NEGRO) ===
+            // === VISTA IMPRESIÓN (DOBLE CARA: PÁGINA 1 Y PÁGINA 2) ===
             html += `<div class="view-print">`;
             
-            // --- CARA A: APOYO (Abreviado A 1, A 2...) ---
+            // --- CARA A: APOYO (Página 1) ---
             html += `<table><thead><tr><th class="col-hora">H</th><th>A 1</th><th>A 2</th><th>A 3</th><th>A 4</th><th>A 5</th><th>A 6</th></tr></thead><tbody>`;
             todosSlots.forEach(h => html += `<tr><td class="col-hora">${h}</td>${getCellsApoyo(h)}</tr>`);
             html += `</tbody></table>`;
 
-            // --- SALTO DE PÁGINA ---
+            // --- SALTO DE PÁGINA FÍSICO ---
             html += `<div class="page-break"></div>`;
 
-            // --- CARA B: INGLÉS (Abreviado I 1, I 2...) ---
+            // --- CARA B: INGLÉS (Página 2) ---
             html += `<table><thead><tr><th class="col-hora">H</th><th>I 1</th><th>I 2</th><th>I 3</th><th>I 4</th><th>I 5</th><th>I 6</th></tr></thead><tbody>`;
             slotsTarde.forEach(h => {
                 let celdasIng = getCellsIngles(h).replace(/sep-border/g, "");
