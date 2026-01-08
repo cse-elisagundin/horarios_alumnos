@@ -416,4 +416,22 @@
         };
 
         btn.onclick = login;
-        input.on
+        input.onkeypress = e => { if(e.key === 'Enter') login(); };
+        document.getElementById('btnDirectorio').onclick = cargarDirectorio;
+        document.getElementById('btnReset').onclick = () => location.reload();
+
+        btnCopiar.onclick = () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url).then(() => { 
+                const original = btnCopiar.innerText;
+                btnCopiar.innerText = "✅ ENLACE COPIADO";
+                setTimeout(() => btnCopiar.innerText = original, 2000);
+            });
+        };
+        
+        const p = new URLSearchParams(window.location.search).get('alumno');
+        if(p) { input.value = p; ejecutarBusqueda(p); }
+    });
+</script>
+</body>
+</html>
