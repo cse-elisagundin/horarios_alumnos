@@ -97,6 +97,7 @@
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
             animation: cardFade 0.4s ease-out;
+            position: relative; /* Para el tooltip nativo */
         }
         @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -160,6 +161,27 @@
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* =========================================
+           🖨️ ESTILOS PARA IMPRESIÓN (SOLUCIÓN FONDO BLANCO)
+           ========================================= */
+        @media print {
+            body { 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+                background: white;
+            }
+            .container { 
+                box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%;
+            }
+            /* Ocultar elementos innecesarios al imprimir */
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio { 
+                display: none !important; 
+            }
+            /* Asegurar colores en impresión */
+            .badge { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .result-card { break-inside: avoid; border: 1px solid #eee; }
+        }
     </style>
 </head>
 <body>
@@ -198,7 +220,7 @@
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
-    // ✅ URLS RESTAURADAS A LA CONFIGURACIÓN ORIGINAL QUE FUNCIONABA
+    // ✅ URLS RESTAURADAS
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -215,7 +237,6 @@
             // Añadimos 't' aleatorio para forzar recarga y evitar caché antigua
             Papa.parse(url + "&t=" + Date.now() + Math.random(), { 
                 download:true, 
-                // Sin header:false para que detecte mejor
                 skipEmptyLines:true, 
                 complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
                 error: e => { console.error("Error cargando", url); resolve([]); } 
@@ -232,8 +253,10 @@
     function esNombreValido(texto) {
         if (!texto || texto.length < 2) return false;
         const t = texto.toUpperCase().trim();
-        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE"];
-        if (prohibidos.some(p => t.includes(p))) return false;
+        // Hemos quitado algunos prohibidos por si acaso el nombre es "Clase de Inglés 1"
+        const prohibidos = ["HORA", "ALUMNO", "APOYO", "CLASE"]; 
+        // Verificamos si es solo la cabecera
+        if (prohibidos.some(p => t === p)) return false; 
         if (/^(A|I|IN|ING)\s*\d+$/.test(t)) return false;
         return true;
     }
@@ -245,11 +268,24 @@
         clases.forEach(clase => {
             const startMins = timeToMins(clase.h);
             if (actual) {
+                // Si es el mismo tipo y materia, y es consecutivo, lo unimos
                 if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
-                    actual.endMins += 30; return;
+                    actual.endMins += 30; 
+                    // Guardamos también el texto original por si cambia
+                    if(!actual.fullText.includes(clase.fullText)) {
+                         actual.fullText += " / " + clase.fullText;
+                    }
+                    return;
                 } else { grupos.push(actual); }
             }
-            actual = { dia: clase.dia, startMins: startMins, endMins: startMins + 30, materia: clase.materia, tipo: clase.tipo };
+            actual = { 
+                dia: clase.dia, 
+                startMins: startMins, 
+                endMins: startMins + 30, 
+                materia: clase.materia, 
+                tipo: clase.tipo,
+                fullText: clase.fullText // Guardamos el texto original para el tooltip
+            };
         });
         if (actual) grupos.push(actual);
         return grupos;
@@ -272,17 +308,17 @@
             data.forEach(row => {
                 if(row[1]) {
                     let h = row[1].trim().substring(0,5);
-                    // Apoyo (2-7)
-                    for(let c=2; c<=7; c++) {
+                    // Apoyo (Columnas 2 a 8 para dar margen)
+                    for(let c=2; c<=8; c++) {
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
-                            clasesRaw.push({dia, h, materia: "Apoyo", tipo: "apoyo"});
+                            clasesRaw.push({dia, h, materia: "Apoyo", tipo: "apoyo", fullText: val});
                     }
-                    // Inglés (9-14)
-                    for(let c=9; c<=14; c++) {
+                    // Inglés (Ampliamos rango 9 a 20 por seguridad por si añadisteis columnas)
+                    for(let c=9; c<=20; c++) {
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
-                            clasesRaw.push({dia, h, materia: "Inglés", tipo: "ingles"});
+                            clasesRaw.push({dia, h, materia: "Inglés", tipo: "ingles", fullText: val});
                     }
                 }
             });
@@ -298,8 +334,9 @@
             
             clasesAgrupadas.forEach(item => {
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
+                // ✅ AÑADIDO: title="${item.fullText}" para que al pasar el cursor salga el texto completo
                 html += `
-                    <div class="result-card type-${item.tipo}">
+                    <div class="result-card type-${item.tipo}" title="${item.fullText}">
                         <div class="card-info">
                             <span class="card-day">${item.dia}</span>
                             <div class="card-time-wrapper">
@@ -339,18 +376,20 @@
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
-                [2,3,4,5,6,7,9,10,11,12,13,14].forEach(c => {
+                // Revisamos muchas más columnas para asegurar que salen todos
+                for(let c=2; c<=20; c++){
                     let txt = (row[c] || "").trim();
                     if(esNombreValido(txt)) {
                         alumnos.add(txt.toLowerCase());
                     }
-                });
+                }
             });
         });
         
         let html = "";
         Array.from(alumnos).sort().forEach(n => {
-            html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`;
+            // ✅ AÑADIDO: title="${n}" en el directorio también
+            html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')" title="${n}">${n}</span>`;
         });
         area.innerHTML = html;
     }
