@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Diseño Moderno - CSE Elisa Gundín</title>
+    <title>Horario Inteligente - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -11,15 +11,15 @@
     <style>
         /* --- PALETA CORPORATIVA --- */
         :root { 
-            --c-primary: #243c7a;   /* Azul Oscuro */
-            --c-secondary: #2b94cc;  /* Azul Claro */
-            --c-accent: #fa65c3;     /* Rosa */
+            --c-primary: #243c7a;   
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3;    
             
-            --bg-body: #f0f2f5;      /* Fondo un poco más gris para contraste */
+            --bg-body: #f0f2f5;      
             --bg-container: #ffffff;
             
-            --highlight-row: rgba(250, 101, 195, 0.1); /* Rosa muy suave fila actual */
-            --dynamic-col-width: 60px; /* Se calcula sola */
+            --highlight-row: rgba(250, 101, 195, 0.1); 
+            --dynamic-col-width: 70px; /* Se recalcula sola */
         }
         
         body { 
@@ -29,13 +29,12 @@
         }
 
         .container { 
-            /* CAMBIO: Usamos el 95% del ancho para evitar scroll */
             width: 95%; 
             max-width: 1600px;
             margin: 0 auto; 
             background: var(--bg-container); 
             padding: 25px; 
-            border-radius: 20px; /* Más redondeado */
+            border-radius: 20px; 
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.08); 
         }
 
@@ -53,7 +52,7 @@
         header { display: flex; justify-content: center; align-items: center; margin-bottom: 25px; gap: 15px; }
 
         .btn-action {
-            padding: 10px 20px; border-radius: 50px; /* Botones pastilla */
+            padding: 10px 20px; border-radius: 50px; 
             cursor: pointer; font-weight: 700; font-size: 14px; 
             text-decoration: none; display: inline-flex; align-items: center; gap: 8px; 
             transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.05); text-transform: uppercase;
@@ -78,7 +77,7 @@
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); box-shadow: 0 4px 12px rgba(36, 60, 122, 0.2); }
         .nav-btn:hover:not(.active) { color: var(--c-accent); background: #fff0f7; border-color: #ffd6ed; }
 
-        /* --- TABLA REDONDEADA ESTILO "CARD" --- */
+        /* --- TABLA REDONDEADA --- */
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -87,27 +86,23 @@
             table-layout: fixed; 
             width: auto; 
             margin: 0 auto;
-            /* CAMBIO: Usamos border-spacing 0 pero NO collapse para permitir bordes redondeados */
             border-collapse: separate; 
             border-spacing: 0;
-            
-            /* ESTILO REDONDEADO */
             border-radius: 16px; 
-            overflow: hidden; /* Corta las esquinas rectas */
-            border: 1px solid #dce1e6; /* Borde sutil exterior */
-            box-shadow: 0 0 0 1px #dce1e6; /* Truco para borde nítido */
+            overflow: hidden; 
+            border: 1px solid #dce1e6; 
+            box-shadow: 0 0 0 1px #dce1e6; 
         }
 
         th, td {
-            /* CAMBIO: Bordes sutiles internos en vez de rejilla gruesa */
             border-bottom: 1px solid #eaRqf2;
             border-right: 1px solid #eaRqf2;
-            padding: 6px 5px; /* Menos padding lateral para que quepa */
+            padding: 6px 5px; 
             text-align: center; vertical-align: middle; 
-            font-size: 11.5px; /* Fuente un pelín más pequeña */
+            font-size: 11.5px; 
             color: #444; 
             white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; /* Evita desborde feo */
+            overflow: hidden; text-overflow: ellipsis; 
         }
 
         /* ANCHO DINÁMICO CALCULADO */
@@ -117,7 +112,6 @@
             max-width: var(--dynamic-col-width);
         }
 
-        /* CABECERA ESTILO BOTÓN (AZUL SÓLIDO) */
         th { 
             background-color: var(--c-primary); 
             color: white; 
@@ -125,39 +119,22 @@
             text-transform: uppercase; 
             padding: 12px 5px; 
             letter-spacing: 0.5px;
-            border-right: 1px solid rgba(255,255,255,0.1); /* Separador sutil blanco */
+            border-right: 1px solid rgba(255,255,255,0.1); 
             border-bottom: none;
         }
         
-        /* Columnas de hora */
         .col-hora { 
-            background-color: #f8f9fa; 
-            color: var(--c-primary); 
-            font-weight: 800; 
-            width: 45px; /* Más estrecho */
-            border-right: 1px solid #dce1e6;
+            background-color: #f8f9fa; color: var(--c-primary); 
+            font-weight: 800; width: 45px; border-right: 1px solid #dce1e6;
         }
-        /* Cabecera de hora */
-        th.col-hora {
-            background-color: #1a2e5e; /* Un azul un poco más oscuro para diferenciar */
-            color: white;
-        }
+        th.col-hora { background-color: #1a2e5e; color: white; }
         
-        /* SEPARADOR GRUESO CENTRAL */
-        .separator-col { 
-            border-left: 3px solid var(--c-primary) !important; 
-        }
+        .separator-col { border-left: 3px solid var(--c-primary) !important; }
 
-        /* NOMBRES */
-        .student-cell {
-            font-weight: 600; text-transform: uppercase; cursor: help; color: var(--c-primary);
-        }
-        /* Hover suave en fila */
+        .student-cell { font-weight: 600; text-transform: uppercase; cursor: help; color: var(--c-primary); }
         tr:hover td { background-color: #fafbff; }
-        
-        /* Fila Actual */
         tr.current-slot td { background-color: var(--highlight-row) !important; }
-        tr { height: 32px; } /* Altura compacta */
+        tr { height: 32px; } 
 
         .spinner {
             border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%;
@@ -165,18 +142,15 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- IMPRESIÓN (LIMPIA Y BLANCA) --- */
+        /* --- IMPRESIÓN --- */
         @page { size: landscape; margin: 5mm; } 
-        
         @media print {
             @page { size: landscape; } 
             body { background: white; padding: 0; margin: 0; zoom: 75%; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; width: 100%; }
             .web-brand, header, .days-nav, .spinner { display: none; } 
-            
             .planning-container.visible { display: block !important; page-break-after: always; }
             
-            /* En impresión quitamos lo redondeado y volvemos a bordes sólidos para legibilidad */
             table { 
                 border-collapse: collapse !important; 
                 border-radius: 0 !important; 
@@ -185,22 +159,20 @@
                 width: 100% !important;
             }
             
-            /* Forzar anchos */
             th:not(.col-hora), td:not(.col-hora) { width: var(--dynamic-col-width) !important; }
 
             th, td { 
                 border: 1px solid var(--c-primary) !important; 
                 color: var(--c-primary) !important; 
-                background: white !important; /* Cabeceras blancas en papel para ahorrar tinta */
+                background: white !important; 
                 padding: 4px !important; 
             }
             
-            /* Re-colorear texto cabecera para papel */
             th { color: black !important; background: #eee !important; border-bottom: 2px solid black !important; }
-
             .day-title { font-size: 28px; color: black; }
             .separator-col { border-left: 3px solid black !important; }
             tr.current-slot td { background-color: transparent !important; }
+            .student-cell { border-bottom: none !important; }
         }
     </style>
 </head>
@@ -240,10 +212,10 @@
         });
     }
 
+    // Calcula ancho asegurando espacio para "Nombre + Inicial" si hay duplicados
     function calcularAnchoMaximo(todasLasHojas) {
         const canvas = document.createElement("canvas");
         const context = canvas.getContext("2d");
-        // Ajustamos la fuente de medición a la nueva más pequeña
         context.font = "600 11.5px 'Segoe UI'"; 
 
         let maxAncho = 50; 
@@ -257,14 +229,14 @@
                     let nombreFull = (row[idx] || "").trim();
                     if(nombreFull) {
                         let soloNombre = nombreFull.split(" ")[0].toUpperCase();
-                        let metrics = context.measureText(soloNombre);
+                        // Medimos el nombre + un extra por si acaso se le añade la inicial
+                        let metrics = context.measureText(soloNombre + " M."); 
                         if(metrics.width > maxAncho) maxAncho = metrics.width;
                     }
                 });
             }
         });
-        // Padding reducido para ajustar (antes +25, ahora +15)
-        return Math.ceil(maxAncho + 15);
+        return Math.ceil(maxAncho + 20); // Margen seguro
     }
 
     async function cargarTodo() {
@@ -278,13 +250,13 @@
         const anchoCalculado = calcularAnchoMaximo(todosLosDatos);
         document.documentElement.style.setProperty('--dynamic-col-width', anchoCalculado + 'px');
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.substring(0,3).toUpperCase()}</button>`).join('');
+        // BOTONES CON NOMBRE COMPLETO
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
 
         dias.forEach((dia, index) => {
             const data = todosLosDatos[index]; 
-            
             const headers = data[0] || [];
             const h_apoyo_hora = headers[0] || "HORA";
             const h_apoyo_alum = headers.slice(1, 7);
@@ -315,13 +287,50 @@
                 if(!row || row.length === 0) continue;
                 if(!row[0] && !row[7]) continue;
 
+                // --- LÓGICA DE DUPLICADOS ---
+                // 1. Recopilar nombres de pila de esta fila
+                let nombresPilaMap = {};
+                const indicesAlumnos = [1,2,3,4,5,6, 8,9,10,11,12,13];
+                
+                indicesAlumnos.forEach(idx => {
+                    let full = (row[idx] || "").trim();
+                    if(full) {
+                        let first = full.split(" ")[0].toUpperCase();
+                        nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1;
+                    }
+                });
+
+                // Función interna para decidir qué mostrar
+                const obtenerTextoCelda = (full) => {
+                    if(!full) return { text: "", title: "" };
+                    full = full.trim();
+                    let first = full.split(" ")[0].toUpperCase();
+                    
+                    // Si el nombre aparece más de 1 vez en esta fila, añadimos inicial
+                    let displayText = first;
+                    if(nombresPilaMap[first] > 1) {
+                        let partes = full.split(" ");
+                        if(partes.length > 1) {
+                            let inicial = partes[1].charAt(0).toUpperCase();
+                            displayText = `${first} ${inicial}.`;
+                        }
+                    }
+                    return { text: displayText, title: full.toUpperCase() };
+                };
+
                 html += `<tr>`;
                 
                 html += `<td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k]);
+                for(let k=1; k<=6; k++) {
+                    let info = obtenerTextoCelda(row[k]);
+                    html += `<td class="student-cell" title="${info.title}">${info.text}</td>`;
+                }
 
                 html += `<td class="col-hora separator-col">${row[7] || ""}</td>`;
-                for(let k=8; k<=13; k++) html += generarCelda(row[k]);
+                for(let k=8; k<=13; k++) {
+                    let info = obtenerTextoCelda(row[k]);
+                    html += `<td class="student-cell" title="${info.title}">${info.text}</td>`;
+                }
 
                 html += `</tr>`;
             }
@@ -337,20 +346,6 @@
         
         setInterval(resaltarHoraActual, 60000);
         setTimeout(resaltarHoraActual, 1000);
-    }
-
-    function generarCelda(nombreCompleto) {
-        let nombre = (nombreCompleto || "").trim();
-        let tooltip = "";
-        let display = "";
-
-        if(nombre) {
-            display = nombre.split(" ")[0]; 
-            tooltip = `title="${nombre.toUpperCase()}"`;
-            return `<td class="student-cell" ${tooltip}>${display}</td>`;
-        } else {
-            return `<td></td>`;
-        }
     }
 
     function resaltarHoraActual() {
@@ -387,7 +382,7 @@
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
             let textoBtn = btn.innerText; 
-            let esActivo = (textoBtn.toUpperCase() === dia.substring(0,3).toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
+            let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
         resaltarHoraActual();
