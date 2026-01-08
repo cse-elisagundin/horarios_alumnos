@@ -20,7 +20,7 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS GENERALES
+           🎨 ESTILOS CORPORATIVOS
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -97,7 +97,7 @@
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
             animation: cardFade 0.4s ease-out;
-            cursor: help; /* Indica visualmente que hay info extra */
+            cursor: help; /* Cursor de ayuda para indicar tooltip */
         }
         @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -162,7 +162,7 @@
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* IMPRESIÓN FORZADA COLOR */
+        /* ESTILOS IMPRESIÓN (COLORES FORZADOS) */
         @media print {
             body { 
                 -webkit-print-color-adjust: exact !important; 
@@ -172,6 +172,7 @@
             .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
             #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .result-card { break-inside: avoid; border: 1px solid #eee; }
         }
     </style>
 </head>
@@ -211,6 +212,7 @@
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
+    // URLS ORIGINALES
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -224,8 +226,8 @@
     function leerHoja(url) {
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
-            // Añadimos un timestamp para forzar que NO use la memoria caché antigua del navegador
-            Papa.parse(url + "&timestamp=" + new Date().getTime(), { 
+            // Timestamp para evitar caché antigua
+            Papa.parse(url + "&t=" + Date.now(), { 
                 download:true, 
                 skipEmptyLines:true, 
                 complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
@@ -234,41 +236,32 @@
         });
     }
 
-    // Utiles
+    // Funciones de utilidad
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // 🔥 FILTRO MEJORADO Y MÁS ESTRICTO
     function esNombreValido(texto) {
-        if (!texto || typeof texto !== 'string' || texto.length < 2) return false;
+        if (!texto || texto.length < 2) return false;
         const t = texto.toUpperCase().trim();
-        // Palabras prohibidas que suelen ser cabeceras o notas
-        const prohibidos = ["HORA", "ALUMNO", "APOYO", "CLASE", "AULA", "PROFESOR", "INGLÉS", "OBSERVACIONES"]; 
+        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE"];
         if (prohibidos.some(p => t.includes(p))) return false;
-        // Evitar celdas que sean solo números o códigos como A1, I2, etc.
         if (/^(A|I|IN|ING)\s*\d+$/.test(t)) return false;
-        // Evitar celdas que parecen horas
-        if (t.includes(":")) return false;
         return true;
     }
 
     function agruparClases(clases) {
         if(clases.length === 0) return [];
-        // Ordenamos primero por día y luego por hora para asegurar el orden
-        clases.sort((a,b) => timeToMins(a.h) - timeToMins(b.h));
-        
         let grupos = [];
         let actual = null;
         clases.forEach(clase => {
             const startMins = timeToMins(clase.h);
             if (actual) {
-                // Si es el mismo tipo y es consecutivo (mismo día)
                 if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
                     actual.endMins += 30; 
-                    // Añadimos al tooltip si el texto es diferente
-                    if(!actual.fullText.includes(clase.fullText)) {
-                         actual.fullText += " / " + clase.fullText;
+                    // Si el texto completo es distinto (ej: dos alumnos distintos en horas seguidas), lo añadimos al tooltip
+                    if (!actual.fullText.includes(clase.fullText)) {
+                        actual.fullText += " / " + clase.fullText;
                     }
                     return;
                 } else { grupos.push(actual); }
@@ -279,7 +272,7 @@
                 endMins: startMins + 30, 
                 materia: clase.materia, 
                 tipo: clase.tipo,
-                fullText: clase.fullText 
+                fullText: clase.fullText // Guardamos texto completo para el cursor
             };
         });
         if (actual) grupos.push(actual);
@@ -291,7 +284,6 @@
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
         const nombreBuscado = nombre.toLowerCase().trim();
-        
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const resultados = await Promise.all(promesas);
@@ -301,34 +293,28 @@
         dias.forEach((dia, idx) => {
             const data = resultados[idx];
             if(!data) return;
-            
             data.forEach(row => {
-                // Buscamos la hora en la columna 1 (habitual) o la 0 si se movió todo
-                let horaRaw = row[1] || row[0];
-                if(horaRaw && horaRaw.includes(":")) {
-                    let h = horaRaw.trim().substring(0,5);
+                if(row[1]) {
+                    let h = row[1].trim().substring(0,5);
                     
-                    // 🔥 ESCANEO TOTAL DE LA FILA (Modo Sabueso)
-                    // Ya no miramos columnas fijas. Miramos TODO desde la columna 2 hasta el final.
-                    for(let c = 2; c < row.length; c++) {
+                    // ===============================================
+                    // 🔍 BÚSQUEDA AJUSTADA A RANGO A1:O17 (Indices 0-14)
+                    // ===============================================
+                    
+                    // 1. APOYO: Leemos de col 2 (C) a 7 (H)
+                    // (Mantengo el rango habitual de apoyo)
+                    for(let c=2; c<=7; c++) {
                         let val = row[c] || "";
-                        
-                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
-                            // INTELIGENCIA DE TIPO:
-                            // Si aparece en las primeras columnas (aprox < 9) es Apoyo
-                            // Si aparece más adelante (>= 9) es Inglés
-                            // Si la hoja se ha movido mucho, esto es una estimación, pero suele funcionar.
-                            let tipoMateria = (c < 9) ? "Apoyo" : "Inglés";
-                            let tipoClase = (c < 9) ? "apoyo" : "ingles";
+                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
+                            clasesRaw.push({dia, h, materia: "Apoyo", tipo: "apoyo", fullText: val});
+                    }
 
-                            clasesRaw.push({
-                                dia, 
-                                h, 
-                                materia: tipoMateria, 
-                                tipo: tipoClase, 
-                                fullText: val // Guardamos el texto exacto para el cursor
-                            });
-                        }
+                    // 2. INGLÉS: Leemos de col 8 (I) a 14 (O)
+                    // (Ampliamos el rango para cubrir hasta la columna O, que es la 14)
+                    for(let c=8; c<=14; c++) {
+                        let val = row[c] || "";
+                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) 
+                            clasesRaw.push({dia, h, materia: "Inglés", tipo: "ingles", fullText: val});
                     }
                 }
             });
@@ -345,9 +331,9 @@
             clasesAgrupadas.forEach(item => {
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
                 
-                // AQUÍ ESTÁ LA MAGIA DEL CURSOR: el atributo 'title'
+                // ✅ RESTAURADO: Atributo title para ver el nombre completo al pasar el ratón
                 html += `
-                    <div class="result-card type-${item.tipo}" title="CLASE COMPLETA: ${item.fullText}">
+                    <div class="result-card type-${item.tipo}" title="${item.fullText}">
                         <div class="card-info">
                             <span class="card-day">${item.dia}</span>
                             <div class="card-time-wrapper">
@@ -371,7 +357,7 @@
                 document.getElementById('btnReset').style.display = 'none'; 
             }
         } else {
-            document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre. Revisa la ortografía.";
+            document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
             document.getElementById('error-msg').style.display = 'block';
             document.getElementById('search-area').style.display = 'block';
         }
@@ -379,8 +365,7 @@
 
     async function cargarDirectorio() {
         const area = document.getElementById('directory-area');
-        area.innerHTML = "Escaneando hojas..."; area.style.display = 'block';
-        
+        area.innerHTML = "Cargando..."; area.style.display = 'block';
         const promesas = Object.values(urls).map(url => leerHoja(url));
         const resultados = await Promise.all(promesas);
         let alumnos = new Set();
@@ -388,8 +373,8 @@
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
-                // Escaneo profundo para el directorio también
-                for(let c=2; c < row.length; c++){
+                // Escaneo ajustado 2 a 14 para el directorio también
+                for(let c=2; c<=14; c++){
                     let txt = (row[c] || "").trim();
                     if(esNombreValido(txt)) {
                         alumnos.add(txt.toLowerCase());
@@ -399,14 +384,10 @@
         });
         
         let html = "";
-        let sorted = Array.from(alumnos).sort();
-        if(sorted.length === 0) {
-            html = "<p style='padding:10px;'>No se han encontrado alumnos. Revisa el Excel.</p>";
-        } else {
-            sorted.forEach(n => {
-                html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')" title="${n}">${n}</span>`;
-            });
-        }
+        Array.from(alumnos).sort().forEach(n => {
+            // ✅ Tooltip en directorio también
+            html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')" title="${n}">${n}</span>`;
+        });
         area.innerHTML = html;
     }
 
