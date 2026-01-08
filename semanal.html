@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Semanal - CSE Elisa Gundín</title>
+    <title>Horario Simétrico - CSE Elisa Gundín</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -11,12 +11,15 @@
     <style>
         /* --- PALETA CORPORATIVA --- */
         :root { 
-            --c-primary: #243c7a;  /* Azul Oscuro */
-            --c-secondary: #2b94cc; /* Azul Claro */
-            --c-accent: #fa65c3;    /* Rosa */
+            --c-primary: #243c7a; 
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3; 
             --bg-body: #f4f6f9;
             --bg-container: #ffffff;
             --highlight-row: rgba(250, 101, 195, 0.12);
+            
+            /* ESTA VARIABLE SE CALCULA AUTOMÁTICAMENTE CON JS */
+            --dynamic-col-width: 80px; 
         }
         
         body { 
@@ -26,7 +29,8 @@
         }
 
         .container { 
-            max-width: 1400px; /* Más ancho para caber los dos horarios */
+            width: fit-content; /* Se ajusta al contenido calculado */
+            min-width: 1200px;
             margin: 0 auto; 
             background: var(--bg-container); 
             padding: 30px; 
@@ -34,7 +38,7 @@
             box-shadow: 0 10px 25px rgba(36, 60, 122, 0.1); 
         }
 
-        /* --- LOGO Y BRANDING --- */
+        /* --- BRANDING --- */
         .web-brand { text-align: center; margin-bottom: 20px; padding-bottom: 20px; }
         .web-logo-img { height: 75px; object-fit: contain; transition: transform 0.3s ease; }
         .web-logo-img:hover { transform: scale(1.05); }
@@ -74,13 +78,15 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- TABLA DOBLE --- */
+        /* --- TABLA MATEMÁTICA --- */
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         table {
-            width: 100%; /* Ocupar ancho disponible */
+            /* FIXED: La clave para que todas las columnas sean iguales */
+            table-layout: fixed; 
+            width: auto; 
             margin: 0 auto;
             border-collapse: collapse; 
             border: 2px solid var(--c-primary); 
@@ -90,10 +96,18 @@
 
         th, td {
             border: 1px solid var(--c-primary); 
-            padding: 6px 8px; /* Padding reducido para que quepan tantas columnas */
+            padding: 6px 8px;
             text-align: center; vertical-align: middle; 
-            font-size: 12px; /* Fuente ligeramente reducida por espacio */
+            font-size: 12px; 
             color: var(--c-primary); 
+            overflow: hidden; /* Seguridad */
+        }
+
+        /* APLICAMOS EL ANCHO CALCULADO A LAS COLUMNAS DE ALUMNOS */
+        th:not(.col-hora), td:not(.col-hora) {
+            width: var(--dynamic-col-width);
+            min-width: var(--dynamic-col-width);
+            max-width: var(--dynamic-col-width);
         }
 
         th { 
@@ -101,13 +115,12 @@
             border-bottom: 3px solid var(--c-primary); background-color: #f8fbff; 
         }
         
-        /* Estilos específicos de columna */
-        .col-hora { font-weight: 800; color: #111; background-color: #f4f6f9; width: 50px; }
-        
-        /* SEPARADOR ENTRE APOYO E INGLÉS */
-        .separator-col {
-            border-left: 4px solid var(--c-primary) !important; /* Borde grueso a la izquierda de la hora de inglés */
+        .col-hora { 
+            font-weight: 800; color: #111; background-color: #f4f6f9; 
+            width: 55px; /* Las horas siempre fijas y estrechas */
         }
+        
+        .separator-col { border-left: 4px solid var(--c-primary) !important; }
 
         .student-cell {
             font-weight: 700; text-transform: uppercase; cursor: help; 
@@ -118,26 +131,25 @@
         tr { height: 35px; } 
 
         /* --- IMPRESIÓN --- */
-        @page { size: landscape; margin: 5mm; } /* CAMBIO A LANDSCAPE RECOMENDADO POR ANCHURA */
+        @page { size: landscape; margin: 5mm; } 
         
         @media print {
-            /* Forzamos vertical si el usuario prefiere, pero ajustamos zoom */
             @page { size: landscape; } 
-
             body { background: white; padding: 0; margin: 0; zoom: 75%; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; }
+            .container { padding: 0; margin: 0; border: none; max-width: none; box-shadow: none; width: 100%; }
             .web-brand, header, .days-nav, .spinner { display: none; } 
             
             .planning-container.visible { display: block !important; page-break-after: always; }
             table { border: 2px solid var(--c-primary) !important; width: 100% !important; }
             
-            th, td { border: 1px solid var(--c-primary) !important; color: var(--c-primary) !important; padding: 4px !important; }
-            
-            .day-title { font-size: 28px; }
-            
-            /* El borde grueso separador en impresión */
-            .separator-col { border-left: 3px solid var(--c-primary) !important; }
+            /* Forzar que el ancho calculado se respete en impresión */
+            th:not(.col-hora), td:not(.col-hora) {
+                width: var(--dynamic-col-width) !important;
+            }
 
+            th, td { border: 1px solid var(--c-primary) !important; color: var(--c-primary) !important; padding: 4px !important; }
+            .day-title { font-size: 28px; }
+            .separator-col { border-left: 3px solid var(--c-primary) !important; }
             tr.current-slot { background-color: transparent !important; }
             .student-cell { border-bottom: none !important; }
             th { background-color: transparent !important; }
@@ -163,7 +175,7 @@
 </div>
 
 <script>
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
+    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/TU_ID_DE_HOJA_AQUI/edit"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
     const urls = {
@@ -174,40 +186,44 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    function resaltarHoraActual() {
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[new Date().getDay()];
-        
-        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-        if (!urls[hoy]) return;
-        const contenedorHoy = document.getElementById(`view-${hoy}`);
-        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
-
-        const now = new Date();
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-        // Buscamos en TODAS las columnas de hora (hay 2 por fila ahora)
-        // Pero basta con mirar la primera para marcar la fila entera
-        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora:first-child'); 
-        
-        filasHoras.forEach(tdHora => {
-            const horaStr = tdHora.innerText; 
-            if(horaStr.includes(":")) {
-                const [h, m] = horaStr.split(':').map(Number);
-                const slotStartMinutes = h * 60 + m;
-                const slotEndMinutes = slotStartMinutes + 30; // Asumimos 30 min
-                if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
-                    tdHora.closest('tr').classList.add('current-slot');
-                }
-            }
-        });
-    }
-    setInterval(resaltarHoraActual, 60000);
-
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
+    }
+
+    // --- FUNCIÓN MATEMÁTICA PARA CALCULAR EL ANCHO ---
+    function calcularAnchoMaximo(todasLasHojas) {
+        // Creamos un elemento invisible para medir pixeles reales con la fuente exacta
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        // DEBE COINCIDIR CON EL CSS: font-size 12px, font-weight 700 (bold), Segoe UI
+        context.font = "700 12px 'Segoe UI'"; 
+
+        let maxAncho = 60; // Ancho mínimo base en px
+
+        todasLasHojas.forEach(hoja => {
+            // Saltamos cabecera, leemos datos
+            for(let i=1; i<hoja.length; i++) {
+                const row = hoja[i];
+                if(!row) continue;
+                // Columnas de alumnos: Indices 1-6 (Apoyo) y 8-13 (Inglés)
+                const indicesAlumnos = [1,2,3,4,5,6, 8,9,10,11,12,13];
+                
+                indicesAlumnos.forEach(idx => {
+                    let nombreFull = (row[idx] || "").trim();
+                    if(nombreFull) {
+                        let soloNombre = nombreFull.split(" ")[0].toUpperCase();
+                        let metrics = context.measureText(soloNombre);
+                        let anchoTexto = metrics.width;
+                        if(anchoTexto > maxAncho) maxAncho = anchoTexto;
+                    }
+                });
+            }
+        });
+
+        // Añadimos padding (relleno) generoso (ej. 25px extra)
+        return Math.ceil(maxAncho + 25);
     }
 
     async function cargarTodo() {
@@ -215,28 +231,33 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
         
+        // 1. CARGAMOS TODO DE GOLPE PARA PODER MEDIR
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const todosLosDatos = await Promise.all(promesas);
+
+        // 2. CALCULAMOS EL ANCHO IDEAL BASADO EN TUS NOMBRES
+        const anchoCalculado = calcularAnchoMaximo(todosLosDatos);
+        console.log("Ancho calculado para simetría:", anchoCalculado + "px");
+
+        // 3. APLICAMOS LA REGLA CSS
+        document.documentElement.style.setProperty('--dynamic-col-width', anchoCalculado + 'px');
+
+        // 4. GENERAMOS EL HTML
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
 
-        for (const dia of dias) {
-            const data = await leerHoja(urls[dia]);
+        dias.forEach((dia, index) => {
+            const data = todosLosDatos[index]; // Datos ya cargados
             
-            // FILTRADO DE DATOS: 
-            // Apoyo (A-G): Indices 0 a 6
-            // Inglés (H-N): Indices 7 a 13
-            // Cabeceras están en row 0. Datos row 1 en adelante.
-
-            // Obtenemos cabeceras del CSV (Fila 1 Excel -> index 0 array)
+            // Indices CSV:
+            // Apoyo: Hora=0, Alumnos=1-6
+            // Inglés: Hora=7, Alumnos=8-13
             const headers = data[0] || [];
-            
-            // Títulos Apoyo
             const h_apoyo_hora = headers[0] || "HORA";
-            const h_apoyo_alum = headers.slice(1, 7); // B a G
-
-            // Títulos Inglés
+            const h_apoyo_alum = headers.slice(1, 7);
             const h_ing_hora = headers[7] || "HORA";
-            const h_ing_alum = headers.slice(8, 14); // I a N
+            const h_ing_alum = headers.slice(8, 14);
 
             let html = `
             <div id="view-${dia}" class="planning-container">
@@ -257,45 +278,37 @@
                     </thead>
                     <tbody>`;
 
-            // ITERAMOS DESDE LA FILA 1 (DATOS) HASTA EL FINAL
-            // Esto maneja automáticamente si el miércoles tiene 13 filas y el resto 12.
             for(let i = 1; i < data.length; i++) {
                 const row = data[i];
                 if(!row || row.length === 0) continue;
 
-                // Datos Apoyo
-                const horaApoyo = row[0] || "";
-                
-                // Si la hora de apoyo está vacía, probablemente es una fila fantasma, pero el miércoles 
-                // puede tener datos extra. Lo pintamos si tiene contenido relevante.
-                
+                // Si las horas están vacías en ambos lados, saltamos (limpieza)
+                if(!row[0] && !row[7]) continue;
+
                 html += `<tr>`;
                 
-                // --- COLUMNAS APOYO ---
-                html += `<td class="col-hora">${horaApoyo}</td>`;
-                for(let k=1; k<=6; k++) {
-                    html += generarCelda(row[k]);
-                }
+                // APOYO
+                html += `<td class="col-hora">${row[0] || ""}</td>`;
+                for(let k=1; k<=6; k++) html += generarCelda(row[k]);
 
-                // --- COLUMNAS INGLÉS ---
-                const horaIng = row[7] || "";
-                html += `<td class="col-hora separator-col">${horaIng}</td>`;
-                for(let k=8; k<=13; k++) {
-                    html += generarCelda(row[k]);
-                }
+                // INGLÉS
+                html += `<td class="col-hora separator-col">${row[7] || ""}</td>`;
+                for(let k=8; k<=13; k++) html += generarCelda(row[k]);
 
                 html += `</tr>`;
             }
-
             html += `</tbody></table></div>`;
             container.innerHTML += html;
-        }
+        });
 
         document.getElementById('loading').style.display = 'none';
         
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
+        
+        // Iniciar resaltado
+        setInterval(resaltarHoraActual, 60000);
         setTimeout(resaltarHoraActual, 1000);
     }
 
@@ -305,12 +318,38 @@
         let display = "";
 
         if(nombre) {
-            display = nombre.split(" ")[0]; // Solo nombre
+            display = nombre.split(" ")[0]; 
             tooltip = `title="${nombre.toUpperCase()}"`;
             return `<td class="student-cell" ${tooltip}>${display}</td>`;
         } else {
             return `<td></td>`;
         }
+    }
+
+    function resaltarHoraActual() {
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = diasSemana[new Date().getDay()];
+        
+        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
+        if (!urls[hoy]) return;
+        const contenedorHoy = document.getElementById(`view-${hoy}`);
+        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
+
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora:first-child'); 
+        
+        filasHoras.forEach(tdHora => {
+            const horaStr = tdHora.innerText; 
+            if(horaStr.includes(":")) {
+                const [h, m] = horaStr.split(':').map(Number);
+                const slotStartMinutes = h * 60 + m;
+                const slotEndMinutes = slotStartMinutes + 30; 
+                if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
+                    tdHora.closest('tr').classList.add('current-slot');
+                }
+            }
+        });
     }
 
     function cambiarDia(dia) {
