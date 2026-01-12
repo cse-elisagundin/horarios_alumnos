@@ -56,49 +56,19 @@
         /* --- ESTILOS TABLA PC --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         
-        /* WEB: Altura fija para que alineen perfectos los pósits */
-        tbody tr { 
-            height: 42px; 
-        }
+        /* WEB: Altura fija para alineación perfecta */
+        tbody tr { height: 42px; }
 
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
-        
-        /* Cabecera Hora */
-        th.col-hora { 
-            background: white !important; 
-            color: var(--c-primary) !important; 
-            border-bottom: 2px solid var(--c-primary) !important;
-        }
+        th.col-hora { background: white !important; color: var(--c-primary) !important; border-bottom: 2px solid var(--c-primary) !important; }
+        .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; border-right: 1px solid #ddd; }
 
-        /* Celda Hora */
-        .col-hora { 
-            width: 45px; 
-            background: white !important; 
-            font-weight: 800; 
-            color: var(--c-primary) !important; 
-            border-right: 1px solid #ddd; 
-        }
-
-        /* CELDA DE ALUMNO */
-        .student-cell { 
-            transition: all 0.5s ease; 
-        }
+        .student-cell { transition: all 0.5s ease; }
 
         /* --- DISEÑO DE ETIQUETA / PÓSIT (SOLO WEB) --- */
-        .name-tag {
-            display: inline-block;
-            padding: 4px 10px; 
-            border-radius: 12px; 
-            font-weight: 700;
-            text-transform: uppercase;
-            color: var(--c-primary);
-            transition: all 0.5s ease;
-            border: 1px solid transparent;
-        }
-        
-        /* Estados (Colores) */
+        .name-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; color: var(--c-primary); transition: all 0.5s ease; border: 1px solid transparent; }
         .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transform: scale(1.05); }
         .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border-color: rgba(43, 148, 204, 0.5); }
         .status-exit .name-tag { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -114,7 +84,6 @@
             .mobile-section-title { display: block; }
             table thead { display: none; }
             tbody tr { height: auto; display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
-            
             table tbody td.col-hora { grid-row: 1 / 3; grid-column: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; background: white !important; color: var(--c-primary) !important; border-right: 1px solid #eee; }
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: normal; line-height: 1.1; }
         }
@@ -123,60 +92,97 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (ARREGLADA: ALTURA AUTOMÁTICA)
+           🖨️ IMPRESIÓN (FORZADO A UNA PÁGINA)
            ========================================================================= */
         @media print {
-            @page { size: landscape; margin: 8mm; } 
+            @page { 
+                size: landscape; 
+                margin: 5mm; /* Márgenes muy pequeños para aprovechar el folio */
+            } 
             
             body { 
-                background: white; padding: 0; margin: 0; zoom: 75%; 
+                background: white; padding: 0; margin: 0; 
+                zoom: 60%; /* 🔥 ESTA ES LA CLAVE: Reducimos para que quepa todo */
                 font-family: Arial, sans-serif; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
-                display: flex !important; flex-direction: row; justify-content: space-between; align-items: flex-start;
+                
+                /* Layout Horizontal */
+                display: flex !important; 
+                flex-direction: row; 
+                justify-content: flex-start; /* Alineado a la izquierda */
+                align-items: flex-start;
+                height: 100vh;
+                overflow: hidden; /* Evitar que se cree una segunda página por desbordamiento */
             }
 
-            .container { width: 55% !important; max-width: none !important; margin: 0 !important; border: none; box-shadow: none; padding: 0; order: 1; }
-            .print-only-notes { display: block !important; width: 40% !important; margin-left: 20px; order: 2; position: static !important; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 10px; }
+            /* 1. HORARIO (Izquierda) */
+            .container { 
+                width: 65% !important; /* Ancho del horario */
+                max-width: none !important; 
+                margin: 0 !important; border: none; box-shadow: none; padding: 0; 
+                margin-right: 2% !important; /* Espacio entre horario y notas */
+            }
+
+            /* 2. NOTAS (Derecha) */
+            .print-only-notes { 
+                display: block !important; 
+                width: 30% !important; /* Ancho de notas */
+                border-bottom: 2px solid #000; 
+                padding-bottom: 10px; padding-top: 10px; 
+            }
+
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
-            .planning-container.visible { display: block !important; page-break-after: always; }
+            .planning-container.visible { display: block !important; }
             
-            /* Volvemos a poner las tablas una debajo de otra (block) para que quepan bien */
-            .tables-wrapper { display: block !important; }
-            .table-block { border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 20px; }
+            /* Tablas una al lado de la otra */
+            .tables-wrapper { 
+                display: flex !important; 
+                flex-direction: row !important; /* Forzar horizontal dentro del horario */
+                gap: 10px !important;
+            }
+            
+            .table-block { 
+                flex: 1; /* Repartir espacio equitativamente entre Apoyo e Inglés */
+                border: 1px solid #000 !important; 
+                box-shadow: none !important; 
+                border-radius: 0; 
+                margin-bottom: 0; 
+            }
             
             table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
             
-            /* 🔥 CORRECCIÓN CLAVE: Altura 'auto' y pequeña para que NO se estiren */
+            /* Altura automática y compacta */
             tbody tr { 
                 display: table-row !important; 
                 border-bottom: 1px solid #000; 
-                height: auto !important; /* IMPORTANTE: Dejar que se encojan */
+                height: auto !important; 
             }
             
-            td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; }
+            td, th { 
+                display: table-cell !important; 
+                border: 1px solid #000 !important; 
+                color: black !important; 
+                background-color: white !important; 
+                background: white !important; 
+                padding: 1px 2px !important; /* Padding mínimo */
+                font-size: 10px !important; /* Letra un poco más pequeña */
+                line-height: 1.1;
+            }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            /* 🔥 LIMPIEZA DE ETIQUETAS: Se convierten en texto plano para ocupar menos espacio vertical */
+            /* Limpieza visual completa */
             .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag {
-                background-color: transparent !important;
-                color: black !important;
-                border: none !important;
-                padding: 0 !important;
-                margin: 0 !important;
-                box-shadow: none !important;
-                transform: none !important;
-                font-weight: bold !important; /* Mantener negrita para legibilidad */
-                display: inline !important; /* Quitar bloque */
+                background-color: transparent !important; color: black !important; border: none !important; padding: 0 !important; margin: 0 !important; box-shadow: none !important; transform: none !important; font-weight: bold !important; display: inline !important;
             }
             
-            .col-hora { background-color: white !important; background: white !important; font-weight: bold; width: 45px !important; }
+            .col-hora { background-color: white !important; background: white !important; font-weight: bold; width: 35px !important; }
             tr.current-slot td { background-color: transparent !important; }
 
             .notes-header { display: flex; justify-content: space-between; align-items: center; }
-            .notes-title { font-size: 32px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; letter-spacing: -1px; }
-            .notes-logo { height: 60px; object-fit: contain; filter: grayscale(100%); }
+            .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
+            .notes-logo { height: 50px; object-fit: contain; filter: grayscale(100%); }
         }
     </style>
 </head>
@@ -352,7 +358,7 @@
                 for(let k=1; k<=6; k++) html += generarCelda(row[k], k, timeColIndexApoyo);
                 html += `</tr>`;
 
-                // Aquí copiamos la hora de apoyo al horario de inglés para que estén a la par
+                // COPIA DE HORA DE APOYO A INGLÉS
                 filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                 for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, timeColIndexIngles);
                 filasIngles += `</tr>`;
