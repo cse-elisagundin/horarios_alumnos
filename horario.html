@@ -1,8 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Horario Alumnos - CSE Elisa Gundín</title>
+    <meta name="theme-color" content="#243c7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* =========================================
+           🎨 ESTILOS GENERALES
+           ========================================= */
+        :root { 
+            --c-primary: #243c7a;   
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3;    
+            --bg-body: #f4f6f9;
+            --bg-container: #ffffff;
+            --whatsapp: #25D366; 
+            --error: #dc3545;
+        }
+        
+        body { 
+            font-family: 'Outfit', 'Segoe UI', sans-serif; 
+            background-color: var(--bg-body); 
+            margin: 0; padding: 20px;
+            display: flex; justify-content: center; align-items: center; 
+            min-height: 100vh; color: #333;
+        }
+
+        .container { 
+            background-color: var(--bg-container); 
+            padding: 40px; border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
+            width: 100%; max-width: 500px; text-align: center;
+            position: relative; z-index: 1;
+        }
+
+        /* HEADER */
+        .web-brand { margin-bottom: 25px; }
+        .logo-img { max-width: 160px; }
+
+        .brand-line {
+            height: 5px; width: 120px; margin: 15px auto 0;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 10px;
+        }
+
+        h2 { 
+            color: var(--c-primary); margin-bottom: 10px; 
+            font-size: 26px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+        
+        #status-indicator {
+            font-size: 11px; color: #8898aa; margin-bottom: 25px; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+        }
+
+        /* INPUTS & BOTONES */
+        input { 
+            width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
+            border-radius: 12px; font-size: 16px; margin-bottom: 20px; 
+            box-sizing: border-box; text-align: center;
+            transition: all 0.3s ease; color: var(--c-primary);
+            font-weight: 600; background-color: #fafbfc;
+        }
+        input:focus { border-color: var(--c-secondary); background-color: #fff; box-shadow: 0 0 0 5px rgba(43, 148, 204, 0.1); outline: none; }
+
+        .btn-main { 
+            width: 100%; padding: 16px; background-color: var(--c-primary); 
+            color: white; border: none; border-radius: 12px; 
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
+        }
+        .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
+
+        /* RESULTADOS */
+        #resultado { margin-top: 35px; text-align: left; }
+        
+        .result-card { 
+            background: linear-gradient(145deg, #ffffff, #fdfdfd);
+            margin-bottom: 15px; padding: 20px; border-radius: 15px; 
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
+            animation: cardFade 0.4s ease-out;
+        }
+        @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
+        .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
+
+        .card-info { display: flex; flex-direction: column; gap: 2px; }
+        .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
+        
+        .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .clock-icon {
+            width: 18px; height: 18px; border: 2px solid var(--c-primary);
+            border-radius: 50%; position: relative;
+            flex-shrink: 0;
+        }
+        .clock-icon::after {
+            content: ''; position: absolute; width: 6px; height: 2px;
+            background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg);
+        }
+        .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
+
+        .badge {
+            padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 800;
+            text-transform: uppercase; color: white; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center; min-width: 60px;
+        }
+        .bg-apoyo { background: var(--c-secondary); }
+        .bg-ingles { background: var(--c-accent); }
+
+        /* PANEL ACCIONES */
+        #actions-panel { display: none; margin-top: 30px; border-top: 2px solid #f0f4f8; padding-top: 25px; }
+        
+        .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; }
+        .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
+
+        /* DIRECTORIO Y BUSCADOR INTERNO */
+        #directory-area { display: none; margin-top: 10px; text-align: left; max-height: 250px; overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; border-radius: 12px; background: #fafbfc; }
+        
+        #dirSearchInput {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;
+            font-size: 14px; margin-bottom: 10px; display: none; 
+        }
+
+        .student-chip { 
+            display: inline-block; background: white; border: 1px solid var(--c-secondary); 
+            color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; 
+            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
+            text-transform: capitalize; 
+        }
+        .student-chip:hover { background: var(--c-secondary); color: white; }
+
+        .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; }
+        .btn-reset:hover { opacity: 1; color: var(--c-accent); }
+
+        /* WHATSAPP FIXED */
+        .whatsapp-float {
+            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; 
+            color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
+            z-index: 9999; font-weight: bold; font-size: 15px; transition: all 0.3s ease;
+        }
+        .whatsapp-float:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
+        .whatsapp-icon { width: 22px; height: 22px; fill: white; }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* IMPRESIÓN */
+        @media print {
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
+            .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio { display: none !important; }
+            .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .result-card { break-inside: avoid; border: 1px solid #eee; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="web-brand">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+        <div class="brand-line"></div>
+    </div>
+    
+    <div id="search-area">
+        <h2>Horarios</h2>
+        <div id="status-indicator">Consulta tu planificación semanal</div>
+        <input type="text" id="magicInput" placeholder="Nombre del alumno..." autocomplete="off">
+        <button id="btnBuscar" class="btn-main">BUSCAR AHORA</button>
+    </div>
+
+    <div id="loading-spinner" class="spinner"></div>
+    <p id="error-msg" style="display:none; color:var(--error); font-weight:bold; margin-top:20px;"></p>
+    <div id="resultado"></div>
+    
+    <div id="actions-panel">
+        <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE PADRES</button>
+        <button id="btnDirectorio" class="btn-share" style="background:var(--c-primary); color:white; border:none;">📂 LISTADO ALUMNOS</button>
+        
+        <input type="text" id="dirSearchInput" placeholder="Filtrar nombres..." onkeyup="filtrarDirectorio()">
+        
+        <div id="directory-area"></div>
+        <br>
+        <button id="btnReset" class="btn-reset">🔄 REALIZAR OTRA BÚSQUEDA</button>
+    </div>
+</div>
+
+<a href="https://wa.me/34693067214" class="whatsapp-float" target="_blank">
+    <svg class="whatsapp-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
 <script>
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
-    // NOTA: He cambiado todos los enlaces a TSV para evitar errores con comas
+    // Todos los enlaces en formato TSV
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -40,35 +253,41 @@
 
     function agruparClases(clases) {
         if(clases.length === 0) return [];
-        // Ordenamos por día y hora antes de agrupar
+        
+        // Ordenamos por Día de la semana y luego por Hora
+        const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
         clases.sort((a, b) => {
-            const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-            if (diasOrden.indexOf(a.dia) !== diasOrden.indexOf(b.dia)) return diasOrden.indexOf(a.dia) - diasOrden.indexOf(b.dia);
+            const diffDia = diasOrden.indexOf(a.dia) - diasOrden.indexOf(b.dia);
+            if (diffDia !== 0) return diffDia;
             return a.startMins - b.startMins;
         });
 
         let grupos = [];
         let actual = null;
+        
         clases.forEach(clase => {
             const startMins = timeToMins(clase.h);
             if (actual) {
-                // Si es el mismo día, misma materia y la hora de inicio coincide con el final de la anterior
+                // Lógica de agrupación: Mismo día, misma materia, hora contigua
                 if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
                     actual.endMins += 30; // Extendemos media hora
+                    // Si el nombre varía ligeramente (raro en este caso), lo agregamos
                     if (!actual.fullText.includes(clase.fullText)) {
                         actual.fullText += " / " + clase.fullText;
                     }
                     return;
-                } else { grupos.push(actual); }
+                } else { 
+                    grupos.push(actual); 
+                }
             }
+            // Iniciar nuevo grupo
             actual = { 
                 dia: clase.dia, 
                 startMins: startMins, 
                 endMins: startMins + 30, 
                 materia: clase.materia, 
                 tipo: clase.tipo,
-                fullText: clase.fullText,
-                h: clase.h // Guardamos string original por si acaso
+                fullText: clase.fullText
             };
         });
         if (actual) grupos.push(actual);
@@ -92,11 +311,11 @@
             
             data.forEach(row => {
                 // ==========================================
-                // BLOQUE 1: APOYO (Hora en Col A [0], Alumnos en B-G [1-6])
+                // ZONA 1: APOYO (Hora en Col A [0], Alumnos en B-G [1-6])
                 // ==========================================
                 let horaApoyo = (row[0] || "").trim().substring(0,5);
                 if(horaApoyo && horaApoyo.includes(":")) {
-                    for(let c=1; c<=6; c++) { // Columnas B a G
+                    for(let c=1; c<=6; c++) { 
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
                             clasesRaw.push({
@@ -107,11 +326,11 @@
                 }
 
                 // ==========================================
-                // BLOQUE 2: INGLÉS (Hora en Col H [7], Alumnos en I-N [8-13])
+                // ZONA 2: INGLÉS (Hora en Col H [7], Alumnos en I-N [8-13])
                 // ==========================================
                 let horaIngles = (row[7] || "").trim().substring(0,5);
                 if(horaIngles && horaIngles.includes(":")) {
-                    for(let c=8; c<=13; c++) { // Columnas I a N
+                    for(let c=8; c<=13; c++) { 
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
                             clasesRaw.push({
@@ -248,3 +467,5 @@
         if(p) { input.value = p; ejecutarBusqueda(p); }
     });
 </script>
+</body>
+</html>
