@@ -76,7 +76,7 @@
             border-right: 1px solid #ddd; 
         }
 
-        /* CELDA DE ALUMNO - CONTENEDOR */
+        /* CELDA DE ALUMNO */
         .student-cell { 
             transition: all 0.5s ease; 
         }
@@ -84,32 +84,39 @@
         /* --- 🔥 DISEÑO DE ETIQUETA / PÓSIT 🔥 --- */
         .name-tag {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 8px; /* Bordes redondeados */
+            padding: 4px 10px; /* Un pelín más ancho */
+            border-radius: 12px; /* Más redondeado */
             font-weight: 700;
             text-transform: uppercase;
-            color: var(--c-primary); /* Color por defecto */
+            color: var(--c-primary);
             transition: all 0.5s ease;
+            border: 1px solid transparent; /* Para evitar saltos al añadir borde */
         }
         
         /* 1. ENTRANDO (Etiqueta Verde) */
         .status-entry .name-tag {
-            background-color: #d1e7dd; /* Verde pastel */
-            color: #0f5132; /* Verde oscuro texto */
+            background-color: #d1e7dd; 
+            color: #0f5132;
+            border-color: #badbcc;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transform: scale(1.05); /* Ligeramente más grande */
+            transform: scale(1.05);
         }
 
-        /* 2. EN CLASE (Etiqueta Azul Sutil) */
+        /* 2. EN CLASE (AHORA CON COLORES CORPORATIVOS) */
         .status-active .name-tag {
-            background-color: #f0f4f8; /* Azul grisáceo muy claro */
-            color: #243c7a;
+            /* Fondo: Tu azul secundario con mucha transparencia */
+            background-color: rgba(43, 148, 204, 0.15); 
+            /* Texto: Tu azul primario */
+            color: var(--c-primary);
+            /* Borde: Tu azul secundario suave */
+            border-color: rgba(43, 148, 204, 0.5);
         }
 
         /* 3. SALIENDO (Etiqueta Roja) */
         .status-exit .name-tag {
-            background-color: #f8d7da; /* Rojo pastel */
-            color: #842029; /* Rojo oscuro texto */
+            background-color: #f8d7da; 
+            color: #842029;
+            border-color: #f5c2c7;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
@@ -147,7 +154,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (LIMPIA EN B/N, SIN ETIQUETAS DE COLORES)
+           🖨️ IMPRESIÓN (LIMPIA TOTAL, SIN FONDOS NI COLORES)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -173,13 +180,19 @@
             td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; height: auto !important; }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            /* RESETEAR ETIQUETAS PARA IMPRESIÓN (Negro plano) */
-            .name-tag {
+            /* 🔥 LIMPIEZA TOTAL DE ETIQUETAS PARA IMPRESIÓN 🔥 */
+            /* Esto elimina cualquier rastro de los colores corporativos al imprimir */
+            .name-tag, 
+            .status-entry .name-tag, 
+            .status-active .name-tag, 
+            .status-exit .name-tag {
                 background-color: transparent !important;
                 color: black !important;
                 border: none !important;
                 padding: 0 !important;
                 box-shadow: none !important;
+                transform: none !important;
+                font-weight: normal !important;
             }
             
             .col-hora { background-color: white !important; background: white !important; font-weight: bold; width: 45px !important; }
@@ -351,7 +364,6 @@
                     }
                     let lastBlockTimeStr = data[endRow][timeColIndex];
                     
-                    // 🔥 AQUÍ ESTÁ EL CAMBIO: Usamos un SPAN 'name-tag' para la etiqueta
                     return `<td class="student-cell" 
                                 title="${full.toUpperCase()}"
                                 data-start-time="${startTimeStr}"
@@ -437,7 +449,6 @@
 
             if(startMin === null || endMin === null) return;
 
-            // Lógica para asignar clases a la celda (el CSS se encarga de pintar el name-tag)
             if (currentMinutes >= (startMin - MARGIN_MINUTES) && currentMinutes <= (startMin + MARGIN_MINUTES)) {
                 cell.classList.add('status-entry');
             }
