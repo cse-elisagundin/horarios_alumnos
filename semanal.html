@@ -56,7 +56,11 @@
 
         /* --- ESTILOS TABLA PC --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 8px 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* WEB: Altura fija */
+        tbody tr { height: 42px; }
+
+        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         /* ESTILO GENERAL DE CABECERAS (AZUL) */
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
@@ -77,8 +81,28 @@
             border-right: 1px solid #ddd; 
         }
 
-        .student-cell { font-weight: 600; text-transform: uppercase; color: var(--c-primary); }
-        tr.current-slot td { background-color: var(--highlight-row) !important; }
+        .student-cell { 
+            /* Quitamos estilos base antiguos, ahora los maneja el tag */
+            font-weight: normal; 
+            transition: all 0.5s ease;
+        }
+
+        /* --- 🔥 DISEÑO DE ETIQUETA / PÓSIT (SOLO WEB) --- */
+        .name-tag {
+            display: inline-block;
+            padding: 4px 10px; 
+            border-radius: 12px; 
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--c-primary);
+            transition: all 0.5s ease;
+            border: 1px solid transparent;
+        }
+        
+        /* Estados (Colores Inteligentes) */
+        .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transform: scale(1.05); }
+        .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border-color: rgba(43, 148, 204, 0.5); }
+        .status-exit .name-tag { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         /* Ocultar sección de notas en la web */
         .print-only-notes { display: none; }
@@ -91,7 +115,7 @@
             .table-block { width: 100%; }
             .mobile-section-title { display: block; }
             table thead { display: none; }
-            table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
+            tbody tr { height: auto; display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
             
             /* Ajuste también en móvil */
             table tbody td.col-hora { 
@@ -111,7 +135,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (SIN CAMBIOS)
+           🖨️ IMPRESIÓN (SIN CAMBIOS ESTRUCTURALES, SOLO LIMPIEZA DE ETIQUETAS)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -182,6 +206,19 @@
                 background: white !important;
                 font-weight: bold;
                 width: 45px !important;
+            }
+
+            /* LIMPIEZA DE ETIQUETAS PARA QUE PAREZCA TEXTO PLANO AL IMPRIMIR */
+            .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag {
+                background-color: transparent !important;
+                color: black !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                transform: none !important;
+                font-weight: bold !important; 
+                display: inline !important;
             }
 
             tr.current-slot td { background-color: transparent !important; }
@@ -259,6 +296,13 @@
         return Math.ceil(maxAncho + 20);
     }
 
+    // FUNCIÓN EXTRA: Parsear hora
+    function parseTimeStr(timeStr) {
+        if (!timeStr || !timeStr.includes(':')) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
@@ -304,6 +348,8 @@
                             <tbody>`;
 
             let filasIngles = "";
+            let timeColIndexApoyo = 0;
+            let timeColIndexIngles = 7;
 
             for(let i = 1; i < data.length; i++) {
                 const row = data[i];
@@ -319,7 +365,8 @@
                     }
                 });
 
-                const generarCelda = (full) => {
+                // FUNCIÓN INTELIGENTE PARA GENERAR CELDA CON DATOS DE TIEMPO
+                const generarCelda = (full, colIdx, timeColIndex) => {
                     if(!full) return `<td></td>`;
                     full = full.trim();
                     let first = full.split(" ")[0].toUpperCase();
@@ -328,17 +375,41 @@
                         let partes = full.split(" ");
                         if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + ".";
                     }
-                    return `<td class="student-cell" title="${full.toUpperCase()}">${display}</td>`;
+
+                    // --- LÓGICA DE ESCÁNER DE HORARIO ---
+                    let startRow = i;
+                    while (startRow > 1) {
+                        let prevVal = (data[startRow - 1][colIdx] || "").trim();
+                        if (prevVal !== full) break;
+                        startRow--;
+                    }
+                    let startTimeStr = data[startRow][timeColIndex];
+
+                    let endRow = i;
+                    while (endRow < data.length - 1) {
+                        let nextVal = (data[endRow + 1][colIdx] || "").trim();
+                        if (nextVal !== full) break;
+                        endRow++;
+                    }
+                    let lastBlockTimeStr = data[endRow][timeColIndex];
+                    
+                    // DEVOLVEMOS EL PÓSIT (NAME-TAG)
+                    return `<td class="student-cell" 
+                                title="${full.toUpperCase()}"
+                                data-start-time="${startTimeStr}"
+                                data-end-block-time="${lastBlockTimeStr}">
+                                <span class="name-tag">${display}</span>
+                            </td>`;
                 };
 
                 // APOYO
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k]);
+                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, timeColIndexApoyo);
                 html += `</tr>`;
 
-                // INGLÉS (Guardamos para luego)
+                // INGLÉS
                 filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k]);
+                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, timeColIndexIngles);
                 filasIngles += `</tr>`;
             }
 
@@ -369,32 +440,49 @@
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
         
-        setInterval(resaltarHoraActual, 60000);
-        setTimeout(resaltarHoraActual, 1000);
+        setInterval(actualizarEstadoTiempoReal, 10000);
+        setTimeout(actualizarEstadoTiempoReal, 500);
     }
 
-    function resaltarHoraActual() {
+    // --- EL CEREBRO DE COLORES ---
+    function actualizarEstadoTiempoReal() {
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = diasSemana[new Date().getDay()];
         
-        document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
+        // (Nota: Ya no resaltamos la fila completa de rosa como pediste)
+
         if (!urls[hoy]) return;
         const contenedorHoy = document.getElementById(`view-${hoy}`);
         if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora'); 
         
-        filasHoras.forEach(tdHora => {
-            const horaStr = tdHora.innerText; 
-            if(horaStr.includes(":")) {
-                const [h, m] = horaStr.split(':').map(Number);
-                const slotStartMinutes = h * 60 + m;
-                const slotEndMinutes = slotStartMinutes + 30; 
-                if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
-                    tdHora.closest('tr').classList.add('current-slot');
-                }
+        const MARGIN_MINUTES = 5; 
+
+        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
+            // Limpiar clases
+            cell.classList.remove('status-entry', 'status-exit', 'status-active');
+            
+            const startStr = cell.getAttribute('data-start-time');
+            const endBlockStr = cell.getAttribute('data-end-block-time');
+            
+            if(!startStr || !endBlockStr) return;
+
+            const startMin = parseTimeStr(startStr);
+            const endMin = parseTimeStr(endBlockStr) + 30; // Fin real = inicio bloque final + 30m
+
+            if(startMin === null || endMin === null) return;
+
+            // LÓGICA DE TIEMPO
+            if (currentMinutes >= (startMin - MARGIN_MINUTES) && currentMinutes <= (startMin + MARGIN_MINUTES)) {
+                cell.classList.add('status-entry');
+            }
+            else if (currentMinutes >= (endMin - MARGIN_MINUTES) && currentMinutes <= (endMin + MARGIN_MINUTES)) {
+                cell.classList.add('status-exit');
+            }
+            else if (currentMinutes > (startMin + MARGIN_MINUTES) && currentMinutes < (endMin - MARGIN_MINUTES)) {
+                cell.classList.add('status-active');
             }
         });
     }
@@ -409,7 +497,7 @@
             let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
-        resaltarHoraActual();
+        actualizarEstadoTiempoReal();
     }
 
     document.addEventListener('DOMContentLoaded', cargarTodo);
