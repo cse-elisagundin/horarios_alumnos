@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horario Semanal CSE</title>
+    <title>Horario Semanal CSE - Visual</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -58,9 +58,23 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 8px 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .col-hora { width: 45px; background: #f8f9fa; font-weight: 800; color: var(--c-primary); border-right: 1px solid #ddd; }
+        /* 🔥 CAMBIO REALIZADO AQUI: Fondo blanco y texto azul para la hora */
+        .col-hora { 
+            width: 45px; 
+            background: white; /* Antes gris */
+            font-weight: 800; 
+            color: var(--c-primary); 
+            border-right: 1px solid #ddd; 
+        }
+        
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
-        th.col-hora { background: #1a2e5e; }
+        
+        /* 🔥 CAMBIO REALIZADO AQUI: Cabecera 'H' en blanco y azul */
+        th.col-hora { 
+            background: white; /* Antes azul oscuro */
+            color: var(--c-primary); 
+            border-bottom: 2px solid var(--c-primary);
+        }
 
         .student-cell { font-weight: 600; text-transform: uppercase; color: var(--c-primary); }
         tr.current-slot td { background-color: var(--highlight-row) !important; }
@@ -77,7 +91,18 @@
             .mobile-section-title { display: block; }
             table thead { display: none; }
             table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
-            table tbody td.col-hora { grid-row: 1 / 3; grid-column: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; background: #f1f3f7; }
+            
+            /* Ajuste también en móvil para coherencia */
+            table tbody td.col-hora { 
+                grid-row: 1 / 3; 
+                grid-column: 1; 
+                display: flex; align-items: center; justify-content: center; 
+                font-size: 14px; 
+                background: white; /* Fondo blanco en móvil también */
+                color: var(--c-primary);
+                border-right: 1px solid #eee;
+            }
+            
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: normal; line-height: 1.1; }
         }
 
@@ -85,7 +110,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN CORREGIDA (SOLUCIÓN FLEXBOX - NO OVERLAP)
+           🖨️ IMPRESIÓN (SIN CAMBIOS RESPECTO AL ANTERIOR QUE FUNCIONABA BIEN)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -98,7 +123,6 @@
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
                 
-                /* AQUÍ ESTÁ LA SOLUCIÓN: Usamos Flexbox en el body para separar columnas */
                 display: flex !important;
                 flex-direction: row;
                 justify-content: space-between;
@@ -107,20 +131,20 @@
 
             /* 1. CONTENEDOR DE HORARIO (IZQUIERDA) */
             .container { 
-                width: 55% !important; /* Un poco más de la mitad para que el horario respire */
+                width: 55% !important; 
                 max-width: none !important; 
                 margin: 0 !important;
                 border: none; box-shadow: none; padding: 0; 
-                order: 1; /* Forzamos que vaya primero */
+                order: 1; 
             }
 
             /* 2. CONTENEDOR DE NOTAS (DERECHA) */
             .print-only-notes {
                 display: block !important;
-                width: 40% !important; /* El resto del espacio */
+                width: 40% !important; 
                 margin-left: 20px;
-                order: 2; /* Forzamos que vaya segundo */
-                position: static !important; /* IMPORTANTE: Quitamos el fixed para que no flote encima */
+                order: 2; 
+                position: static !important; 
                 border-bottom: 2px solid #000;
                 padding-bottom: 10px;
                 padding-top: 10px;
