@@ -56,7 +56,7 @@
         /* --- ESTILOS TABLA PC --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         
-        /* WEB: Altura fija para alineación perfecta */
+        /* WEB: Altura fija */
         tbody tr { height: 42px; }
 
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -92,17 +92,17 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (FORZADO A UNA PÁGINA)
+           🖨️ IMPRESIÓN CORREGIDA (ORDEN: IZQ=HORARIO, DER=NOTAS)
            ========================================================================= */
         @media print {
             @page { 
                 size: landscape; 
-                margin: 5mm; /* Márgenes muy pequeños para aprovechar el folio */
+                margin: 5mm; 
             } 
             
             body { 
                 background: white; padding: 0; margin: 0; 
-                zoom: 60%; /* 🔥 ESTA ES LA CLAVE: Reducimos para que quepa todo */
+                zoom: 60%; 
                 font-family: Arial, sans-serif; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
@@ -110,24 +110,24 @@
                 /* Layout Horizontal */
                 display: flex !important; 
                 flex-direction: row; 
-                justify-content: flex-start; /* Alineado a la izquierda */
+                justify-content: flex-start;
                 align-items: flex-start;
                 height: 100vh;
-                overflow: hidden; /* Evitar que se cree una segunda página por desbordamiento */
+                overflow: hidden; 
             }
 
-            /* 1. HORARIO (Izquierda) */
+            /* 1. HORARIO (Primer elemento en HTML = Izquierda) */
             .container { 
-                width: 65% !important; /* Ancho del horario */
+                width: 65% !important; 
                 max-width: none !important; 
                 margin: 0 !important; border: none; box-shadow: none; padding: 0; 
-                margin-right: 2% !important; /* Espacio entre horario y notas */
+                margin-right: 2% !important; 
             }
 
-            /* 2. NOTAS (Derecha) */
+            /* 2. NOTAS (Segundo elemento en HTML = Derecha) */
             .print-only-notes { 
                 display: block !important; 
-                width: 30% !important; /* Ancho de notas */
+                width: 30% !important; 
                 border-bottom: 2px solid #000; 
                 padding-bottom: 10px; padding-top: 10px; 
             }
@@ -135,15 +135,14 @@
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
             .planning-container.visible { display: block !important; }
             
-            /* Tablas una al lado de la otra */
             .tables-wrapper { 
                 display: flex !important; 
-                flex-direction: row !important; /* Forzar horizontal dentro del horario */
+                flex-direction: row !important; 
                 gap: 10px !important;
             }
             
             .table-block { 
-                flex: 1; /* Repartir espacio equitativamente entre Apoyo e Inglés */
+                flex: 1; 
                 border: 1px solid #000 !important; 
                 box-shadow: none !important; 
                 border-radius: 0; 
@@ -153,7 +152,7 @@
             table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
             
-            /* Altura automática y compacta */
+            /* Altura automática para compactar */
             tbody tr { 
                 display: table-row !important; 
                 border-bottom: 1px solid #000; 
@@ -166,8 +165,8 @@
                 color: black !important; 
                 background-color: white !important; 
                 background: white !important; 
-                padding: 1px 2px !important; /* Padding mínimo */
-                font-size: 10px !important; /* Letra un poco más pequeña */
+                padding: 1px 2px !important; 
+                font-size: 10px !important; 
                 line-height: 1.1;
             }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
@@ -188,13 +187,6 @@
 </head>
 <body>
 
-<div class="print-only-notes">
-    <div class="notes-header">
-        <h2 class="notes-title">NOTAS</h2>
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="notes-logo">
-    </div>
-</div>
-
 <div class="container">
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
@@ -209,6 +201,13 @@
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
     <div id="schedule-container"></div>
+</div>
+
+<div class="print-only-notes">
+    <div class="notes-header">
+        <h2 class="notes-title">NOTAS</h2>
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="notes-logo">
+    </div>
 </div>
 
 <script>
