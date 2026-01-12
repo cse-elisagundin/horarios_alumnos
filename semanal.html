@@ -149,7 +149,7 @@
         <div class="live-info-panel no-print-dynamic">
             <div id="digital-clock" class="digital-clock">00:00:00</div>
             <div id="next-changes" class="next-changes-box">
-                <span class="next-changes-title">Próximos Cambios (15m)</span>
+                <span class="next-changes-title">Próximos Cambios (10m)</span>
                 <div id="next-changes-list">
                     <div style="color:#999; font-style:italic">Cargando...</div>
                 </div>
@@ -282,7 +282,7 @@
 
         let cambios = [];
         let procesados = new Set();
-        const MARGIN = 15; // Miramos 15 min al futuro
+        const MARGIN = 10; // Miramos 10 min al futuro
 
         contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
             const startStr = cell.getAttribute('data-start-time');
@@ -293,8 +293,7 @@
             if(!startStr || procesados.has(key)) return;
             procesados.add(key);
 
-            // CORRECCIÓN PARA NOMBRES DUPLICADOS (Ej: Laura R y Laura P)
-            // Si el nombre tiene más de una palabra, tomamos el nombre y la inicial del apellido.
+            // CORRECCIÓN PARA NOMBRES DUPLICADOS + INICIAL
             let nameParts = fullName.split(" ");
             let displayName = nameParts[0];
             if (nameParts.length > 1) {
