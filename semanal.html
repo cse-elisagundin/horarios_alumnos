@@ -9,9 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES --- */
+        /* --- ESTILOS GENERALES (INTACTOS) --- */
         :root { 
-            --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;    
+            --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;     
             --bg-body: #f4f6f9; --bg-container: #ffffff;
             --highlight-row: rgba(250, 101, 195, 0.12);
             --dynamic-col-width: 70px;
@@ -109,19 +109,77 @@
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* IMPRESIÓN */
+        /* =========================================================================
+           🖨️ IMPRESIÓN - MEDIA PÁGINA (ESTILO FINAL)
+           ========================================================================= */
         @media print {
-            @page { size: landscape; } 
-            body { background: white; padding: 0; margin: 0; zoom: 75%; font-family: Arial, sans-serif; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .container { width: 100%; border: none; box-shadow: none; max-width: none; padding: 0; }
+            @page { size: landscape; margin: 10mm; } 
+            
+            body { 
+                background: white; 
+                padding: 0; margin: 0; 
+                /* Zoom al 80% para que se lea bien, pero quepa en la mitad */
+                zoom: 80%; 
+                font-family: Arial, sans-serif; 
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
+            }
+
+            .container { 
+                /* Ocupar el 50% del ancho del papel */
+                width: 50% !important; 
+                max-width: none !important; 
+                
+                /* Pegar a la izquierda, dejando el resto blanco */
+                float: left !important;
+                margin: 0 !important;
+                
+                border: none; 
+                box-shadow: none; 
+                padding: 0; 
+                padding-right: 15px; /* Pequeña separación */
+            }
+
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
             .planning-container.visible { display: block !important; page-break-after: always; }
-            .tables-wrapper { display: block; }
-            table { display: table; border: 2px solid var(--c-primary) !important; width: 100% !important; margin-bottom: 20px; table-layout: fixed; }
+            
+            /* Apilar tablas una debajo de otra (block) en lugar de al lado (flex) */
+            .tables-wrapper { display: block !important; }
+            
+            /* Estilo de la tabla para imprimir */
+            .table-block { 
+                border: 1px solid #999 !important; 
+                box-shadow: none !important; 
+                border-radius: 0;
+                margin-bottom: 20px; /* Espacio entre tabla Apoyo e Inglés */
+            }
+
+            table { display: table; border: 2px solid var(--c-primary) !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #ccc; }
-            td, th { display: table-cell !important; border: 1px solid var(--c-primary) !important; color: var(--c-primary) !important; background: white !important; padding: 4px !important; height: auto !important; }
-            .col-hora { grid-row: auto !important; grid-column: auto !important; }
+            tbody tr { display: table-row !important; border-bottom: 1px solid #ccc; height: 22px; }
+            
+            td, th { 
+                display: table-cell !important; 
+                border: 1px solid #666 !important; 
+                color: black !important; /* Texto negro puro */
+                background: white !important; 
+                padding: 3px !important; 
+                font-size: 11px !important; /* Letra legible */
+                height: auto !important; 
+            }
+            
+            /* Cabeceras más definidas */
+            th { background: #ddd !important; font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
+            
+            .col-hora { 
+                grid-row: auto !important; grid-column: auto !important; /* Reset grid móvil */
+                width: 45px !important; 
+                background: #eee !important; 
+                font-weight: bold;
+            }
+
+            /* Sin resaltado rosa al imprimir */
+            tr.current-slot td { background-color: transparent !important; }
         }
     </style>
 </head>
