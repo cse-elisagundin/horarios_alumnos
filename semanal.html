@@ -55,7 +55,13 @@
 
         /* --- ESTILOS TABLA PC --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 8px 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* 🔥 CAMBIO APLICADO: Altura fija en filas para alinear tablas */
+        tbody tr { 
+            height: 42px; /* Altura suficiente para que quepan los pósits */
+        }
+
+        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
         
@@ -80,7 +86,7 @@
             transition: all 0.5s ease; 
         }
 
-        /* --- 🔥 DISEÑO DE ETIQUETA / PÓSIT 🔥 --- */
+        /* --- DISEÑO DE ETIQUETA / PÓSIT --- */
         .name-tag {
             display: inline-block;
             padding: 4px 10px; 
@@ -92,7 +98,7 @@
             border: 1px solid transparent;
         }
         
-        /* 1. ENTRANDO (Etiqueta Verde) */
+        /* 1. ENTRANDO */
         .status-entry .name-tag {
             background-color: #d1e7dd; 
             color: #0f5132;
@@ -101,14 +107,14 @@
             transform: scale(1.05);
         }
 
-        /* 2. EN CLASE (COLORES CORPORATIVOS) */
+        /* 2. EN CLASE */
         .status-active .name-tag {
             background-color: rgba(43, 148, 204, 0.15); 
             color: var(--c-primary);
             border-color: rgba(43, 148, 204, 0.5);
         }
 
-        /* 3. SALIENDO (Etiqueta Roja) */
+        /* 3. SALIENDO */
         .status-exit .name-tag {
             background-color: #f8d7da; 
             color: #842029;
@@ -126,7 +132,8 @@
             .table-block { width: 100%; }
             .mobile-section-title { display: block; }
             table thead { display: none; }
-            table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
+            /* En móvil la altura es automática/grid, no fija */
+            tbody tr { height: auto; display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
             
             table tbody td.col-hora { 
                 grid-row: 1 / 3; 
@@ -145,7 +152,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (LIMPIA TOTAL, SIN FONDOS NI COLORES)
+           🖨️ IMPRESIÓN 
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -166,16 +173,15 @@
             .table-block { border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 20px; }
             table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: 22px; }
             
-            td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; height: auto !important; }
+            /* En impresión mantenemos la altura fija para que siga cuadrado */
+            tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: 35px !important; }
+            
+            td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            /* 🔥 LIMPIEZA TOTAL DE ETIQUETAS PARA IMPRESIÓN 🔥 */
-            .name-tag, 
-            .status-entry .name-tag, 
-            .status-active .name-tag, 
-            .status-exit .name-tag {
+            /* LIMPIEZA DE ETIQUETAS */
+            .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag {
                 background-color: transparent !important;
                 color: black !important;
                 border: none !important;
@@ -366,7 +372,9 @@
                 for(let k=1; k<=6; k++) html += generarCelda(row[k], k, timeColIndexApoyo);
                 html += `</tr>`;
 
-                filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
+                // 🔥 CAMBIO AQUÍ: La tabla de inglés ahora usa 'row[0]' (hora de apoyo)
+                // para asegurarse de que las filas y las horas sean idénticas.
+                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                 for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, timeColIndexIngles);
                 filasIngles += `</tr>`;
             }
@@ -405,13 +413,14 @@
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = diasSemana[new Date().getDay()];
         
-        // (Nota: Se ha eliminado el resaltado de fila rosa .current-slot como pediste)
         if (!urls[hoy]) return; 
         const contenedorHoy = document.getElementById(`view-${hoy}`);
         if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        // (Lógica de resaltar fila rosa eliminada como pediste)
 
         const MARGIN_MINUTES = 5; 
 
