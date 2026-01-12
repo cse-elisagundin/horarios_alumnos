@@ -31,7 +31,6 @@
         
         .header-left { display: flex; gap: 10px; align-items: center; }
         
-        /* Reloj y Próximos Cambios */
         .live-info-panel { text-align: right; display: flex; flex-direction: column; gap: 8px; min-width: 250px; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); letter-spacing: 1px; }
         
@@ -103,16 +102,11 @@
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: normal; line-height: 1.1; }
         }
 
-        /* =========================================================================
-           🖨️ IMPRESIÓN (SIN CAMBIOS, SOLO OCULTAR DINÁMICOS)
-           ========================================================================= */
+        /* IMPRESIÓN */
         @media print {
             @page { size: landscape; margin: 5mm; } 
             body { background: white; padding: 0; margin: 0; zoom: 60%; font-family: Arial, sans-serif; display: flex !important; flex-direction: row; justify-content: flex-start; align-items: flex-start; height: 100vh; overflow: hidden; }
-            
-            /* 🔥 BLOQUEO DE NUEVOS ELEMENTOS AL IMPRIMIR 🔥 */
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box { display: none !important; }
-
             .container { width: 65% !important; margin: 0 !important; border: none; box-shadow: none; padding: 0; margin-right: 2% !important; order: 1; }
             .print-only-notes { display: block !important; width: 30% !important; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 10px; order: 2; }
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none !important; }
@@ -199,7 +193,6 @@
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
-        
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
@@ -211,50 +204,48 @@
         dias.forEach((dia, index) => {
             const data = todosLosDatos[index]; 
             const headers = data[0] || [];
-            const h_apoyo_hora = headers[0] || "H";
-            const h_apoyo_alum = headers.slice(1, 7);
-            const h_ing_hora = headers[7] || "H";
-            const h_ing_alum = headers.slice(8, 14);
-
             let html = `<div id="view-${dia}" class="planning-container">
                 <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
-                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">📚 Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">📚 Apoyo</div><table><thead><tr><th class="col-hora">${headers[0] || "H"}</th>${headers.slice(1, 7).map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
 
             let filasIngles = "";
             for(let i = 1; i < data.length; i++) {
                 const row = data[i];
                 if(!row || (!row[0] && !row[7])) continue;
-
                 let nombresPilaMap = {};
                 [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let full = (row[idx] || "").trim();
                     if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
                 });
 
-                const generarCelda = (full, colIdx, timeColIndex) => {
+                const generarCelda = (full, colIdx) => {
                     if(!full) return `<td></td>`;
                     full = full.trim();
                     let first = full.split(" ")[0].toUpperCase();
                     let display = first;
-                    if(nombresPilaMap[first] > 1) { let partes = full.split(" "); if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; }
+                    if(nombresPilaMap[first] > 1) { 
+                        let partes = full.split(" "); 
+                        if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; 
+                    }
                     
                     let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
-                    let startTimeStr = data[startRow][timeColIndex];
+                    let startTimeStr = data[startRow][0]; // Hora apoyo siempre es col 0
                     let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
-                    let lastBlockTimeStr = data[endRow][timeColIndex];
+                    let lastBlockTimeStr = data[endRow][0];
                     
-                    return `<td class="student-cell" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
+                    // 🔥 MEJORA: Guardamos 'display' en data-attr para que el panel lo use
+                    return `<td class="student-cell" data-display-name="${display}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
                 };
 
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
+                for(let k=1; k<=6; k++) html += generarCelda(row[k], k);
                 html += `</tr>`;
 
-                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; // Copia hora apoyo
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
+                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`;
+                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k);
                 filasIngles += `</tr>`;
             }
-            html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">🇬🇧 Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
+            html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">🇬🇧 Inglés</div><table><thead><tr><th class="col-hora">${headers[7] || "H"}</th>${headers.slice(8, 14).map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
             container.innerHTML += html;
         });
 
@@ -267,11 +258,9 @@
     function actualizarRelojYCambios() {
         const now = new Date();
         document.getElementById('digital-clock').innerText = now.toLocaleTimeString('es-ES', { hour12: false });
-
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = diasSemana[now.getDay()];
-        
         const contenedorHoy = document.getElementById(`view-${hoy}`);
         const listContainer = document.getElementById('next-changes-list');
 
@@ -282,13 +271,14 @@
 
         let cambios = [];
         let procesados = new Set();
-        const MARGIN = 15; // Miramos 15 min al futuro
+        const MARGIN = 15;
 
         contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
             const startStr = cell.getAttribute('data-start-time');
             const endBlockStr = cell.getAttribute('data-end-block-time');
-            const name = cell.getAttribute('data-full-name');
-            const key = name + startStr + endBlockStr;
+            // 🔥 LEEMOS EL NOMBRE INTELIGENTE (LAURA R.) EN LUGAR DEL NOMBRE COMPLETO
+            const displayName = cell.getAttribute('data-display-name');
+            const key = displayName + startStr + endBlockStr;
 
             if(!startStr || procesados.has(key)) return;
             procesados.add(key);
@@ -297,15 +287,17 @@
             const endMin = parseTimeStr(endBlockStr) + 30;
 
             if (startMin >= currentMinutes && startMin <= currentMinutes + MARGIN) {
-                cambios.push(`<div class="change-item"><span class="change-name">${name.split(" ")[0]}</span> <span class="label-in">ENTRA</span> <span class="change-time">${startStr}</span></div>`);
+                cambios.push(`<div class="change-item"><span class="change-name">${displayName}</span> <span class="label-in">ENTRA</span> <span class="change-time">${startStr}</span></div>`);
             } else if (endMin >= currentMinutes && endMin <= currentMinutes + MARGIN) {
-                cambios.push(`<div class="change-item"><span class="change-name">${name.split(" ")[0]}</span> <span class="label-out">SALE</span> <span class="change-time">${(Math.floor(endMin/60)).toString().padStart(2,'0')}:${(endMin%60).toString().padStart(2,'0')}</span></div>`);
+                const hOut = Math.floor(endMin/60).toString().padStart(2,'0');
+                const mOut = (endMin%60).toString().padStart(2,'0');
+                cambios.push(`<div class="change-item"><span class="change-name">${displayName}</span> <span class="label-out">SALE</span> <span class="change-time">${hOut}:${mOut}</span></div>`);
             }
         });
 
         listContainer.innerHTML = cambios.length > 0 ? cambios.join('') : '<div style="color:#bbb">Sin cambios próximos</div>';
         
-        // Actualizar colores inteligentes de las celdas
+        // Colores inteligentes
         contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
             cell.classList.remove('status-entry', 'status-exit', 'status-active');
             const startMin = parseTimeStr(cell.getAttribute('data-start-time'));
@@ -324,17 +316,14 @@
             else div.classList.toggle('visible', div.id === `view-${dia}`);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            let esActivo = (btn.innerText.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && btn.innerText === 'VER TODO');
-            btn.classList.toggle('active', esActivo);
+            btn.classList.toggle('active', btn.innerText.toUpperCase() === dia.toUpperCase() || (dia === 'Todo' && btn.innerText === 'VER TODO'));
         });
         actualizarRelojYCambios();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
         cargarTodo();
-        // Reloj y lógica de cambios cada segundo
         setInterval(actualizarRelojYCambios, 1000);
-        // 🔥 MEJORA 1: Auto-Sincronización cada 5 minutos 🔥
         setInterval(cargarTodo, 300000); 
     });
 </script>
