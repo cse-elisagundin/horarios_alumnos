@@ -58,17 +58,16 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 8px 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* ESTILO GENERAL DE CABECERAS (AZUL) */
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
         
-        /* 🔥 FORZADO: Cabecera 'H' en blanco y azul */
+        /* Cabecera Hora */
         th.col-hora { 
             background: white !important; 
             color: var(--c-primary) !important; 
             border-bottom: 2px solid var(--c-primary) !important;
         }
 
-        /* 🔥 FORZADO: Celda de hora normal en blanco */
+        /* Celda Hora */
         .col-hora { 
             width: 45px; 
             background: white !important; 
@@ -77,10 +76,43 @@
             border-right: 1px solid #ddd; 
         }
 
-        .student-cell { font-weight: 600; text-transform: uppercase; color: var(--c-primary); }
-        tr.current-slot td { background-color: var(--highlight-row) !important; }
+        /* CELDA DE ALUMNO - BASE */
+        .student-cell { 
+            font-weight: 600; 
+            text-transform: uppercase; 
+            color: var(--c-primary);
+            transition: all 0.5s ease; /* Transición suave de color */
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+        }
+        
+        /* --- ESTADOS DE ALUMNO (COLORES INTELIGENTES) --- */
+        
+        /* 1. ENTRANDO (Verde) */
+        .student-cell.status-entry {
+            background-color: #e8f5e9 !important; /* Verde muy claro */
+            border-left: 5px solid #2e7d32 !important; /* Borde verde fuerte a la izquierda */
+            color: #1b5e20 !important;
+        }
 
-        /* Ocultar sección de notas en la web */
+        /* 2. EN CLASE (Ligero) */
+        .student-cell.status-active {
+            background-color: #e3f2fd !important; /* Azul muy muy claro */
+            color: var(--c-primary) !important;
+        }
+
+        /* 3. SALIENDO (Rojo) */
+        .student-cell.status-exit {
+            background-color: #ffebee !important; /* Rojo muy claro */
+            border-right: 5px solid #c62828 !important; /* Borde rojo fuerte a la derecha */
+            color: #b71c1c !important;
+        }
+
+        /* Fila actual (Rosa) - Se mantiene de fondo para las celdas vacías */
+        tr.current-slot td:not(.status-entry):not(.status-active):not(.status-exit) { 
+            background-color: var(--highlight-row) !important; 
+        }
+
         .print-only-notes { display: none; }
 
         /* --- 📱 MÓVIL --- */
@@ -93,7 +125,6 @@
             table thead { display: none; }
             table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
             
-            /* Ajuste también en móvil */
             table tbody td.col-hora { 
                 grid-row: 1 / 3; 
                 grid-column: 1; 
@@ -111,79 +142,36 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (SIN CAMBIOS)
+           🖨️ IMPRESIÓN (LIMPIA EN B/N, IGNORA LOS COLORES DE ESTADO)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
             
             body { 
-                background: white; 
-                padding: 0; margin: 0; 
-                zoom: 75%; 
+                background: white; padding: 0; margin: 0; zoom: 75%; 
                 font-family: Arial, sans-serif; 
                 -webkit-print-color-adjust: exact !important; 
                 print-color-adjust: exact !important;
-                
-                display: flex !important;
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: flex-start;
+                display: flex !important; flex-direction: row; justify-content: space-between; align-items: flex-start;
             }
 
-            .container { 
-                width: 55% !important; 
-                max-width: none !important; 
-                margin: 0 !important;
-                border: none; box-shadow: none; padding: 0; 
-                order: 1; 
-            }
-
-            .print-only-notes {
-                display: block !important;
-                width: 40% !important; 
-                margin-left: 20px;
-                order: 2; 
-                position: static !important; 
-                border-bottom: 2px solid #000;
-                padding-bottom: 10px;
-                padding-top: 10px;
-            }
-
+            .container { width: 55% !important; max-width: none !important; margin: 0 !important; border: none; box-shadow: none; padding: 0; order: 1; }
+            .print-only-notes { display: block !important; width: 40% !important; margin-left: 20px; order: 2; position: static !important; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 10px; }
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
             .planning-container.visible { display: block !important; page-break-after: always; }
             .tables-wrapper { display: block !important; }
-            
-            .table-block { 
-                border: 1px solid #000 !important; 
-                box-shadow: none !important; 
-                border-radius: 0;
-                margin-bottom: 20px; 
-            }
-
+            .table-block { border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 20px; }
             table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
             tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: 22px; }
             
-            td, th { 
-                display: table-cell !important; 
-                border: 1px solid #000 !important; 
-                color: black !important; 
-                background-color: white !important; 
-                background: white !important;
-                padding: 3px !important; 
-                font-size: 11px !important; 
-                height: auto !important; 
-            }
-            
+            td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; height: auto !important; }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            .col-hora { 
-                background-color: white !important; 
-                background: white !important;
-                font-weight: bold;
-                width: 45px !important;
-            }
-
+            /* Eliminamos bordes de colores al imprimir */
+            .student-cell { border: 1px solid #000 !important; background-color: white !important; color: black !important; }
+            
+            .col-hora { background-color: white !important; background: white !important; font-weight: bold; width: 45px !important; }
             tr.current-slot td { background-color: transparent !important; }
 
             .notes-header { display: flex; justify-content: space-between; align-items: center; }
@@ -259,6 +247,13 @@
         return Math.ceil(maxAncho + 20);
     }
 
+    // --- FUNCIÓN DE UTILIDAD: Convertir "15:30" a minutos totales (930) ---
+    function parseTimeStr(timeStr) {
+        if (!timeStr || !timeStr.includes(':')) return null;
+        const [h, m] = timeStr.split(':').map(Number);
+        return h * 60 + m;
+    }
+
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
@@ -267,7 +262,7 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
-        // Ajuste de ancho (para PC)
+        // Ajuste de ancho
         const anchoCalculado = calcularAnchoMaximo(todosLosDatos);
         document.documentElement.style.setProperty('--dynamic-col-width', anchoCalculado + 'px');
 
@@ -304,12 +299,14 @@
                             <tbody>`;
 
             let filasIngles = "";
+            let timeColIndexApoyo = 0;
+            let timeColIndexIngles = 7;
 
             for(let i = 1; i < data.length; i++) {
                 const row = data[i];
                 if(!row || (!row[0] && !row[7])) continue;
 
-                // DUPLICADOS
+                // DUPLICADOS VISUALES
                 let nombresPilaMap = {};
                 [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let full = (row[idx] || "").trim();
@@ -319,7 +316,10 @@
                     }
                 });
 
-                const generarCelda = (full) => {
+                // FUNCIÓN PARA GENERAR CELDA INTELIGENTE
+                // Necesitamos el índice de la columna (colIdx) y la fila actual (i)
+                // para mirar atrás y adelante y calcular start/end real.
+                const generarCelda = (full, colIdx, timeColIndex) => {
                     if(!full) return `<td></td>`;
                     full = full.trim();
                     let first = full.split(" ")[0].toUpperCase();
@@ -328,17 +328,44 @@
                         let partes = full.split(" ");
                         if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + ".";
                     }
-                    return `<td class="student-cell" title="${full.toUpperCase()}">${display}</td>`;
+
+                    // --- LÓGICA DE ESCÁNER DE HORARIO ---
+                    // 1. Buscamos el inicio (mirando hacia atrás)
+                    let startRow = i;
+                    while (startRow > 1) {
+                        let prevVal = (data[startRow - 1][colIdx] || "").trim();
+                        if (prevVal !== full) break; // Si cambia el nombre, hemos llegado al principio
+                        startRow--;
+                    }
+                    let startTimeStr = data[startRow][timeColIndex];
+
+                    // 2. Buscamos el final (mirando hacia adelante)
+                    let endRow = i;
+                    while (endRow < data.length - 1) {
+                        let nextVal = (data[endRow + 1][colIdx] || "").trim();
+                        if (nextVal !== full) break; // Si cambia el nombre, hemos llegado al final
+                        endRow++;
+                    }
+                    // La hora de fin es la hora de esta fila + 30 min (asumiendo bloques de 30)
+                    let lastBlockTimeStr = data[endRow][timeColIndex];
+                    
+                    // Guardamos los datos en atributos HTML para que el JS los lea en tiempo real
+                    return `<td class="student-cell" 
+                                title="${full.toUpperCase()}"
+                                data-start-time="${startTimeStr}"
+                                data-end-block-time="${lastBlockTimeStr}">
+                                ${display}
+                            </td>`;
                 };
 
                 // APOYO
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k]);
+                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, timeColIndexApoyo);
                 html += `</tr>`;
 
-                // INGLÉS (Guardamos para luego)
+                // INGLÉS
                 filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k]);
+                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, timeColIndexIngles);
                 filasIngles += `</tr>`;
             }
 
@@ -369,32 +396,68 @@
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
         
-        setInterval(resaltarHoraActual, 60000);
-        setTimeout(resaltarHoraActual, 1000);
+        // Iniciamos los latidos del sistema
+        setInterval(actualizarEstadoTiempoReal, 10000); // Cada 10 seg revisa colores
+        setTimeout(actualizarEstadoTiempoReal, 500);
     }
 
-    function resaltarHoraActual() {
+    // --- EL CEREBRO DE COLORES ---
+    function actualizarEstadoTiempoReal() {
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = diasSemana[new Date().getDay()];
         
+        // 1. Resaltar Fila Rosa (Hora actual)
         document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-        if (!urls[hoy]) return;
+        if (!urls[hoy]) return; // Si no es día lectivo, salir
         const contenedorHoy = document.getElementById(`view-${hoy}`);
         if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora'); 
         
+        // Buscar fila rosa
+        const filasHoras = contenedorHoy.querySelectorAll('td.col-hora'); 
         filasHoras.forEach(tdHora => {
             const horaStr = tdHora.innerText; 
-            if(horaStr.includes(":")) {
-                const [h, m] = horaStr.split(':').map(Number);
-                const slotStartMinutes = h * 60 + m;
-                const slotEndMinutes = slotStartMinutes + 30; 
-                if (currentMinutes >= slotStartMinutes && currentMinutes < slotEndMinutes) {
+            const t = parseTimeStr(horaStr);
+            if(t !== null) {
+                if (currentMinutes >= t && currentMinutes < t + 30) {
                     tdHora.closest('tr').classList.add('current-slot');
                 }
+            }
+        });
+
+        // 2. Colorear Celdas de Alumnos (Entrada/Salida)
+        // Margen de 5 minutos
+        const MARGIN_MINUTES = 5; 
+
+        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
+            // Limpiar clases
+            cell.classList.remove('status-entry', 'status-exit', 'status-active');
+            
+            const startStr = cell.getAttribute('data-start-time');
+            const endBlockStr = cell.getAttribute('data-end-block-time');
+            
+            if(!startStr || !endBlockStr) return;
+
+            const startMin = parseTimeStr(startStr);
+            // La hora de salida real es la hora del último bloque + 30 minutos
+            const endMin = parseTimeStr(endBlockStr) + 30; 
+
+            if(startMin === null || endMin === null) return;
+
+            // LÓGICA DE TIEMPO
+            // 1. ¿Está entrando? (Desde 5 min antes hasta 5 min después del inicio)
+            if (currentMinutes >= (startMin - MARGIN_MINUTES) && currentMinutes <= (startMin + MARGIN_MINUTES)) {
+                cell.classList.add('status-entry');
+            }
+            // 2. ¿Está saliendo? (Desde 5 min antes hasta 5 min después del final)
+            else if (currentMinutes >= (endMin - MARGIN_MINUTES) && currentMinutes <= (endMin + MARGIN_MINUTES)) {
+                cell.classList.add('status-exit');
+            }
+            // 3. ¿Está en clase? (Entre el fin de la entrada y el inicio de la salida)
+            else if (currentMinutes > (startMin + MARGIN_MINUTES) && currentMinutes < (endMin - MARGIN_MINUTES)) {
+                cell.classList.add('status-active');
             }
         });
     }
@@ -409,7 +472,7 @@
             let esActivo = (textoBtn.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && textoBtn === 'VER TODO');
             if(esActivo) btn.classList.add('active'); else btn.classList.remove('active');
         });
-        resaltarHoraActual();
+        actualizarEstadoTiempoReal();
     }
 
     document.addEventListener('DOMContentLoaded', cargarTodo);
