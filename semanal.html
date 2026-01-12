@@ -76,40 +76,45 @@
             border-right: 1px solid #ddd; 
         }
 
-        /* CELDA DE ALUMNO - BASE */
+        /* CELDA DE ALUMNO - CONTENEDOR */
         .student-cell { 
-            font-weight: 600; 
-            text-transform: uppercase; 
-            color: var(--c-primary);
-            transition: all 0.5s ease; /* Transición suave de color */
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
+            transition: all 0.5s ease; 
+        }
+
+        /* --- 🔥 DISEÑO DE ETIQUETA / PÓSIT 🔥 --- */
+        .name-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 8px; /* Bordes redondeados */
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--c-primary); /* Color por defecto */
+            transition: all 0.5s ease;
         }
         
-        /* --- ESTADOS DE ALUMNO (COLORES INTELIGENTES) --- */
-        
-        /* 1. ENTRANDO (Verde) */
-        .student-cell.status-entry {
-            background-color: #e8f5e9 !important; /* Verde muy claro */
-            border-left: 5px solid #2e7d32 !important; /* Borde verde fuerte a la izquierda */
-            color: #1b5e20 !important;
+        /* 1. ENTRANDO (Etiqueta Verde) */
+        .status-entry .name-tag {
+            background-color: #d1e7dd; /* Verde pastel */
+            color: #0f5132; /* Verde oscuro texto */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: scale(1.05); /* Ligeramente más grande */
         }
 
-        /* 2. EN CLASE (Ligero) */
-        .student-cell.status-active {
-            background-color: #e3f2fd !important; /* Azul muy muy claro */
-            color: var(--c-primary) !important;
+        /* 2. EN CLASE (Etiqueta Azul Sutil) */
+        .status-active .name-tag {
+            background-color: #f0f4f8; /* Azul grisáceo muy claro */
+            color: #243c7a;
         }
 
-        /* 3. SALIENDO (Rojo) */
-        .student-cell.status-exit {
-            background-color: #ffebee !important; /* Rojo muy claro */
-            border-right: 5px solid #c62828 !important; /* Borde rojo fuerte a la derecha */
-            color: #b71c1c !important;
+        /* 3. SALIENDO (Etiqueta Roja) */
+        .status-exit .name-tag {
+            background-color: #f8d7da; /* Rojo pastel */
+            color: #842029; /* Rojo oscuro texto */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        /* Fila actual (Rosa) - Se mantiene de fondo para las celdas vacías */
-        tr.current-slot td:not(.status-entry):not(.status-active):not(.status-exit) { 
+        /* Fila actual (Rosa) */
+        tr.current-slot td { 
             background-color: var(--highlight-row) !important; 
         }
 
@@ -142,7 +147,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (LIMPIA EN B/N, IGNORA LOS COLORES DE ESTADO)
+           🖨️ IMPRESIÓN (LIMPIA EN B/N, SIN ETIQUETAS DE COLORES)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -168,8 +173,14 @@
             td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; height: auto !important; }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            /* Eliminamos bordes de colores al imprimir */
-            .student-cell { border: 1px solid #000 !important; background-color: white !important; color: black !important; }
+            /* RESETEAR ETIQUETAS PARA IMPRESIÓN (Negro plano) */
+            .name-tag {
+                background-color: transparent !important;
+                color: black !important;
+                border: none !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
             
             .col-hora { background-color: white !important; background: white !important; font-weight: bold; width: 45px !important; }
             tr.current-slot td { background-color: transparent !important; }
@@ -247,7 +258,6 @@
         return Math.ceil(maxAncho + 20);
     }
 
-    // --- FUNCIÓN DE UTILIDAD: Convertir "15:30" a minutos totales (930) ---
     function parseTimeStr(timeStr) {
         if (!timeStr || !timeStr.includes(':')) return null;
         const [h, m] = timeStr.split(':').map(Number);
@@ -262,7 +272,6 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
-        // Ajuste de ancho
         const anchoCalculado = calcularAnchoMaximo(todosLosDatos);
         document.documentElement.style.setProperty('--dynamic-col-width', anchoCalculado + 'px');
 
@@ -306,7 +315,6 @@
                 const row = data[i];
                 if(!row || (!row[0] && !row[7])) continue;
 
-                // DUPLICADOS VISUALES
                 let nombresPilaMap = {};
                 [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let full = (row[idx] || "").trim();
@@ -316,9 +324,6 @@
                     }
                 });
 
-                // FUNCIÓN PARA GENERAR CELDA INTELIGENTE
-                // Necesitamos el índice de la columna (colIdx) y la fila actual (i)
-                // para mirar atrás y adelante y calcular start/end real.
                 const generarCelda = (full, colIdx, timeColIndex) => {
                     if(!full) return `<td></td>`;
                     full = full.trim();
@@ -329,41 +334,36 @@
                         if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + ".";
                     }
 
-                    // --- LÓGICA DE ESCÁNER DE HORARIO ---
-                    // 1. Buscamos el inicio (mirando hacia atrás)
+                    // Lógica de escáner
                     let startRow = i;
                     while (startRow > 1) {
                         let prevVal = (data[startRow - 1][colIdx] || "").trim();
-                        if (prevVal !== full) break; // Si cambia el nombre, hemos llegado al principio
+                        if (prevVal !== full) break;
                         startRow--;
                     }
                     let startTimeStr = data[startRow][timeColIndex];
 
-                    // 2. Buscamos el final (mirando hacia adelante)
                     let endRow = i;
                     while (endRow < data.length - 1) {
                         let nextVal = (data[endRow + 1][colIdx] || "").trim();
-                        if (nextVal !== full) break; // Si cambia el nombre, hemos llegado al final
+                        if (nextVal !== full) break;
                         endRow++;
                     }
-                    // La hora de fin es la hora de esta fila + 30 min (asumiendo bloques de 30)
                     let lastBlockTimeStr = data[endRow][timeColIndex];
                     
-                    // Guardamos los datos en atributos HTML para que el JS los lea en tiempo real
+                    // 🔥 AQUÍ ESTÁ EL CAMBIO: Usamos un SPAN 'name-tag' para la etiqueta
                     return `<td class="student-cell" 
                                 title="${full.toUpperCase()}"
                                 data-start-time="${startTimeStr}"
                                 data-end-block-time="${lastBlockTimeStr}">
-                                ${display}
+                                <span class="name-tag">${display}</span>
                             </td>`;
                 };
 
-                // APOYO
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                 for(let k=1; k<=6; k++) html += generarCelda(row[k], k, timeColIndexApoyo);
                 html += `</tr>`;
 
-                // INGLÉS
                 filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
                 for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, timeColIndexIngles);
                 filasIngles += `</tr>`;
@@ -371,7 +371,6 @@
 
             html += `</tbody></table></div>`; // Fin Apoyo
 
-            // INGLÉS
             html += `
                     <div class="table-block">
                         <div class="mobile-section-title ing">🇬🇧 Inglés</div>
@@ -396,26 +395,22 @@
         let hoy = mapDay[new Date().getDay()];
         cambiarDia(dias.includes(hoy) ? hoy : "Lunes");
         
-        // Iniciamos los latidos del sistema
-        setInterval(actualizarEstadoTiempoReal, 10000); // Cada 10 seg revisa colores
+        setInterval(actualizarEstadoTiempoReal, 10000); 
         setTimeout(actualizarEstadoTiempoReal, 500);
     }
 
-    // --- EL CEREBRO DE COLORES ---
     function actualizarEstadoTiempoReal() {
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = diasSemana[new Date().getDay()];
         
-        // 1. Resaltar Fila Rosa (Hora actual)
         document.querySelectorAll('tr.current-slot').forEach(tr => tr.classList.remove('current-slot'));
-        if (!urls[hoy]) return; // Si no es día lectivo, salir
+        if (!urls[hoy]) return; 
         const contenedorHoy = document.getElementById(`view-${hoy}`);
         if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) return;
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
         
-        // Buscar fila rosa
         const filasHoras = contenedorHoy.querySelectorAll('td.col-hora'); 
         filasHoras.forEach(tdHora => {
             const horaStr = tdHora.innerText; 
@@ -427,12 +422,9 @@
             }
         });
 
-        // 2. Colorear Celdas de Alumnos (Entrada/Salida)
-        // Margen de 5 minutos
         const MARGIN_MINUTES = 5; 
 
         contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
-            // Limpiar clases
             cell.classList.remove('status-entry', 'status-exit', 'status-active');
             
             const startStr = cell.getAttribute('data-start-time');
@@ -441,21 +433,17 @@
             if(!startStr || !endBlockStr) return;
 
             const startMin = parseTimeStr(startStr);
-            // La hora de salida real es la hora del último bloque + 30 minutos
             const endMin = parseTimeStr(endBlockStr) + 30; 
 
             if(startMin === null || endMin === null) return;
 
-            // LÓGICA DE TIEMPO
-            // 1. ¿Está entrando? (Desde 5 min antes hasta 5 min después del inicio)
+            // Lógica para asignar clases a la celda (el CSS se encarga de pintar el name-tag)
             if (currentMinutes >= (startMin - MARGIN_MINUTES) && currentMinutes <= (startMin + MARGIN_MINUTES)) {
                 cell.classList.add('status-entry');
             }
-            // 2. ¿Está saliendo? (Desde 5 min antes hasta 5 min después del final)
             else if (currentMinutes >= (endMin - MARGIN_MINUTES) && currentMinutes <= (endMin + MARGIN_MINUTES)) {
                 cell.classList.add('status-exit');
             }
-            // 3. ¿Está en clase? (Entre el fin de la entrada y el inicio de la salida)
             else if (currentMinutes > (startMin + MARGIN_MINUTES) && currentMinutes < (endMin - MARGIN_MINUTES)) {
                 cell.classList.add('status-active');
             }
