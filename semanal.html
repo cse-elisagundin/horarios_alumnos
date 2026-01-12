@@ -85,26 +85,45 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN - MEDIA PÁGINA + NOTAS + AHORRO TINTA
+           🖨️ IMPRESIÓN CORREGIDA (SOLUCIÓN FLEXBOX - NO OVERLAP)
            ========================================================================= */
         @media print {
-            @page { size: landscape; margin: 10mm; } 
+            @page { size: landscape; margin: 8mm; } 
             
             body { 
                 background: white; 
                 padding: 0; margin: 0; 
-                zoom: 80%; 
+                zoom: 75%; 
                 font-family: Arial, sans-serif; 
                 -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+                
+                /* AQUÍ ESTÁ LA SOLUCIÓN: Usamos Flexbox en el body para separar columnas */
+                display: flex !important;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: flex-start;
             }
 
+            /* 1. CONTENEDOR DE HORARIO (IZQUIERDA) */
             .container { 
-                width: 50% !important; /* Mitad izquierda */
+                width: 55% !important; /* Un poco más de la mitad para que el horario respire */
                 max-width: none !important; 
-                float: left !important;
                 margin: 0 !important;
-                border: none; box-shadow: none; padding: 0; padding-right: 15px;
+                border: none; box-shadow: none; padding: 0; 
+                order: 1; /* Forzamos que vaya primero */
+            }
+
+            /* 2. CONTENEDOR DE NOTAS (DERECHA) */
+            .print-only-notes {
+                display: block !important;
+                width: 40% !important; /* El resto del espacio */
+                margin-left: 20px;
+                order: 2; /* Forzamos que vaya segundo */
+                position: static !important; /* IMPORTANTE: Quitamos el fixed para que no flote encima */
+                border-bottom: 2px solid #000;
+                padding-bottom: 10px;
+                padding-top: 10px;
             }
 
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
@@ -112,7 +131,7 @@
             .tables-wrapper { display: block !important; }
             
             .table-block { 
-                border: 1px solid #000 !important; /* Borde negro simple */
+                border: 1px solid #000 !important; 
                 box-shadow: none !important; 
                 border-radius: 0;
                 margin-bottom: 20px; 
@@ -122,26 +141,20 @@
             thead { display: table-header-group !important; }
             tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: 22px; }
             
-            /* --- AHORRO DE TINTA EXTREMO --- */
-            /* Todo blanco y negro */
+            /* --- AHORRO DE TINTA --- */
             td, th { 
                 display: table-cell !important; 
-                border: 1px solid #000 !important; /* Líneas negras finas */
+                border: 1px solid #000 !important; 
                 color: black !important; 
-                background-color: white !important; /* Forzar fondo blanco */
+                background-color: white !important; 
                 background: white !important;
                 padding: 3px !important; 
                 font-size: 11px !important; 
                 height: auto !important; 
             }
             
-            th { 
-                font-weight: bold; 
-                border-bottom: 2px solid #000 !important; 
-                text-transform: uppercase; 
-            }
+            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            /* Asegurar que las horas no tengan gris */
             .col-hora { 
                 background-color: white !important; 
                 background: white !important;
@@ -151,39 +164,10 @@
 
             tr.current-slot td { background-color: transparent !important; }
 
-            /* --- SECCIÓN NOTAS LATERAL --- */
-            .print-only-notes {
-                display: block !important;
-                position: fixed;
-                top: 0;
-                right: 0;
-                width: 45%; /* Ocupa la mitad derecha vacía */
-                height: 50px;
-                border-bottom: 2px solid #000;
-                padding-bottom: 10px;
-                padding-top: 10px;
-            }
-
-            .notes-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-
-            .notes-title {
-                font-size: 32px; /* Mismo tamaño que el título del día */
-                font-weight: 900;
-                text-transform: uppercase;
-                color: black;
-                margin: 0;
-                letter-spacing: -1px;
-            }
-
-            .notes-logo {
-                height: 60px; /* Tamaño mediano */
-                object-fit: contain;
-                filter: grayscale(100%); /* Logo en B/N para ahorrar tinta de color si la hubiera */
-            }
+            /* ESTILOS INTERNOS DE NOTAS */
+            .notes-header { display: flex; justify-content: space-between; align-items: center; }
+            .notes-title { font-size: 32px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; letter-spacing: -1px; }
+            .notes-logo { height: 60px; object-fit: contain; filter: grayscale(100%); }
         }
     </style>
 </head>
