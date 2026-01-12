@@ -58,22 +58,23 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 8px 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* 🔥 CAMBIO REALIZADO AQUI: Fondo blanco y texto azul para la hora */
-        .col-hora { 
-            width: 45px; 
-            background: white; /* Antes gris */
-            font-weight: 800; 
-            color: var(--c-primary); 
-            border-right: 1px solid #ddd; 
-        }
-        
+        /* ESTILO GENERAL DE CABECERAS (AZUL) */
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
         
-        /* 🔥 CAMBIO REALIZADO AQUI: Cabecera 'H' en blanco y azul */
+        /* 🔥 FORZADO: Cabecera 'H' en blanco y azul */
         th.col-hora { 
-            background: white; /* Antes azul oscuro */
-            color: var(--c-primary); 
-            border-bottom: 2px solid var(--c-primary);
+            background: white !important; 
+            color: var(--c-primary) !important; 
+            border-bottom: 2px solid var(--c-primary) !important;
+        }
+
+        /* 🔥 FORZADO: Celda de hora normal en blanco */
+        .col-hora { 
+            width: 45px; 
+            background: white !important; 
+            font-weight: 800; 
+            color: var(--c-primary) !important; 
+            border-right: 1px solid #ddd; 
         }
 
         .student-cell { font-weight: 600; text-transform: uppercase; color: var(--c-primary); }
@@ -92,14 +93,14 @@
             table thead { display: none; }
             table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
             
-            /* Ajuste también en móvil para coherencia */
+            /* Ajuste también en móvil */
             table tbody td.col-hora { 
                 grid-row: 1 / 3; 
                 grid-column: 1; 
                 display: flex; align-items: center; justify-content: center; 
                 font-size: 14px; 
-                background: white; /* Fondo blanco en móvil también */
-                color: var(--c-primary);
+                background: white !important;
+                color: var(--c-primary) !important;
                 border-right: 1px solid #eee;
             }
             
@@ -110,7 +111,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (SIN CAMBIOS RESPECTO AL ANTERIOR QUE FUNCIONABA BIEN)
+           🖨️ IMPRESIÓN (SIN CAMBIOS)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -129,7 +130,6 @@
                 align-items: flex-start;
             }
 
-            /* 1. CONTENEDOR DE HORARIO (IZQUIERDA) */
             .container { 
                 width: 55% !important; 
                 max-width: none !important; 
@@ -138,7 +138,6 @@
                 order: 1; 
             }
 
-            /* 2. CONTENEDOR DE NOTAS (DERECHA) */
             .print-only-notes {
                 display: block !important;
                 width: 40% !important; 
@@ -165,7 +164,6 @@
             thead { display: table-header-group !important; }
             tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: 22px; }
             
-            /* --- AHORRO DE TINTA --- */
             td, th { 
                 display: table-cell !important; 
                 border: 1px solid #000 !important; 
@@ -188,7 +186,6 @@
 
             tr.current-slot td { background-color: transparent !important; }
 
-            /* ESTILOS INTERNOS DE NOTAS */
             .notes-header { display: flex; justify-content: space-between; align-items: center; }
             .notes-title { font-size: 32px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; letter-spacing: -1px; }
             .notes-logo { height: 60px; object-fit: contain; filter: grayscale(100%); }
