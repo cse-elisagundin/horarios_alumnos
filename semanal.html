@@ -56,9 +56,9 @@
         /* --- ESTILOS TABLA PC --- */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         
-        /* 🔥 CAMBIO APLICADO: Altura fija en filas para alinear tablas */
+        /* WEB: Altura fija para que alineen perfectos los pósits */
         tbody tr { 
-            height: 42px; /* Altura suficiente para que quepan los pósits */
+            height: 42px; 
         }
 
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -86,7 +86,7 @@
             transition: all 0.5s ease; 
         }
 
-        /* --- DISEÑO DE ETIQUETA / PÓSIT --- */
+        /* --- DISEÑO DE ETIQUETA / PÓSIT (SOLO WEB) --- */
         .name-tag {
             display: inline-block;
             padding: 4px 10px; 
@@ -98,29 +98,10 @@
             border: 1px solid transparent;
         }
         
-        /* 1. ENTRANDO */
-        .status-entry .name-tag {
-            background-color: #d1e7dd; 
-            color: #0f5132;
-            border-color: #badbcc;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transform: scale(1.05);
-        }
-
-        /* 2. EN CLASE */
-        .status-active .name-tag {
-            background-color: rgba(43, 148, 204, 0.15); 
-            color: var(--c-primary);
-            border-color: rgba(43, 148, 204, 0.5);
-        }
-
-        /* 3. SALIENDO */
-        .status-exit .name-tag {
-            background-color: #f8d7da; 
-            color: #842029;
-            border-color: #f5c2c7;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        /* Estados (Colores) */
+        .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transform: scale(1.05); }
+        .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border-color: rgba(43, 148, 204, 0.5); }
+        .status-exit .name-tag { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
         .print-only-notes { display: none; }
 
@@ -132,19 +113,9 @@
             .table-block { width: 100%; }
             .mobile-section-title { display: block; }
             table thead { display: none; }
-            /* En móvil la altura es automática/grid, no fija */
             tbody tr { height: auto; display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
             
-            table tbody td.col-hora { 
-                grid-row: 1 / 3; 
-                grid-column: 1; 
-                display: flex; align-items: center; justify-content: center; 
-                font-size: 14px; 
-                background: white !important;
-                color: var(--c-primary) !important;
-                border-right: 1px solid #eee;
-            }
-            
+            table tbody td.col-hora { grid-row: 1 / 3; grid-column: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; background: white !important; color: var(--c-primary) !important; border-right: 1px solid #eee; }
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: normal; line-height: 1.1; }
         }
 
@@ -152,7 +123,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN 
+           🖨️ IMPRESIÓN (ARREGLADA: ALTURA AUTOMÁTICA)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 8mm; } 
@@ -169,26 +140,35 @@
             .print-only-notes { display: block !important; width: 40% !important; margin-left: 20px; order: 2; position: static !important; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 10px; }
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none; }
             .planning-container.visible { display: block !important; page-break-after: always; }
+            
+            /* Volvemos a poner las tablas una debajo de otra (block) para que quepan bien */
             .tables-wrapper { display: block !important; }
             .table-block { border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 20px; }
+            
             table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
             
-            /* En impresión mantenemos la altura fija para que siga cuadrado */
-            tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: 35px !important; }
+            /* 🔥 CORRECCIÓN CLAVE: Altura 'auto' y pequeña para que NO se estiren */
+            tbody tr { 
+                display: table-row !important; 
+                border-bottom: 1px solid #000; 
+                height: auto !important; /* IMPORTANTE: Dejar que se encojan */
+            }
             
             td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 3px !important; font-size: 11px !important; }
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             
-            /* LIMPIEZA DE ETIQUETAS */
+            /* 🔥 LIMPIEZA DE ETIQUETAS: Se convierten en texto plano para ocupar menos espacio vertical */
             .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag {
                 background-color: transparent !important;
                 color: black !important;
                 border: none !important;
                 padding: 0 !important;
+                margin: 0 !important;
                 box-shadow: none !important;
                 transform: none !important;
-                font-weight: normal !important;
+                font-weight: bold !important; /* Mantener negrita para legibilidad */
+                display: inline !important; /* Quitar bloque */
             }
             
             .col-hora { background-color: white !important; background: white !important; font-weight: bold; width: 45px !important; }
@@ -372,8 +352,7 @@
                 for(let k=1; k<=6; k++) html += generarCelda(row[k], k, timeColIndexApoyo);
                 html += `</tr>`;
 
-                // 🔥 CAMBIO AQUÍ: La tabla de inglés ahora usa 'row[0]' (hora de apoyo)
-                // para asegurarse de que las filas y las horas sean idénticas.
+                // Aquí copiamos la hora de apoyo al horario de inglés para que estén a la par
                 filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                 for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, timeColIndexIngles);
                 filasIngles += `</tr>`;
@@ -419,8 +398,6 @@
 
         const now = new Date();
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-        // (Lógica de resaltar fila rosa eliminada como pediste)
 
         const MARGIN_MINUTES = 5; 
 
