@@ -104,20 +104,59 @@
         }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (SIN CAMBIOS, SOLO OCULTAR DINÁMICOS)
+           🖨️ IMPRESIÓN (MODIFICADO: HORARIO ARRIBA, NOTAS ABAJO)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 5mm; } 
-            body { background: white; padding: 0; margin: 0; zoom: 60%; font-family: Arial, sans-serif; display: flex !important; flex-direction: row; justify-content: flex-start; align-items: flex-start; height: 100vh; overflow: hidden; }
+            
+            body { 
+                background: white; 
+                padding: 0; 
+                margin: 0; 
+                zoom: 60%; 
+                font-family: Arial, sans-serif; 
+                display: flex !important; 
+                flex-direction: column !important; /* CAMBIO: Columna para poner uno debajo del otro */
+                align-items: center !important; /* CAMBIO: Centrado horizontal */
+                justify-content: flex-start !important;
+                height: 100vh; 
+                overflow: hidden; 
+            }
             
             /* 🔥 BLOQUEO DE NUEVOS ELEMENTOS AL IMPRIMIR 🔥 */
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box { display: none !important; }
 
-            .container { width: 65% !important; margin: 0 !important; border: none; box-shadow: none; padding: 0; margin-right: 2% !important; order: 1; }
-            .print-only-notes { display: block !important; width: 30% !important; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 10px; order: 2; }
+            .container { 
+                width: 98% !important; /* CAMBIO: Ancho casi completo */
+                height: 48% !important; /* CAMBIO: Mitad superior de la hoja */
+                margin: 0 auto !important; /* CAMBIO: Centrado */
+                border: none; 
+                box-shadow: none; 
+                padding: 0; 
+                order: 1; 
+                overflow: hidden; /* Evita que empuje las notas fuera si es muy largo */
+            }
+
+            .print-only-notes { 
+                display: block !important; 
+                width: 98% !important; /* CAMBIO: Ancho completo */
+                height: 48% !important; /* CAMBIO: Mitad inferior de la hoja */
+                border-top: 2px solid #000; /* Separador visual */
+                border-bottom: none !important;
+                padding-top: 10px; 
+                order: 2; 
+            }
+
             .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none !important; }
-            .planning-container.visible { display: block !important; page-break-after: always; }
-            .tables-wrapper { display: flex !important; flex-direction: row !important; gap: 10px !important; }
+            .planning-container.visible { display: block !important; page-break-after: avoid; }
+            
+            .tables-wrapper { 
+                display: flex !important; 
+                flex-direction: row !important; 
+                gap: 10px !important; 
+                height: 100%; /* Aprovecha la altura del contenedor */
+            }
+
             .table-block { flex: 1; border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 0; }
             table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
             thead { display: table-header-group !important; }
@@ -126,6 +165,7 @@
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
             .col-hora { background-color: white !important; width: 35px !important; }
             .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag { background-color: transparent !important; color: black !important; border: none !important; padding: 0 !important; font-weight: bold !important; display: inline !important; }
+            
             .notes-header { display: flex; justify-content: space-between; align-items: center; }
             .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
             .notes-logo { height: 50px; object-fit: contain; filter: grayscale(100%); }
