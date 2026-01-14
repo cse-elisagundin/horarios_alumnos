@@ -104,7 +104,7 @@
         }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (MODIFICADO: HORARIO ARRIBA, NOTAS ABAJO)
+           🖨️ IMPRESIÓN CORREGIDA (PARA QUE NO SE CORTE NADA)
            ========================================================================= */
         @media print {
             @page { size: landscape; margin: 5mm; } 
@@ -113,37 +113,42 @@
                 background: white; 
                 padding: 0; 
                 margin: 0; 
-                zoom: 60%; 
+                zoom: 55%; /* REDUCIDO PARA QUE QUEPA TODO MEJOR */
                 font-family: Arial, sans-serif; 
                 display: flex !important; 
-                flex-direction: column !important; /* CAMBIO: Columna para poner uno debajo del otro */
-                align-items: center !important; /* CAMBIO: Centrado horizontal */
+                flex-direction: column !important; 
+                align-items: center !important; 
                 justify-content: flex-start !important;
-                height: 100vh; 
-                overflow: hidden; 
+                height: 100%; 
+                overflow: visible !important;
             }
             
-            /* 🔥 BLOQUEO DE NUEVOS ELEMENTOS AL IMPRIMIR 🔥 */
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box { display: none !important; }
 
             .container { 
-                width: 98% !important; /* CAMBIO: Ancho casi completo */
-                height: 48% !important; /* CAMBIO: Mitad superior de la hoja */
-                margin: 0 auto !important; /* CAMBIO: Centrado */
+                width: 98% !important;
+                /* CAMBIO: height auto y overflow visible para que no corte nada */
+                height: auto !important; 
+                max-height: none !important;
+                overflow: visible !important;
+                margin: 0 auto !important;
                 border: none; 
                 box-shadow: none; 
                 padding: 0; 
                 order: 1; 
-                overflow: hidden; /* Evita que empuje las notas fuera si es muy largo */
+                flex-shrink: 0; /* Que no se aplaste si es grande */
             }
 
             .print-only-notes { 
                 display: block !important; 
-                width: 98% !important; /* CAMBIO: Ancho completo */
-                height: 48% !important; /* CAMBIO: Mitad inferior de la hoja */
-                border-top: 2px solid #000; /* Separador visual */
+                width: 98% !important;
+                /* Las notas tomarán el espacio restante o un mínimo */
+                flex-grow: 1;
+                min-height: 200px;
+                border-top: 2px solid #000;
                 border-bottom: none !important;
-                padding-top: 10px; 
+                padding-top: 15px; 
+                margin-top: 10px;
                 order: 2; 
             }
 
@@ -154,7 +159,6 @@
                 display: flex !important; 
                 flex-direction: row !important; 
                 gap: 10px !important; 
-                height: 100%; /* Aprovecha la altura del contenedor */
             }
 
             .table-block { flex: 1; border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 0; }
