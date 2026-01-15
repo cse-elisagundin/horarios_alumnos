@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES (WEB - VISUALIZACIÓN NORMAL) --- */
+        /* --- ESTILOS GENERALES (WEB - SIN CAMBIOS) --- */
         :root { 
             --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;      
             --bg-body: #f4f6f9; --bg-container: #ffffff;
@@ -96,7 +96,7 @@
         }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN SÚPER COMPACTA (A4 GARANTIZADO)
+           🖨️ IMPRESIÓN SPLIT 50/50 (IZQ: HORARIOS APILADOS - DER: NOTAS)
            ========================================================================= */
         @media print {
             @page { 
@@ -106,41 +106,47 @@
             
             body { 
                 background: white; 
-                padding: 5mm; 
                 margin: 0; 
+                padding: 1cm; /* Margen de seguridad */
                 font-family: Arial, sans-serif; 
                 display: flex !important; 
-                flex-direction: row !important; 
-                justify-content: space-between;
+                flex-direction: row !important; /* Lado a lado */
+                justify-content: space-between; /* Separados */
                 align-items: flex-start;
                 height: 100vh;
                 width: 100vw;
                 box-sizing: border-box;
                 overflow: hidden; 
-                zoom: 67%; /* ⚡ ESCALA SEGURA PARA A4 */
+                zoom: 70%; /* Ajuste de escala */
             }
             
+            /* Ocultar elementos dinámicos */
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
                 display: none !important; 
             }
 
-            /* --- COLUMNA IZQUIERDA (TABLAS) --- */
+            /* --- COLUMNA IZQUIERDA (HORARIOS) --- */
             .container { 
-                width: 49% !important; 
+                width: 48% !important; /* Mitad Izquierda */
                 margin: 0 !important; 
                 padding: 0; 
                 border: none; 
                 box-shadow: none; 
                 order: 1; 
-                display: block !important;
+                display: flex !important;
+                flex-direction: column !important; /* Stack vertical */
             }
 
-            .planning-container.visible { display: block !important; }
+            .planning-container.visible { 
+                display: block !important; 
+                width: 100% !important;
+            }
 
             .tables-wrapper { 
                 display: flex !important; 
-                flex-direction: column !important; 
-                gap: 5px !important; /* Mínimo espacio entre tablas */
+                flex-direction: column !important; /* Apoyo arriba, Inglés abajo */
+                gap: 15px !important; 
+                width: 100% !important;
             }
 
             .table-block { 
@@ -148,21 +154,25 @@
                 border: 1px solid #000 !important; 
                 box-shadow: none !important; 
                 border-radius: 0; 
-                margin-bottom: 0 !important;
+                margin: 0;
             }
 
             /* --- COLUMNA DERECHA (NOTAS) --- */
             .print-only-notes { 
                 display: block !important; 
-                width: 49% !important; 
-                height: 98vh; 
-                border: 2px solid #000; 
-                padding: 10px; 
+                width: 48% !important; /* Mitad Derecha */
+                height: 95%; /* Ocupar casi todo el alto */
+                border: 2px solid #333; 
+                padding: 20px; 
                 box-sizing: border-box;
                 order: 2; 
+                /* Efecto cuaderno */
+                background-image: linear-gradient(#e0e0e0 1px, transparent 1px);
+                background-size: 100% 30px;
+                background-color: white;
             }
 
-            /* --- ESTILOS TABLA COMPACTOS --- */
+            /* --- ESTILOS TABLA --- */
             table { 
                 display: table; 
                 border: 1px solid #000 !important; 
@@ -174,7 +184,7 @@
             tbody tr { 
                 display: table-row !important; 
                 border-bottom: 1px solid #666; 
-                height: 12px !important; /* ⚡ ALTURA FORZADA MÍNIMA */
+                height: 12px !important; 
             }
             
             td, th { 
@@ -182,16 +192,15 @@
                 border: 1px solid #666 !important; 
                 color: black !important; 
                 background-color: white !important; 
-                padding: 0px 1px !important; /* ⚡ SIN PADDING VERTICAL */
+                padding: 0px 1px !important; 
                 font-size: 9px !important; 
-                line-height: 10px !important; /* INTERLINEADO APRETADO */
+                line-height: 1.1 !important; 
                 vertical-align: middle;
             }
             
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; font-size: 9px !important; height: 14px; }
+            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; font-size: 9px !important; height: 16px; }
             .col-hora { background-color: white !important; width: 30px !important; font-size: 9px !important; }
             
-            /* Nombres compactos */
             .name-tag { 
                 background: transparent !important; 
                 color: black !important; 
@@ -204,15 +213,22 @@
                 text-overflow: ellipsis; 
                 display: block;
                 font-size: 9px !important;
-                line-height: 10px !important;
             }
 
-            .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
-            .notes-title { font-size: 18px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
-            .notes-logo { height: 30px; object-fit: contain; filter: grayscale(100%); }
+            .notes-header { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                margin-bottom: 20px; 
+                background: white; /* Para tapar las lineas del fondo en el titulo */
+                padding: 5px;
+                border: 1px solid #000;
+            }
+            .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
+            .notes-logo { height: 40px; object-fit: contain; filter: grayscale(100%); }
             
-            .day-header { margin-bottom: 0 !important; padding-bottom: 2px; }
-            .day-title { font-size: 16px !important; margin: 0; color: black !important; line-height: 1.1; }
+            .day-header { margin-bottom: 5px !important; padding-bottom: 0; }
+            .day-title { font-size: 20px !important; margin: 0; color: black !important; line-height: 1; }
             .day-subtitle { display: none; }
         }
     </style>
