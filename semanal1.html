@@ -16,7 +16,7 @@
             --highlight-row: rgba(250, 101, 195, 0.12);
         }
         
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
 
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(36, 60, 122, 0.08); }
 
@@ -25,110 +25,99 @@
         .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
 
         header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-        .header-left { display: flex; gap: 10px; align-items: center; }
         
         .live-info-panel { text-align: right; display: flex; flex-direction: column; gap: 8px; min-width: 250px; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); letter-spacing: 1px; }
         
-        .next-changes-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .next-changes-title { font-weight: 800; text-transform: uppercase; color: #888; font-size: 10px; margin-bottom: 5px; border-bottom: 1px solid #f5f5f5; padding-bottom: 3px; display: block; text-align: center; }
-        .change-item { display: flex; justify-content: space-between; margin-bottom: 2px; gap: 10px; }
-        .change-name { font-weight: 700; color: var(--c-primary); }
-        
+        .next-changes-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; font-size: 12px; }
+
         .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; text-transform: uppercase; transition: transform 0.2s; }
         .btn-print { background-color: var(--c-primary); color: white; border: 2px solid var(--c-primary); }
         .btn-edit { background-color: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
 
         .day-header { text-align: center; margin-bottom: 15px; }
-        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
-        .day-subtitle { color: var(--c-secondary); font-size: 14px; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; }
+        .day-subtitle { color: var(--c-secondary); font-size: 14px; font-weight: 700; text-transform: uppercase; }
 
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; justify-content: center; }
-        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; justify-content: center; }
+        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        .planning-container { display: none; animation: fadeIn 0.4s ease; }
+        .planning-container { display: none; }
         .planning-container.visible { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
         .tables-wrapper { display: flex; gap: 20px; align-items: flex-start; }
         .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         tbody tr { height: 42px; }
-        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; }
-        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; }
-        .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; border-right: 1px solid #ddd; }
+        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 12px; color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; }
+        .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; }
 
-        /* Mejora de visibilidad de nombres y hover */
-        .student-cell { cursor: help; transition: background 0.2s; }
-        .student-cell:hover { background-color: var(--highlight-row); }
-        .name-tag { 
-            display: inline-block; padding: 4px 10px; border-radius: 12px; 
-            font-weight: 800; /* Nombres más negrita */
-            font-size: 12.5px; /* Ligeramente más grande */
-            text-transform: uppercase; color: var(--c-primary); 
-        }
-
-        .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; }
-        .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); }
-        .status-exit .name-tag { background-color: #f8d7da; color: #842029; }
+        /* Estilo de nombres resaltados */
+        .name-tag { display: inline-block; padding: 2px 6px; font-weight: 900; font-size: 13px; text-transform: uppercase; color: var(--c-primary); }
+        .student-cell:hover { background-color: var(--highlight-row); cursor: help; }
 
         .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); animation: bar-pulse 1.5s infinite ease-in-out; }
-        @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
+        @keyframes bar-pulse { 0% { width: 60px; } 50% { width: 160px; } 100% { width: 60px; } }
 
         .print-only-notes { display: none; }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN FINAL OPTIMIZADA (FOLIO ÚNICO A4)
+            🖨️ CONFIGURACIÓN DE IMPRESIÓN (A4 LANDSCAPE 50/50)
            ========================================================================= */
         @media print {
-            @page { size: A4 landscape; margin: 5mm; } 
+            @page { size: A4 landscape; margin: 5mm; }
             
             body { 
-                background: white; margin: 0; padding: 0; font-family: Arial, sans-serif; 
-                display: grid !important; grid-template-columns: 1fr 1fr;
-                column-gap: 15px; height: 100vh; width: 100%; overflow: hidden; zoom: 65%; 
+                background: white; margin: 0; padding: 0; 
+                display: grid !important; 
+                grid-template-columns: 1fr 1fr !important; /* Mitad y mitad */
+                height: 100vh; width: 100%; overflow: hidden;
             }
-            
+
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
                 display: none !important; 
             }
 
-            .container { width: 100% !important; margin: 0 !important; padding: 0; border: none; box-shadow: none; display: block !important; height: 100%; }
+            /* Mitad Izquierda: Horarios */
+            .container { 
+                grid-column: 1; width: 100% !important; margin: 0 !important; padding: 10px !important; 
+                border: none; box-shadow: none; display: block !important; 
+            }
 
-            .tables-wrapper { display: flex !important; flex-direction: column !important; gap: 5px !important; }
-            .table-block { width: 100% !important; border: 1px solid #000 !important; border-radius: 0; margin: 0; }
+            .planning-container.visible { display: block !important; }
 
+            /* Apoyo arriba, Inglés abajo */
+            .tables-wrapper { 
+                display: flex !important; 
+                flex-direction: column !important; 
+                gap: 10px !important; 
+            }
+
+            .table-block { 
+                width: 100% !important; border: 1px solid #000 !important; border-radius: 0; 
+            }
+
+            /* Mitad Derecha: Notas */
             .print-only-notes { 
-                display: block !important; width: 100% !important; height: 98%; 
-                padding: 15px; box-sizing: border-box; background-color: white; order: 2;
+                grid-column: 2; display: block !important; 
+                width: 100% !important; padding: 20px; border-left: 1px solid #000;
             }
 
-            table { display: table; border: 1px solid #000 !important; width: 100% !important; border-collapse: collapse; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: 12px !important; }
+            table { border: 1px solid #000 !important; }
+            td, th { border: 1px solid #000 !important; color: black !important; padding: 2px !important; font-size: 11px !important; }
+            th { background: #eee !important; color: black !important; }
             
-            td, th { 
-                display: table-cell !important; border: 1px solid #999 !important; 
-                color: black !important; padding: 0px 1px !important; 
-                font-size: 9px !important; line-height: 1 !important; 
-            }
-            
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; font-size: 9.5px !important; height: 16px; }
-            
-            .name-tag { 
-                background: transparent !important; color: black !important; border: none !important; 
-                padding: 0 !important; margin: 0 !important; font-weight: 900 !important; /* Más negrita en impresión */
-                font-size: 9.5px !important; display: block;
-            }
+            .name-tag { font-weight: 900 !important; font-size: 12px !important; color: black !important; }
+            .col-hora { width: 35px !important; }
 
-            .notes-header { display: flex; justify-content: space-between; align-items: center; border: none !important; margin-bottom: 10px; }
-            .notes-title { font-size: 24px; font-weight: 900; color: black; margin: 0; }
-            .notes-logo { height: 40px; filter: grayscale(100%); }
+            .day-header { text-align: left; margin-bottom: 10px; }
+            .day-title { font-size: 24px !important; color: black !important; }
+            .day-subtitle { display: block !important; color: black !important; font-size: 12px !important; }
             
-            .day-header { margin-bottom: 5px !important; text-align: left; }
-            .day-title { font-size: 20px !important; margin: 0; color: black !important; }
-            .day-subtitle { display: none !important; } /* 🔥 SUBTÍTULO ELIMINADO EN IMPRESIÓN */
+            .notes-title { font-size: 28px; font-weight: 900; border-bottom: 2px solid #000; margin-bottom: 20px; }
         }
     </style>
 </head>
@@ -163,11 +152,8 @@
 </div>
 
 <div class="print-only-notes">
-    <div class="notes-header">
-        <h2 class="notes-title">NOTAS</h2>
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="notes-logo">
+    <h2 class="notes-title">NOTAS</h2>
     </div>
-</div>
 
 <script>
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
@@ -181,14 +167,6 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    let diaActualCargado = "";
-
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
-        });
-    }
-
     function parseTimeStr(timeStr) {
         if (!timeStr || !timeStr.includes(':')) return null;
         const [h, m] = timeStr.split(':').map(Number);
@@ -197,141 +175,73 @@
 
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        
+        const promesas = dias.map(dia => 
+            fetch(urls[dia] + "&t=" + Date.now()).then(r => r.text()).then(txt => Papa.parse(txt, {skipEmptyLines:true}).data)
+        );
+        
         const todosLosDatos = await Promise.all(promesas);
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-        btnContainer.innerHTML = btns;
-        container.innerHTML = ""; 
+        document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('') + `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
 
         dias.forEach((dia, index) => {
-            const data = todosLosDatos[index]; 
+            const data = todosLosDatos[index];
             const headers = data[0] || [];
-            const h_apoyo_hora = headers[0] || "H";
-            const h_apoyo_alum = headers.slice(1, 7);
-            const h_ing_hora = headers[7] || "H";
-            const h_ing_alum = headers.slice(8, 14);
-
+            
             let html = `<div id="view-${dia}" class="planning-container">
                 <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
-                <div class="tables-wrapper"><div class="table-block"><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                <div class="tables-wrapper">
+                    <div class="table-block">
+                        <table>
+                            <thead><tr><th class="col-hora">HORA</th>${headers.slice(1,7).map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                            <tbody>`;
 
             let filasIngles = "";
-            for(let i = 1; i < data.length; i++) {
+            for(let i = 1; i < data.length; i++){
                 const row = data[i];
-                if(!row || (!row[0] && !row[7])) continue;
+                if(!row[0] && !row[7]) continue;
 
-                let nombresPilaMap = {};
-                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
-                    let full = (row[idx] || "").trim();
-                    if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
-                });
-
-                const generarCelda = (full, colIdx, timeColIndex) => {
-                    if(!full) return `<td></td>`;
-                    full = full.trim();
-                    let first = full.split(" ")[0].toUpperCase();
-                    let display = first;
-                    if(nombresPilaMap[first] > 1) { 
-                        let partes = full.split(" "); 
-                        if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; 
-                    }
-                    
-                    let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
-                    let startTimeStr = data[startRow][timeColIndex];
-                    let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
-                    let lastBlockTimeStr = data[endRow][timeColIndex];
-                    
-                    // 🔥 ATRIBUTO TITLE AÑADIDO PARA EL HOVER CON NOMBRE COMPLETO
-                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
+                const generarCelda = (val) => {
+                    if(!val) return '<td></td>';
+                    // 🔥 ATRIBUTO TITLE RESTAURADO PARA EL HOVER
+                    return `<td class="student-cell" title="${val.toUpperCase()}"><span class="name-tag">${val.split(' ')[0]}</span></td>`;
                 };
 
-                html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
-                html += `</tr>`;
-
-                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
-                filasIngles += `</tr>`;
+                html += `<tr><td class="col-hora">${row[0] || ''}</td>${row.slice(1,7).map(generarCelda).join('')}</tr>`;
+                filasIngles += `<tr><td class="col-hora">${row[7] || row[0]}</td>${row.slice(8,14).map(generarCelda).join('')}</tr>`;
             }
-            html += `</tbody></table></div><div class="table-block"><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
+
+            html += `</tbody></table></div>
+                    <div class="table-block">
+                        <table>
+                            <thead><tr><th class="col-hora">HORA</th>${headers.slice(8,14).map(h => `<th>${h}</th>`).join('')}</tr></thead>
+                            <tbody>${filasIngles}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>`;
             container.innerHTML += html;
         });
 
         document.getElementById('loading').style.display = 'none';
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(diaActualCargado || (urls[hoy] ? hoy : "Lunes"));
-    }
-
-    function actualizarRelojYCambios() {
-        const now = new Date();
-        document.getElementById('digital-clock').innerText = now.toLocaleTimeString('es-ES', { hour12: false });
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[now.getDay()];
-        const contenedorHoy = document.getElementById(`view-${hoy}`);
-        const listContainer = document.getElementById('next-changes-list');
-
-        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) {
-            listContainer.innerHTML = '<div style="color:#999; font-style:italic">Hoy no es día lectivo</div>';
-            return;
-        }
-
-        let cambios = [];
-        let procesados = new Set();
-        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
-            const startStr = cell.getAttribute('data-start-time');
-            const endBlockStr = cell.getAttribute('data-end-block-time');
-            const fullName = cell.getAttribute('data-full-name');
-            const key = fullName + startStr + endBlockStr;
-            if(!startStr || procesados.has(key)) return;
-            procesados.add(key);
-
-            let nameParts = fullName.split(" ");
-            let displayName = nameParts[0] + (nameParts.length > 1 ? " " + nameParts[1].charAt(0) + "." : "");
-            const startMin = parseTimeStr(startStr);
-            const endMin = parseTimeStr(endBlockStr) + 30;
-
-            if (startMin >= currentMinutes && startMin <= currentMinutes + 10) {
-                cambios.push(`<div class="change-item"><span class="change-name">${displayName}</span> <span style="color:#2e7d32; font-weight:800">ENTRA</span> <span style="color:#666">${startStr}</span></div>`);
-            } else if (endMin >= currentMinutes && endMin <= currentMinutes + 10) {
-                cambios.push(`<div class="change-item"><span class="change-name">${displayName}</span> <span style="color:#c62828; font-weight:800">SALE</span> <span style="color:#666">${(Math.floor(endMin/60)).toString().padStart(2,'0')}:${(endMin%60).toString().padStart(2,'0')}</span></div>`);
-            }
-        });
-        listContainer.innerHTML = cambios.length > 0 ? cambios.join('') : '<div style="color:#bbb">Sin cambios próximos</div>';
-        
-        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
-            cell.classList.remove('status-entry', 'status-exit', 'status-active');
-            const startMin = parseTimeStr(cell.getAttribute('data-start-time'));
-            const endMin = parseTimeStr(cell.getAttribute('data-end-block-time')) + 30;
-            if(!startMin) return;
-            if (currentMinutes >= (startMin - 5) && currentMinutes <= (startMin + 5)) cell.classList.add('status-entry');
-            else if (currentMinutes >= (endMin - 5) && currentMinutes <= (endMin + 5)) cell.classList.add('status-exit');
-            else if (currentMinutes > (startMin + 5) && currentMinutes < (endMin - 5)) cell.classList.add('status-active');
-        });
+        cambiarDia(dias[new Date().getDay() - 1] || "Lunes");
     }
 
     function cambiarDia(dia) {
-        diaActualCargado = dia;
         document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else div.classList.toggle('visible', div.id === `view-${dia}`);
+            div.classList.toggle('visible', dia === 'Todo' || div.id === `view-${dia}`);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.toggle('active', btn.innerText.toUpperCase() === dia.toUpperCase() || (dia === 'Todo' && btn.innerText === 'VER TODO'));
+            btn.classList.toggle('active', btn.innerText === dia.toUpperCase() || (dia === 'Todo' && btn.innerText === 'VER TODO'));
         });
-        actualizarRelojYCambios();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        cargarTodo();
-        setInterval(actualizarRelojYCambios, 1000);
-        setInterval(cargarTodo, 300000); 
-    });
+    setInterval(() => {
+        document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES', { hour12: false });
+    }, 1000);
+
+    cargarTodo();
 </script>
 </body>
 </html>
