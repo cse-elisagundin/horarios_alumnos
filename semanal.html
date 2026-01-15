@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -75,10 +76,10 @@
         th.col-hora { background: white !important; color: var(--c-primary) !important; border-bottom: 2px solid var(--c-primary) !important; }
         .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; border-right: 1px solid #ddd; }
 
-        .student-cell { font-weight: normal; transition: all 0.5s ease; }
+        .student-cell { font-weight: normal; transition: all 0.5s ease; cursor: help; }
 
         /* ETIQUETAS PÓSITS */
-        .name-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 700; text-transform: uppercase; color: var(--c-primary); border: 1px solid transparent; }
+        .name-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 900; text-transform: uppercase; color: var(--c-primary); border: 1px solid transparent; }
         .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transform: scale(1.05); }
         .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border-color: rgba(43, 148, 204, 0.5); }
         .status-exit .name-tag { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -104,31 +105,84 @@
         }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN (SIN CAMBIOS, SOLO OCULTAR DINÁMICOS)
+            🖨️ IMPRESIÓN CORREGIDA: FOLIO ÚNICO A4 50/50
            ========================================================================= */
         @media print {
-            @page { size: landscape; margin: 5mm; } 
-            body { background: white; padding: 0; margin: 0; zoom: 60%; font-family: Arial, sans-serif; display: flex !important; flex-direction: row; justify-content: flex-start; align-items: flex-start; height: 100vh; overflow: hidden; }
+            @page { size: A4 landscape; margin: 5mm; } 
             
-            /* 🔥 BLOQUEO DE NUEVOS ELEMENTOS AL IMPRIMIR 🔥 */
-            .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box { display: none !important; }
+            body { 
+                background: white !important; 
+                margin: 0; padding: 0; 
+                display: grid !important; 
+                grid-template-columns: 1fr 1fr !important; /* Mitad Izquierda | Mitad Derecha */
+                column-gap: 15px; 
+                height: 100vh; width: 100%; 
+                overflow: hidden; 
+                zoom: 65%; /* Asegura que todo el alto entre en una hoja */
+            }
+            
+            .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
+                display: none !important; 
+            }
 
-            .container { width: 65% !important; margin: 0 !important; border: none; box-shadow: none; padding: 0; margin-right: 2% !important; order: 1; }
-            .print-only-notes { display: block !important; width: 30% !important; border-bottom: 2px solid #000; padding-bottom: 10px; padding-top: 10px; order: 2; }
-            .web-brand, header, .days-nav, .spinner, .mobile-section-title { display: none !important; }
-            .planning-container.visible { display: block !important; page-break-after: always; }
-            .tables-wrapper { display: flex !important; flex-direction: row !important; gap: 10px !important; }
-            .table-block { flex: 1; border: 1px solid #000 !important; box-shadow: none !important; border-radius: 0; margin-bottom: 0; }
-            table { display: table; border: 1px solid #000 !important; width: 100% !important; margin-bottom: 0; table-layout: fixed; border-collapse: collapse; }
-            thead { display: table-header-group !important; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: auto !important; }
-            td, th { display: table-cell !important; border: 1px solid #000 !important; color: black !important; background-color: white !important; background: white !important; padding: 1px 2px !important; font-size: 10px !important; line-height: 1.1; }
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
-            .col-hora { background-color: white !important; width: 35px !important; }
-            .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag { background-color: transparent !important; color: black !important; border: none !important; padding: 0 !important; font-weight: bold !important; display: inline !important; }
-            .notes-header { display: flex; justify-content: space-between; align-items: center; }
+            /* --- COLUMNA IZQUIERDA: HORARIOS --- */
+            .container { 
+                grid-column: 1; 
+                width: 100% !important; 
+                margin: 0 !important; 
+                padding: 0 !important; 
+                border: none !important; 
+                box-shadow: none !important; 
+                display: block !important;
+            }
+
+            .planning-container.visible { display: block !important; }
+
+            .tables-wrapper { 
+                display: flex !important; 
+                flex-direction: column !important; /* Apiladas verticalmente */
+                gap: 5px !important; 
+            }
+
+            .table-block { 
+                width: 100% !important; 
+                border: 1px solid #000 !important; 
+                border-radius: 0 !important; 
+                margin: 0 !important;
+            }
+
+            /* --- COLUMNA DERECHA: NOTAS --- */
+            .print-only-notes { 
+                grid-column: 2; 
+                display: block !important; 
+                width: 100% !important; 
+                height: 98%; 
+                border: none !important; 
+                padding: 15px; 
+                box-sizing: border-box;
+                background: white !important;
+            }
+
+            table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
+            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: 12px !important; }
+            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 9px !important; }
+            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
+            .col-hora { width: 30px !important; }
+            
+            .name-tag { 
+                background: transparent !important; color: black !important; border: none !important; 
+                padding: 0 !important; margin: 0 !important; font-weight: 900 !important; 
+                font-size: 9px !important; 
+            }
+
+            .notes-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
             .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
-            .notes-logo { height: 50px; object-fit: contain; filter: grayscale(100%); }
+            .notes-logo { height: 40px; filter: grayscale(100%); }
+            
+            /* Título del día en impresión */
+            .day-header { margin-bottom: 5px !important; text-align: left; }
+            .day-title { font-size: 20px !important; color: black !important; margin: 0; line-height: 1; }
+            .day-subtitle { display: block !important; color: black !important; font-size: 10px !important; margin-top: 2px; font-weight: bold; }
         }
     </style>
 </head>
@@ -243,14 +297,15 @@
                     let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
                     let lastBlockTimeStr = data[endRow][timeColIndex];
                     
-                    return `<td class="student-cell" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
+                    // 🔥 ATRIBUTO TITLE AÑADIDO PARA HOVER WEB 🔥
+                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
                 };
 
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                 for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
                 html += `</tr>`;
 
-                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; // Copia hora apoyo
+                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; 
                 for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
                 filasIngles += `</tr>`;
             }
@@ -261,7 +316,7 @@
         document.getElementById('loading').style.display = 'none';
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
-        cambiarDia(diaActualCargado || (dias.includes(hoy) ? hoy : "Lunes"));
+        cambiarDia(diaActualCargado || (urls[hoy] ? hoy : "Lunes"));
     }
 
     function actualizarRelojYCambios() {
@@ -282,7 +337,7 @@
 
         let cambios = [];
         let procesados = new Set();
-        const MARGIN = 10; // Miramos 10 min al futuro
+        const MARGIN = 10; 
 
         contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
             const startStr = cell.getAttribute('data-start-time');
@@ -293,26 +348,19 @@
             if(!startStr || procesados.has(key)) return;
             procesados.add(key);
 
-            // CORRECCIÓN PARA NOMBRES DUPLICADOS + INICIAL
-            let nameParts = fullName.split(" ");
-            let displayName = nameParts[0];
-            if (nameParts.length > 1) {
-                displayName += " " + nameParts[1].charAt(0) + ".";
-            }
-
+            let first = fullName.split(" ")[0];
             const startMin = parseTimeStr(startStr);
             const endMin = parseTimeStr(endBlockStr) + 30;
 
             if (startMin >= currentMinutes && startMin <= currentMinutes + MARGIN) {
-                cambios.push(`<div class="change-item"><span class="change-name">${displayName}</span> <span class="label-in">ENTRA</span> <span class="change-time">${startStr}</span></div>`);
+                cambios.push(`<div class="change-item"><span class="change-name">${first}</span> <span class="label-in">ENTRA</span> <span class="change-time">${startStr}</span></div>`);
             } else if (endMin >= currentMinutes && endMin <= currentMinutes + MARGIN) {
-                cambios.push(`<div class="change-item"><span class="change-name">${displayName}</span> <span class="label-out">SALE</span> <span class="change-time">${(Math.floor(endMin/60)).toString().padStart(2,'0')}:${(endMin%60).toString().padStart(2,'0')}</span></div>`);
+                cambios.push(`<div class="change-item"><span class="change-name">${first}</span> <span class="label-out">SALE</span> <span class="change-time">${(Math.floor(endMin/60)).toString().padStart(2,'0')}:${(endMin%60).toString().padStart(2,'0')}</span></div>`);
             }
         });
 
         listContainer.innerHTML = cambios.length > 0 ? cambios.join('') : '<div style="color:#bbb">Sin cambios próximos</div>';
         
-        // Actualizar colores inteligentes de las celdas
         contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
             cell.classList.remove('status-entry', 'status-exit', 'status-active');
             const startMin = parseTimeStr(cell.getAttribute('data-start-time'));
@@ -339,9 +387,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         cargarTodo();
-        // Reloj y lógica de cambios cada segundo
         setInterval(actualizarRelojYCambios, 1000);
-        // 🔥 MEJORA 1: Auto-Sincronización cada 5 minutos 🔥
         setInterval(cargarTodo, 300000); 
     });
 </script>
