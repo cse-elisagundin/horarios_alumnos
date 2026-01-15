@@ -89,8 +89,8 @@
 
         .print-only-notes { display: none; }
 
-        /* MÓVIL (SOLO PANTALLA, NO IMPRESIÓN) */
-        @media only screen and (max-width: 900px) {
+        /* MÓVIL */
+        @media (max-width: 900px) {
             header { flex-direction: column; align-items: center; }
             .live-info-panel { text-align: center; width: 100%; }
             .container { padding: 10px; width: 100%; box-sizing: border-box; }
@@ -104,7 +104,7 @@
         }
 
         /* =========================================================================
-            🖨️ IMPRESIÓN (ORDENADOR Y MÓVIL IDÉNTICOS)
+            🖨️ IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; } 
@@ -113,6 +113,7 @@
                 background: white !important; 
                 margin: 0; padding: 0; 
                 display: grid !important; 
+                /* MODIFICADO: Damos más espacio a la izquierda (58%) y menos a notas (40%) */
                 grid-template-columns: 58% 40% !important; 
                 column-gap: 15px; 
                 height: 100vh; width: 100%; 
@@ -123,9 +124,6 @@
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
                 display: none !important; 
             }
-
-            /* Aseguramos que los encabezados se vean (por si el móvil los ocultó) */
-            table thead { display: table-header-group !important; }
 
             /* --- COLUMNA IZQUIERDA: HORARIOS --- */
             .container { 
@@ -175,7 +173,7 @@
             
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
             
-            /* Columna de hora ampliada a 50px */
+            /* MODIFICADO: Columna de hora ampliada a 50px para que se vea bien */
             .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
             
             /* Nombres de alumnos MUCHO más grandes */
