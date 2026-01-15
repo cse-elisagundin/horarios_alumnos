@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -12,7 +11,7 @@
     <style>
         /* --- ESTILOS GENERALES (WEB) --- */
         :root { 
-            --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;     
+            --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;      
             --bg-body: #f4f6f9; --bg-container: #ffffff;
             --highlight-row: rgba(250, 101, 195, 0.12);
             --dynamic-col-width: 70px;
@@ -105,7 +104,7 @@
         }
 
         /* =========================================================================
-            🖨️ IMPRESIÓN CORREGIDA: FOLIO ÚNICO A4 50/50
+            🖨️ IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; } 
@@ -114,11 +113,12 @@
                 background: white !important; 
                 margin: 0; padding: 0; 
                 display: grid !important; 
-                grid-template-columns: 1fr 1fr !important; /* Mitad Izquierda | Mitad Derecha */
+                /* MODIFICADO: Damos más espacio a la izquierda (58%) y menos a notas (40%) */
+                grid-template-columns: 58% 40% !important; 
                 column-gap: 15px; 
                 height: 100vh; width: 100%; 
                 overflow: hidden; 
-                zoom: 65%; /* Asegura que todo el alto entre en una hoja */
+                zoom: 65%;
             }
             
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
@@ -140,7 +140,7 @@
 
             .tables-wrapper { 
                 display: flex !important; 
-                flex-direction: column !important; /* Apiladas verticalmente */
+                flex-direction: column !important; 
                 gap: 5px !important; 
             }
 
@@ -164,22 +164,29 @@
             }
 
             table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: 12px !important; }
-            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 9px !important; }
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
-            .col-hora { width: 30px !important; }
             
+            /* Altura auto para acomodar letras grandes */
+            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
+            
+            /* Fuente base más grande */
+            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
+            
+            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
+            
+            /* MODIFICADO: Columna de hora ampliada a 50px para que se vea bien */
+            .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
+            
+            /* Nombres de alumnos MUCHO más grandes */
             .name-tag { 
                 background: transparent !important; color: black !important; border: none !important; 
                 padding: 0 !important; margin: 0 !important; font-weight: 900 !important; 
-                font-size: 9px !important; 
+                font-size: 15px !important; 
             }
 
             .notes-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
             .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
             .notes-logo { height: 40px; filter: grayscale(100%); }
             
-            /* Título del día en impresión */
             .day-header { margin-bottom: 5px !important; text-align: left; }
             .day-title { font-size: 20px !important; color: black !important; margin: 0; line-height: 1; }
             .day-subtitle { display: block !important; color: black !important; font-size: 10px !important; margin-top: 2px; font-weight: bold; }
