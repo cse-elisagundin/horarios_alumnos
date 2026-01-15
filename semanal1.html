@@ -104,111 +104,108 @@
         }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN MODIFICADA: SPLIT VERTICAL + HORIZONTAL
+           🖨️ IMPRESIÓN OPTIMIZADA A4 (UNA SOLA HOJA)
            ========================================================================= */
         @media print {
-            @page { size: landscape; margin: 5mm; } 
+            @page { 
+                size: A4 landscape; 
+                margin: 4mm; /* Margen muy fino para aprovechar papel */
+            } 
             
             body { 
                 background: white; 
                 padding: 0; 
                 margin: 0; 
                 font-family: Arial, sans-serif; 
-                /* Configuramos el body como Flex para dividir la pantalla L/R */
                 display: flex !important; 
                 flex-direction: row !important; 
                 justify-content: space-between;
                 align-items: flex-start;
-                height: 100vh;
+                height: 100%;
                 width: 100%;
-                overflow: hidden;
+                overflow: hidden; /* Evitar desbordes */
+                zoom: 85%; /* CLAVE: Reduce al 85% para asegurar que quepa verticalmente */
             }
             
-            /* OCULTAR ELEMENTOS DINÁMICOS */
+            /* OCULTAR DINÁMICOS */
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
                 display: none !important; 
             }
 
             /* --- COLUMNA IZQUIERDA (TABLAS) --- */
             .container { 
-                width: 48% !important; /* Mitad izquierda del folio */
+                width: 49% !important; 
                 margin: 0 !important; 
+                padding: 0; 
                 border: none; 
                 box-shadow: none; 
-                padding: 0; 
                 order: 1; 
                 display: block !important;
             }
 
-            .planning-container.visible { 
-                display: block !important; 
-            }
+            .planning-container.visible { display: block !important; }
 
             .tables-wrapper { 
                 display: flex !important; 
-                flex-direction: column !important; /* APILAMOS UNA ENCIMA DE OTRA */
-                gap: 15px !important; 
+                flex-direction: column !important; 
+                gap: 10px !important; /* Espacio reducido entre tablas */
             }
 
             .table-block { 
                 width: 100% !important; 
-                border: 1px solid #000 !important; 
+                border: 1px solid #333 !important; 
                 box-shadow: none !important; 
                 border-radius: 0; 
-                margin: 0;
             }
 
             /* --- COLUMNA DERECHA (NOTAS) --- */
             .print-only-notes { 
                 display: block !important; 
-                width: 49% !important; /* Mitad derecha del folio */
-                height: 98vh; /* Altura completa visual */
-                border: 2px solid #000; 
+                width: 49% !important; 
+                height: 100%; /* Ocupa todo el alto disponible */
+                border: 2px solid #333; 
                 padding: 10px; 
                 box-sizing: border-box;
                 order: 2; 
             }
 
-            /* --- ESTILOS TABLA IMPRESIÓN --- */
+            /* --- ESTILOS TABLA COMPACTOS --- */
             table { 
                 display: table; 
-                border: 1px solid #000 !important; 
+                border: 1px solid #333 !important; 
                 width: 100% !important; 
                 table-layout: fixed; 
                 border-collapse: collapse; 
             }
             thead { display: table-header-group !important; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #000; height: auto !important; }
+            tbody tr { display: table-row !important; border-bottom: 1px solid #333; height: auto !important; }
+            
             td, th { 
                 display: table-cell !important; 
-                border: 1px solid #000 !important; 
+                border: 1px solid #333 !important; 
                 color: black !important; 
                 background-color: white !important; 
-                padding: 2px !important; 
-                font-size: 10px !important; /* Texto ajustado para caber en media página */
-                line-height: 1.1; 
+                padding: 1px 2px !important; /* Padding mínimo */
+                font-size: 10px !important; 
+                line-height: 1.0; 
+                height: 16px; /* Altura mínima de fila forzada */
             }
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; }
-            .col-hora { background-color: white !important; width: 35px !important; }
             
-            /* Estilo nombres en impresión */
-            .name-tag, .status-entry .name-tag, .status-active .name-tag, .status-exit .name-tag { 
-                background-color: transparent !important; 
-                color: black !important; 
-                border: none !important; 
-                padding: 0 !important; 
-                font-weight: bold !important; 
-                display: inline !important; 
+            th { font-weight: bold; border-bottom: 2px solid #333 !important; text-transform: uppercase; font-size: 9px !important; }
+            .col-hora { background-color: white !important; width: 30px !important; font-size: 9px !important; }
+            
+            /* Títulos y Branding */
+            .name-tag { 
+                background: transparent !important; color: black !important; border: none !important; padding: 0 !important; font-weight: bold !important; 
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
             }
 
-            /* Estilo caja notas */
-            .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-            .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
-            .notes-logo { height: 40px; object-fit: contain; filter: grayscale(100%); }
+            .notes-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+            .notes-title { font-size: 20px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
+            .notes-logo { height: 30px; object-fit: contain; filter: grayscale(100%); }
             
-            /* Título del día al imprimir */
-            .day-header { margin-bottom: 5px !important; }
-            .day-title { font-size: 18px !important; margin: 0; color: black !important; }
+            .day-header { margin-bottom: 2px !important; }
+            .day-title { font-size: 16px !important; margin: 0; color: black !important; }
             .day-subtitle { display: none; }
         }
     </style>
