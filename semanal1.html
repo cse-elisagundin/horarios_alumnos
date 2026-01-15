@@ -116,8 +116,8 @@
                 
                 height: 100vh; /* Altura máxima = 1 folio */
                 width: 100%;
-                overflow: hidden; /* 🔥 CORTA CUALQUIER SOBRANTE PARA EVITAR HOJA 2 */
-                zoom: 65%; /* Reducimos un poco más para asegurar holgura */
+                overflow: hidden; /* Corta cualquier sobrante para evitar hoja 2 */
+                zoom: 65%; /* Zoom para asegurar holgura vertical */
             }
             
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
@@ -159,12 +159,10 @@
                 display: block !important; 
                 width: 100% !important; 
                 height: 98%; 
-                border: 2px solid #000; 
+                border: none !important; /* 🔥 ELIMINADO EL RECUADRO EXTERIOR */
                 padding: 15px; 
                 box-sizing: border-box;
-                /* Rayado de cuaderno sutil */
-                background-image: linear-gradient(#ccc 1px, transparent 1px);
-                background-size: 100% 25px;
+                background-image: none !important; /* 🔥 ELIMINADO EL RAYADO */
                 background-color: white;
             }
 
@@ -189,7 +187,7 @@
                 color: black !important; 
                 background-color: white !important; 
                 padding: 0px 1px !important; 
-                font-size: 8.5px !important; /* Letra ajustada */
+                font-size: 8.5px !important; 
                 line-height: 1 !important; 
                 vertical-align: middle;
             }
@@ -211,15 +209,15 @@
                 font-size: 8.5px !important;
             }
 
-            /* --- CABECERA NOTAS LIMPIA (SIN CAJA) --- */
+            /* --- CABECERA NOTAS LIMPIA --- */
             .notes-header { 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
                 margin-bottom: 0; 
                 background: white; 
-                padding: 5px 0; /* Sin padding lateral */
-                border: none !important; /* 🔥 BORRADO EL RECUADRO DEL TÍTULO */
+                padding: 5px 0; 
+                border: none !important; 
             }
             .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
             .notes-logo { height: 40px; object-fit: contain; filter: grayscale(100%); }
