@@ -96,12 +96,12 @@
         }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN CORREGIDA: GRID 50/50 ESTRICTO EN UN FOLIO
+           🖨️ IMPRESIÓN FINAL: GRID 50/50 + BLOQUEO DE PAGINACIÓN
            ========================================================================= */
         @media print {
             @page { 
                 size: A4 landscape; 
-                margin: 5mm; /* Margen mínimo de impresora */
+                margin: 5mm; 
             } 
             
             body { 
@@ -110,42 +110,40 @@
                 padding: 0;
                 font-family: Arial, sans-serif; 
                 
-                /* 🔥 AQUÍ ESTÁ LA CLAVE: GRID 2 COLUMNAS IGUALES */
                 display: grid !important; 
-                grid-template-columns: 1fr 1fr; /* 50% y 50% exactos */
-                column-gap: 10px; /* Separación pequeña central */
+                grid-template-columns: 1fr 1fr; /* 50% Izq | 50% Der */
+                column-gap: 15px; 
                 
-                height: 100vh; /* Altura forzada al folio */
+                height: 100vh; /* Altura máxima = 1 folio */
                 width: 100%;
-                overflow: hidden; /* Corta si se pasa para evitar hoja 2 */
-                zoom: 70%; /* Zoom para asegurar que todo cabe verticalmente */
+                overflow: hidden; /* 🔥 CORTA CUALQUIER SOBRANTE PARA EVITAR HOJA 2 */
+                zoom: 65%; /* Reducimos un poco más para asegurar holgura */
             }
             
-            /* Ocultar elementos dinámicos */
             .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
                 display: none !important; 
             }
 
             /* --- COLUMNA IZQUIERDA (HORARIOS) --- */
             .container { 
-                width: 100% !important; /* Llena su columna de grid */
+                width: 100% !important; 
                 max-width: none !important;
                 margin: 0 !important; 
                 padding: 0; 
                 border: none; 
                 box-shadow: none; 
                 display: block !important;
+                height: 100%;
             }
 
             .planning-container.visible { 
                 display: block !important; 
             }
 
-            /* Apilamos las tablas una encima de otra */
             .tables-wrapper { 
                 display: flex !important; 
                 flex-direction: column !important; 
-                gap: 10px !important; 
+                gap: 5px !important; 
             }
 
             .table-block { 
@@ -156,21 +154,21 @@
                 margin: 0;
             }
 
-            /* --- COLUMNA DERECHA (NOTAS) --- */
+            /* --- COLUMNA DERECHA (NOTAS LIMPIAS) --- */
             .print-only-notes { 
                 display: block !important; 
-                width: 100% !important; /* Llena su columna de grid */
-                height: 98%; /* Casi todo el alto */
+                width: 100% !important; 
+                height: 98%; 
                 border: 2px solid #000; 
                 padding: 15px; 
                 box-sizing: border-box;
-                /* Rayado de cuaderno para rellenar */
+                /* Rayado de cuaderno sutil */
                 background-image: linear-gradient(#ccc 1px, transparent 1px);
                 background-size: 100% 25px;
                 background-color: white;
             }
 
-            /* --- ESTILOS TABLA COMPACTOS --- */
+            /* --- ESTILOS TABLA MINI --- */
             table { 
                 display: table; 
                 border: 1px solid #000 !important; 
@@ -182,7 +180,7 @@
             tbody tr { 
                 display: table-row !important; 
                 border-bottom: 1px solid #999; 
-                height: 14px !important; /* Fila muy fina */
+                height: 12px !important; 
             }
             
             td, th { 
@@ -190,16 +188,15 @@
                 border: 1px solid #999 !important; 
                 color: black !important; 
                 background-color: white !important; 
-                padding: 1px !important; 
-                font-size: 9px !important; 
+                padding: 0px 1px !important; 
+                font-size: 8.5px !important; /* Letra ajustada */
                 line-height: 1 !important; 
                 vertical-align: middle;
             }
             
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; font-size: 10px !important; height: 18px; }
-            .col-hora { background-color: white !important; width: 30px !important; font-size: 9px !important; }
+            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; font-size: 9px !important; height: 16px; }
+            .col-hora { background-color: white !important; width: 28px !important; font-size: 8.5px !important; }
             
-            /* Nombres */
             .name-tag { 
                 background: transparent !important; 
                 color: black !important; 
@@ -211,24 +208,24 @@
                 overflow: hidden; 
                 text-overflow: ellipsis; 
                 display: block;
-                font-size: 9px !important;
+                font-size: 8.5px !important;
             }
 
-            /* Cabecera Notas */
+            /* --- CABECERA NOTAS LIMPIA (SIN CAJA) --- */
             .notes-header { 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
                 margin-bottom: 0; 
-                background: white; /* Fondo blanco para tapar las rayas */
-                padding: 5px;
-                border: 1px solid #000;
+                background: white; 
+                padding: 5px 0; /* Sin padding lateral */
+                border: none !important; /* 🔥 BORRADO EL RECUADRO DEL TÍTULO */
             }
             .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
             .notes-logo { height: 40px; object-fit: contain; filter: grayscale(100%); }
             
             .day-header { margin-bottom: 5px !important; padding-bottom: 0; text-align: left; }
-            .day-title { font-size: 22px !important; margin: 0; color: black !important; line-height: 1; }
+            .day-title { font-size: 20px !important; margin: 0; color: black !important; line-height: 1; }
             .day-subtitle { display: none; }
         }
     </style>
