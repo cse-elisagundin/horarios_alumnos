@@ -25,39 +25,53 @@
         .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
 
         header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
+        .header-left { display: flex; gap: 10px; align-items: center; }
         
         .live-info-panel { text-align: right; display: flex; flex-direction: column; gap: 8px; min-width: 250px; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); letter-spacing: 1px; }
         
-        .next-changes-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; font-size: 12px; }
+        .next-changes-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+        .next-changes-title { font-weight: 800; text-transform: uppercase; color: #888; font-size: 10px; margin-bottom: 5px; border-bottom: 1px solid #f5f5f5; padding-bottom: 3px; display: block; text-align: center; }
+        .change-item { display: flex; justify-content: space-between; margin-bottom: 2px; gap: 10px; }
+        .change-name { font-weight: 700; color: var(--c-primary); }
+        .change-time { color: #666; font-family: monospace; }
+        .label-in { color: #2e7d32; font-weight: 800; }
+        .label-out { color: #c62828; font-weight: 800; }
 
         .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; text-transform: uppercase; transition: transform 0.2s; }
         .btn-print { background-color: var(--c-primary); color: white; border: 2px solid var(--c-primary); }
         .btn-edit { background-color: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
 
         .day-header { text-align: center; margin-bottom: 15px; }
-        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; }
-        .day-subtitle { color: var(--c-secondary); font-size: 14px; font-weight: 700; text-transform: uppercase; }
+        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
+        .day-subtitle { color: var(--c-secondary); font-size: 14px; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
 
         .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; justify-content: center; }
-        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
+        /* ESTRUCTURA TABLAS WEB */
         .planning-container { display: none; }
         .planning-container.visible { display: block; }
         
         .tables-wrapper { display: flex; gap: 20px; align-items: flex-start; }
-        .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; }
+        .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; box-shadow: 0 0 0 1px #dce1e6; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         tbody tr { height: 42px; }
-        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 12px; color: #444; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; }
+        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; }
         .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; }
 
-        /* Estilo de nombres resaltados */
-        .name-tag { display: inline-block; padding: 2px 6px; font-weight: 900; font-size: 13px; text-transform: uppercase; color: var(--c-primary); }
+        /* Nombres resaltados y Hover */
+        .student-cell { transition: all 0.3s ease; }
         .student-cell:hover { background-color: var(--highlight-row); cursor: help; }
+        .name-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 900; font-size: 13px; text-transform: uppercase; color: var(--c-primary); }
+        
+        /* Estados Lógicos */
+        .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border: 1px solid #badbcc; }
+        .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border: 1px solid rgba(43, 148, 204, 0.5); }
+        .status-exit .name-tag { background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; }
 
         .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); animation: bar-pulse 1.5s infinite ease-in-out; }
         @keyframes bar-pulse { 0% { width: 60px; } 50% { width: 160px; } 100% { width: 60px; } }
@@ -65,7 +79,7 @@
         .print-only-notes { display: none; }
 
         /* =========================================================================
-            🖨️ CONFIGURACIÓN DE IMPRESIÓN (A4 LANDSCAPE 50/50)
+            🖨️ IMPRESIÓN (A4 LANDSCAPE 50/50)
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
@@ -73,15 +87,16 @@
             body { 
                 background: white; margin: 0; padding: 0; 
                 display: grid !important; 
-                grid-template-columns: 1fr 1fr !important; /* Mitad y mitad */
+                grid-template-columns: 1fr 1fr !important; /* 50% / 50% exacto */
                 height: 100vh; width: 100%; overflow: hidden;
+                zoom: 65%;
             }
 
-            .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
+            .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner { 
                 display: none !important; 
             }
 
-            /* Mitad Izquierda: Horarios */
+            /* Mitad Izquierda */
             .container { 
                 grid-column: 1; width: 100% !important; margin: 0 !important; padding: 10px !important; 
                 border: none; box-shadow: none; display: block !important; 
@@ -89,35 +104,37 @@
 
             .planning-container.visible { display: block !important; }
 
-            /* Apoyo arriba, Inglés abajo */
+            /* Horarios uno encima de otro */
             .tables-wrapper { 
                 display: flex !important; 
                 flex-direction: column !important; 
-                gap: 10px !important; 
+                gap: 5px !important; 
             }
 
             .table-block { 
-                width: 100% !important; border: 1px solid #000 !important; border-radius: 0; 
+                width: 100% !important; border: 1px solid #000 !important; border-radius: 0; margin: 0 !important;
             }
 
             /* Mitad Derecha: Notas */
             .print-only-notes { 
                 grid-column: 2; display: block !important; 
-                width: 100% !important; padding: 20px; border-left: 1px solid #000;
+                width: 100% !important; padding: 20px; 
+                border-left: 1px solid #000;
+                background: white;
             }
 
-            table { border: 1px solid #000 !important; }
-            td, th { border: 1px solid #000 !important; color: black !important; padding: 2px !important; font-size: 11px !important; }
+            table { border: 1px solid #000 !important; width: 100% !important; border-collapse: collapse; }
+            td, th { border: 1px solid #000 !important; color: black !important; padding: 1px 2px !important; font-size: 10px !important; }
             th { background: #eee !important; color: black !important; }
             
-            .name-tag { font-weight: 900 !important; font-size: 12px !important; color: black !important; }
+            .name-tag { font-weight: 900 !important; font-size: 11px !important; color: black !important; background: none !important; border: none !important; padding: 0 !important; }
             .col-hora { width: 35px !important; }
 
-            .day-header { text-align: left; margin-bottom: 10px; }
-            .day-title { font-size: 24px !important; color: black !important; }
-            .day-subtitle { display: block !important; color: black !important; font-size: 12px !important; }
+            .day-header { text-align: left; margin-bottom: 5px; }
+            .day-title { font-size: 22px !important; color: black !important; margin: 0; }
+            .day-subtitle { display: block !important; color: black !important; font-size: 11px !important; margin-top: 2px; }
             
-            .notes-title { font-size: 28px; font-weight: 900; border-bottom: 2px solid #000; margin-bottom: 20px; }
+            .notes-title { font-size: 26px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
         }
     </style>
 </head>
@@ -176,11 +193,9 @@
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const dias = Object.keys(urls);
-        
         const promesas = dias.map(dia => 
             fetch(urls[dia] + "&t=" + Date.now()).then(r => r.text()).then(txt => Papa.parse(txt, {skipEmptyLines:true}).data)
         );
-        
         const todosLosDatos = await Promise.all(promesas);
 
         document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('') + `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
@@ -202,14 +217,37 @@
                 const row = data[i];
                 if(!row[0] && !row[7]) continue;
 
-                const generarCelda = (val) => {
-                    if(!val) return '<td></td>';
-                    // 🔥 ATRIBUTO TITLE RESTAURADO PARA EL HOVER
-                    return `<td class="student-cell" title="${val.toUpperCase()}"><span class="name-tag">${val.split(' ')[0]}</span></td>`;
+                // Collision Map para nombres
+                let nombresPilaMap = {};
+                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
+                    let full = (row[idx] || "").trim();
+                    if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
+                });
+
+                const generarCelda = (full, colIdx, timeColIndex) => {
+                    if(!full) return '<td></td>';
+                    full = full.trim();
+                    let first = full.split(' ')[0].toUpperCase();
+                    let display = first;
+                    if(nombresPilaMap[first] > 1 && full.split(' ').length > 1) display += " " + full.split(' ')[1].charAt(0).toUpperCase() + ".";
+
+                    // Metadatos para lógica de colores
+                    let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
+                    let startTimeStr = data[startRow][timeColIndex];
+                    let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
+                    let lastBlockTimeStr = data[endRow][timeColIndex];
+
+                    // 🔥 ATRIBUTO TITLE RESTAURADO PARA EL HOVER WEB
+                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
                 };
 
-                html += `<tr><td class="col-hora">${row[0] || ''}</td>${row.slice(1,7).map(generarCelda).join('')}</tr>`;
-                filasIngles += `<tr><td class="col-hora">${row[7] || row[0]}</td>${row.slice(8,14).map(generarCelda).join('')}</tr>`;
+                html += `<tr><td class="col-hora">${row[0] || ''}</td>`;
+                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
+                html += `</tr>`;
+
+                filasIngles += `<tr><td class="col-hora">${row[0] || ''}</td>`;
+                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
+                filasIngles += `</tr>`;
             }
 
             html += `</tbody></table></div>
@@ -228,6 +266,45 @@
         cambiarDia(dias[new Date().getDay() - 1] || "Lunes");
     }
 
+    function actualizarRelojYCambios() {
+        const now = new Date();
+        document.getElementById('digital-clock').innerText = now.toLocaleTimeString('es-ES', { hour12: false });
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = diasSemana[now.getDay()];
+        const contenedorHoy = document.getElementById(`view-${hoy}`);
+        const listContainer = document.getElementById('next-changes-list');
+
+        if (!contenedorHoy) return;
+
+        let cambios = [];
+        let procesados = new Set();
+        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
+            const startStr = cell.getAttribute('data-start-time');
+            const endBlockStr = cell.getAttribute('data-end-block-time');
+            const fullName = cell.getAttribute('data-full-name');
+            const key = fullName + startStr + endBlockStr;
+            if(!startStr || procesados.has(key)) return;
+            procesados.add(key);
+
+            const startMin = parseTimeStr(startStr);
+            const endMin = parseTimeStr(endBlockStr) + 30;
+
+            if (startMin >= currentMinutes && startMin <= currentMinutes + 10) {
+                cambios.push(`<div class="change-item"><span class="change-name">${fullName.split(' ')[0]}</span> <span class="label-in">ENTRA</span> <span class="change-time">${startStr}</span></div>`);
+            } else if (endMin >= currentMinutes && endMin <= currentMinutes + 10) {
+                cambios.push(`<div class="change-item"><span class="change-name">${fullName.split(' ')[0]}</span> <span class="label-out">SALE</span> <span class="change-time">${(Math.floor(endMin/60)).toString().padStart(2,'0')}:${(endMin%60).toString().padStart(2,'0')}</span></div>`);
+            }
+
+            // Lógica de colores dinámicos
+            cell.classList.remove('status-entry', 'status-exit', 'status-active');
+            if (currentMinutes >= (startMin - 5) && currentMinutes <= (startMin + 5)) cell.classList.add('status-entry');
+            else if (currentMinutes >= (endMin - 5) && currentMinutes <= (endMin + 5)) cell.classList.add('status-exit');
+            else if (currentMinutes > (startMin + 5) && currentMinutes < (endMin - 5)) cell.classList.add('status-active');
+        });
+        listContainer.innerHTML = cambios.length > 0 ? cambios.join('') : '<div style="color:#bbb">Sin cambios próximos</div>';
+    }
+
     function cambiarDia(dia) {
         document.querySelectorAll('.planning-container').forEach(div => {
             div.classList.toggle('visible', dia === 'Todo' || div.id === `view-${dia}`);
@@ -235,13 +312,14 @@
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.classList.toggle('active', btn.innerText === dia.toUpperCase() || (dia === 'Todo' && btn.innerText === 'VER TODO'));
         });
+        actualizarRelojYCambios();
     }
 
-    setInterval(() => {
-        document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES', { hour12: false });
-    }, 1000);
-
-    cargarTodo();
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarTodo();
+        setInterval(actualizarRelojYCambios, 1000);
+        setInterval(cargarTodo, 300000); 
+    });
 </script>
 </body>
 </html>
