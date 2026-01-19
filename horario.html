@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#243c7a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest_horario.json">
     <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
 
@@ -72,7 +72,7 @@
         /* INPUTS & BOTONES */
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
-            border-radius: 12px; font-size: 16px; margin-bottom: 20px; 
+            border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
             box-sizing: border-box; text-align: center;
             transition: all 0.3s ease; color: var(--c-primary);
             font-weight: 600; background-color: #fafbfc;
@@ -127,29 +127,35 @@
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
 
-        /* PANEL ACCIONES */
-        #actions-panel { display: none; margin-top: 30px; border-top: 2px solid #f0f4f8; padding-top: 25px; }
+        /* PANEL ACCIONES (Modificado para híbrido) */
+        #actions-panel { display: none; margin-top: 20px; }
         
-        .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; }
+        .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
         .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
-        /* DIRECTORIO Y BUSCADOR INTERNO */
-        #directory-area { display: none; margin-top: 10px; text-align: left; max-height: 250px; overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; border-radius: 12px; background: #fafbfc; }
-        
-        #dirSearchInput {
-            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px;
-            font-size: 14px; margin-bottom: 10px; display: none; 
+        /* DIRECTORIO (Modificado para estar integrado) */
+        #directory-area { 
+            display: none; 
+            margin-top: 15px; 
+            text-align: left; 
+            max-height: 300px; /* Un poco más alto para ver mejor */
+            overflow-y: auto; 
+            border: 1px solid #e1e9f0; 
+            padding: 15px; 
+            border-radius: 12px; 
+            background: #fafbfc;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
 
         .student-chip { 
             display: inline-block; background: white; border: 1px solid var(--c-secondary); 
             color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; 
-            font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
             text-transform: capitalize; 
         }
-        .student-chip:hover { background: var(--c-secondary); color: white; }
+        .student-chip:hover { background: var(--c-secondary); color: white; transform: scale(1.05); }
 
-        .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; }
+        .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; width: 100%; }
         .btn-reset:hover { opacity: 1; color: var(--c-accent); }
 
         /* WHATSAPP FIXED */
@@ -187,8 +193,10 @@
     <div id="search-area">
         <h2>Horarios</h2>
         <div id="status-indicator">Consulta tu planificación semanal</div>
-        <input type="text" id="magicInput" placeholder="Nombre del alumno..." autocomplete="off">
-        <button id="btnBuscar" class="btn-main">BUSCAR AHORA</button>
+        <input type="text" id="magicInput" placeholder="Contraseña..." autocomplete="off">
+        <button id="btnBuscar" class="btn-main">ENTRAR</button>
+        
+        <div id="directory-area"></div>
     </div>
 
     <div id="loading-spinner" class="spinner"></div>
@@ -197,12 +205,6 @@
     
     <div id="actions-panel">
         <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE PADRES</button>
-        <button id="btnDirectorio" class="btn-share" style="background:var(--c-primary); color:white; border:none;">📂 LISTADO ALUMNOS</button>
-        
-        <input type="text" id="dirSearchInput" placeholder="Filtrar nombres..." onkeyup="filtrarDirectorio()">
-        
-        <div id="directory-area"></div>
-        <br>
         <button id="btnReset" class="btn-reset">🔄 REALIZAR OTRA BÚSQUEDA</button>
     </div>
 </div>
@@ -212,6 +214,14 @@
 </a>
 
 <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw_horario.js')
+                .then(reg => console.log('Service Worker registrado'))
+                .catch(err => console.log('Error registrando SW', err));
+        });
+    }
+
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
@@ -253,8 +263,7 @@
 
     function agruparClases(clases) {
         if(clases.length === 0) return [];
-        
-        // Ordenamos por Día de la semana y luego por Hora
+        // Ordenamos por día y hora
         const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
         clases.sort((a, b) => {
             const diffDia = diasOrden.indexOf(a.dia) - diasOrden.indexOf(b.dia);
@@ -264,23 +273,17 @@
 
         let grupos = [];
         let actual = null;
-        
         clases.forEach(clase => {
             const startMins = timeToMins(clase.h);
             if (actual) {
-                // Lógica de agrupación: Mismo día, misma materia, hora contigua
                 if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
-                    actual.endMins += 30; // Extendemos media hora
-                    // Si el nombre varía ligeramente (raro en este caso), lo agregamos
+                    actual.endMins += 30; 
                     if (!actual.fullText.includes(clase.fullText)) {
                         actual.fullText += " / " + clase.fullText;
                     }
                     return;
-                } else { 
-                    grupos.push(actual); 
-                }
+                } else { grupos.push(actual); }
             }
-            // Iniciar nuevo grupo
             actual = { 
                 dia: clase.dia, 
                 startMins: startMins, 
@@ -295,7 +298,7 @@
     }
 
     async function ejecutarBusqueda(nombre) {
-        document.getElementById('search-area').style.display = 'none';
+        document.getElementById('directory-area').style.display = 'none'; // Ocultamos directorio al buscar
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
         const nombreBuscado = nombre.toLowerCase().trim();
@@ -308,34 +311,24 @@
         dias.forEach((dia, idx) => {
             const data = resultados[idx];
             if(!data) return;
-            
             data.forEach(row => {
-                // ==========================================
-                // ZONA 1: APOYO (Hora en Col A [0], Alumnos en B-G [1-6])
-                // ==========================================
+                // APOYO
                 let horaApoyo = (row[0] || "").trim().substring(0,5);
                 if(horaApoyo && horaApoyo.includes(":")) {
                     for(let c=1; c<=6; c++) { 
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
-                            clasesRaw.push({
-                                dia, h: horaApoyo, materia: "Apoyo", tipo: "apoyo", fullText: val 
-                            });
+                            clasesRaw.push({ dia, h: horaApoyo, materia: "Apoyo", tipo: "apoyo", fullText: val });
                         }
                     }
                 }
-
-                // ==========================================
-                // ZONA 2: INGLÉS (Hora en Col H [7], Alumnos en I-N [8-13])
-                // ==========================================
+                // INGLÉS
                 let horaIngles = (row[7] || "").trim().substring(0,5);
                 if(horaIngles && horaIngles.includes(":")) {
                     for(let c=8; c<=13; c++) { 
                         let val = row[c] || "";
                         if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
-                            clasesRaw.push({
-                                dia, h: horaIngles, materia: "Inglés", tipo: "ingles", fullText: val 
-                            });
+                            clasesRaw.push({ dia, h: horaIngles, materia: "Inglés", tipo: "ingles", fullText: val });
                         }
                     }
                 }
@@ -346,7 +339,6 @@
         
         if(clasesRaw.length > 0) {
             const clasesAgrupadas = agruparClases(clasesRaw);
-            
             let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
                         Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${formatName(nombre)}</span>
                         </h3>`;
@@ -370,27 +362,18 @@
 
             if(SISTEMA_DESBLOQUEADO) {
                 document.getElementById('btnCopiar').style.display = 'block';
-                document.getElementById('btnDirectorio').style.display = 'block';
                 document.getElementById('btnReset').style.display = 'block'; 
-            } else {
-                document.getElementById('btnCopiar').style.display = 'none';
-                document.getElementById('btnDirectorio').style.display = 'none';
-                document.getElementById('btnReset').style.display = 'none'; 
             }
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('search-area').style.display = 'block';
         }
     }
 
     async function cargarDirectorio() {
         const area = document.getElementById('directory-area');
-        const inputDir = document.getElementById('dirSearchInput');
-        
-        area.innerHTML = "Cargando..."; area.style.display = 'block';
-        inputDir.style.display = 'block'; 
-        inputDir.focus();
+        area.innerHTML = "<div style='color:#999; font-size:14px;'>Cargando alumnos...</div>"; 
+        area.style.display = 'block';
 
         const promesas = Object.values(urls).map(url => leerHoja(url));
         const resultados = await Promise.all(promesas);
@@ -399,12 +382,10 @@
         resultados.forEach(data => {
             if(!data) return;
             data.forEach(row => {
-                // Escanear bloque Apoyo (Indices 1 a 6)
                 for(let c=1; c<=6; c++){
                     let txt = (row[c] || "").trim();
                     if(esNombreValido(txt)) alumnos.add(txt.toLowerCase());
                 }
-                // Escanear bloque Inglés (Indices 8 a 13)
                 for(let c=8; c<=13; c++){
                     let txt = (row[c] || "").trim();
                     if(esNombreValido(txt)) alumnos.add(txt.toLowerCase());
@@ -419,14 +400,26 @@
         area.innerHTML = html;
     }
 
-    window.filtrarDirectorio = () => {
-        const input = document.getElementById('dirSearchInput');
+    // Filtra el directorio usando el INPUT PRINCIPAL (#magicInput)
+    window.filtrarDirectorioMain = () => {
+        const input = document.getElementById('magicInput');
         const filtro = input.value.toLowerCase();
         const chips = document.querySelectorAll('.student-chip');
+        let visibles = 0;
         chips.forEach(chip => {
             const txt = chip.textContent.toLowerCase();
-            chip.style.display = txt.includes(filtro) ? 'inline-block' : 'none';
+            if(txt.includes(filtro)) {
+                chip.style.display = 'inline-block';
+                visibles++;
+            } else {
+                chip.style.display = 'none';
+            }
         });
+        
+        // Si no hay filtro, mostrar todos
+        if(filtro === "") {
+             chips.forEach(c => c.style.display = 'inline-block');
+        }
     };
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
@@ -439,19 +432,34 @@
         const login = () => {
             const val = input.value.trim();
             if(!val) return;
-            if(!SISTEMA_DESBLOQUEADO && btoa(val) === _0x8F) {
-                SISTEMA_DESBLOQUEADO = true;
-                document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
-                input.value = ""; input.placeholder = "Nombre del alumno...";
-                document.getElementById('actions-panel').style.display = 'block';
+            
+            // Si NO está desbloqueado, intentamos hacer login
+            if(!SISTEMA_DESBLOQUEADO) {
+                if (btoa(val) === _0x8F) {
+                    SISTEMA_DESBLOQUEADO = true;
+                    document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
+                    input.value = ""; 
+                    input.placeholder = "Busca o selecciona alumno...";
+                    document.getElementById('btnBuscar').innerText = "BUSCAR"; // Cambia texto botón
+                    
+                    // CARGA AUTOMÁTICA DEL DIRECTORIO
+                    cargarDirectorio();
+                    
+                    // Ahora el input filtra al escribir
+                    input.onkeyup = window.filtrarDirectorioMain;
+                } else {
+                    // Si falla la contraseña, intenta buscar (por si es un alumno ya logueado o error)
+                    ejecutarBusqueda(val); 
+                }
             } else { 
+                // Si YA está desbloqueado, busca directamente
                 ejecutarBusqueda(val); 
             }
         };
 
         btn.onclick = login;
         input.onkeypress = e => { if(e.key === 'Enter') login(); };
-        document.getElementById('btnDirectorio').onclick = cargarDirectorio;
+        
         document.getElementById('btnReset').onclick = () => location.reload();
 
         btnCopiar.onclick = () => {
