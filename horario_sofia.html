@@ -111,7 +111,7 @@
     </div>
 
     <div class="teacher-title">Sofía Gundín</div>
-    <div class="teacher-subtitle">Departamento de Inglés</div>
+    <div class="teacher-subtitle">🇬🇧 Departamento de Inglés</div>
 
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
@@ -158,7 +158,7 @@
                     <thead>
                         <tr>
                             <th class="col-hora">${h_hora}</th>
-                            ${h_alum.map(h => `<th>${h}</th>`).join('')}
+                            ${h_alum.map(h => `<th>${h.replace('ING', '').trim()}</th>`).join('')}
                         </tr>
                     </thead>
                     <tbody>`;
