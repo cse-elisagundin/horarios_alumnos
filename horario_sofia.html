@@ -34,7 +34,7 @@
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); transform: scale(1.05); }
 
         /* TABLA Y CONTENEDOR CON SCROLL */
-        .planning-container { display: none; animation: fadeIn 0.4s ease; overflow-x: auto; /* Permite scroll lateral */ }
+        .planning-container { display: none; animation: fadeIn 0.4s ease; overflow-x: auto; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -67,7 +67,7 @@
         .student-cell { 
             background-color: white; 
             transition: all 0.2s; 
-            vertical-align: middle; /* Centrado vertical perfecto */
+            vertical-align: middle; 
         }
         .name-tag { display: inline-block; font-weight: 700; color: var(--c-secondary); text-transform: capitalize; font-size: 14px; }
 
@@ -123,8 +123,15 @@
 
     function leerHoja(url) {
         return new Promise(resolve => {
+            // Usamos un identificador único en la URL para evitar caché del navegador y cargar siempre la versión nueva
             Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
+    }
+
+    // Función auxiliar para obtener solo el primer nombre en mayúsculas
+    function obtenerNombrePila(texto) {
+        if (!texto) return "";
+        return texto.trim().split(" ")[0].toUpperCase();
     }
 
     async function cargarHorarioSofia() {
@@ -165,34 +172,35 @@
                 const hora = row[7];
                 html += `<tr><td class="col-hora">${hora}</td>`;
 
+                // Recorrer columnas de alumnos (índices 8 al 13)
                 for(let k = 8; k <= 13; k++) {
                     if (skipFlags[k] > 0) {
                         skipFlags[k]--;
                         continue;
                     }
 
-                    // NORMALIZACIÓN DE NOMBRE PARA COMPARAR (Trim y Mayúsculas)
-                    // Esto evita que "Margarita" y "Margarita " se traten como distintos
-                    let rawName = (row[k] || "").trim();
-                    let cleanName = rawName.toUpperCase();
+                    // LÓGICA DE FUSIÓN SIMPLIFICADA
+                    // Obtenemos solo el nombre de pila para la celda actual
+                    let rawContent = row[k] || "";
+                    let nombrePilaActual = obtenerNombrePila(rawContent);
                     
-                    if (!rawName) {
+                    if (!nombrePilaActual) {
                         html += `<td></td>`;
                     } else {
                         let span = 1;
-                        // Bucle hacia abajo para ver si se repite el MISMO nombre
+                        // Miramos hacia abajo comparando SOLO el nombre de pila
                         for (let j = i + 1; j < data.length; j++) {
-                            let nextRowName = (data[j][k] || "").trim().toUpperCase();
-                            if (nextRowName === cleanName && cleanName !== "") {
+                            let nextRaw = data[j][k] || "";
+                            let nextPila = obtenerNombrePila(nextRaw);
+                            
+                            if (nextPila === nombrePilaActual) {
                                 span++;
                             } else {
                                 break;
                             }
                         }
 
-                        let display = rawName.split(" ")[0]; // Primer nombre visual
-                        
-                        // ESTILO PERSONALIZADO: Borde Arriba y Abajo, laterales suaves.
+                        // Estilo del bloque fusionado
                         const estiloBorde = `
                             background-color:#fff0f8; 
                             border-top: 2px solid var(--c-primary); 
@@ -204,12 +212,12 @@
 
                         if (span > 1) {
                             html += `<td rowspan="${span}" class="student-cell" style="${estiloBorde}">
-                                        <span class="name-tag">${display}</span>
+                                        <span class="name-tag">${nombrePilaActual}</span>
                                      </td>`;
                             skipFlags[k] = span - 1;
                         } else {
                             html += `<td class="student-cell" style="${estiloBorde}">
-                                        <span class="name-tag">${display}</span>
+                                        <span class="name-tag">${nombrePilaActual}</span>
                                      </td>`;
                         }
                     }
@@ -220,7 +228,7 @@
             container.innerHTML += html;
         });
 
-        document.getElementById('loading-spinner').style.display = 'none';
+        document.getElementById('loading').style.display = 'none';
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         let diaInicial = dias.includes(hoy) ? hoy : "Lunes";
@@ -240,6 +248,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         cargarHorarioSofia();
+        // Recarga cada 5 minutos
         setInterval(cargarHorarioSofia, 300000); 
     });
 </script>
