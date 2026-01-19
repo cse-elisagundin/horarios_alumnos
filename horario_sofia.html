@@ -38,7 +38,7 @@
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        table { width: 100%; border-collapse: separate; /* Necesario para sticky */ border-spacing: 0; table-layout: fixed; margin-top: 10px; min-width: 600px; /* Forzamos ancho mínimo para que no se aplaste */ }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; margin-top: 10px; min-width: 600px; }
         
         /* Celdas */
         th, td { border: 1px solid #eee; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; color: #444; }
@@ -53,14 +53,13 @@
             border-right: 2px solid #eee;
             position: sticky; 
             left: 0; 
-            z-index: 20; /* Por encima de las celdas normales */
+            z-index: 20; 
         }
         
-        /* Ajuste para la cabecera de la hora */
         th.col-hora {
             background: var(--c-primary);
             color: white;
-            z-index: 30; /* La esquina superior izquierda siempre visible */
+            z-index: 30; 
             border-right: 2px solid rgba(255,255,255,0.3);
         }
 
@@ -75,17 +74,8 @@
         @media (max-width: 768px) {
             body { padding: 10px; }
             .container { padding: 15px 10px; width: 100%; box-sizing: border-box; }
-            
-            /* Navegación alineada a la izquierda en móvil para facilitar scroll */
             .days-nav { justify-content: flex-start; padding-left: 5px; }
-            
-            /* Sombra para indicar que hay más contenido a la derecha */
-            .planning-container {
-                border-radius: 10px;
-                box-shadow: inset -10px 0 10px -10px rgba(0,0,0,0.1);
-            }
-
-            /* Texto un poco más grande para leer mejor */
+            .planning-container { border-radius: 10px; box-shadow: inset -10px 0 10px -10px rgba(0,0,0,0.1); }
             .name-tag { font-size: 13px; }
             th { font-size: 12px; }
         }
@@ -98,7 +88,7 @@
             .planning-container.visible { display: block; break-inside: avoid; overflow: visible; }
             table { min-width: 100%; width: 100%; table-layout: fixed; }
             th, td { font-size: 10pt; }
-            .col-hora { position: static; } /* Quitamos sticky al imprimir */
+            .col-hora { position: static; }
         }
     </style>
 </head>
@@ -141,7 +131,6 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
-        // Botones de navegación
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
@@ -194,13 +183,27 @@
                         }
 
                         let first = full.split(" ")[0];
+                        
+                        // ESTILO PERSONALIZADO: Borde Arriba y Abajo, laterales suaves.
+                        // Se aplica tanto a bloques grandes (span > 1) como a celdas simples (span == 1)
+                        const estiloBorde = `
+                            background-color:#fff0f8; 
+                            border-top: 2px solid var(--c-primary); 
+                            border-bottom: 2px solid var(--c-primary); 
+                            border-left: 1px solid #eee;
+                            border-right: 1px solid #eee;
+                            vertical-align: middle;
+                        `;
+
                         if (span > 1) {
-                            html += `<td rowspan="${span}" class="student-cell" style="background-color:#fff0f8; border-bottom:2px solid var(--c-primary); vertical-align:middle;">
+                            html += `<td rowspan="${span}" class="student-cell" style="${estiloBorde}">
                                         <span class="name-tag">${first}</span>
                                      </td>`;
                             skipFlags[k] = span - 1;
                         } else {
-                            html += `<td class="student-cell"><span class="name-tag">${first}</span></td>`;
+                            html += `<td class="student-cell" style="${estiloBorde}">
+                                        <span class="name-tag">${first}</span>
+                                     </td>`;
                         }
                     }
                 }
