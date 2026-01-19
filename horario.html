@@ -30,6 +30,9 @@
             --bg-container: #ffffff;
             --whatsapp: #25D366; 
             --error: #dc3545;
+            /* Nuevos colores para estado en vivo */
+            --live-green: #25D366;
+            --soon-yellow: #FFC107;
         }
         
         body { 
@@ -97,11 +100,70 @@
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
             animation: cardFade 0.4s ease-out;
+            position: relative; /* Para posicionar elementos live */
+            transition: all 0.3s ease;
         }
         @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
+
+        /* --- ESTILOS EN VIVO (NUEVO) --- */
+        .result-card.is-live {
+            border: 2px solid var(--live-green);
+            background-color: #f0fff4;
+            box-shadow: 0 0 15px rgba(37, 211, 102, 0.2);
+            transform: scale(1.02);
+        }
+        
+        .result-card.is-soon {
+            border: 2px solid var(--soon-yellow);
+            background-color: #fffdf5;
+        }
+
+        .live-badge {
+            display: none; /* Oculto por defecto */
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--live-green);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .soon-badge {
+            display: none;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--soon-yellow);
+            color: #555;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Mostrar badges según estado */
+        .result-card.is-live .live-badge { display: block; }
+        .result-card.is-soon .soon-badge { display: block; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        /* --------------------------- */
 
         .card-info { display: flex; flex-direction: column; gap: 2px; }
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
@@ -127,7 +189,7 @@
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
 
-        /* PANEL ACCIONES (Oculto por defecto para padres) */
+        /* PANEL ACCIONES */
         #actions-panel { display: none; margin-top: 20px; }
         
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
@@ -179,6 +241,9 @@
             #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
+            /* Ocultar efectos live al imprimir */
+            .live-badge, .soon-badge { display: none !important; }
+            .result-card.is-live, .result-card.is-soon { border: 1px solid #eee; background: white; box-shadow: none; transform: none; }
         }
     </style>
 </head>
@@ -295,8 +360,27 @@
         return grupos;
     }
 
+    // --- LÓGICA DE ESTADO EN VIVO ---
+    function getEstadoClase(diaClase, startMins, endMins) {
+        const now = new Date();
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const hoy = diasSemana[now.getDay()];
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+
+        // 1. Verificar si es el mismo día
+        if (diaClase !== hoy) return null;
+
+        // 2. ¿Está ocurriendo ahora?
+        if (nowMins >= startMins && nowMins < endMins) return 'live';
+
+        // 3. ¿Empieza pronto? (Margen de 30 min)
+        if (nowMins >= (startMins - 30) && nowMins < startMins) return 'soon';
+
+        return null;
+    }
+    // --------------------------------
+
     async function ejecutarBusqueda(nombre) {
-        // Al buscar, ocultamos el buscador completo para dejar espacio al resultado
         document.getElementById('search-area').style.display = 'none'; 
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
@@ -343,8 +427,23 @@
             
             clasesAgrupadas.forEach(item => {
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
+                
+                // Calculamos estado en vivo
+                const estado = getEstadoClase(item.dia, item.startMins, item.endMins);
+                let extraClass = "";
+                let badgeLive = "";
+
+                if (estado === 'live') {
+                    extraClass = "is-live";
+                    badgeLive = `<div class="live-badge">🔴 EN CLASE AHORA</div>`;
+                } else if (estado === 'soon') {
+                    extraClass = "is-soon";
+                    badgeLive = `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>`;
+                }
+
                 html += `
-                    <div class="result-card type-${item.tipo}">
+                    <div class="result-card type-${item.tipo} ${extraClass}">
+                        ${badgeLive}
                         <div class="card-info">
                             <span class="card-day">${item.dia}</span>
                             <div class="card-time-wrapper">
@@ -357,9 +456,6 @@
             });
             document.getElementById('resultado').innerHTML = html;
 
-            // LÓGICA DE SEGURIDAD:
-            // Si es Admin (desbloqueado) -> Muestra botones Copiar y Reset.
-            // Si es Padre (no desbloqueado) -> Oculta todo el panel de acciones.
             if(SISTEMA_DESBLOQUEADO) {
                 document.getElementById('actions-panel').style.display = 'block';
             } else {
@@ -369,7 +465,7 @@
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
             document.getElementById('error-msg').style.display = 'block';
-            document.getElementById('search-area').style.display = 'block'; // Volver a mostrar buscador si falla
+            document.getElementById('search-area').style.display = 'block';
         }
     }
 
@@ -416,15 +512,12 @@
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
-    // FUNCIÓN RESET (Solo para Admin): Vuelve al estado inicial de búsqueda
     document.getElementById('btnReset').onclick = () => {
         document.getElementById('resultado').innerHTML = '';
         document.getElementById('actions-panel').style.display = 'none';
-        document.getElementById('search-area').style.display = 'block'; // Reaparece el buscador
+        document.getElementById('search-area').style.display = 'block';
         document.getElementById('magicInput').value = '';
         document.getElementById('magicInput').focus();
-        
-        // Aseguramos que el directorio se muestra completo
         const chips = document.querySelectorAll('.student-chip');
         chips.forEach(c => c.style.display = 'inline-block');
     };
@@ -470,10 +563,17 @@
         const p = new URLSearchParams(window.location.search).get('alumno');
         if(p) { 
             input.value = p; 
-            // IMPORTANTE: Al venir por URL, el sistema sigue BLOQUEADO, 
-            // por lo tanto, ejecutarBusqueda ocultará los botones de acciones.
             ejecutarBusqueda(p); 
         }
+
+        // Auto-refresco de estado visual cada minuto por si el padre deja la pantalla abierta
+        setInterval(() => {
+            // Solo si hay resultados visibles y no estamos en modo búsqueda
+            if(document.getElementById('resultado').innerHTML !== '') {
+                const nombreActual = document.getElementById('magicInput').value;
+                if(nombreActual) ejecutarBusqueda(nombreActual);
+            }
+        }, 60000);
     });
 </script>
 </body>
