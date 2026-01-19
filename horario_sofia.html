@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES (MANTENIDOS) --- */
+        /* --- ESTILOS GENERALES --- */
         :root { 
             --c-primary: #fa65c3; 
             --c-secondary: #243c7a; 
@@ -41,6 +41,7 @@
         .col-hora { width: 60px; background: #fafafa; font-weight: 800; color: var(--c-secondary); border-right: 2px solid #eee; position: sticky; left: 0; z-index: 20; }
         th.col-hora { background: var(--c-primary); color: white; z-index: 30; border-right: 2px solid rgba(255,255,255,0.3); }
 
+        /* Celda de alumno con fondo suave */
         .student-cell { background-color: #fff0f8; transition: all 0.2s; }
         .name-tag { display: inline-block; font-weight: 700; color: var(--c-secondary); text-transform: capitalize; font-size: 14px; }
 
@@ -62,7 +63,7 @@
     </div>
 
     <div class="teacher-title">Sofía Gundín</div>
-    <div class="teacher-subtitle">Departamento de Inglés</div>
+    <div class="teacher-subtitle">🇬🇧 Departamento de Inglés</div>
 
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
@@ -123,15 +124,11 @@
                         let span = 1;
                         let esMateriaEspecial = headers[k].toUpperCase().includes("ING") || headers[k].toUpperCase().includes("APOYO");
 
-                        // LÓGICA DE EXTENSIÓN:
-                        // Buscamos cuántas filas seguidas tiene el mismo nombre
                         for (let j = i + 1; j < data.length; j++) {
                             let nextName = (data[j][k] || "").trim();
                             if (nextName === full && full !== "") {
                                 span++;
                             } else {
-                                // REGLA ORO: Si el siguiente hueco está vacío y es materia especial,
-                                // sumamos una celda extra (30 min) para marcar la hora de salida.
                                 if (esMateriaEspecial && nextName === "") {
                                     span++;
                                 }
@@ -139,7 +136,11 @@
                             }
                         }
 
-                        const estiloBorde = `border-top: 2px solid var(--c-primary); border-bottom: 2px solid var(--c-primary); border-left: 1px solid #eee; border-right: 1px solid #eee;`;
+                        // --- CAMBIO ESTÉTICO SOLICITADO ---
+                        // Si i === 1 (primera fila de datos, 15:30), el borde superior es 'none'
+                        const borderTopStyle = (i === 1) ? 'none' : '2px solid var(--c-primary)';
+                        
+                        const estiloBorde = `border-top: ${borderTopStyle}; border-bottom: 2px solid var(--c-primary); border-left: 1px solid #eee; border-right: 1px solid #eee;`;
                         
                         html += `<td rowspan="${span}" class="student-cell" style="${estiloBorde}">
                                     <span class="name-tag">${full.split(" ")[0]}</span>
