@@ -41,7 +41,7 @@
         table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; margin-top: 10px; min-width: 600px; }
         
         /* Celdas */
-        th, td { border: 1px solid #eee; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; color: #444; }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; vertical-align: middle; font-size: 13px; color: #444; }
         th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 12px 5px; border-color: rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 10; }
         
         /* COLUMNA HORA PEGAJOSA (STICKY) */
@@ -64,7 +64,11 @@
         }
 
         /* Estilo de la celda de alumno */
-        .student-cell { background-color: white; transition: all 0.2s; }
+        .student-cell { 
+            background-color: white; 
+            transition: all 0.2s; 
+            vertical-align: middle; /* Centrado vertical perfecto */
+        }
         .name-tag { display: inline-block; font-weight: 700; color: var(--c-secondary); text-transform: capitalize; font-size: 14px; }
 
         .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); animation: bar-pulse 1.5s infinite ease-in-out; }
@@ -101,7 +105,7 @@
     </div>
 
     <div class="teacher-title">Sofía Gundín</div>
-    <div class="teacher-subtitle">Departamento de Inglés</div>
+    <div class="teacher-subtitle">🇬🇧 Departamento de Inglés</div>
 
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
@@ -167,25 +171,28 @@
                         continue;
                     }
 
-                    let full = (row[k] || "").trim();
+                    // NORMALIZACIÓN DE NOMBRE PARA COMPARAR (Trim y Mayúsculas)
+                    // Esto evita que "Margarita" y "Margarita " se traten como distintos
+                    let rawName = (row[k] || "").trim();
+                    let cleanName = rawName.toUpperCase();
                     
-                    if (!full) {
+                    if (!rawName) {
                         html += `<td></td>`;
                     } else {
                         let span = 1;
+                        // Bucle hacia abajo para ver si se repite el MISMO nombre
                         for (let j = i + 1; j < data.length; j++) {
-                            let nextName = (data[j][k] || "").trim();
-                            if (nextName === full && full !== "") {
+                            let nextRowName = (data[j][k] || "").trim().toUpperCase();
+                            if (nextRowName === cleanName && cleanName !== "") {
                                 span++;
                             } else {
                                 break;
                             }
                         }
 
-                        let first = full.split(" ")[0];
+                        let display = rawName.split(" ")[0]; // Primer nombre visual
                         
                         // ESTILO PERSONALIZADO: Borde Arriba y Abajo, laterales suaves.
-                        // Se aplica tanto a bloques grandes (span > 1) como a celdas simples (span == 1)
                         const estiloBorde = `
                             background-color:#fff0f8; 
                             border-top: 2px solid var(--c-primary); 
@@ -197,12 +204,12 @@
 
                         if (span > 1) {
                             html += `<td rowspan="${span}" class="student-cell" style="${estiloBorde}">
-                                        <span class="name-tag">${first}</span>
+                                        <span class="name-tag">${display}</span>
                                      </td>`;
                             skipFlags[k] = span - 1;
                         } else {
                             html += `<td class="student-cell" style="${estiloBorde}">
-                                        <span class="name-tag">${first}</span>
+                                        <span class="name-tag">${display}</span>
                                      </td>`;
                         }
                     }
@@ -213,7 +220,7 @@
             container.innerHTML += html;
         });
 
-        document.getElementById('loading').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'none';
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
         let diaInicial = dias.includes(hoy) ? hoy : "Lunes";
