@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Horario Sofía Gundín (Inglés)</title>
+    
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <style>
+        /* --- ESTILOS GENERALES --- */
+        :root { 
+            --c-primary: #fa65c3; 
+            --c-secondary: #243c7a; 
+            --bg-body: #f4f6f9; --bg-container: #ffffff;
+        }
+        
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; -webkit-tap-highlight-color: transparent; }
+
+        .container { width: 95%; max-width: 1200px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(250, 101, 195, 0.15); }
+
+        /* HEADER */
+        .web-brand { text-align: center; margin-bottom: 20px; }
+        .web-logo-img { height: 70px; object-fit: contain; }
+        .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); border-radius: 10px; }
+
+        .teacher-title { text-align: center; color: var(--c-secondary); font-size: 1.5rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
+        .teacher-subtitle { text-align: center; color: var(--c-primary); font-size: 1rem; font-weight: 600; margin-bottom: 20px; }
+
+        /* NAVEGACIÓN DÍAS */
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; justify-content: center; -webkit-overflow-scrolling: touch; }
+        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; transition: all 0.2s; }
+        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); transform: scale(1.05); }
+
+        /* TABLA Y CONTENEDOR CON SCROLL */
+        .planning-container { display: none; animation: fadeIn 0.4s ease; overflow-x: auto; }
+        .planning-container.visible { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; margin-top: 10px; min-width: 600px; }
+        
+        th, td { border: 1px solid #eee; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; color: #444; }
+        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 12px 5px; border-color: rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 10; }
+        
+        .col-hora { 
+            width: 60px; 
+            background: #fafafa; 
+            font-weight: 800; 
+            color: var(--c-secondary); 
+            border-right: 2px solid #eee;
+            position: sticky; 
+            left: 0; 
+            z-index: 20; 
+        }
+        
+        th.col-hora {
+            background: var(--c-primary);
+            color: white;
+            z-index: 30; 
+            border-right: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .student-cell { background-color: white; transition: all 0.2s; }
+        .name-tag { display: inline-block; font-weight: 700; color: var(--c-secondary); text-transform: capitalize; font-size: 14px; }
+
+        .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); animation: bar-pulse 1.5s infinite ease-in-out; }
+        @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 15px 10px; width: 100%; box-sizing: border-box; }
+            .days-nav { justify-content: flex-start; padding-left: 5px; }
+            .planning-container { border-radius: 10px; box-shadow: inset -10px 0 10px -10px rgba(0,0,0,0.1); }
+            .name-tag { font-size: 13px; }
+            th { font-size: 12px; }
+        }
+
+        @media print {
+            body { background: white; -webkit-print-color-adjust: exact; padding: 0; }
+            .container { box-shadow: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
+            .days-nav, .btn-action { display: none; }
+            .planning-container.visible { display: block; break-inside: avoid; overflow: visible; }
+            table { min-width: 100%; width: 100%; table-layout: fixed; }
+            th, td { font-size: 10pt; }
+            .col-hora { position: static; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="web-brand">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
+        <div class="brand-line"></div>
+    </div>
+
+    <div class="teacher-title">Sofía Gundín</div>
+    <div class="teacher-subtitle">🇬🇧 Departamento de Inglés</div>
+
+    <div class="days-nav" id="days-buttons"></div>
+    <div id="loading" class="spinner"></div>
+    <div id="schedule-container"></div>
+</div>
+
+<script>
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+    };
+
+    function leerHoja(url) {
+        return new Promise(resolve => {
+            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
+        });
+    }
+
+    async function cargarHorarioSofia() {
+        const container = document.getElementById('schedule-container');
+        const btnContainer = document.getElementById('days-buttons');
+        const dias = Object.keys(urls);
+        
+        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const todosLosDatos = await Promise.all(promesas);
+
+        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+        btnContainer.innerHTML = btns;
+        container.innerHTML = ""; 
+
+        dias.forEach((dia, index) => {
+            const data = todosLosDatos[index]; 
+            const headers = data[0] || [];
+            const h_hora = headers[7] || "H"; 
+            const h_alum = headers.slice(8, 14);
+
+            let html = `<div id="view-${dia}" class="planning-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="col-hora">${h_hora}</th>
+                            ${h_alum.map(h => `<th>${h.replace('ING', '').trim()}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>`;
+
+            let skipFlags = new Array(14).fill(0);
+
+            for(let i = 1; i < data.length; i++) {
+                const row = data[i];
+                if(!row || !row[7]) continue;
+
+                const horaActual = row[7];
+                html += `<tr><td class="col-hora">${horaActual}</td>`;
+
+                for(let k = 8; k <= 13; k++) {
+                    if (skipFlags[k] > 0) {
+                        skipFlags[k]--;
+                        continue;
+                    }
+
+                    let full = (row[k] || "").trim();
+                    
+                    if (!full) {
+                        html += `<td></td>`;
+                    } else {
+                        let span = 1;
+                        for (let j = i + 1; j < data.length; j++) {
+                            let nextName = (data[j][k] || "").trim();
+                            let nextHora = (data[j][7] || "").trim();
+                            
+                            // LÓGICA DE EXCEPCIÓN: Inglés y Apoyo
+                            let esEspecial = headers[k].toUpperCase().includes("ING") || headers[k].toUpperCase().includes("APOYO");
+                            
+                            if (nextName === full && full !== "") {
+                                span++;
+                            } 
+                            // Si llegamos a la fila de las 17:00 y es clase especial, forzamos que se quede hasta las 17:30
+                            else if (full !== "" && esEspecial && nextHora.startsWith("17:00")) {
+                                span++;
+                            }
+                            else {
+                                break;
+                            }
+                        }
+
+                        let first = full.split(" ")[0];
+                        
+                        const estiloBorde = `
+                            background-color:#fff0f8; 
+                            border-top: 2px solid var(--c-primary); 
+                            border-bottom: 2px solid var(--c-primary); 
+                            border-left: 1px solid #eee;
+                            border-right: 1px solid #eee;
+                            vertical-align: middle;
+                        `;
+
+                        html += `<td rowspan="${span}" class="student-cell" style="${estiloBorde}">
+                                    <span class="name-tag">${first}</span>
+                                 </td>`;
+                        skipFlags[k] = span - 1;
+                    }
+                }
+                html += `</tr>`;
+            }
+            html += `</tbody></table></div>`;
+            container.innerHTML += html;
+        });
+
+        document.getElementById('loading').style.display = 'none';
+        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        let hoy = mapDay[new Date().getDay()];
+        let diaInicial = dias.includes(hoy) ? hoy : "Lunes";
+        cambiarDia(diaInicial);
+    }
+
+    function cambiarDia(dia) {
+        document.querySelectorAll('.planning-container').forEach(div => {
+            if(dia === 'Todo') div.classList.add('visible');
+            else div.classList.toggle('visible', div.id === `view-${dia}`);
+        });
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            let esActivo = (btn.innerText.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && btn.innerText === 'VER TODO');
+            btn.classList.toggle('active', esActivo);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarHorarioSofia();
+        setInterval(cargarHorarioSofia, 300000); 
+    });
+</script>
+</body>
+</html>
