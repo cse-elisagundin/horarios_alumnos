@@ -127,18 +127,18 @@
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
 
-        /* PANEL ACCIONES (Modificado para híbrido) */
+        /* PANEL ACCIONES (Oculto por defecto para padres) */
         #actions-panel { display: none; margin-top: 20px; }
         
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
         .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
-        /* DIRECTORIO (Modificado para estar integrado) */
+        /* DIRECTORIO HÍBRIDO */
         #directory-area { 
             display: none; 
             margin-top: 15px; 
             text-align: left; 
-            max-height: 300px; /* Un poco más alto para ver mejor */
+            max-height: 300px;
             overflow-y: auto; 
             border: 1px solid #e1e9f0; 
             padding: 15px; 
@@ -204,7 +204,7 @@
     <div id="resultado"></div>
     
     <div id="actions-panel">
-        <button id="btnCopiar" class="btn-share" style="display:none;">🔗 COPIAR ENLACE PADRES</button>
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PADRES</button>
         <button id="btnReset" class="btn-reset">🔄 REALIZAR OTRA BÚSQUEDA</button>
     </div>
 </div>
@@ -225,7 +225,6 @@
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
-    // Todos los enlaces en formato TSV
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -263,7 +262,6 @@
 
     function agruparClases(clases) {
         if(clases.length === 0) return [];
-        // Ordenamos por día y hora
         const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
         clases.sort((a, b) => {
             const diffDia = diasOrden.indexOf(a.dia) - diasOrden.indexOf(b.dia);
@@ -298,9 +296,11 @@
     }
 
     async function ejecutarBusqueda(nombre) {
-        document.getElementById('directory-area').style.display = 'none'; // Ocultamos directorio al buscar
+        // Al buscar, ocultamos el buscador completo para dejar espacio al resultado
+        document.getElementById('search-area').style.display = 'none'; 
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
+        
         const nombreBuscado = nombre.toLowerCase().trim();
         const dias = Object.keys(urls);
         const promesas = dias.map(dia => leerHoja(urls[dia]));
@@ -312,7 +312,6 @@
             const data = resultados[idx];
             if(!data) return;
             data.forEach(row => {
-                // APOYO
                 let horaApoyo = (row[0] || "").trim().substring(0,5);
                 if(horaApoyo && horaApoyo.includes(":")) {
                     for(let c=1; c<=6; c++) { 
@@ -322,7 +321,6 @@
                         }
                     }
                 }
-                // INGLÉS
                 let horaIngles = (row[7] || "").trim().substring(0,5);
                 if(horaIngles && horaIngles.includes(":")) {
                     for(let c=8; c<=13; c++) { 
@@ -358,21 +356,26 @@
                     </div>`;
             });
             document.getElementById('resultado').innerHTML = html;
-            document.getElementById('actions-panel').style.display = 'block';
 
+            // LÓGICA DE SEGURIDAD:
+            // Si es Admin (desbloqueado) -> Muestra botones Copiar y Reset.
+            // Si es Padre (no desbloqueado) -> Oculta todo el panel de acciones.
             if(SISTEMA_DESBLOQUEADO) {
-                document.getElementById('btnCopiar').style.display = 'block';
-                document.getElementById('btnReset').style.display = 'block'; 
+                document.getElementById('actions-panel').style.display = 'block';
+            } else {
+                document.getElementById('actions-panel').style.display = 'none';
             }
+
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
             document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('search-area').style.display = 'block'; // Volver a mostrar buscador si falla
         }
     }
 
     async function cargarDirectorio() {
         const area = document.getElementById('directory-area');
-        area.innerHTML = "<div style='color:#999; font-size:14px;'>Cargando alumnos...</div>"; 
+        area.innerHTML = "<div style='color:#999; font-size:14px; margin-top:10px;'>Cargando lista de alumnos...</div>"; 
         area.style.display = 'block';
 
         const promesas = Object.values(urls).map(url => leerHoja(url));
@@ -400,29 +403,31 @@
         area.innerHTML = html;
     }
 
-    // Filtra el directorio usando el INPUT PRINCIPAL (#magicInput)
     window.filtrarDirectorioMain = () => {
         const input = document.getElementById('magicInput');
         const filtro = input.value.toLowerCase();
         const chips = document.querySelectorAll('.student-chip');
-        let visibles = 0;
         chips.forEach(chip => {
             const txt = chip.textContent.toLowerCase();
-            if(txt.includes(filtro)) {
-                chip.style.display = 'inline-block';
-                visibles++;
-            } else {
-                chip.style.display = 'none';
-            }
+            chip.style.display = txt.includes(filtro) ? 'inline-block' : 'none';
         });
-        
-        // Si no hay filtro, mostrar todos
-        if(filtro === "") {
-             chips.forEach(c => c.style.display = 'inline-block');
-        }
+        if(filtro === "") chips.forEach(c => c.style.display = 'inline-block');
     };
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
+
+    // FUNCIÓN RESET (Solo para Admin): Vuelve al estado inicial de búsqueda
+    document.getElementById('btnReset').onclick = () => {
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('actions-panel').style.display = 'none';
+        document.getElementById('search-area').style.display = 'block'; // Reaparece el buscador
+        document.getElementById('magicInput').value = '';
+        document.getElementById('magicInput').focus();
+        
+        // Aseguramos que el directorio se muestra completo
+        const chips = document.querySelectorAll('.student-chip');
+        chips.forEach(c => c.style.display = 'inline-block');
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('magicInput');
@@ -433,34 +438,25 @@
             const val = input.value.trim();
             if(!val) return;
             
-            // Si NO está desbloqueado, intentamos hacer login
             if(!SISTEMA_DESBLOQUEADO) {
                 if (btoa(val) === _0x8F) {
                     SISTEMA_DESBLOQUEADO = true;
                     document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
                     input.value = ""; 
                     input.placeholder = "Busca o selecciona alumno...";
-                    document.getElementById('btnBuscar').innerText = "BUSCAR"; // Cambia texto botón
-                    
-                    // CARGA AUTOMÁTICA DEL DIRECTORIO
+                    document.getElementById('btnBuscar').innerText = "BUSCAR";
                     cargarDirectorio();
-                    
-                    // Ahora el input filtra al escribir
                     input.onkeyup = window.filtrarDirectorioMain;
                 } else {
-                    // Si falla la contraseña, intenta buscar (por si es un alumno ya logueado o error)
                     ejecutarBusqueda(val); 
                 }
             } else { 
-                // Si YA está desbloqueado, busca directamente
                 ejecutarBusqueda(val); 
             }
         };
 
         btn.onclick = login;
         input.onkeypress = e => { if(e.key === 'Enter') login(); };
-        
-        document.getElementById('btnReset').onclick = () => location.reload();
 
         btnCopiar.onclick = () => {
             const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
@@ -472,7 +468,12 @@
         };
         
         const p = new URLSearchParams(window.location.search).get('alumno');
-        if(p) { input.value = p; ejecutarBusqueda(p); }
+        if(p) { 
+            input.value = p; 
+            // IMPORTANTE: Al venir por URL, el sistema sigue BLOQUEADO, 
+            // por lo tanto, ejecutarBusqueda ocultará los botones de acciones.
+            ejecutarBusqueda(p); 
+        }
     });
 </script>
 </body>
