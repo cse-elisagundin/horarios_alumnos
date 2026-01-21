@@ -474,12 +474,6 @@
             dataExamenes.forEach(row => {
                 // Buscamos si el nombre del alumno está en la fila
                 if(JSON.stringify(row).toLowerCase().includes(nombreBuscado)) {
-                    // Estructura esperada:
-                    // Col 0: Fecha (YYYY-MM-DD o formato reconocible)
-                    // Col 1: Hora/Texto
-                    // Col 2: Asignatura
-                    // Col 3: Alumno (ya validado con includes)
-                    // Col 4: Nota (Opcional, índice 4)
                     
                     let fechaStr = row[0];
                     let fechaObj = new Date(fechaStr);
@@ -579,7 +573,8 @@
                 
                 examenesPasados.forEach(ex => {
                     // Lógica de nota
-                    let visualNota = `<span class="grade-pending">Pendiente</span>`;
+                    // CAMBIO: TEXTO MODIFICADO
+                    let visualNota = `<span class="grade-pending">Pendiente de saber nota</span>`;
                     
                     if(ex.nota) {
                         // Intentar parsear número (comas o puntos)
