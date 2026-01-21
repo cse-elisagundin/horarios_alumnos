@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario de Exámenes CSE</title>
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <style>
         :root { 
-            --c-primary: #243c7a; /* Azul CSE */
-            --c-accent: #fa65c3;  /* Rosa CSE */
+            --c-primary: #243c7a; 
+            --c-accent: #fa65c3; 
             --bg-body: #f4f6f9; 
             --bg-card: #ffffff;
         }
@@ -27,9 +31,18 @@
         .brand h1 { margin: 0; color: var(--c-primary); font-size: 24px; text-transform: uppercase; }
 
         /* CONTROLES */
-        .controls { display: flex; gap: 10px; align-items: center; }
-        .search-box { padding: 10px 15px; border: 2px solid #eee; border-radius: 50px; width: 250px; font-size: 14px; outline: none; transition: 0.3s; }
-        .search-box:focus { border-color: var(--c-accent); }
+        .controls { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        
+        /* Estilo personalizado para el Select2 (Desplegable) */
+        .select2-container .select2-selection--single {
+            height: 40px !important;
+            border-radius: 50px !important;
+            border: 2px solid #eee !important;
+            padding: 5px 15px;
+            display: flex;
+            align-items: center;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { top: 7px !important; right: 10px !important; }
 
         /* NAVEGACIÓN MES */
         .month-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: var(--c-primary); color: white; padding: 15px; border-radius: 12px; }
@@ -47,11 +60,8 @@
             transition: all 0.2s; position: relative; display: flex; flex-direction: column; gap: 5px;
         }
         .calendar-day.today { border: 2px solid var(--c-accent); background: #fff0f8; }
-        .calendar-day:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.05); z-index: 5; }
         .day-number { font-weight: 900; color: #ddd; font-size: 24px; position: absolute; top: 10px; right: 10px; line-height: 1; }
         .calendar-day.today .day-number { color: var(--c-accent); }
-        
-        /* Espaciador para que el número no tape los eventos */
         .spacer-num { height: 25px; } 
 
         /* EVENTOS (CHIPS) */
@@ -65,18 +75,20 @@
         .asig-text { font-weight: 800; display: block; font-size: 12px; margin-bottom: 2px; }
         .alum-text { opacity: 0.9; font-size: 10px; display: block; }
         
-        .event-chip.filtered-out { opacity: 0.1; } 
+        /* Ocultar eventos que no coincidan con el filtro */
+        .event-chip.filtered-out { display: none; } 
         .event-chip.highlight { box-shadow: 0 0 0 2px var(--c-accent); transform: scale(1.05); z-index: 10; }
 
         .loading { text-align: center; padding: 50px; color: #999; font-style: italic; grid-column: 1 / -1; }
 
         @media (max-width: 768px) {
+            .brand h1 { display: none; } 
             .calendar-grid { grid-template-columns: 1fr; }
             .calendar-day { min-height: auto; }
-            .day-name { display: none; }
-            .empty-day { display: none; }
+            .day-name, .empty-day, .spacer-num { display: none; }
             .day-number { position: relative; top: auto; right: auto; text-align: left; margin-bottom: 5px; font-size: 18px; color: var(--c-primary); }
-            .spacer-num { display: none; }
+            .controls { width: 100%; }
+            .select2-container { width: 100% !important; }
         }
     </style>
 </head>
@@ -89,7 +101,9 @@
             <h1>Exámenes</h1>
         </div>
         <div class="controls">
-            <input type="text" id="searchInput" class="search-box" placeholder="Buscar alumno o asignatura..." onkeyup="filtrarEventos()">
+            <select id="alumnoSelect" style="width: 300px;">
+                <option value="todos">👥 Todos los alumnos</option>
+            </select>
         </div>
     </header>
 
@@ -106,40 +120,85 @@
 
 <script>
     // ==========================================
-    // ENLACE CSV DE GOOGLE SHEETS
+    // 🔗 TUS ENLACES CONFIGURADOS
     // ==========================================
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?gid=0&single=true&output=csv"; 
+    const CSV_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?gid=0&single=true&output=csv";
+    const CSV_ALUMNOS  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQZF-mJ-JVs1nimm4uu9UV0ibMcXhhEnZZjbrGLWJO4YspYonC9vu1vIywZQLTxsvgw2GPv7wATNZL/pub?gid=130634044&single=true&output=csv";
     // ==========================================
 
     let examenes = [];
-    let fechaActual = new Date();
+    let alumnosLista = [];
     let mesVisualizado = new Date();
 
-    function init() {
-        Papa.parse(CSV_URL + "&t=" + Date.now(), {
+    $(document).ready(function() {
+        // Inicializar Select2 (Buscador bonito)
+        $('#alumnoSelect').select2({
+            placeholder: "Buscar alumno...",
+            allowClear: false
+        });
+
+        // Al cambiar el alumno en el desplegable, filtrar el calendario
+        $('#alumnoSelect').on('change', function() {
+            renderCalendario();
+        });
+
+        // Empezar la carga de datos
+        initApp();
+    });
+
+    function initApp() {
+        // 1. Cargar Lista de Alumnos
+        Papa.parse(CSV_ALUMNOS + "&t=" + Date.now(), {
             download: true,
-            header: false, 
-            complete: function(results) {
-                procesarDatos(results.data);
-                renderCalendario();
+            header: false,
+            complete: function(res) {
+                // Leer Columna A, quitar vacíos y cabeceras si las hay
+                let raw = res.data.map(r => r[0]).filter(n => n && n.trim() !== "" && n.toLowerCase() !== "nombre");
+                
+                // Quitar duplicados y ordenar A-Z
+                alumnosLista = [...new Set(raw)].sort(); 
+                
+                llenarSelectAlumnos();
+                
+                // 2. Una vez tenemos alumnos, cargamos los exámenes
+                cargarExamenes();
             },
             error: function(err) {
-                console.error("Error CSV:", err);
-                document.getElementById('calendar').innerHTML = "<div class='loading'>Error cargando datos. Revisa que el enlace sea público.</div>";
+                console.error("Error Alumnos:", err);
             }
         });
     }
 
-    function procesarDatos(data) {
-        // Estructura: A=Fecha, B=Asignatura, C=Alumno
-        // Saltamos fila 0 (encabezados)
+    function llenarSelectAlumnos() {
+        const select = $('#alumnoSelect');
+        alumnosLista.forEach(nombre => {
+            select.append(new Option(nombre, nombre));
+        });
+    }
+
+    function cargarExamenes() {
+        Papa.parse(CSV_EXAMENES + "&t=" + Date.now(), {
+            download: true,
+            header: false,
+            complete: function(results) {
+                procesarExamenes(results.data);
+                renderCalendario();
+            },
+            error: function(err) {
+                console.error("Error Exámenes:", err);
+                document.getElementById('calendar').innerHTML = "<div class='loading'>Error cargando datos.</div>";
+            }
+        });
+    }
+
+    function procesarExamenes(data) {
+        // A=Fecha, B=Asignatura, C=Alumno. Saltamos fila 0 headers.
         examenes = data.slice(1).map(row => {
-            // Validamos que haya fecha (columna 0)
             if(!row[0]) return null;
             return {
-                fecha: row[0].trim(),      // Columna A
-                asignatura: (row[1] || "").trim(), // Columna B
-                alumno: (row[2] || "").trim()      // Columna C
+                fecha: row[0].trim(),
+                asignatura: (row[1] || "").trim(),
+                alumno: (row[2] || "").trim()
             };
         }).filter(item => item !== null);
     }
@@ -148,31 +207,32 @@
         const grid = document.getElementById('calendar');
         grid.innerHTML = "";
 
+        // ¿Qué alumno estamos buscando?
+        const alumnoSeleccionado = $('#alumnoSelect').val();
+
         const year = mesVisualizado.getFullYear();
         const month = mesVisualizado.getMonth();
-
-        // Título del mes
+        
+        // Actualizar título mes
         const nombreMes = mesVisualizado.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
         document.getElementById('monthDisplay').textContent = nombreMes;
 
         // Cabeceras días
-        const diasSemana = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-        diasSemana.forEach(dia => {
+        ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].forEach(dia => {
             const div = document.createElement('div');
             div.className = "day-name";
             div.textContent = dia;
             grid.appendChild(div);
         });
 
-        // Cálculos del mes
         const primerDiaMes = new Date(year, month, 1);
         const diasEnMes = new Date(year, month + 1, 0).getDate();
         
-        // Ajuste Lunes (0=Domingo -> queremos 0=Lunes)
+        // Ajuste para empezar en Lunes (0=Domingo -> 6)
         let diaInicioSemana = primerDiaMes.getDay() - 1; 
         if(diaInicioSemana === -1) diaInicioSemana = 6;
 
-        // Huecos vacíos principio
+        // Relleno días vacíos al principio
         for(let i = 0; i < diaInicioSemana; i++) {
             const empty = document.createElement('div');
             empty.className = "calendar-day empty-day";
@@ -181,75 +241,46 @@
             grid.appendChild(empty);
         }
 
-        // Días reales
+        // Pintar días del mes
         const hoyStr = new Date().toISOString().split('T')[0];
 
         for(let dia = 1; dia <= diasEnMes; dia++) {
             const celda = document.createElement('div');
             celda.className = "calendar-day";
             
-            // Construir fecha YYYY-MM-DD para comparar
             const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
-            
             if(fechaStr === hoyStr) celda.classList.add('today');
 
-            // Número y espaciador
+            // Número día
             const num = document.createElement('div');
             num.className = "day-number";
             num.textContent = dia;
             celda.appendChild(num);
             
-            const spacer = document.createElement('div');
-            spacer.className = "spacer-num";
-            celda.appendChild(spacer);
+            celda.appendChild(document.createElement('div')); // Spacer
 
-            // Filtrar eventos de HOY
-            const eventosDia = examenes.filter(ex => ex.fecha === fechaStr);
+            // FILTRAR EVENTOS
+            const eventosDia = examenes.filter(ex => {
+                const coincideFecha = ex.fecha === fechaStr;
+                const coincideAlumno = (alumnoSeleccionado === "todos") || (ex.alumno === alumnoSeleccionado);
+                return coincideFecha && coincideAlumno;
+            });
             
             eventosDia.forEach(ex => {
                 const chip = document.createElement('div');
                 chip.className = "event-chip";
-                // Datos para el buscador
-                chip.setAttribute('data-search', (ex.alumno + " " + ex.asignatura).toLowerCase());
-                
-                chip.innerHTML = `
-                    <span class="asig-text">${ex.asignatura}</span>
-                    <span class="alum-text">${ex.alumno}</span>
-                `;
+                chip.innerHTML = `<span class="asig-text">${ex.asignatura}</span><span class="alum-text">${ex.alumno}</span>`;
                 celda.appendChild(chip);
             });
 
             grid.appendChild(celda);
         }
-        
-        filtrarEventos(); 
     }
 
     function cambiarMes(delta) {
         mesVisualizado.setMonth(mesVisualizado.getMonth() + delta);
         renderCalendario();
     }
-
-    function filtrarEventos() {
-        const texto = document.getElementById('searchInput').value.toLowerCase();
-        const chips = document.querySelectorAll('.event-chip');
-
-        chips.forEach(chip => {
-            const data = chip.getAttribute('data-search');
-            if(data.includes(texto)) {
-                chip.classList.remove('filtered-out');
-                if(texto.length > 0) chip.classList.add('highlight');
-                else chip.classList.remove('highlight');
-            } else {
-                chip.classList.add('filtered-out');
-                chip.classList.remove('highlight');
-            }
-        });
-    }
-
-    // Arrancar
-    init();
-
 </script>
 
 </body>
