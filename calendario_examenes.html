@@ -13,11 +13,10 @@
 
     <style>
         :root { 
-            --c-primary: #243c7a; /* Azul corporativo */
-            --c-accent: #fa65c3;  /* Rosa corporativo */
+            --c-primary: #243c7a; 
+            --c-accent: #fa65c3; 
             --bg-body: #f4f6f9; 
             --bg-card: #ffffff;
-            --c-text-light: #666;
         }
 
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 20px; color: #333; }
@@ -25,22 +24,28 @@
         .container { max-width: 1000px; margin: 0 auto; background: var(--bg-card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(36, 60, 122, 0.08); }
 
         /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; }
         
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 50px; }
         .brand h1 { margin: 0; color: var(--c-primary); font-size: 24px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* CONTROLES Y SELECT */
-        .controls { display: flex; align-items: center; }
+        /* CONTROLES */
+        .controls { display: flex; align-items: center; gap: 10px; }
+        
+        /* Botón Refrescar */
+        .btn-refresh {
+            width: 42px; height: 42px; border-radius: 50%; border: 2px solid #eee; 
+            background: white; color: var(--c-primary); cursor: pointer; display: flex; 
+            align-items: center; justify-content: center; font-size: 20px; transition: all 0.3s;
+        }
+        .btn-refresh:hover { background: var(--c-primary); color: white; border-color: var(--c-primary); transform: rotate(180deg); }
+        .btn-refresh:active { transform: scale(0.9); }
+
+        /* Select2 Custom */
         .select2-container .select2-selection--single {
-            height: 42px !important;
-            border-radius: 50px !important;
-            border: 2px solid #eee !important;
-            padding: 5px 15px;
-            display: flex;
-            align-items: center;
-            background-color: #fafafa;
+            height: 42px !important; border-radius: 50px !important; border: 2px solid #eee !important;
+            padding: 5px 15px; display: flex; align-items: center; background-color: #fafafa;
         }
         .select2-container--default .select2-selection--single .select2-selection__arrow { top: 8px !important; right: 12px !important; }
 
@@ -50,71 +55,50 @@
         .nav-btn:hover { background: var(--c-accent); transform: translateY(-1px); }
         .current-month { font-size: 18px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- ESTILOS TIMELINE (VISTA A) --- */
-        .timeline-container { display: flex; flex-direction: column; gap: 0; }
-
-        .timeline-row { 
-            display: flex; 
-            border-bottom: 1px solid #f0f0f0; 
-            padding: 15px 0; 
-            transition: background 0.2s;
-        }
+        /* TIMELINE */
+        .timeline-container { display: flex; flex-direction: column; min-height: 200px; }
+        
+        .timeline-row { display: flex; border-bottom: 1px solid #f0f0f0; padding: 15px 0; transition: background 0.2s; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
         .timeline-row:last-child { border-bottom: none; }
         .timeline-row:hover { background-color: #fafbff; }
-        
-        /* Columna FECHA (Izquierda) */
+        .timeline-row.today { background-color: #fff5fa; }
+
+        /* Fecha */
         .date-col { 
-            width: 90px; 
-            flex-shrink: 0; 
-            text-align: center; 
-            border-right: 2px solid #f0f0f0; 
-            margin-right: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            width: 90px; flex-shrink: 0; text-align: center; border-right: 2px solid #f0f0f0; margin-right: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
         .date-col .day-num { font-size: 28px; font-weight: 900; color: var(--c-primary); line-height: 1; }
         .date-col .day-name { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; margin-top: 4px; }
-        
-        /* Si es HOY */
         .timeline-row.today .date-col .day-num { color: var(--c-accent); }
         .timeline-row.today .date-col { border-right-color: var(--c-accent); }
-        .timeline-row.today { background-color: #fff5fa; }
 
-        /* Columna EXÁMENES (Derecha) */
-        .exams-col { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 10px; 
-            align-items: center; 
-        }
+        /* Exámenes */
+        .exams-col { flex-grow: 1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 
-        /* La "Píldora" del examen */
         .exam-pill {
-            display: inline-flex;
-            flex-direction: column;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-left: 4px solid var(--c-primary);
-            padding: 6px 12px;
-            border-radius: 8px;
-            min-width: 120px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            transition: all 0.2s;
+            display: inline-flex; flex-direction: column; background: white; border: 1px solid #e0e0e0;
+            border-left: 4px solid var(--c-primary); padding: 6px 12px; border-radius: 8px; min-width: 120px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03); transition: all 0.2s;
         }
         .exam-pill:hover { transform: translateY(-2px); box-shadow: 0 5px 10px rgba(0,0,0,0.08); border-left-color: var(--c-accent); }
         
         .pill-subject { font-size: 11px; font-weight: 800; color: var(--c-accent); text-transform: uppercase; margin-bottom: 2px; }
         .pill-student { font-size: 14px; font-weight: 700; color: #333; }
-
-        /* Mensaje de día vacío */
         .no-exams { color: #ccc; font-size: 13px; font-style: italic; padding: 5px; }
 
-        .loading { text-align: center; padding: 50px; color: #999; font-style: italic; }
+        /* Loading Overlay */
+        .loading-overlay { 
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(255,255,255,0.8); z-index: 100; 
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 20px; font-weight: bold; color: var(--c-primary);
+            backdrop-filter: blur(2px);
+        }
+        .hidden { display: none !important; }
 
-        /* RESPONSIVE */
         @media (max-width: 768px) {
             .brand h1 { display: none; }
             .container { padding: 15px; }
@@ -123,39 +107,45 @@
             .date-col .day-num { font-size: 20px; }
             .exam-pill { width: 100%; flex-direction: row; justify-content: space-between; align-items: center; }
             .pill-subject { margin-bottom: 0; }
-            .select2-container { width: 100% !important; }
+            .controls { flex-grow: 1; justify-content: flex-end; }
+            .select2-container { width: 100% !important; max-width: 250px; }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" style="position: relative;">
+    
+    <div id="loadingOverlay" class="loading-overlay">
+        <span>↻ Actualizando datos...</span>
+    </div>
+
     <header>
         <div class="brand">
             <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE">
             <h1>Exámenes</h1>
         </div>
         <div class="controls">
+            <button class="btn-refresh" onclick="forzarRecarga()" title="Actualizar datos ahora">↻</button>
             <select id="alumnoSelect" style="width: 300px;">
-                <option value="todos">👥 Ver todos los alumnos</option>
+                <option value="todos">👥 Ver todos</option>
             </select>
         </div>
     </header>
 
     <div class="month-nav">
         <button class="nav-btn" onclick="cambiarMes(-1)">&#10094; ANTERIOR</button>
-        <span class="current-month" id="monthDisplay">CARGANDO...</span>
+        <span class="current-month" id="monthDisplay">...</span>
         <button class="nav-btn" onclick="cambiarMes(1)">SIGUIENTE &#10095;</button>
     </div>
 
     <div id="timeline" class="timeline-container">
-        <div class="loading">Cargando datos...</div>
-    </div>
+        </div>
 </div>
 
 <script>
     // ==========================================
-    // 🔗 TUS ENLACES (YA CONFIGURADOS)
+    // 🔗 ENLACES
     // ==========================================
     const CSV_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?gid=0&single=true&output=csv";
     const CSV_ALUMNOS  = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQZF-mJ-JVs1nimm4uu9UV0ibMcXhhEnZZjbrGLWJO4YspYonC9vu1vIywZQLTxsvgw2GPv7wATNZL/pub?gid=130634044&single=true&output=csv";
@@ -168,50 +158,85 @@
     $(document).ready(function() {
         $('#alumnoSelect').select2({ placeholder: "Buscar alumno...", allowClear: false });
         $('#alumnoSelect').on('change', function() { renderTimeline(); });
-        initApp();
+        
+        cargarDatosCompletos(); // Carga inicial
     });
 
-    function initApp() {
-        // 1. Cargar Alumnos
-        Papa.parse(CSV_ALUMNOS + "&t=" + Date.now(), {
-            download: true, header: false,
-            complete: function(res) {
-                let raw = res.data.map(r => r[0]).filter(n => n && n.trim() !== "" && n.toLowerCase() !== "nombre");
-                alumnosLista = [...new Set(raw)].sort(); 
-                llenarSelectAlumnos();
-                // 2. Cargar Exámenes
-                cargarExamenes();
-            }
+    // Función que carga TODO a la vez (Paralelo) para ir más rápido
+    function cargarDatosCompletos() {
+        mostrarCarga(true);
+        
+        // Usamos un número aleatorio para romper la caché del navegador
+        const cacheBuster = Date.now(); 
+
+        // Promesa 1: Alumnos
+        const pAlumnos = new Promise(resolve => {
+            Papa.parse(CSV_ALUMNOS + "&cb=" + cacheBuster, {
+                download: true, header: false,
+                complete: res => resolve(res.data),
+                error: () => resolve([])
+            });
+        });
+
+        // Promesa 2: Exámenes
+        const pExamenes = new Promise(resolve => {
+            Papa.parse(CSV_EXAMENES + "&cb=" + cacheBuster, {
+                download: true, header: false,
+                complete: res => resolve(res.data),
+                error: () => resolve([])
+            });
+        });
+
+        // Esperamos a que las dos terminen
+        Promise.all([pAlumnos, pExamenes]).then(values => {
+            const dataAlumnos = values[0];
+            const dataExamenes = values[1];
+
+            // 1. Procesar Alumnos
+            let rawAlu = dataAlumnos.map(r => r[0]).filter(n => n && n.trim() !== "" && n.toLowerCase() !== "nombre");
+            alumnosLista = [...new Set(rawAlu)].sort();
+            actualizarSelectAlumnos();
+
+            // 2. Procesar Exámenes
+            examenes = dataExamenes.slice(1).map(row => {
+                if(!row[0]) return null;
+                return {
+                    fecha: row[0].trim(),
+                    asignatura: (row[1] || "").trim(),
+                    alumno: (row[2] || "").trim()
+                };
+            }).filter(item => item !== null);
+
+            renderTimeline();
+            mostrarCarga(false);
         });
     }
 
-    function llenarSelectAlumnos() {
+    function forzarRecarga() {
+        cargarDatosCompletos();
+    }
+
+    function mostrarCarga(show) {
+        if(show) $('#loadingOverlay').removeClass('hidden');
+        else $('#loadingOverlay').addClass('hidden');
+    }
+
+    function actualizarSelectAlumnos() {
         const select = $('#alumnoSelect');
-        alumnosLista.forEach(nombre => { select.append(new Option(nombre, nombre)); });
-    }
-
-    function cargarExamenes() {
-        Papa.parse(CSV_EXAMENES + "&t=" + Date.now(), {
-            download: true, header: false,
-            complete: function(results) {
-                procesarExamenes(results.data);
-                renderTimeline();
-            }
+        const valorActual = select.val();
+        select.empty();
+        select.append(new Option("👥 Ver todos los alumnos", "todos"));
+        
+        alumnosLista.forEach(nombre => { 
+            select.append(new Option(nombre, nombre)); 
         });
+
+        // Intentar mantener la selección si existe
+        if(alumnosLista.includes(valorActual)) {
+            select.val(valorActual).trigger('change');
+        }
     }
 
-    function procesarExamenes(data) {
-        examenes = data.slice(1).map(row => {
-            if(!row[0]) return null;
-            return {
-                fecha: row[0].trim(), // YYYY-MM-DD
-                asignatura: (row[1] || "").trim(),
-                alumno: (row[2] || "").trim()
-            };
-        }).filter(item => item !== null);
-    }
-
-    // --- RENDERIZADO TIPO TIMELINE ---
     function renderTimeline() {
         const container = document.getElementById('timeline');
         container.innerHTML = "";
@@ -220,7 +245,6 @@
         const year = mesVisualizado.getFullYear();
         const month = mesVisualizado.getMonth();
         
-        // Actualizar título
         const nombreMes = mesVisualizado.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
         document.getElementById('monthDisplay').textContent = nombreMes;
 
@@ -228,60 +252,57 @@
         const hoyStr = new Date().toISOString().split('T')[0];
         const diasSemana = ["DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"];
 
-        // Bucle día a día
+        let hayEventosEnMes = false;
+
         for(let dia = 1; dia <= diasEnMes; dia++) {
             const fechaObj = new Date(year, month, dia);
             const fechaStr = `${year}-${String(month+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
             const diaSemanaStr = diasSemana[fechaObj.getDay()];
             
-            // FILTRADO
             const eventosDia = examenes.filter(ex => {
                 const coincideFecha = ex.fecha === fechaStr;
                 const coincideAlumno = (alumnoSeleccionado === "todos") || (ex.alumno === alumnoSeleccionado);
                 return coincideFecha && coincideAlumno;
             });
 
-            // Si NO hay exámenes y no estamos filtrando por un alumno específico, 
-            // podemos decidir si mostrar el día vacío o no. 
-            // Para que se vea calendario completo, mostramos todo, pero visualmente tenue.
-            
-            const esHoy = (fechaStr === hoyStr);
-            const row = document.createElement('div');
-            row.className = `timeline-row ${esHoy ? 'today' : ''}`;
+            // Si hay eventos o es el día de hoy, pintamos la fila. 
+            // Si no hay eventos, la ocultamos para limpiar la vista (OPCIONAL, si quieres ver días vacíos, quita el if)
+            if (eventosDia.length > 0 || fechaStr === hoyStr) {
+                hayEventosEnMes = true;
+                const esHoy = (fechaStr === hoyStr);
+                
+                const row = document.createElement('div');
+                row.className = `timeline-row ${esHoy ? 'today' : ''}`;
 
-            // Columna IZQ: Fecha
-            const dateCol = document.createElement('div');
-            dateCol.className = "date-col";
-            dateCol.innerHTML = `
-                <span class="day-num">${dia}</span>
-                <span class="day-name">${diaSemanaStr}</span>
-            `;
-            
-            // Columna DER: Exámenes
-            const examsCol = document.createElement('div');
-            examsCol.className = "exams-col";
+                const dateCol = document.createElement('div');
+                dateCol.className = "date-col";
+                dateCol.innerHTML = `<span class="day-num">${dia}</span><span class="day-name">${diaSemanaStr}</span>`;
+                
+                const examsCol = document.createElement('div');
+                examsCol.className = "exams-col";
 
-            if (eventosDia.length > 0) {
-                eventosDia.forEach(ex => {
-                    const pill = document.createElement('div');
-                    pill.className = "exam-pill";
-                    pill.innerHTML = `
-                        <span class="pill-subject">${ex.asignatura}</span>
-                        <span class="pill-student">${ex.alumno}</span>
-                    `;
-                    examsCol.appendChild(pill);
-                });
-            } else {
-                // Día vacío
-                const noExam = document.createElement('div');
-                noExam.className = "no-exams";
-                noExam.textContent = "-";
-                examsCol.appendChild(noExam);
+                if (eventosDia.length > 0) {
+                    eventosDia.forEach(ex => {
+                        const pill = document.createElement('div');
+                        pill.className = "exam-pill";
+                        pill.innerHTML = `<span class="pill-subject">${ex.asignatura}</span><span class="pill-student">${ex.alumno}</span>`;
+                        examsCol.appendChild(pill);
+                    });
+                } else {
+                    const noExam = document.createElement('div');
+                    noExam.className = "no-exams";
+                    noExam.textContent = "Sin exámenes";
+                    examsCol.appendChild(noExam);
+                }
+
+                row.appendChild(dateCol);
+                row.appendChild(examsCol);
+                container.appendChild(row);
             }
+        }
 
-            row.appendChild(dateCol);
-            row.appendChild(examsCol);
-            container.appendChild(row);
+        if (!hayEventosEnMes) {
+            container.innerHTML = "<div style='text-align:center; padding:40px; color:#999'>No hay exámenes este mes para la selección actual.</div>";
         }
     }
 
