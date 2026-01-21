@@ -33,6 +33,8 @@
             /* Nuevos colores para estado en vivo */
             --live-green: #25D366;
             --soon-yellow: #FFC107;
+            /* Color para Exámenes */
+            --c-examen: #ff4757; 
         }
         
         body { 
@@ -107,6 +109,9 @@
 
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
+        
+        /* --- ESTILOS EXÁMENES --- */
+        .result-card.type-examen { border-left: 6px solid var(--c-examen); background-color: #fff5f6; }
 
         /* --- ESTILOS EN VIVO (NUEVO) --- */
         .result-card.is-live {
@@ -153,6 +158,23 @@
             letter-spacing: 1px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        
+        /* Badge especial examen */
+        .examen-badge-alert {
+            display: block;
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--c-examen);
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
 
         /* Mostrar badges según estado */
         .result-card.is-live .live-badge { display: block; }
@@ -188,6 +210,7 @@
         }
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
+        .bg-examen { background: var(--c-examen); }
 
         /* PANEL ACCIONES */
         #actions-panel { display: none; margin-top: 20px; }
@@ -242,7 +265,7 @@
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
             /* Ocultar efectos live al imprimir */
-            .live-badge, .soon-badge { display: none !important; }
+            .live-badge, .soon-badge, .examen-badge-alert { display: none !important; }
             .result-card.is-live, .result-card.is-soon { border: 1px solid #eee; background: white; box-shadow: none; transform: none; }
         }
     </style>
@@ -290,6 +313,11 @@
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
+    // --- NUEVO: URL DE LA HOJA DE EXÁMENES ---
+    // IMPORTANTE: PEGA AQUÍ EL ENLACE CSV/TSV DE TU HOJA DE EXÁMENES
+    const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/1hkSn0nyirN_VX4Mq1gJgGXPJ5-N1rKA8gY10MqymvG0/edit?gid=0#gid=0"; 
+    // -----------------------------------------
+
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -301,6 +329,7 @@
     let memoriaCache = {}; 
 
     function leerHoja(url) {
+        if (!url || url.includes("PON_AQUI")) return Promise.resolve([]); // Prevenir errores si no hay URL
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { 
@@ -319,7 +348,7 @@
     function esNombreValido(texto) {
         if (!texto || texto.length < 2) return false;
         const t = texto.toUpperCase().trim();
-        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES"];
+        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "FECHA", "ASIGNATURA"];
         if (prohibidos.some(p => t.includes(p))) return false;
         if (/\d/.test(t) && t.includes(':')) return false;
         return true;
@@ -387,11 +416,18 @@
         
         const nombreBuscado = nombre.toLowerCase().trim();
         const dias = Object.keys(urls);
+        
+        // --- MODIFICADO: CARGAMOS TAMBIÉN LOS EXÁMENES ---
         const promesas = dias.map(dia => leerHoja(urls[dia]));
-        const resultados = await Promise.all(promesas);
+        const promesaExamenes = leerHoja(URL_EXAMENES);
+        
+        // Esperamos a todo (horario semanal + exámenes)
+        const [resultados, dataExamenes] = await Promise.all([Promise.all(promesas), promesaExamenes]);
         
         let clasesRaw = [];
+        let examenesEncontrados = [];
 
+        // 1. PROCESAR HORARIO SEMANAL
         dias.forEach((dia, idx) => {
             const data = resultados[idx];
             if(!data) return;
@@ -417,14 +453,53 @@
             });
         });
 
+        // 2. PROCESAR EXÁMENES (NUEVO)
+        if(dataExamenes && dataExamenes.length > 0) {
+            dataExamenes.forEach(row => {
+                // Buscamos si la fila contiene el nombre del alumno
+                // Estructura esperada (flexible): Fecha | Hora | Asignatura | Alumno
+                let filaStr = JSON.stringify(row).toLowerCase();
+                if(filaStr.includes(nombreBuscado)) {
+                    // Intentamos capturar datos básicos: Col 0 Fecha, Col 1 Hora, Col 2 Asignatura
+                    // Si el nombre está en la fila, lo añadimos
+                    examenesEncontrados.push({
+                        fecha: row[0], // Fecha (ej: 20 Nov)
+                        hora: row[1],  // Hora (ej: 16:00)
+                        asignatura: row[2], // Asignatura
+                        tipo: 'examen'
+                    });
+                }
+            });
+        }
+
         document.getElementById('loading-spinner').style.display = 'none';
         
-        if(clasesRaw.length > 0) {
-            const clasesAgrupadas = agruparClases(clasesRaw);
+        if(clasesRaw.length > 0 || examenesEncontrados.length > 0) {
+            
             let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
                         Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${formatName(nombre)}</span>
                         </h3>`;
             
+            // --- A) PINTAR EXÁMENES PRIMERO ---
+            if(examenesEncontrados.length > 0) {
+                examenesEncontrados.forEach(ex => {
+                    html += `
+                    <div class="result-card type-examen">
+                        <div class="examen-badge-alert">🔥 EXAMEN</div>
+                        <div class="card-info">
+                            <span class="card-day">${ex.fecha}</span>
+                            <div class="card-time-wrapper">
+                                <div class="clock-icon" style="border-color:var(--c-examen)"></div>
+                                <span class="card-time" style="color:var(--c-examen)">${ex.hora}</span>
+                            </div>
+                        </div>
+                        <span class="badge bg-examen">${ex.asignatura}</span>
+                    </div>`;
+                });
+            }
+
+            // --- B) PINTAR HORARIO SEMANAL ---
+            const clasesAgrupadas = agruparClases(clasesRaw);
             clasesAgrupadas.forEach(item => {
                 const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
                 
@@ -454,6 +529,7 @@
                         <span class="badge bg-${item.tipo}">${item.materia}</span>
                     </div>`;
             });
+            
             document.getElementById('resultado').innerHTML = html;
 
             if(SISTEMA_DESBLOQUEADO) {
