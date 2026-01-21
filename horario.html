@@ -23,9 +23,9 @@
            🎨 ESTILOS GENERALES
            ========================================= */
         :root { 
-            --c-primary: #243c7a;   /* Azul Corporativo */
-            --c-secondary: #2b94cc; /* Azul Claro */
-            --c-accent: #fa65c3;    /* Rosa Corporativo */
+            --c-primary: #243c7a;   
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3;    
             --bg-body: #f4f6f9;
             --bg-container: #ffffff;
             --whatsapp: #25D366; 
@@ -36,10 +36,9 @@
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
             
-            /* Colores de Notas */
-            --grade-pass: #25D366; /* Verde aprobado */
-            --grade-fail: #dc3545; /* Rojo suspenso */
-            --grade-pending: #a1aab2; /* Gris pendiente */
+            --grade-pass: #25D366; 
+            --grade-fail: #dc3545; 
+            --grade-pending: #a1aab2; 
         }
         
         body { 
@@ -97,7 +96,7 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
-        /* --- ESTILOS PESTAÑAS (BOTONES) --- */
+        /* --- ESTILOS PESTAÑAS --- */
         .tabs-nav {
             display: flex;
             background: #f0f4f8;
@@ -105,7 +104,7 @@
             border-radius: 12px;
             margin-bottom: 25px;
             gap: 5px;
-            overflow-x: auto; /* Por si en móvil no caben */
+            overflow-x: auto; 
         }
 
         .tab-btn {
@@ -116,7 +115,7 @@
             color: #8898aa;
             font-weight: 800;
             font-family: 'Outfit', sans-serif;
-            font-size: 13px; /* Un poco más pequeño para que quepan 3 */
+            font-size: 13px; 
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
@@ -132,10 +131,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        .tab-content {
-            display: none;
-            animation: fadeInTab 0.3s ease-out;
-        }
+        .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
         .tab-content.active { display: block; }
 
         @keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -157,7 +153,6 @@
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
         
-        /* ESTILO TARJETA NOTA */
         .result-card.type-nota { 
             border-left: 6px solid #ccc; 
             background-color: #fff;
@@ -218,25 +213,18 @@
         .bg-ingles { background: var(--c-accent); }
         .bg-examen { background: var(--c-primary); } 
 
-        /* VISUALIZACIÓN DE NOTA */
         .grade-display {
-            font-size: 24px;
-            font-weight: 900;
-            padding: 5px 15px;
-            border-radius: 10px;
-            min-width: 60px;
-            text-align: center;
+            font-size: 24px; font-weight: 900; padding: 5px 15px;
+            border-radius: 10px; min-width: 60px; text-align: center;
         }
         .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
         .grade-fail { color: var(--grade-fail); border: 2px solid var(--grade-fail); background: rgba(220, 53, 69, 0.1); }
-        .grade-pending { font-size: 12px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; }
+        .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; }
 
-        /* PANEL ACCIONES */
         #actions-panel { display: none; margin-top: 20px; }
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
         .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
-        /* DIRECTORIO */
         #directory-area { 
             display: none; margin-top: 15px; text-align: left; max-height: 300px;
             overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; 
@@ -266,10 +254,7 @@
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
-        /* Mensaje vacío */
-        .empty-state {
-            text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px;
-        }
+        .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
 
         @media print {
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
@@ -326,11 +311,8 @@
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
-    // ----------------------------------------------------------------------
     // ✅ URL DE EXÁMENES
-    // ----------------------------------------------------------------------
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
-    // ----------------------------------------------------------------------
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
@@ -414,7 +396,6 @@
         return null;
     }
 
-    // --- FUNCIÓN PARA CAMBIAR PESTAÑA ---
     window.cambiarPestana = function(pestanaId) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -439,7 +420,6 @@
         let examenesFuturos = [];
         let examenesPasados = [];
 
-        // PROCESAR HORARIO
         dias.forEach((dia, idx) => {
             const data = resultadosHorario[idx];
             if(!data) return;
@@ -465,38 +445,40 @@
             });
         });
 
-        // PROCESAR EXÁMENES (FUTUROS Y PASADOS)
+        // ============================================
+        // 🔎 LÓGICA DE EXÁMENES (Corregida A, B, C, D)
+        // ============================================
         const hoy = new Date();
-        // Normalizar "hoy" a medianoche para comparaciones de fecha pura
         hoy.setHours(0,0,0,0);
 
         if(dataExamenes && dataExamenes.length > 0) {
             dataExamenes.forEach(row => {
-                // Buscamos si el nombre del alumno está en la fila
-                if(JSON.stringify(row).toLowerCase().includes(nombreBuscado)) {
+                // Verificar si el nombre está en la Columna C (índice 2)
+                if(row[2] && row[2].toLowerCase().includes(nombreBuscado)) {
                     
-                    let fechaStr = row[0];
+                    let fechaStr = row[0]; // Col A: Fecha
+                    let asigStr = row[1];  // Col B: Asignatura
+                    // Col C: Alumno (Ya validado)
+                    let notaStr = (row[3] || "").trim(); // Col D: Nota (Indice 3)
+
                     let fechaObj = new Date(fechaStr);
-                    
-                    // Aseguramos hora 0 para comparar solo fecha
                     if(!isNaN(fechaObj.getTime())) {
                         fechaObj.setHours(0,0,0,0);
                     } else {
-                        // Si la fecha no es válida, asumimos futuro para que se vea
                         fechaObj = new Date(); 
                         fechaObj.setDate(fechaObj.getDate() + 1);
                     }
 
                     let item = {
-                        fecha: row[0] || "Fecha pte.",
+                        fecha: fechaStr || "Fecha pte.",
                         hora: "Fijado",
-                        asignatura: row[1] || "Examen",
-                        nota: (row[4] || "").trim() // Columna E (Indice 4) para la nota
+                        asignatura: asigStr || "Examen",
+                        nota: notaStr
                     };
 
-                    // Comparación: Si la fecha es menor que hoy (ayer o antes) -> Pasado (Notas)
-                    // Si es hoy o futuro -> Futuro (Exámenes)
-                    if (fechaObj < hoy) {
+                    // REGLA: Si tiene nota O la fecha ya pasó -> Notas
+                    // Si no tiene nota Y es fecha futura -> Exámenes
+                    if (item.nota !== "" || fechaObj < hoy) {
                         examenesPasados.push(item);
                     } else {
                         examenesFuturos.push(item);
@@ -509,7 +491,6 @@
         
         if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0) {
             
-            // --- 1. PESTAÑA HORARIO ---
             let htmlHorario = "";
             if(clasesRaw.length > 0) {
                 const clasesAgrupadas = agruparClases(clasesRaw);
@@ -544,7 +525,6 @@
                 htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`;
             }
 
-            // --- 2. PESTAÑA EXÁMENES (FUTUROS) ---
             let htmlExamenes = "";
             if(examenesFuturos.length > 0) {
                 examenesFuturos.forEach(ex => {
@@ -565,25 +545,18 @@
                 htmlExamenes = `<div class="empty-state">No hay exámenes próximos.</div>`;
             }
 
-            // --- 3. PESTAÑA NOTAS (PASADOS) ---
             let htmlNotas = "";
             if(examenesPasados.length > 0) {
-                // Ordenar más recientes primero
                 examenesPasados.reverse();
-                
                 examenesPasados.forEach(ex => {
-                    // Lógica de nota
-                    // CAMBIO: TEXTO MODIFICADO
                     let visualNota = `<span class="grade-pending">Pendiente de saber nota</span>`;
                     
                     if(ex.nota) {
-                        // Intentar parsear número (comas o puntos)
                         let numNota = parseFloat(ex.nota.replace(',','.'));
                         if(!isNaN(numNota)) {
                             let claseNota = numNota >= 5 ? 'grade-pass' : 'grade-fail';
                             visualNota = `<span class="grade-display ${claseNota}">${ex.nota}</span>`;
                         } else {
-                            // Si es texto (ej: "Apto")
                             visualNota = `<span class="grade-display grade-pass" style="font-size:14px">${ex.nota}</span>`;
                         }
                     }
@@ -603,7 +576,6 @@
                 htmlNotas = `<div class="empty-state">No hay registro de exámenes pasados.</div>`;
             }
 
-            // --- MONTAR HTML FINAL ---
             let badgeExamen = examenesFuturos.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-aviso); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesFuturos.length}</span>` : "";
 
             let htmlFinal = `
