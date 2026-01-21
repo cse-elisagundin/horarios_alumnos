@@ -30,10 +30,8 @@
             --bg-container: #ffffff;
             --whatsapp: #25D366; 
             --error: #dc3545;
-            /* Nuevos colores para estado en vivo */
             --live-green: #25D366;
             --soon-yellow: #FFC107;
-            /* Color para Exámenes */
             --c-examen: #ff4757; 
         }
         
@@ -92,6 +90,59 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
+        /* --- NUEVO: ESTILOS PESTAÑAS (BOTONES) --- */
+        .tabs-nav {
+            display: flex;
+            background: #f0f4f8;
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            gap: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: #8898aa;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--c-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeInTab 0.3s ease-out;
+        }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .tab-badge {
+            background-color: var(--c-examen);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+        }
+
         /* RESULTADOS */
         #resultado { margin-top: 35px; text-align: left; }
         
@@ -101,19 +152,15 @@
             border: 1px solid rgba(0,0,0,0.05);
             display: flex; justify-content: space-between; align-items: center;
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
-            animation: cardFade 0.4s ease-out;
-            position: relative; /* Para posicionar elementos live */
+            position: relative; 
             transition: all 0.3s ease;
         }
-        @keyframes cardFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
-        
-        /* --- ESTILOS EXÁMENES --- */
         .result-card.type-examen { border-left: 6px solid var(--c-examen); background-color: #fff5f6; }
 
-        /* --- ESTILOS EN VIVO (NUEVO) --- */
+        /* ESTADOS EN VIVO */
         .result-card.is-live {
             border: 2px solid var(--live-green);
             background-color: #f0fff4;
@@ -126,47 +173,11 @@
             background-color: #fffdf5;
         }
 
-        .live-badge {
-            display: none; /* Oculto por defecto */
-            position: absolute;
-            top: -10px;
-            left: 20px;
-            background: var(--live-green);
-            color: white;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            animation: pulse 1.5s infinite;
-        }
-        
-        .soon-badge {
+        .live-badge, .soon-badge, .examen-badge-alert {
             display: none;
             position: absolute;
             top: -10px;
             left: 20px;
-            background: var(--soon-yellow);
-            color: #555;
-            font-size: 10px;
-            font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        
-        /* Badge especial examen */
-        .examen-badge-alert {
-            display: block;
-            position: absolute;
-            top: -10px;
-            right: 20px;
-            background: var(--c-examen);
-            color: white;
             font-size: 10px;
             font-weight: 800;
             padding: 4px 10px;
@@ -176,7 +187,13 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Mostrar badges según estado */
+        .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
+        .soon-badge { background: var(--soon-yellow); color: #555; }
+        .examen-badge-alert { 
+            display: block; left: auto; right: 20px; 
+            background: var(--c-examen); color: white; 
+        }
+
         .result-card.is-live .live-badge { display: block; }
         .result-card.is-soon .soon-badge { display: block; }
 
@@ -185,7 +202,6 @@
             70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
         }
-        /* --------------------------- */
 
         .card-info { display: flex; flex-direction: column; gap: 2px; }
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
@@ -193,8 +209,7 @@
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
         .clock-icon {
             width: 18px; height: 18px; border: 2px solid var(--c-primary);
-            border-radius: 50%; position: relative;
-            flex-shrink: 0;
+            border-radius: 50%; position: relative; flex-shrink: 0;
         }
         .clock-icon::after {
             content: ''; position: absolute; width: 6px; height: 2px;
@@ -214,24 +229,15 @@
 
         /* PANEL ACCIONES */
         #actions-panel { display: none; margin-top: 20px; }
-        
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
         .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
-        /* DIRECTORIO HÍBRIDO */
+        /* DIRECTORIO */
         #directory-area { 
-            display: none; 
-            margin-top: 15px; 
-            text-align: left; 
-            max-height: 300px;
-            overflow-y: auto; 
-            border: 1px solid #e1e9f0; 
-            padding: 15px; 
-            border-radius: 12px; 
-            background: #fafbfc;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+            display: none; margin-top: 15px; text-align: left; max-height: 300px;
+            overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; 
+            border-radius: 12px; background: #fafbfc; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
         }
-
         .student-chip { 
             display: inline-block; background: white; border: 1px solid var(--c-secondary); 
             color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; 
@@ -243,30 +249,34 @@
         .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; width: 100%; }
         .btn-reset:hover { opacity: 1; color: var(--c-accent); }
 
-        /* WHATSAPP FIXED */
         .whatsapp-float {
             position: fixed; bottom: 25px; right: 25px; background-color: #25D366; 
             color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
             display: flex; align-items: center; gap: 10px; 
-            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4);
-            z-index: 9999; font-weight: bold; font-size: 15px; transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); z-index: 9999; 
+            font-weight: bold; font-size: 15px; transition: all 0.3s ease;
         }
         .whatsapp-float:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
         .whatsapp-icon { width: 22px; height: 22px; fill: white; }
 
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* Mensaje vacío */
+        .empty-state {
+            text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px;
+        }
 
-        /* IMPRESIÓN */
         @media print {
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
             .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio { display: none !important; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
-            /* Ocultar efectos live al imprimir */
             .live-badge, .soon-badge, .examen-badge-alert { display: none !important; }
             .result-card.is-live, .result-card.is-soon { border: 1px solid #eee; background: white; box-shadow: none; transform: none; }
+            /* Al imprimir mostrar todo */
+            .tab-content { display: block !important; }
         }
     </style>
 </head>
@@ -283,12 +293,12 @@
         <div id="status-indicator">Consulta tu planificación semanal</div>
         <input type="text" id="magicInput" placeholder="Contraseña..." autocomplete="off">
         <button id="btnBuscar" class="btn-main">ENTRAR</button>
-        
         <div id="directory-area"></div>
     </div>
 
     <div id="loading-spinner" class="spinner"></div>
     <p id="error-msg" style="display:none; color:var(--error); font-weight:bold; margin-top:20px;"></p>
+    
     <div id="resultado"></div>
     
     <div id="actions-panel">
@@ -313,10 +323,11 @@
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     
-    // --- NUEVO: URL DE LA HOJA DE EXÁMENES ---
-    // IMPORTANTE: PEGA AQUÍ EL ENLACE CSV/TSV DE TU HOJA DE EXÁMENES
+    // ----------------------------------------------------------------------
+    // ✅ URL DE EXÁMENES (YA ACTUALIZADA)
+    // ----------------------------------------------------------------------
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
-    // -----------------------------------------
+    // ----------------------------------------------------------------------
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
@@ -329,7 +340,7 @@
     let memoriaCache = {}; 
 
     function leerHoja(url) {
-        if (!url || url.includes("PON_AQUI")) return Promise.resolve([]); // Prevenir errores si no hay URL
+        if (!url || url.includes("PON_AQUI")) return Promise.resolve([]);
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { 
@@ -389,25 +400,27 @@
         return grupos;
     }
 
-    // --- LÓGICA DE ESTADO EN VIVO ---
     function getEstadoClase(diaClase, startMins, endMins) {
         const now = new Date();
         const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         const hoy = diasSemana[now.getDay()];
         const nowMins = now.getHours() * 60 + now.getMinutes();
-
-        // 1. Verificar si es el mismo día
         if (diaClase !== hoy) return null;
-
-        // 2. ¿Está ocurriendo ahora?
         if (nowMins >= startMins && nowMins < endMins) return 'live';
-
-        // 3. ¿Empieza pronto? (Margen de 30 min)
         if (nowMins >= (startMins - 30) && nowMins < startMins) return 'soon';
-
         return null;
     }
-    // --------------------------------
+
+    // --- NUEVO: FUNCIÓN PARA CAMBIAR PESTAÑA ---
+    window.cambiarPestana = function(pestanaId) {
+        // 1. Quitar clase active de todos los botones y contenidos
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        // 2. Activar el seleccionado
+        document.getElementById('btn-tab-' + pestanaId).classList.add('active');
+        document.getElementById('content-' + pestanaId).classList.add('active');
+    };
 
     async function ejecutarBusqueda(nombre) {
         document.getElementById('search-area').style.display = 'none'; 
@@ -417,19 +430,17 @@
         const nombreBuscado = nombre.toLowerCase().trim();
         const dias = Object.keys(urls);
         
-        // --- MODIFICADO: CARGAMOS TAMBIÉN LOS EXÁMENES ---
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const promesasHorario = dias.map(dia => leerHoja(urls[dia]));
         const promesaExamenes = leerHoja(URL_EXAMENES);
         
-        // Esperamos a todo (horario semanal + exámenes)
-        const [resultados, dataExamenes] = await Promise.all([Promise.all(promesas), promesaExamenes]);
+        const [resultadosHorario, dataExamenes] = await Promise.all([Promise.all(promesasHorario), promesaExamenes]);
         
         let clasesRaw = [];
         let examenesEncontrados = [];
 
-        // 1. PROCESAR HORARIO SEMANAL
+        // PROCESAR HORARIO
         dias.forEach((dia, idx) => {
-            const data = resultados[idx];
+            const data = resultadosHorario[idx];
             if(!data) return;
             data.forEach(row => {
                 let horaApoyo = (row[0] || "").trim().substring(0,5);
@@ -453,20 +464,14 @@
             });
         });
 
-        // 2. PROCESAR EXÁMENES (NUEVO)
+        // PROCESAR EXÁMENES
         if(dataExamenes && dataExamenes.length > 0) {
             dataExamenes.forEach(row => {
-                // Buscamos si la fila contiene el nombre del alumno
-                // Estructura esperada (flexible): Fecha | Hora | Asignatura | Alumno
-                let filaStr = JSON.stringify(row).toLowerCase();
-                if(filaStr.includes(nombreBuscado)) {
-                    // Intentamos capturar datos básicos: Col 0 Fecha, Col 1 Hora, Col 2 Asignatura
-                    // Si el nombre está en la fila, lo añadimos
+                if(JSON.stringify(row).toLowerCase().includes(nombreBuscado)) {
                     examenesEncontrados.push({
-                        fecha: row[0], // Fecha (ej: 20 Nov)
-                        hora: row[1],  // Hora (ej: 16:00)
-                        asignatura: row[2], // Asignatura
-                        tipo: 'examen'
+                        fecha: row[0] || "Fecha pte.",
+                        hora: "Fijado",
+                        asignatura: row[1] || "Examen"
                     });
                 }
             });
@@ -476,67 +481,89 @@
         
         if(clasesRaw.length > 0 || examenesEncontrados.length > 0) {
             
-            let html = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
-                        Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${formatName(nombre)}</span>
-                        </h3>`;
+            // --- CONSTRUIR HTML CON PESTAÑAS ---
             
-            // --- A) PINTAR EXÁMENES PRIMERO ---
+            // 1. Contenido Pestaña Exámenes
+            let htmlExamenes = "";
             if(examenesEncontrados.length > 0) {
                 examenesEncontrados.forEach(ex => {
-                    html += `
+                    htmlExamenes += `
                     <div class="result-card type-examen">
                         <div class="examen-badge-alert">🔥 EXAMEN</div>
                         <div class="card-info">
                             <span class="card-day">${ex.fecha}</span>
                             <div class="card-time-wrapper">
                                 <div class="clock-icon" style="border-color:var(--c-examen)"></div>
-                                <span class="card-time" style="color:var(--c-examen)">${ex.hora}</span>
+                                <span class="card-time" style="color:var(--c-examen); font-size:18px;">${ex.hora}</span>
                             </div>
                         </div>
                         <span class="badge bg-examen">${ex.asignatura}</span>
                     </div>`;
                 });
-            }
-
-            // --- B) PINTAR HORARIO SEMANAL ---
-            const clasesAgrupadas = agruparClases(clasesRaw);
-            clasesAgrupadas.forEach(item => {
-                const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
-                
-                // Calculamos estado en vivo
-                const estado = getEstadoClase(item.dia, item.startMins, item.endMins);
-                let extraClass = "";
-                let badgeLive = "";
-
-                if (estado === 'live') {
-                    extraClass = "is-live";
-                    badgeLive = `<div class="live-badge">🔴 EN CLASE AHORA</div>`;
-                } else if (estado === 'soon') {
-                    extraClass = "is-soon";
-                    badgeLive = `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>`;
-                }
-
-                html += `
-                    <div class="result-card type-${item.tipo} ${extraClass}">
-                        ${badgeLive}
-                        <div class="card-info">
-                            <span class="card-day">${item.dia}</span>
-                            <div class="card-time-wrapper">
-                                <div class="clock-icon"></div>
-                                <span class="card-time">${horarioTexto}</span>
-                            </div>
-                        </div>
-                        <span class="badge bg-${item.tipo}">${item.materia}</span>
-                    </div>`;
-            });
-            
-            document.getElementById('resultado').innerHTML = html;
-
-            if(SISTEMA_DESBLOQUEADO) {
-                document.getElementById('actions-panel').style.display = 'block';
             } else {
-                document.getElementById('actions-panel').style.display = 'none';
+                htmlExamenes = `<div class="empty-state">No hay exámenes programados próximamente.</div>`;
             }
+
+            // 2. Contenido Pestaña Horario
+            let htmlHorario = "";
+            if(clasesRaw.length > 0) {
+                const clasesAgrupadas = agruparClases(clasesRaw);
+                clasesAgrupadas.forEach(item => {
+                    const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
+                    const estado = getEstadoClase(item.dia, item.startMins, item.endMins);
+                    let extraClass = "";
+                    let badgeLive = "";
+
+                    if (estado === 'live') {
+                        extraClass = "is-live";
+                        badgeLive = `<div class="live-badge">🔴 EN CLASE AHORA</div>`;
+                    } else if (estado === 'soon') {
+                        extraClass = "is-soon";
+                        badgeLive = `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>`;
+                    }
+
+                    htmlHorario += `
+                        <div class="result-card type-${item.tipo} ${extraClass}">
+                            ${badgeLive}
+                            <div class="card-info">
+                                <span class="card-day">${item.dia}</span>
+                                <div class="card-time-wrapper">
+                                    <div class="clock-icon"></div>
+                                    <span class="card-time">${horarioTexto}</span>
+                                </div>
+                            </div>
+                            <span class="badge bg-${item.tipo}">${item.materia}</span>
+                        </div>`;
+                });
+            } else {
+                htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`;
+            }
+
+            // 3. Montar la estructura final
+            let badgeExamen = examenesEncontrados.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-examen); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesEncontrados.length}</span>` : "";
+
+            let htmlFinal = `
+                <h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
+                    Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${formatName(nombre)}</span>
+                </h3>
+
+                <div class="tabs-nav">
+                    <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
+                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">🔥 EXÁMENES ${badgeExamen}</button>
+                </div>
+
+                <div id="content-horario" class="tab-content active">
+                    ${htmlHorario}
+                </div>
+
+                <div id="content-examenes" class="tab-content">
+                    ${htmlExamenes}
+                </div>
+            `;
+            
+            document.getElementById('resultado').innerHTML = htmlFinal;
+
+            if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
 
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
@@ -642,9 +669,7 @@
             ejecutarBusqueda(p); 
         }
 
-        // Auto-refresco de estado visual cada minuto por si el padre deja la pantalla abierta
         setInterval(() => {
-            // Solo si hay resultados visibles y no estamos en modo búsqueda
             if(document.getElementById('resultado').innerHTML !== '') {
                 const nombreActual = document.getElementById('magicInput').value;
                 if(nombreActual) ejecutarBusqueda(nombreActual);
@@ -654,4 +679,3 @@
 </script>
 </body>
 </html>
-
