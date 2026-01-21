@@ -23,16 +23,20 @@
            🎨 ESTILOS GENERALES
            ========================================= */
         :root { 
-            --c-primary: #243c7a;   
-            --c-secondary: #2b94cc; 
-            --c-accent: #fa65c3;    
+            --c-primary: #243c7a;   /* Azul Corporativo */
+            --c-secondary: #2b94cc; /* Azul Claro */
+            --c-accent: #fa65c3;    /* Rosa Corporativo */
             --bg-body: #f4f6f9;
             --bg-container: #ffffff;
             --whatsapp: #25D366; 
             --error: #dc3545;
             --live-green: #25D366;
             --soon-yellow: #FFC107;
-            --c-examen: #ff4757; 
+            
+            /* CAMBIO: Color Examen ahora es el Azul Corporativo (antes rojo) */
+            --c-examen: #243c7a; 
+            /* Color específico para el globito de aviso (Rojo discreto) */
+            --c-aviso: #dc3545;
         }
         
         body { 
@@ -146,7 +150,12 @@
 
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
-        .result-card.type-examen { border-left: 6px solid var(--c-examen); background-color: #fff5f6; }
+        
+        /* ESTILO EXAMEN CORPORATIVO */
+        .result-card.type-examen { 
+            border-left: 6px solid var(--c-primary); /* Azul CSE */
+            background-color: #f7f9fc; /* Fondo muy suave azulado */
+        }
 
         /* ESTADOS EN VIVO */
         .result-card.is-live {
@@ -178,10 +187,10 @@
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
         
-        /* 📌 CHINCHETA AQUÍ */
+        /* ETIQUETA SUPERIOR EXAMEN (Azul corporativo) */
         .examen-badge-alert { 
             display: block; left: auto; right: 20px; 
-            background: var(--c-examen); color: white; 
+            background: var(--c-primary); color: white; 
         }
 
         .result-card.is-live .live-badge { display: block; }
@@ -215,7 +224,8 @@
         }
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
-        .bg-examen { background: var(--c-examen); }
+        /* Badge asignatura examen: Azul corporativo */
+        .bg-examen { background: var(--c-primary); } 
 
         /* PANEL ACCIONES */
         #actions-panel { display: none; margin-top: 20px; }
@@ -314,7 +324,7 @@
     let SISTEMA_DESBLOQUEADO = false; 
     
     // ----------------------------------------------------------------------
-    // ✅ URL DE EXÁMENES (YA CONFIGURADA)
+    // ✅ URL DE EXÁMENES
     // ----------------------------------------------------------------------
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
     // ----------------------------------------------------------------------
@@ -479,11 +489,12 @@
                 examenesEncontrados.forEach(ex => {
                     htmlExamenes += `
                     <div class="result-card type-examen">
-                        <div class="examen-badge-alert">📌 EXAMEN</div> <div class="card-info">
+                        <div class="examen-badge-alert">📌 EXAMEN</div>
+                        <div class="card-info">
                             <span class="card-day">${ex.fecha}</span>
                             <div class="card-time-wrapper">
-                                <div class="clock-icon" style="border-color:var(--c-examen)"></div>
-                                <span class="card-time" style="color:var(--c-examen); font-size:18px;">${ex.hora}</span>
+                                <div class="clock-icon" style="border-color:var(--c-primary)"></div>
+                                <span class="card-time" style="color:var(--c-primary); font-size:18px;">${ex.hora}</span>
                             </div>
                         </div>
                         <span class="badge bg-examen">📝 ${ex.asignatura}</span>
@@ -529,7 +540,8 @@
             }
 
             // 3. Montar la estructura final
-            let badgeExamen = examenesEncontrados.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-examen); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesEncontrados.length}</span>` : "";
+            // NOTA: El globito se mantiene rojo (--c-aviso) para que se vea, pero lo demás es corporativo
+            let badgeExamen = examenesEncontrados.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-aviso); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesEncontrados.length}</span>` : "";
 
             let htmlFinal = `
                 <h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
@@ -538,7 +550,7 @@
 
                 <div class="tabs-nav">
                     <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
-                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">🔥 EXÁMENES ${badgeExamen}</button>
+                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${badgeExamen}</button>
                 </div>
 
                 <div id="content-horario" class="tab-content active">
