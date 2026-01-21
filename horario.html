@@ -90,7 +90,7 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
-        /* --- NUEVO: ESTILOS PESTAÑAS (BOTONES) --- */
+        /* --- ESTILOS PESTAÑAS (BOTONES) --- */
         .tabs-nav {
             display: flex;
             background: #f0f4f8;
@@ -130,18 +130,6 @@
         .tab-content.active { display: block; }
 
         @keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .tab-badge {
-            background-color: var(--c-examen);
-            color: white;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 10px;
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            display: none;
-        }
 
         /* RESULTADOS */
         #resultado { margin-top: 35px; text-align: left; }
@@ -189,6 +177,8 @@
 
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
+        
+        /* 📌 CHINCHETA AQUÍ */
         .examen-badge-alert { 
             display: block; left: auto; right: 20px; 
             background: var(--c-examen); color: white; 
@@ -324,7 +314,7 @@
     let SISTEMA_DESBLOQUEADO = false; 
     
     // ----------------------------------------------------------------------
-    // ✅ URL DE EXÁMENES (YA ACTUALIZADA)
+    // ✅ URL DE EXÁMENES (YA CONFIGURADA)
     // ----------------------------------------------------------------------
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
     // ----------------------------------------------------------------------
@@ -411,7 +401,7 @@
         return null;
     }
 
-    // --- NUEVO: FUNCIÓN PARA CAMBIAR PESTAÑA ---
+    // --- FUNCIÓN PARA CAMBIAR PESTAÑA ---
     window.cambiarPestana = function(pestanaId) {
         // 1. Quitar clase active de todos los botones y contenidos
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -489,15 +479,14 @@
                 examenesEncontrados.forEach(ex => {
                     htmlExamenes += `
                     <div class="result-card type-examen">
-                        <div class="examen-badge-alert">🔥 EXAMEN</div>
-                        <div class="card-info">
+                        <div class="examen-badge-alert">📌 EXAMEN</div> <div class="card-info">
                             <span class="card-day">${ex.fecha}</span>
                             <div class="card-time-wrapper">
                                 <div class="clock-icon" style="border-color:var(--c-examen)"></div>
                                 <span class="card-time" style="color:var(--c-examen); font-size:18px;">${ex.hora}</span>
                             </div>
                         </div>
-                        <span class="badge bg-examen">${ex.asignatura}</span>
+                        <span class="badge bg-examen">📝 ${ex.asignatura}</span>
                     </div>`;
                 });
             } else {
