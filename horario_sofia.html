@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Horario Sofía Gundín (Inglés)</title>
     
     <script>const ICON_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";</script>
@@ -24,9 +24,20 @@
             --c-primary: #fa65c3; 
             --c-secondary: #243c7a; 
             --bg-body: #f4f6f9; --bg-container: #ffffff;
+            --safe-area-bottom: env(safe-area-inset-bottom);
         }
         
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background-color: var(--bg-body); 
+            margin: 0; 
+            padding: 15px; 
+            /* Espacio extra abajo para que el contenido no quede oculto tras la barra fija en móvil */
+            padding-bottom: 90px; 
+            color: #333; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
         .container { width: 95%; max-width: 1200px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(250, 101, 195, 0.15); }
 
         .web-brand { text-align: center; margin-bottom: 20px; }
@@ -36,9 +47,84 @@
         .teacher-title { text-align: center; color: var(--c-secondary); font-size: 1.5rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
         .teacher-subtitle { text-align: center; color: var(--c-primary); font-size: 1rem; font-weight: 600; margin-bottom: 20px; }
 
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; justify-content: center; -webkit-overflow-scrolling: touch; }
-        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; transition: all 0.2s; }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); transform: scale(1.05); }
+        /* --- NAVEGACIÓN (MODIFICADA PARA OPCIÓN 2) --- */
+        .days-nav { 
+            display: flex; 
+            gap: 5px; 
+            margin-bottom: 20px; 
+            justify-content: center; 
+            /* Por defecto estilo escritorio */
+        }
+        
+        .nav-btn { 
+            padding: 8px 14px; 
+            border: 1px solid #eee; 
+            background: white; 
+            color: #666; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 13px; 
+            white-space: nowrap; 
+            transition: all 0.2s; 
+        }
+        
+        .nav-btn.active { 
+            background: var(--c-primary); 
+            color: white; 
+            border-color: var(--c-primary); 
+            transform: scale(1.05); 
+        }
+        
+        .nav-text-desktop { display: inline; }
+        .nav-text-mobile { display: none; }
+
+        /* --- ESTILOS MÓVIL (Sticky Bottom Bar) --- */
+        @media (max-width: 768px) {
+            .days-nav {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                background: white;
+                margin: 0;
+                padding: 10px 5px;
+                padding-bottom: calc(10px + var(--safe-area-bottom)); /* Ajuste para iPhone X+ */
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+                border-top: 1px solid #eee;
+                z-index: 1000;
+                gap: 5px;
+                justify-content: space-evenly;
+                align-items: center;
+            }
+
+            .nav-btn {
+                flex: 1;
+                border: none;
+                border-radius: 8px;
+                background: transparent;
+                padding: 10px 0;
+                font-size: 14px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            .nav-btn.active {
+                background: #fff0f8; /* Fondo muy suave en activo */
+                color: var(--c-primary);
+                transform: none; /* Quitamos el zoom en móvil */
+                box-shadow: none;
+            }
+
+            /* Mostrar texto corto en móvil */
+            .nav-text-desktop { display: none; }
+            .nav-text-mobile { display: inline; font-weight: 800; }
+            
+            /* Ajuste del contenedor principal en móvil */
+            .container { padding: 15px 10px; width: 100%; box-sizing: border-box; }
+        }
 
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
@@ -48,12 +134,7 @@
         @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
 
         /* --- ESTILOS DE COLUMNAS Y TARJETAS --- */
-        .columns-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-        }
+        .columns-wrapper { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
 
         .subject-column {
             flex: 1;
@@ -93,46 +174,14 @@
             position: relative;
         }
         
-        .student-card:hover {
-            transform: translateX(3px);
-            background-color: #ffe6f5; 
-        }
+        .student-card:hover { transform: translateX(3px); background-color: #ffe6f5; }
 
-        .student-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .student-name {
-            font-weight: 700;
-            color: var(--c-secondary);
-            font-size: 15px;
-            text-transform: capitalize;
-            margin-bottom: 4px;
-        }
-
-        .time-badge {
-            background: white;
-            color: var(--c-primary);
-            border: 1px solid var(--c-primary);
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 700;
-            display: inline-block;
-            white-space: nowrap;
-        }
-
-        .empty-msg {
-            text-align: center;
-            color: #aaa;
-            font-size: 13px;
-            padding: 20px;
-            font-style: italic;
-        }
+        .student-info { display: flex; flex-direction: column; }
+        .student-name { font-weight: 700; color: var(--c-secondary); font-size: 15px; text-transform: capitalize; margin-bottom: 4px; }
+        .time-badge { background: white; color: var(--c-primary); border: 1px solid var(--c-primary); padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; display: inline-block; white-space: nowrap; }
+        .empty-msg { text-align: center; color: #aaa; font-size: 13px; padding: 20px; font-style: italic; }
 
         @media (max-width: 768px) {
-            .container { padding: 15px 10px; width: 100%; box-sizing: border-box; }
             .subject-column { min-width: 100%; margin-bottom: 10px; }
         }
     </style>
@@ -149,6 +198,7 @@
     <div class="teacher-subtitle">Departamento de Inglés</div>
 
     <div class="days-nav" id="days-buttons"></div>
+    
     <div id="loading" class="spinner"></div>
     <div id="schedule-container"></div>
 </div>
@@ -160,6 +210,11 @@
         "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
         "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
+    };
+
+    // Mapeo para nombres cortos en móvil
+    const mobileLabels = {
+        "Lunes": "L", "Martes": "M", "Miércoles": "X", "Jueves": "J", "Viernes": "V", "Todo": "ALL"
     };
 
     function leerHoja(url) {
@@ -176,61 +231,63 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
-        btnContainer.innerHTML = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('') + `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+        // Generamos los botones con doble etiqueta (Escritorio / Móvil)
+        let htmlBotones = dias.map(d => {
+            return `<button class="nav-btn" onclick="cambiarDia('${d}')">
+                        <span class="nav-text-desktop">${d.toUpperCase()}</span>
+                        <span class="nav-text-mobile">${mobileLabels[d]}</span>
+                    </button>`;
+        }).join('');
+
+        // Añadimos el botón VER TODO
+        htmlBotones += `<button class="nav-btn" onclick="cambiarDia('Todo')">
+                            <span class="nav-text-desktop">VER TODO</span>
+                            <span class="nav-text-mobile">ALL</span>
+                        </button>`;
+
+        btnContainer.innerHTML = htmlBotones;
         container.innerHTML = ""; 
 
         dias.forEach((dia, index) => {
             const data = todosLosDatos[index]; 
             const headers = data[0] || [];
             
-            // Estructura principal del día
             let html = `<div id="view-${dia}" class="planning-container">
                         <div class="columns-wrapper">`;
 
-            // Iteramos solo las columnas de inglés (8 a 13)
             for(let k = 8; k <= 13; k++) {
                 let headerName = (headers[k] || "Sin título").replace("ING", "").trim();
                 let columnCards = "";
                 let hasStudents = false;
-
-                // Variables para detectar bloques
                 let currentName = "";
                 let startTime = "";
                 
-                // Recorremos las filas buscando bloques de alumnos
                 for(let i = 1; i < data.length; i++) {
                     let row = data[i];
                     if(!row) continue;
 
-                    let time = row[7]; // Columna H (Hora)
+                    let time = row[7]; 
                     let cellName = (row[k] || "").trim();
 
-                    // Detectamos cambios
                     if (cellName !== currentName) {
-                        // 1. Cerrar el bloque anterior si existía
                         if (currentName !== "") {
                             let endTime = time || "Fin"; 
                             columnCards += crearTarjeta(currentName, startTime, endTime);
                             hasStudents = true;
                         }
-
-                        // 2. Iniciar nuevo bloque si la celda no está vacía
                         if (cellName !== "") {
                             currentName = cellName;
                             startTime = time;
                         } else {
-                            currentName = ""; // Espacio vacío
+                            currentName = ""; 
                         }
                     }
                 }
-
-                // Si al acabar el bucle todavía hay un alumno abierto
                 if (currentName !== "") {
                     columnCards += crearTarjeta(currentName, startTime, "Fin del día");
                     hasStudents = true;
                 }
 
-                // Renderizar columna
                 html += `<div class="subject-column">
                             <div class="column-header">${headerName}</div>
                             ${hasStudents ? columnCards : '<div class="empty-msg">Sin alumnos</div>'}
@@ -246,7 +303,6 @@
     }
 
     function crearTarjeta(nombre, inicio, fin) {
-        // Limpiamos el nombre para la tarjeta
         let nombreDisplay = nombre.split(" ")[0] + (nombre.split(" ").length > 1 ? " " + nombre.split(" ")[1].charAt(0) + "." : "");
         
         return `<div class="student-card" title="${nombre}">
@@ -263,7 +319,14 @@
             else div.classList.toggle('visible', div.id === `view-${dia}`);
         });
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.classList.toggle('active', (btn.innerText.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && btn.innerText === 'VER TODO'));
+            // Lógica para marcar activo tanto si pulsas texto móvil como escritorio
+            let btnTextDesktop = btn.querySelector('.nav-text-desktop').innerText;
+            let btnTextMobile = btn.querySelector('.nav-text-mobile').innerText;
+            
+            let isActive = (btnTextDesktop === dia.toUpperCase()) || 
+                           (dia === 'Todo' && btnTextDesktop === 'VER TODO');
+                           
+            btn.classList.toggle('active', isActive);
         });
     }
 
