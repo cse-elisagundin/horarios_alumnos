@@ -1,4 +1,4 @@
-d<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -122,16 +122,15 @@ d<!DOCTYPE html>
                         html += `<td></td>`;
                     } else {
                         let span = 1;
-                        let esMateriaEspecial = headers[k].toUpperCase().includes("ING") || headers[k].toUpperCase().includes("APOYO");
 
+                        // LÓGICA SIMPLIFICADA: 
+                        // Solo agrupamos si el nombre en la siguiente fila es idéntico y no está vacío.
                         for (let j = i + 1; j < data.length; j++) {
                             let nextName = (data[j][k] || "").trim();
                             if (nextName === full && full !== "") {
                                 span++;
                             } else {
-                                if (esMateriaEspecial && nextName === "") {
-                                    span++;
-                                }
+                                // Si cambia el nombre o está vacío, cortamos aquí.
                                 break;
                             }
                         }
