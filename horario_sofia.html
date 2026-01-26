@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES (Misma estética de marca) --- */
+        /* --- ESTILOS GENERALES --- */
         :root { 
             --c-primary: #fa65c3; 
             --c-secondary: #243c7a; 
@@ -37,7 +37,7 @@
         .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); animation: bar-pulse 1.5s infinite ease-in-out; }
         @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
 
-        /* --- NUEVOS ESTILOS PARA LA VISTA POR COLUMNAS (Estética "Card") --- */
+        /* --- ESTILOS DE COLUMNAS Y TARJETAS --- */
         .columns-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -47,7 +47,7 @@
 
         .subject-column {
             flex: 1;
-            min-width: 280px; /* Ancho mínimo para móviles */
+            min-width: 280px; 
             max-width: 400px;
             background: #fff;
             border: 1px solid #eee;
@@ -70,7 +70,7 @@
         }
 
         .student-card {
-            background: #fff0f8; /* Mismo rosa muy claro de antes */
+            background: #fff0f8; 
             border-left: 5px solid var(--c-primary);
             padding: 12px 15px;
             margin-bottom: 10px;
@@ -79,10 +79,13 @@
             justify-content: space-between;
             align-items: center;
             transition: transform 0.2s;
+            cursor: help; /* Cambia el cursor para indicar que hay más info (el nombre completo) */
+            position: relative;
         }
         
         .student-card:hover {
             transform: translateX(3px);
+            background-color: #ffe6f5; /* Un pelín más oscuro al pasar el ratón */
         }
 
         .student-info {
@@ -196,7 +199,6 @@
                     if (cellName !== currentName) {
                         // 1. Cerrar el bloque anterior si existía
                         if (currentName !== "") {
-                            // La hora de fin es la hora de la fila actual (donde ya no está el alumno)
                             let endTime = time || "Fin"; 
                             columnCards += crearTarjeta(currentName, startTime, endTime);
                             hasStudents = true;
@@ -212,7 +214,7 @@
                     }
                 }
 
-                // Si al acabar el bucle (final de la hoja) todavía hay un alumno abierto
+                // Si al acabar el bucle todavía hay un alumno abierto
                 if (currentName !== "") {
                     columnCards += crearTarjeta(currentName, startTime, "Fin del día");
                     hasStudents = true;
@@ -225,7 +227,7 @@
                          </div>`;
             }
 
-            html += `</div></div>`; // Cierre columns-wrapper y planning-container
+            html += `</div></div>`; 
             container.innerHTML += html;
         });
 
@@ -234,10 +236,11 @@
     }
 
     function crearTarjeta(nombre, inicio, fin) {
-        // Limpiamos el nombre (tomar solo el primer nombre para brevedad, opcional)
+        // Limpiamos el nombre para la tarjeta (Nombre + Inicial)
         let nombreDisplay = nombre.split(" ")[0] + (nombre.split(" ").length > 1 ? " " + nombre.split(" ")[1].charAt(0) + "." : "");
         
-        return `<div class="student-card">
+        // MODIFICACIÓN: Añadimos title="${nombre}" para que al pasar el ratón se vea el nombre completo
+        return `<div class="student-card" title="${nombre}">
                     <div class="student-info">
                         <span class="student-name">${nombreDisplay}</span>
                     </div>
