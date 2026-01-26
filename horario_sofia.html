@@ -9,7 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES --- */
+        /* --- ESTILOS GENERALES (Misma estética de marca) --- */
         :root { 
             --c-primary: #fa65c3; 
             --c-secondary: #243c7a; 
@@ -30,27 +30,97 @@
         .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; transition: all 0.2s; }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); transform: scale(1.05); }
 
-        .planning-container { display: none; animation: fadeIn 0.4s ease; overflow-x: auto; }
+        .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; margin-top: 10px; min-width: 600px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; color: #444; }
-        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 12px 5px; border-color: rgba(255,255,255,0.2); position: sticky; top: 0; z-index: 10; }
-        
-        .col-hora { width: 60px; background: #fafafa; font-weight: 800; color: var(--c-secondary); border-right: 2px solid #eee; position: sticky; left: 0; z-index: 20; }
-        th.col-hora { background: var(--c-primary); color: white; z-index: 30; border-right: 2px solid rgba(255,255,255,0.3); }
-
-        /* Celda de alumno con fondo suave */
-        .student-cell { background-color: #fff0f8; transition: all 0.2s; }
-        .name-tag { display: inline-block; font-weight: 700; color: var(--c-secondary); text-transform: capitalize; font-size: 14px; }
 
         .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); animation: bar-pulse 1.5s infinite ease-in-out; }
         @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
 
+        /* --- NUEVOS ESTILOS PARA LA VISTA POR COLUMNAS (Estética "Card") --- */
+        .columns-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .subject-column {
+            flex: 1;
+            min-width: 280px; /* Ancho mínimo para móviles */
+            max-width: 400px;
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .column-header {
+            background: var(--c-secondary);
+            color: white;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .student-card {
+            background: #fff0f8; /* Mismo rosa muy claro de antes */
+            border-left: 5px solid var(--c-primary);
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .student-card:hover {
+            transform: translateX(3px);
+        }
+
+        .student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .student-name {
+            font-weight: 700;
+            color: var(--c-secondary);
+            font-size: 15px;
+            text-transform: capitalize;
+            margin-bottom: 4px;
+        }
+
+        .time-badge {
+            background: white;
+            color: var(--c-primary);
+            border: 1px solid var(--c-primary);
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #aaa;
+            font-size: 13px;
+            padding: 20px;
+            font-style: italic;
+        }
+
         @media (max-width: 768px) {
-            .container { padding: 15px 10px; width: 100%; }
-            .name-tag { font-size: 13px; }
+            .container { padding: 15px 10px; width: 100%; box-sizing: border-box; }
+            .subject-column { min-width: 100%; margin-bottom: 10px; }
         }
     </style>
 </head>
@@ -99,61 +169,80 @@
         dias.forEach((dia, index) => {
             const data = todosLosDatos[index]; 
             const headers = data[0] || [];
-            const h_hora = headers[7] || "H"; 
-            const h_alum = headers.slice(8, 14);
-
+            
+            // Estructura principal del día
             let html = `<div id="view-${dia}" class="planning-container">
-                <table>
-                    <thead><tr><th class="col-hora">${h_hora}</th>${h_alum.map(h => `<th>${h.replace('ING', '').trim()}</th>`).join('')}</tr></thead>
-                    <tbody>`;
+                        <div class="columns-wrapper">`;
 
-            let skipFlags = new Array(15).fill(0);
+            // Iteramos solo las columnas de inglés (8 a 13)
+            for(let k = 8; k <= 13; k++) {
+                let headerName = (headers[k] || "Sin título").replace("ING", "").trim();
+                let columnCards = "";
+                let hasStudents = false;
 
-            for(let i = 1; i < data.length; i++) {
-                const row = data[i];
-                if(!row || !row[7]) continue;
-                html += `<tr><td class="col-hora">${row[7]}</td>`;
+                // Variables para detectar bloques
+                let currentName = "";
+                let startTime = "";
+                
+                // Recorremos las filas buscando bloques de alumnos
+                for(let i = 1; i < data.length; i++) {
+                    let row = data[i];
+                    if(!row) continue;
 
-                for(let k = 8; k <= 13; k++) {
-                    if (skipFlags[k] > 0) { skipFlags[k]--; continue; }
+                    let time = row[7]; // Columna H (Hora)
+                    let cellName = (row[k] || "").trim();
 
-                    let full = (row[k] || "").trim();
-                    if (!full) {
-                        html += `<td></td>`;
-                    } else {
-                        let span = 1;
-
-                        // LÓGICA SIMPLIFICADA: 
-                        // Solo agrupamos si el nombre en la siguiente fila es idéntico y no está vacío.
-                        for (let j = i + 1; j < data.length; j++) {
-                            let nextName = (data[j][k] || "").trim();
-                            if (nextName === full && full !== "") {
-                                span++;
-                            } else {
-                                // Si cambia el nombre o está vacío, cortamos aquí.
-                                break;
-                            }
+                    // Detectamos cambios
+                    if (cellName !== currentName) {
+                        // 1. Cerrar el bloque anterior si existía
+                        if (currentName !== "") {
+                            // La hora de fin es la hora de la fila actual (donde ya no está el alumno)
+                            let endTime = time || "Fin"; 
+                            columnCards += crearTarjeta(currentName, startTime, endTime);
+                            hasStudents = true;
                         }
 
-                        // --- CAMBIO ESTÉTICO SOLICITADO ---
-                        // Si i === 1 (primera fila de datos, 15:30), el borde superior es 'none'
-                        const borderTopStyle = (i === 1) ? 'none' : '2px solid var(--c-primary)';
-                        
-                        const estiloBorde = `border-top: ${borderTopStyle}; border-bottom: 2px solid var(--c-primary); border-left: 1px solid #eee; border-right: 1px solid #eee;`;
-                        
-                        html += `<td rowspan="${span}" class="student-cell" style="${estiloBorde}">
-                                    <span class="name-tag">${full.split(" ")[0]}</span>
-                                 </td>`;
-                        skipFlags[k] = span - 1;
+                        // 2. Iniciar nuevo bloque si la celda no está vacía
+                        if (cellName !== "") {
+                            currentName = cellName;
+                            startTime = time;
+                        } else {
+                            currentName = ""; // Espacio vacío
+                        }
                     }
                 }
-                html += `</tr>`;
+
+                // Si al acabar el bucle (final de la hoja) todavía hay un alumno abierto
+                if (currentName !== "") {
+                    columnCards += crearTarjeta(currentName, startTime, "Fin del día");
+                    hasStudents = true;
+                }
+
+                // Renderizar columna
+                html += `<div class="subject-column">
+                            <div class="column-header">${headerName}</div>
+                            ${hasStudents ? columnCards : '<div class="empty-msg">Sin alumnos</div>'}
+                         </div>`;
             }
-            container.innerHTML += html + `</tbody></table></div>`;
+
+            html += `</div></div>`; // Cierre columns-wrapper y planning-container
+            container.innerHTML += html;
         });
 
         document.getElementById('loading').style.display = 'none';
         cambiarDia(dias.includes(new Date().toLocaleDateString('es-ES', {weekday: 'long'})) ? new Date().toLocaleDateString('es-ES', {weekday: 'long'}) : "Lunes");
+    }
+
+    function crearTarjeta(nombre, inicio, fin) {
+        // Limpiamos el nombre (tomar solo el primer nombre para brevedad, opcional)
+        let nombreDisplay = nombre.split(" ")[0] + (nombre.split(" ").length > 1 ? " " + nombre.split(" ")[1].charAt(0) + "." : "");
+        
+        return `<div class="student-card">
+                    <div class="student-info">
+                        <span class="student-name">${nombreDisplay}</span>
+                    </div>
+                    <span class="time-badge">${inicio} - ${fin}</span>
+                </div>`;
     }
 
     function cambiarDia(dia) {
