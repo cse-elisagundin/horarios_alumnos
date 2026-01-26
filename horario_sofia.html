@@ -5,7 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Horario Sofía Gundín (Inglés)</title>
     
+    <script>const ICON_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";</script>
+
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="icon" sizes="192x192" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
@@ -79,13 +89,13 @@
             justify-content: space-between;
             align-items: center;
             transition: transform 0.2s;
-            cursor: help; /* Cambia el cursor para indicar que hay más info (el nombre completo) */
+            cursor: help; 
             position: relative;
         }
         
         .student-card:hover {
             transform: translateX(3px);
-            background-color: #ffe6f5; /* Un pelín más oscuro al pasar el ratón */
+            background-color: #ffe6f5; 
         }
 
         .student-info {
@@ -236,10 +246,9 @@
     }
 
     function crearTarjeta(nombre, inicio, fin) {
-        // Limpiamos el nombre para la tarjeta (Nombre + Inicial)
+        // Limpiamos el nombre para la tarjeta
         let nombreDisplay = nombre.split(" ")[0] + (nombre.split(" ").length > 1 ? " " + nombre.split(" ")[1].charAt(0) + "." : "");
         
-        // MODIFICACIÓN: Añadimos title="${nombre}" para que al pasar el ratón se vea el nombre completo
         return `<div class="student-card" title="${nombre}">
                     <div class="student-info">
                         <span class="student-name">${nombreDisplay}</span>
