@@ -42,7 +42,7 @@
         .teacher-title { text-align: center; color: var(--c-secondary); font-size: 1.5rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
         .teacher-subtitle { text-align: center; color: var(--c-primary); font-size: 1rem; font-weight: 600; margin-bottom: 10px; }
 
-        /* --- NUEVO: TÍTULO DINÁMICO DEL DÍA --- */
+        /* --- TÍTULO DINÁMICO DEL DÍA --- */
         .active-day-title {
             text-align: center;
             font-size: 1.4rem;
@@ -54,6 +54,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             animation: fadeIn 0.3s ease;
+            min-height: 32px; /* Mantiene el espacio aunque esté vacío al cargar */
         }
 
         /* Títulos internos para cuando se ve "TODO" */
@@ -133,7 +134,7 @@
     <div class="teacher-title">Sofía Gundín</div>
     <div class="teacher-subtitle">Departamento de Inglés</div>
 
-    <div id="day-display" class="active-day-title">CARGANDO...</div>
+    <div id="day-display" class="active-day-title"></div>
 
     <div class="days-nav" id="days-buttons"></div>
     
@@ -152,7 +153,7 @@
 
     const mobileLabels = { "Lunes": "L", "Martes": "M", "Miércoles": "X", "Jueves": "J", "Viernes": "V", "Todo": "ALL" };
     
-    // Array ordenado para saber qué día va antes y cual después en el Swipe
+    // Array ordenado para swipe
     const ordenDias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Todo"];
 
     function leerHoja(url) {
@@ -186,7 +187,6 @@
             const data = todosLosDatos[index]; 
             const headers = data[0] || [];
             
-            // Añadimos un h2 oculto dentro que solo se ve en vista "Todo"
             let html = `<div id="view-${dia}" class="planning-container">
                         <div class="section-day-title">${dia}</div>
                         <div class="columns-wrapper">`;
@@ -240,7 +240,7 @@
         let diaInicial = dias.includes(hoy) ? hoy : "Lunes";
         
         cambiarDia(diaInicial);
-        initSwipe(); // Iniciamos los eventos de gesto
+        initSwipe(); 
     }
 
     function crearTarjeta(nombre, inicio, fin) {
@@ -256,7 +256,7 @@
     function cambiarDia(dia) {
         diaActualGlobal = dia;
         
-        // Actualizamos título principal
+        // Actualizamos título
         const tituloEl = document.getElementById('day-display');
         if (dia === 'Todo') {
             tituloEl.innerText = "VISTA SEMANAL COMPLETA";
@@ -268,7 +268,7 @@
         document.querySelectorAll('.planning-container').forEach(div => {
             if(dia === 'Todo') {
                 div.classList.add('visible');
-                div.classList.add('visible-in-all'); // Activa los subtítulos Lunes, Martes...
+                div.classList.add('visible-in-all'); 
             } else {
                 div.classList.remove('visible-in-all');
                 div.classList.toggle('visible', div.id === `view-${dia}`);
@@ -283,7 +283,7 @@
         });
     }
 
-    // --- LÓGICA DE SWIPE (Gestos) ---
+    // --- SWIPE LOGIC ---
     function initSwipe() {
         let touchstartX = 0;
         let touchendX = 0;
@@ -299,19 +299,18 @@
         }, {passive: true});
 
         function handleGesture() {
-            // Umbral de sensibilidad (50px para considerar que es un swipe intencional)
             if (Math.abs(touchendX - touchstartX) < 50) return;
 
             let currentIndex = ordenDias.indexOf(diaActualGlobal);
             if (currentIndex === -1) currentIndex = 0;
 
             if (touchendX < touchstartX) {
-                // Deslizar izquierda -> SIGUIENTE DÍA
+                // Siguiente
                 if (currentIndex < ordenDias.length - 1) {
                     cambiarDia(ordenDias[currentIndex + 1]);
                 }
             } else {
-                // Deslizar derecha -> DÍA ANTERIOR
+                // Anterior
                 if (currentIndex > 0) {
                     cambiarDia(ordenDias[currentIndex - 1]);
                 }
