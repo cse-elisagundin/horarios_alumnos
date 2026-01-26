@@ -6,13 +6,8 @@
     <title>Horario Sofía Gundín (Inglés)</title>
     
     <script>const ICON_URL = "https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true";</script>
-
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-    <link rel="apple-touch-icon" sizes="152x152" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-    <link rel="apple-touch-icon" sizes="180x180" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-    <link rel="icon" sizes="192x192" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -32,163 +27,104 @@
             background-color: var(--bg-body); 
             margin: 0; 
             padding: 15px; 
-            /* Espacio extra abajo para que el contenido no quede oculto tras la barra fija en móvil */
-            padding-bottom: 90px; 
+            padding-bottom: 90px; /* Espacio para el menú inferior */
             color: #333; 
             -webkit-tap-highlight-color: transparent; 
+            overscroll-behavior-y: none; /* Evita rebote en móvil */
         }
         
-        .container { width: 95%; max-width: 1200px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(250, 101, 195, 0.15); }
+        .container { width: 95%; max-width: 1200px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(250, 101, 195, 0.15); min-height: 300px; }
 
         .web-brand { text-align: center; margin-bottom: 20px; }
         .web-logo-img { height: 70px; object-fit: contain; }
         .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); border-radius: 10px; }
 
         .teacher-title { text-align: center; color: var(--c-secondary); font-size: 1.5rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
-        .teacher-subtitle { text-align: center; color: var(--c-primary); font-size: 1rem; font-weight: 600; margin-bottom: 20px; }
+        .teacher-subtitle { text-align: center; color: var(--c-primary); font-size: 1rem; font-weight: 600; margin-bottom: 10px; }
 
-        /* --- NAVEGACIÓN (MODIFICADA PARA OPCIÓN 2) --- */
+        /* --- NUEVO: TÍTULO DINÁMICO DEL DÍA --- */
+        .active-day-title {
+            text-align: center;
+            font-size: 1.4rem;
+            color: var(--c-secondary);
+            font-weight: 900;
+            margin: 15px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* Títulos internos para cuando se ve "TODO" */
+        .section-day-title {
+            display: none; /* Oculto por defecto, se muestra solo en vista TODO */
+            width: 100%;
+            text-align: left;
+            font-size: 1.1rem;
+            color: var(--c-primary);
+            font-weight: 800;
+            margin: 20px 0 10px 0;
+            padding-left: 10px;
+            border-left: 4px solid var(--c-secondary);
+            text-transform: uppercase;
+        }
+
+        /* --- NAVEGACIÓN INFERIOR --- */
         .days-nav { 
-            display: flex; 
-            gap: 5px; 
-            margin-bottom: 20px; 
-            justify-content: center; 
-            /* Por defecto estilo escritorio */
+            display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; 
         }
         
         .nav-btn { 
-            padding: 8px 14px; 
-            border: 1px solid #eee; 
-            background: white; 
-            color: #666; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: 13px; 
-            white-space: nowrap; 
-            transition: all 0.2s; 
+            padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; 
         }
         
         .nav-btn.active { 
-            background: var(--c-primary); 
-            color: white; 
-            border-color: var(--c-primary); 
-            transform: scale(1.05); 
+            background: var(--c-primary); color: white; border-color: var(--c-primary); transform: scale(1.05); 
         }
         
         .nav-text-desktop { display: inline; }
         .nav-text-mobile { display: none; }
 
-        /* --- ESTILOS MÓVIL (Sticky Bottom Bar) --- */
         @media (max-width: 768px) {
             .days-nav {
-                position: fixed;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                background: white;
-                margin: 0;
-                padding: 10px 5px;
-                padding-bottom: calc(10px + var(--safe-area-bottom)); /* Ajuste para iPhone X+ */
-                box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-                border-top: 1px solid #eee;
-                z-index: 1000;
-                gap: 5px;
-                justify-content: space-evenly;
-                align-items: center;
+                position: fixed; bottom: 0; left: 0; width: 100%; background: white; margin: 0;
+                padding: 10px 5px; padding-bottom: calc(10px + var(--safe-area-bottom));
+                box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-top: 1px solid #eee; z-index: 1000;
+                gap: 5px; justify-content: space-evenly; align-items: center;
             }
-
-            .nav-btn {
-                flex: 1;
-                border: none;
-                border-radius: 8px;
-                background: transparent;
-                padding: 10px 0;
-                font-size: 14px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
-            }
-
-            .nav-btn.active {
-                background: #fff0f8; /* Fondo muy suave en activo */
-                color: var(--c-primary);
-                transform: none; /* Quitamos el zoom en móvil */
-                box-shadow: none;
-            }
-
-            /* Mostrar texto corto en móvil */
+            .nav-btn { flex: 1; border: none; background: transparent; padding: 10px 0; display: flex; flex-direction: column; align-items: center; }
+            .nav-btn.active { background: #fff0f8; color: var(--c-primary); transform: none; box-shadow: none; }
             .nav-text-desktop { display: none; }
             .nav-text-mobile { display: inline; font-weight: 800; }
-            
-            /* Ajuste del contenedor principal en móvil */
             .container { padding: 15px 10px; width: 100%; box-sizing: border-box; }
         }
 
         .planning-container { display: none; animation: fadeIn 0.4s ease; }
         .planning-container.visible { display: block; }
+        
+        /* En vista TODO, mostramos los títulos de sección */
+        .planning-container.visible-in-all .section-day-title { display: block; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* --- TARJETAS --- */
+        .columns-wrapper { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
+        .subject-column { flex: 1; min-width: 280px; max-width: 400px; background: #fff; border: 1px solid #eee; border-radius: 15px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .column-header { background: var(--c-secondary); color: white; padding: 10px; border-radius: 10px; text-align: center; font-weight: 700; text-transform: uppercase; margin-bottom: 15px; font-size: 0.9rem; }
+        .student-card { background: #fff0f8; border-left: 5px solid var(--c-primary); padding: 12px 15px; margin-bottom: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: help; }
+        .student-name { font-weight: 700; color: var(--c-secondary); font-size: 15px; text-transform: capitalize; }
+        .time-badge { background: white; color: var(--c-primary); border: 1px solid var(--c-primary); padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+        .empty-msg { text-align: center; color: #aaa; font-size: 13px; padding: 20px; font-style: italic; }
         .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); animation: bar-pulse 1.5s infinite ease-in-out; }
         @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
 
-        /* --- ESTILOS DE COLUMNAS Y TARJETAS --- */
-        .columns-wrapper { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; }
-
-        .subject-column {
-            flex: 1;
-            min-width: 280px; 
-            max-width: 400px;
-            background: #fff;
-            border: 1px solid #eee;
-            border-radius: 15px;
-            padding: 15px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        }
-
-        .column-header {
-            background: var(--c-secondary);
-            color: white;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-        }
-
-        .student-card {
-            background: #fff0f8; 
-            border-left: 5px solid var(--c-primary);
-            padding: 12px 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: transform 0.2s;
-            cursor: help; 
-            position: relative;
-        }
-        
-        .student-card:hover { transform: translateX(3px); background-color: #ffe6f5; }
-
-        .student-info { display: flex; flex-direction: column; }
-        .student-name { font-weight: 700; color: var(--c-secondary); font-size: 15px; text-transform: capitalize; margin-bottom: 4px; }
-        .time-badge { background: white; color: var(--c-primary); border: 1px solid var(--c-primary); padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; display: inline-block; white-space: nowrap; }
-        .empty-msg { text-align: center; color: #aaa; font-size: 13px; padding: 20px; font-style: italic; }
-
-        @media (max-width: 768px) {
-            .subject-column { min-width: 100%; margin-bottom: 10px; }
-        }
+        @media (max-width: 768px) { .subject-column { min-width: 100%; margin-bottom: 10px; } }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="main-container">
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
         <div class="brand-line"></div>
@@ -196,6 +132,8 @@
 
     <div class="teacher-title">Sofía Gundín</div>
     <div class="teacher-subtitle">Departamento de Inglés</div>
+
+    <div id="day-display" class="active-day-title">CARGANDO...</div>
 
     <div class="days-nav" id="days-buttons"></div>
     
@@ -212,10 +150,10 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
 
-    // Mapeo para nombres cortos en móvil
-    const mobileLabels = {
-        "Lunes": "L", "Martes": "M", "Miércoles": "X", "Jueves": "J", "Viernes": "V", "Todo": "ALL"
-    };
+    const mobileLabels = { "Lunes": "L", "Martes": "M", "Miércoles": "X", "Jueves": "J", "Viernes": "V", "Todo": "ALL" };
+    
+    // Array ordenado para saber qué día va antes y cual después en el Swipe
+    const ordenDias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Todo"];
 
     function leerHoja(url) {
         return new Promise(resolve => {
@@ -231,19 +169,15 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
-        // Generamos los botones con doble etiqueta (Escritorio / Móvil)
-        let htmlBotones = dias.map(d => {
-            return `<button class="nav-btn" onclick="cambiarDia('${d}')">
-                        <span class="nav-text-desktop">${d.toUpperCase()}</span>
-                        <span class="nav-text-mobile">${mobileLabels[d]}</span>
-                    </button>`;
-        }).join('');
-
-        // Añadimos el botón VER TODO
-        htmlBotones += `<button class="nav-btn" onclick="cambiarDia('Todo')">
-                            <span class="nav-text-desktop">VER TODO</span>
-                            <span class="nav-text-mobile">ALL</span>
-                        </button>`;
+        let htmlBotones = dias.map(d => `
+            <button class="nav-btn" onclick="cambiarDia('${d}')">
+                <span class="nav-text-desktop">${d.toUpperCase()}</span>
+                <span class="nav-text-mobile">${mobileLabels[d]}</span>
+            </button>`).join('') + 
+            `<button class="nav-btn" onclick="cambiarDia('Todo')">
+                <span class="nav-text-desktop">VER TODO</span>
+                <span class="nav-text-mobile">ALL</span>
+            </button>`;
 
         btnContainer.innerHTML = htmlBotones;
         container.innerHTML = ""; 
@@ -252,7 +186,9 @@
             const data = todosLosDatos[index]; 
             const headers = data[0] || [];
             
+            // Añadimos un h2 oculto dentro que solo se ve en vista "Todo"
             let html = `<div id="view-${dia}" class="planning-container">
+                        <div class="section-day-title">${dia}</div>
                         <div class="columns-wrapper">`;
 
             for(let k = 8; k <= 13; k++) {
@@ -265,7 +201,6 @@
                 for(let i = 1; i < data.length; i++) {
                     let row = data[i];
                     if(!row) continue;
-
                     let time = row[7]; 
                     let cellName = (row[k] || "").trim();
 
@@ -293,41 +228,95 @@
                             ${hasStudents ? columnCards : '<div class="empty-msg">Sin alumnos</div>'}
                          </div>`;
             }
-
             html += `</div></div>`; 
             container.innerHTML += html;
         });
 
         document.getElementById('loading').style.display = 'none';
-        cambiarDia(dias.includes(new Date().toLocaleDateString('es-ES', {weekday: 'long'})) ? new Date().toLocaleDateString('es-ES', {weekday: 'long'}) : "Lunes");
+        
+        // Detectar día actual
+        let hoy = new Date().toLocaleDateString('es-ES', {weekday: 'long'});
+        hoy = hoy.charAt(0).toUpperCase() + hoy.slice(1);
+        let diaInicial = dias.includes(hoy) ? hoy : "Lunes";
+        
+        cambiarDia(diaInicial);
+        initSwipe(); // Iniciamos los eventos de gesto
     }
 
     function crearTarjeta(nombre, inicio, fin) {
         let nombreDisplay = nombre.split(" ")[0] + (nombre.split(" ").length > 1 ? " " + nombre.split(" ")[1].charAt(0) + "." : "");
-        
         return `<div class="student-card" title="${nombre}">
-                    <div class="student-info">
-                        <span class="student-name">${nombreDisplay}</span>
-                    </div>
+                    <div class="student-info"><span class="student-name">${nombreDisplay}</span></div>
                     <span class="time-badge">${inicio} - ${fin}</span>
                 </div>`;
     }
 
+    let diaActualGlobal = "";
+
     function cambiarDia(dia) {
+        diaActualGlobal = dia;
+        
+        // Actualizamos título principal
+        const tituloEl = document.getElementById('day-display');
+        if (dia === 'Todo') {
+            tituloEl.innerText = "VISTA SEMANAL COMPLETA";
+        } else {
+            tituloEl.innerText = dia.toUpperCase();
+        }
+
+        // Mostramos/Ocultamos contenedores
         document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else div.classList.toggle('visible', div.id === `view-${dia}`);
+            if(dia === 'Todo') {
+                div.classList.add('visible');
+                div.classList.add('visible-in-all'); // Activa los subtítulos Lunes, Martes...
+            } else {
+                div.classList.remove('visible-in-all');
+                div.classList.toggle('visible', div.id === `view-${dia}`);
+            }
         });
+
+        // Actualizamos botones
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            // Lógica para marcar activo tanto si pulsas texto móvil como escritorio
             let btnTextDesktop = btn.querySelector('.nav-text-desktop').innerText;
-            let btnTextMobile = btn.querySelector('.nav-text-mobile').innerText;
-            
-            let isActive = (btnTextDesktop === dia.toUpperCase()) || 
-                           (dia === 'Todo' && btnTextDesktop === 'VER TODO');
-                           
+            let isActive = (btnTextDesktop === dia.toUpperCase()) || (dia === 'Todo' && btnTextDesktop === 'VER TODO');
             btn.classList.toggle('active', isActive);
         });
+    }
+
+    // --- LÓGICA DE SWIPE (Gestos) ---
+    function initSwipe() {
+        let touchstartX = 0;
+        let touchendX = 0;
+        const zonaTactil = document.getElementById('main-container');
+
+        zonaTactil.addEventListener('touchstart', function(event) {
+            touchstartX = event.changedTouches[0].screenX;
+        }, {passive: true});
+
+        zonaTactil.addEventListener('touchend', function(event) {
+            touchendX = event.changedTouches[0].screenX;
+            handleGesture();
+        }, {passive: true});
+
+        function handleGesture() {
+            // Umbral de sensibilidad (50px para considerar que es un swipe intencional)
+            if (Math.abs(touchendX - touchstartX) < 50) return;
+
+            let currentIndex = ordenDias.indexOf(diaActualGlobal);
+            if (currentIndex === -1) currentIndex = 0;
+
+            if (touchendX < touchstartX) {
+                // Deslizar izquierda -> SIGUIENTE DÍA
+                if (currentIndex < ordenDias.length - 1) {
+                    cambiarDia(ordenDias[currentIndex + 1]);
+                }
+            } else {
+                // Deslizar derecha -> DÍA ANTERIOR
+                if (currentIndex > 0) {
+                    cambiarDia(ordenDias[currentIndex - 1]);
+                }
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', cargarHorarioSofia);
