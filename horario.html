@@ -56,6 +56,7 @@
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
             width: 100%; max-width: 500px; text-align: center;
             position: relative; z-index: 1;
+            overflow: hidden; /* Para que el banner no se salga de los bordes redondeados */
         }
 
         /* HEADER */
@@ -79,27 +80,23 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- TABLÓN DE ANUNCIOS (NUEVO) --- */
-        #notice-board {
-            display: none; /* Se oculta por defecto */
-            background-color: #fff3cd;
+        /* --- NUEVO BANNER HORIZONTAL (AVISOS) --- */
+        .full-width-banner {
+            background-color: #fff3cd; /* Fondo amarillo aviso */
             color: #856404;
-            border: 2px solid #ffeeba;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            text-align: left;
-            animation: slideDown 0.5s ease-out;
-            position: relative;
+            border-bottom: 2px solid #ffeeba;
+            padding: 15px 20px;
+            margin: 0 -40px 25px -40px; /* Truco para que ocupe todo el ancho ignorando el padding del contenedor */
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
-        
-        #notice-board strong { display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; color: #d39e00; }
-        #notice-text { font-weight: 600; font-size: 15px; line-height: 1.4; }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .banner-icon { font-size: 20px; }
+        .banner-text { font-weight: 700; }
 
         /* INPUTS & BOTONES */
         input { 
@@ -118,26 +115,6 @@
             text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
-
-        /* --- DASHBOARD RESUMEN --- */
-        .dashboard-summary {
-            display: flex; gap: 10px; margin-bottom: 25px;
-            justify-content: center;
-        }
-        .dash-card {
-            flex: 1; padding: 15px; border-radius: 12px;
-            text-align: center; color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            cursor: pointer; transition: transform 0.2s;
-        }
-        .dash-card:active { transform: scale(0.95); }
-        .dash-card.d-examen { background: linear-gradient(135deg, var(--c-primary), #3b5ba6); }
-        .dash-card.d-falta { background: linear-gradient(135deg, var(--c-falta), #ffb74d); }
-        .dash-card.d-ok { background: linear-gradient(135deg, var(--grade-pass), #5ddb88); width: 100%; flex:none; cursor: default; }
-        
-        .dash-num { font-size: 28px; font-weight: 800; line-height: 1; }
-        .dash-label { font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9; margin-top: 5px; }
 
         /* --- ESTILOS PESTAÑAS --- */
         .tabs-nav {
@@ -301,12 +278,6 @@
         
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
         
-        .debug-info { 
-            font-size: 10px; color: #ccc; margin-top: 30px; 
-            text-align: center; padding: 10px; border-top: 1px dashed #eee; 
-            white-space: pre-wrap; font-family: monospace;
-        }
-
         .policy-note {
             margin-top: 25px;
             padding: 15px;
@@ -328,7 +299,7 @@
         @media print {
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
             .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .dashboard-summary, #notice-board { display: none !important; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .full-width-banner { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
             .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none !important; }
@@ -343,11 +314,6 @@
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
         <div class="brand-line"></div>
-    </div>
-    
-    <div id="notice-board">
-        <strong>📢 AVISO IMPORTANTE</strong>
-        <div id="notice-text"></div>
     </div>
     
     <div id="search-area">
@@ -384,6 +350,7 @@
 
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
+    let globalAviso = null; // Guardará el aviso cargado
     
     // ✅ URL DE EXÁMENES
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
@@ -391,7 +358,7 @@
     // ✅ URL DE FALTAS CONSTRUIDA A MANO (GID 1356052707 + TSV)
     const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
 
-    // ✅ URL DE AVISOS CON TU ID CORRECTO
+    // ✅ URL DE AVISOS (GID 1694124280 + TSV)
     const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
 
     const urls = {
@@ -490,21 +457,17 @@
         document.getElementById('content-' + pestanaId).classList.add('active');
     };
 
+    // Carga silenciosa del aviso
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
         if (data && data.length > 0) {
-            // Se asume Fila 1 = Títulos, Fila 2 = Datos
-            // data[0] serían los títulos (A1, B1), data[1] los datos (A2, B2)
-            const filaDato = data[1]; // Leemos la segunda fila
+            const filaDato = data[1]; 
             if(filaDato) {
-                const mensaje = filaDato[0]; // Columna A
-                const estado = (filaDato[1] || "").toUpperCase().trim(); // Columna B
-
+                const mensaje = filaDato[0]; 
+                const estado = (filaDato[1] || "").toUpperCase().trim();
+                
                 if(estado === "ON" && mensaje) {
-                    document.getElementById('notice-text').innerText = mensaje;
-                    document.getElementById('notice-board').style.display = 'block';
-                } else {
-                    document.getElementById('notice-board').style.display = 'none';
+                    globalAviso = mensaje;
                 }
             }
         }
@@ -529,14 +492,6 @@
         let examenesPasados = [];
         let faltasEncontradas = []; 
         
-        let debugMsg = "";
-        if(dataFaltas && dataFaltas.length > 0) {
-            let primeraFila = dataFaltas[1];
-            if(primeraFila) {
-                debugMsg = `🔍 CHIVATO: Leídas ${dataFaltas.length} filas.\nEjemplo fila 2: Col0(Tstamp):${primeraFila[0]} | Col1(Fecha):${primeraFila[1]} | Col2(Hora):${primeraFila[2]} | Col3(Alumno):${primeraFila[3]}`;
-            }
-        }
-
         // 1. HORARIO
         dias.forEach((dia, idx) => {
             const data = resultadosHorario[idx];
@@ -625,29 +580,15 @@
         
         if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0) {
             
-            // --- GENERAR DASHBOARD RESUMEN ---
-            let htmlDashboard = "";
-            if(examenesFuturos.length > 0 || faltasEncontradas.length > 0) {
-                if(examenesFuturos.length > 0) {
-                    htmlDashboard += `
-                        <div class="dash-card d-examen" onclick="cambiarPestana('examenes')">
-                            <span class="dash-num">${examenesFuturos.length}</span>
-                            <span class="dash-label">Exámenes</span>
-                        </div>`;
-                }
-                if(faltasEncontradas.length > 0) {
-                    htmlDashboard += `
-                        <div class="dash-card d-falta" onclick="cambiarPestana('faltas')">
-                            <span class="dash-num">${faltasEncontradas.length}</span>
-                            <span class="dash-label">Faltas</span>
-                        </div>`;
-                }
-            } else {
-                htmlDashboard += `
-                    <div class="dash-card d-ok">
-                        <span class="dash-num">✅</span>
-                        <span class="dash-label">Todo al día</span>
-                    </div>`;
+            // --- GENERAR HTML BANNER (Solo si existe) ---
+            let htmlBanner = "";
+            if(globalAviso) {
+                htmlBanner = `
+                    <div class="full-width-banner">
+                        <span class="banner-icon">📢</span>
+                        <span class="banner-text">${globalAviso}</span>
+                    </div>
+                `;
             }
 
             // HTML HORARIO
@@ -757,10 +698,6 @@
             } else {
                 htmlFaltas = `<div class="empty-state">¡Genial! No tienes faltas registradas.</div>`;
             }
-            
-            if(faltasEncontradas.length === 0 && debugMsg !== "") {
-               htmlFaltas += `<div class="debug-info">${debugMsg}</div>`; 
-            }
 
             htmlFaltas += `
                 <div class="policy-note">
@@ -781,9 +718,7 @@
                     Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${nombreFormateado}</span>
                 </h3>
 
-                <div class="dashboard-summary">
-                    ${htmlDashboard}
-                </div>
+                ${htmlBanner}
 
                 <div class="tabs-nav">
                     <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
@@ -878,7 +813,7 @@
     };
 
     document.addEventListener('DOMContentLoaded', () => {
-        // Cargar avisos nada más entrar
+        // Cargar avisos en memoria nada más entrar
         cargarAvisos();
         
         const input = document.getElementById('magicInput');
