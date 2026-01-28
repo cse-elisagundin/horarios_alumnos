@@ -466,8 +466,8 @@
         const input = document.getElementById('magicInput'); const btn = document.getElementById('btnBuscar');
         const login = () => {
             const val = input.value.trim(); if(!val) return;
-            if(!SISTEMA) {
-                if (btoa(val) === 010523) {
+            if(!SISTEMA_DESBLOQUEADO) {
+                if (btoa(val) === _0x8F) {
                     SISTEMA_DESBLOQUEADO = true; 
                     document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
                     input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
