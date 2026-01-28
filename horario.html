@@ -36,6 +36,9 @@
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
             
+            /* Color para Faltas (Naranja Alerta) */
+            --c-falta: #ff9800;
+
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
             --grade-pending: #a1aab2; 
@@ -152,15 +155,16 @@
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
+        .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
         
-        .result-card.type-nota { 
-            border-left: 6px solid #ccc; 
-            background-color: #fff;
-            opacity: 0.9;
+        /* ESTILO TARJETA FALTA */
+        .result-card.type-falta { 
+            border-left: 6px solid var(--c-falta); 
+            background-color: #fffbf0; 
         }
 
         /* BADGES */
-        .live-badge, .soon-badge, .examen-badge-alert {
+        .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
             display: none;
             position: absolute;
             top: -10px;
@@ -177,6 +181,11 @@
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
         .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
+        
+        .falta-badge-alert { 
+            display: block; left: auto; right: 20px; 
+            background: var(--c-falta); color: white; 
+        }
 
         .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
         .result-card.is-live .live-badge { display: block; }
@@ -201,6 +210,11 @@
             content: ''; position: absolute; width: 6px; height: 2px;
             background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg);
         }
+        
+        /* Icono naranja para faltas */
+        .clock-icon.icon-falta { border-color: var(--c-falta); }
+        .clock-icon.icon-falta::after { background: var(--c-falta); }
+
         .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
 
         .badge {
@@ -212,6 +226,7 @@
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
         .bg-examen { background: var(--c-primary); } 
+        .bg-falta { background: var(--c-falta); }
 
         .grade-display {
             font-size: 24px; font-weight: 900; padding: 5px 15px;
@@ -262,7 +277,7 @@
             #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
-            .live-badge, .soon-badge, .examen-badge-alert { display: none !important; }
+            .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none !important; }
             .result-card.is-live, .result-card.is-soon { border: 1px solid #eee; background: white; box-shadow: none; transform: none; }
             .tab-content { display: block !important; }
         }
@@ -313,6 +328,9 @@
     
     // ✅ URL DE EXÁMENES
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
+
+    // ✅ URL DE FALTAS (Insertada)
+    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=csv";
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
@@ -413,13 +431,16 @@
         
         const promesasHorario = dias.map(dia => leerHoja(urls[dia]));
         const promesaExamenes = leerHoja(URL_EXAMENES);
+        const promesaFaltas = leerHoja(URL_FALTAS); 
         
-        const [resultadosHorario, dataExamenes] = await Promise.all([Promise.all(promesasHorario), promesaExamenes]);
+        const [resultadosHorario, dataExamenes, dataFaltas] = await Promise.all([Promise.all(promesasHorario), promesaExamenes, promesaFaltas]);
         
         let clasesRaw = [];
         let examenesFuturos = [];
         let examenesPasados = [];
+        let faltasEncontradas = []; 
 
+        // 1. HORARIO
         dias.forEach((dia, idx) => {
             const data = resultadosHorario[idx];
             if(!data) return;
@@ -445,9 +466,7 @@
             });
         });
 
-        // ============================================
-        // 🔎 LÓGICA DE EXÁMENES (Corregida A, B, C, D)
-        // ============================================
+        // 2. EXÁMENES
         const hoy = new Date();
         hoy.setHours(0,0,0,0);
 
@@ -458,8 +477,7 @@
                     
                     let fechaStr = row[0]; // Col A: Fecha
                     let asigStr = row[1];  // Col B: Asignatura
-                    // Col C: Alumno (Ya validado)
-                    let notaStr = (row[3] || "").trim(); // Col D: Nota (Indice 3)
+                    let notaStr = (row[3] || "").trim(); // Col D: Nota
 
                     let fechaObj = new Date(fechaStr);
                     if(!isNaN(fechaObj.getTime())) {
@@ -476,8 +494,6 @@
                         nota: notaStr
                     };
 
-                    // REGLA: Si tiene nota O la fecha ya pasó -> Notas
-                    // Si no tiene nota Y es fecha futura -> Exámenes
                     if (item.nota !== "" || fechaObj < hoy) {
                         examenesPasados.push(item);
                     } else {
@@ -487,10 +503,34 @@
             });
         }
 
+        // 3. FALTAS (Indices actualizados: B:Fecha, C:Hora, D:Nombre)
+        if(dataFaltas && dataFaltas.length > 0) {
+            dataFaltas.forEach(row => {
+                // Columna D (Índice 3) es el NOMBRE
+                if(row[3] && row[3].toLowerCase().includes(nombreBuscado)) {
+                    faltasEncontradas.push({
+                        fecha: row[1] || "Fecha s/d", // Col B: Día
+                        hora: row[2] || "Hora s/d"    // Col C: Hora
+                    });
+                }
+            });
+            // Ordenar faltas: Convertir dd/mm/yyyy para ordenar
+            faltasEncontradas.sort((a,b) => {
+                // Función auxiliar para parsear fechas dd/mm/yyyy
+                const parseDate = (dateStr) => {
+                    const parts = dateStr.split(' ')[1] ? dateStr.split(' ')[1].split('/') : dateStr.split('/');
+                    if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+                    return new Date(0);
+                };
+                return parseDate(b.fecha) - parseDate(a.fecha);
+            });
+        }
+
         document.getElementById('loading-spinner').style.display = 'none';
         
-        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0) {
+        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0) {
             
+            // HTML HORARIO
             let htmlHorario = "";
             if(clasesRaw.length > 0) {
                 const clasesAgrupadas = agruparClases(clasesRaw);
@@ -525,6 +565,7 @@
                 htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`;
             }
 
+            // HTML EXÁMENES
             let htmlExamenes = "";
             if(examenesFuturos.length > 0) {
                 examenesFuturos.forEach(ex => {
@@ -545,6 +586,7 @@
                 htmlExamenes = `<div class="empty-state">No hay exámenes próximos.</div>`;
             }
 
+            // HTML NOTAS
             let htmlNotas = "";
             if(examenesPasados.length > 0) {
                 examenesPasados.reverse();
@@ -576,7 +618,31 @@
                 htmlNotas = `<div class="empty-state">No hay registro de exámenes pasados.</div>`;
             }
 
+            // HTML FALTAS
+            let htmlFaltas = "";
+            if(faltasEncontradas.length > 0) {
+                faltasEncontradas.forEach(fa => {
+                    htmlFaltas += `
+                    <div class="result-card type-falta">
+                        <div class="falta-badge-alert">⚠️ AUSENCIA</div>
+                        <div class="card-info">
+                            <span class="card-day">${fa.fecha}</span>
+                            <div class="card-time-wrapper">
+                                <div class="clock-icon icon-falta"></div>
+                                <span class="card-time" style="color:var(--c-falta); font-size:18px;">${fa.hora}</span>
+                            </div>
+                        </div>
+                        <span class="badge bg-falta">FALTA</span>
+                    </div>`;
+                });
+            } else {
+                htmlFaltas = `<div class="empty-state">¡Genial! No tienes faltas registradas.</div>`;
+            }
+
+            // BADGES
             let badgeExamen = examenesFuturos.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-aviso); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesFuturos.length}</span>` : "";
+            let badgeFalta = faltasEncontradas.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-falta); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${faltasEncontradas.length}</span>` : "";
+
 
             let htmlFinal = `
                 <h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
@@ -587,6 +653,7 @@
                     <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
                     <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${badgeExamen}</button>
                     <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button>
+                    <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${badgeFalta}</button>
                 </div>
 
                 <div id="content-horario" class="tab-content active">
@@ -599,6 +666,10 @@
 
                 <div id="content-notas" class="tab-content">
                     ${htmlNotas}
+                </div>
+                
+                <div id="content-faltas" class="tab-content">
+                    ${htmlFaltas}
                 </div>
             `;
             
