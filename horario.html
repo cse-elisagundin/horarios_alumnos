@@ -114,36 +114,47 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- 🔘 BOTONERA ESTIRADA Y FULL WIDTH --- */
+        /* --- 🔘 BOTONERA ESTIRADA DE BORDE A BORDE --- */
         .tabs-nav {
             display: flex; 
             background: #f0f4f8; 
             border-radius: 12px; 
             margin-bottom: 25px; 
-            gap: 4px; 
+            gap: 4px; /* Pequeña separación entre botones */
+            
+            /* 🔥 OBLIGATORIO: OCUPA TODO EL ANCHO */
             width: 100%;
             padding: 5px;
-            box-sizing: border-box; 
+            box-sizing: border-box; /* Asegura que el padding no rompa el ancho */
         }
 
         .tab-btn {
+            /* 🔥 flex: 1 obliga a todos los botones a crecer igual hasta llenar el hueco */
             flex: 1; 
+            
             padding: 12px 2px;
             border: none; 
             background: transparent; 
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 13px; 
+            font-size: 13px; /* Tamaño base */
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
+            
+            /* Centrado absoluto del contenido */
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
+            
+            /* Aseguramos que no se rompan */
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .tab-btn.active { 
@@ -188,7 +199,8 @@
 
         @media (max-width: 480px) {
             .result-header-flex { font-size: 18px; }
-            .tab-btn { font-size: 11px; padding: 12px 0; }
+            /* Ajuste fino para móviles pequeños: reducimos un pelín la fuente */
+            .tab-btn { font-size: 10px; padding: 10px 0; } 
         }
 
         input { 
@@ -208,9 +220,10 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
+        /* Contenedor padre de las pestañas para el swipe */
         #tabs-container-wrapper {
-            touch-action: pan-y; 
-            min-height: 200px; 
+            touch-action: pan-y; /* Permite scroll vertical pero detecta horizontal */
+            min-height: 200px; /* Zona táctil mínima */
         }
 
         .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
@@ -220,7 +233,7 @@
 
         #resultado { margin-top: 35px; text-align: left; }
         
-        /* 🔥 AJUSTES PARA ALINEAR LA TARJETA (GAP Y CENTRADO) */
+        /* 🔥 SOLUCIÓN DEFINITIVA AL SOLAPAMIENTO: CSS GRID 🔥 */
         .result-card { 
             background: linear-gradient(145deg, #ffffff, #fdfdfd); 
             margin-bottom: 15px; 
@@ -228,11 +241,14 @@
             border-radius: 15px; 
             border: 1px solid rgba(0,0,0,0.05); 
             
-            /* Flexbox para alinear */
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; /* Centrado vertical perfecto */
-            gap: 15px; /* 🔥 ESPACIO OBLIGATORIO ENTRE TEXTO Y ETIQUETA */
+            /* AQUÍ ESTÁ LA MAGIA: GRID */
+            display: grid; 
+            /* Columna 1: Ocupa todo el espacio sobrante (1fr) */
+            /* Columna 2: Se ajusta al contenido exacto de la etiqueta (auto) */
+            grid-template-columns: 1fr auto; 
+            
+            align-items: center; /* Centrado vertical */
+            gap: 15px; /* Muro de 15px entre texto y etiqueta */
             
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03); 
             position: relative; 
@@ -265,13 +281,11 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
         }
 
-        /* 🔥 ASEGURAMOS QUE LA INFO OCUPE EL ESPACIO DISPONIBLE */
         .card-info { 
             display: flex; 
             flex-direction: column; 
             gap: 2px; 
-            flex: 1; /* Ocupa todo el espacio izquierdo */
-            min-width: 0; /* Evita desbordamientos */
+            min-width: 0; /* Evita que el texto fuerce el ancho */
         }
         
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
@@ -282,7 +296,7 @@
         .clock-icon.icon-falta::after { background: var(--c-falta); }
         .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
 
-        /* 🔥 AJUSTES PARA QUE LA ETIQUETA NO SE APLASTE NI SE DESCENTRE */
+        /* La etiqueta ahora está controlada por el Grid */
         .badge { 
             padding: 8px 16px; 
             border-radius: 8px; 
@@ -295,8 +309,8 @@
             text-align: center; 
             min-width: 60px;
             
-            flex-shrink: 0; /* IMPIDE QUE SE ENCOJA */
-            align-self: center; /* FUERZA EL CENTRADO VERTICAL */
+            /* Alineación dentro de su celda de rejilla */
+            justify-self: end; 
         }
         
         .bg-apoyo { background: var(--c-secondary); }
@@ -304,10 +318,10 @@
         .bg-examen { background: var(--c-primary); } 
         .bg-falta { background: var(--c-falta); }
 
-        .grade-display { font-size: 24px; font-weight: 900; padding: 5px 15px; border-radius: 10px; min-width: 60px; text-align: center; }
+        .grade-display { font-size: 24px; font-weight: 900; padding: 5px 15px; border-radius: 10px; min-width: 60px; text-align: center; justify-self: end; }
         .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
         .grade-fail { color: var(--grade-fail); border: 2px solid var(--grade-fail); background: rgba(220, 53, 69, 0.1); }
-        .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; }
+        .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; justify-self: end; }
 
         #actions-panel { display: none; margin-top: 20px; }
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
