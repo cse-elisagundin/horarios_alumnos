@@ -114,34 +114,35 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- 🔘 BOTONERA TABS CON SCROLL HORIZONTAL --- */
+        /* --- 🔘 BOTONERA SCROLL HORIZONTAL ESTIRADA --- */
         .tabs-nav {
             display: flex; 
             background: #f0f4f8; 
             border-radius: 12px; 
             margin-bottom: 25px; 
-            gap: 8px; /* Espacio entre botones */
+            gap: 10px; /* Separación entre botones */
             
-            /* PROPIEDADES PARA EL SCROLL */
-            overflow-x: auto; /* Permite scroll lateral */
-            white-space: nowrap; /* Evita que bajen de línea */
-            -webkit-overflow-scrolling: touch; /* Suavidad en iPhone */
+            /* SCROLL */
+            overflow-x: auto; 
+            white-space: nowrap; 
+            -webkit-overflow-scrolling: touch; 
             
-            /* PADDING EXTRA PARA QUE NO SE CORTEN LAS SOMBRAS */
-            padding: 8px 8px 10px 8px; /* Arriba | Derecha | Abajo | Izquierda */
+            /* 🔥 CLAVE: Padding interno para que quepa la sombra sin cortarse */
+            padding: 10px; 
             
-            /* Ocultar barra de scroll (Estético) */
-            scrollbar-width: none; /* Firefox */
+            /* Ocultar barra scroll estética */
+            scrollbar-width: none; 
         }
-        
-        /* Ocultar barra scroll en Chrome/Safari */
         .tabs-nav::-webkit-scrollbar { display: none; }
 
         .tab-btn {
-            /* Evita que se encojan */
+            /* 🔥 CLAVE: flex: 0 0 auto impide que se encojan. Mantiene su tamaño real */
             flex: 0 0 auto; 
             
-            padding: 12px 16px; /* Botones más gorditos */
+            /* Tamaño y forma */
+            padding: 14px 20px; /* Más relleno interno */
+            min-width: 110px;   /* 🔥 Ancho mínimo para que se vean "estirados" */
+            
             border: none; 
             background: transparent; 
             color: #8898aa; 
@@ -153,21 +154,22 @@
             transition: all 0.3s; 
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
-            position: relative; 
             
-            /* Asegura un ancho mínimo agradable */
-            min-width: 90px;
+            /* Para centrar texto e iconos si los hubiera */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .tab-btn.active { 
             background: white; 
             color: var(--c-primary); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08); /* Sombra más pronunciada */
-            transform: translateY(-1px); /* Efecto elevación */
+            /* Sombra más marcada para destacar */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            transform: translateY(-1px); 
         }
 
-        /* --- CABECERA DE RESULTADOS OPTIMIZADA --- */
-        
+        /* --- CABECERA DE RESULTADOS (NOMBRE) --- */
         .result-header-flex {
             display: flex;
             flex-direction: row;
@@ -201,8 +203,9 @@
         }
 
         @media (max-width: 480px) {
-            .tab-btn { font-size: 12px; padding: 12px 14px; }
             .result-header-flex { font-size: 18px; }
+            /* En móvil ajustamos un poco el tamaño de fuente de los botones */
+            .tab-btn { font-size: 12px; }
         }
 
         input { 
