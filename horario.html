@@ -35,7 +35,7 @@
             
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
-            --c-falta: #ff9800; /* Naranja Alerta */
+            --c-falta: #ff9800; 
 
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
@@ -79,6 +79,28 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
+        /* --- TABLÓN DE ANUNCIOS (NUEVO) --- */
+        #notice-board {
+            display: none; /* Se oculta por defecto */
+            background-color: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeeba;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            text-align: left;
+            animation: slideDown 0.5s ease-out;
+            position: relative;
+        }
+        
+        #notice-board strong { display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; color: #d39e00; }
+        #notice-text { font-weight: 600; font-size: 15px; line-height: 1.4; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* INPUTS & BOTONES */
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
@@ -96,6 +118,26 @@
             text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
+
+        /* --- DASHBOARD RESUMEN --- */
+        .dashboard-summary {
+            display: flex; gap: 10px; margin-bottom: 25px;
+            justify-content: center;
+        }
+        .dash-card {
+            flex: 1; padding: 15px; border-radius: 12px;
+            text-align: center; color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .dash-card:active { transform: scale(0.95); }
+        .dash-card.d-examen { background: linear-gradient(135deg, var(--c-primary), #3b5ba6); }
+        .dash-card.d-falta { background: linear-gradient(135deg, var(--c-falta), #ffb74d); }
+        .dash-card.d-ok { background: linear-gradient(135deg, var(--grade-pass), #5ddb88); width: 100%; flex:none; cursor: default; }
+        
+        .dash-num { font-size: 28px; font-weight: 800; line-height: 1; }
+        .dash-label { font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9; margin-top: 5px; }
 
         /* --- ESTILOS PESTAÑAS --- */
         .tabs-nav {
@@ -259,14 +301,12 @@
         
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
         
-        /* Chivato Debug */
         .debug-info { 
             font-size: 10px; color: #ccc; margin-top: 30px; 
             text-align: center; padding: 10px; border-top: 1px dashed #eee; 
             white-space: pre-wrap; font-family: monospace;
         }
 
-        /* === NOTA INFORMATIVA FALTAS === */
         .policy-note {
             margin-top: 25px;
             padding: 15px;
@@ -279,11 +319,16 @@
             line-height: 1.5;
             box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
+        
+        /* FOOTER FECHA */
+        .footer-update {
+            margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic;
+        }
 
         @media print {
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
             .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav { display: none !important; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .dashboard-summary, #notice-board { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
             .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none !important; }
@@ -298,6 +343,11 @@
     <div class="web-brand">
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
         <div class="brand-line"></div>
+    </div>
+    
+    <div id="notice-board">
+        <strong>📢 AVISO IMPORTANTE</strong>
+        <div id="notice-text"></div>
     </div>
     
     <div id="search-area">
@@ -319,7 +369,7 @@
     </div>
 </div>
 
-<a href="https://wa.me/34693067214" class="whatsapp-float" target="_blank">
+<a href="https://wa.me/34693067214" id="whatsapp-link" class="whatsapp-float" target="_blank">
     <svg class="whatsapp-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 
@@ -341,6 +391,9 @@
     // ✅ URL DE FALTAS CONSTRUIDA A MANO (GID 1356052707 + TSV)
     const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
 
+    // ✅ URL DE AVISOS CON TU ID CORRECTO
+    const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
+
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
@@ -355,7 +408,6 @@
         if (!url || url.includes("PON_AQUI")) return Promise.resolve([]);
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
-            // DETECTAR SI ES FALTAS PARA USAR TABULADOR
             let parseConfig = { download:true, skipEmptyLines:true };
             if(url.includes("output=tsv")) parseConfig.delimiter = "\t";
             
@@ -370,7 +422,6 @@
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     
-    // FUNCIÓN DE LIMPIEZA DE TEXTO (Quita tildes para búsqueda)
     function limpiarTexto(t) {
         return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
@@ -439,6 +490,26 @@
         document.getElementById('content-' + pestanaId).classList.add('active');
     };
 
+    async function cargarAvisos() {
+        const data = await leerHoja(URL_AVISOS);
+        if (data && data.length > 0) {
+            // Se asume Fila 1 = Títulos, Fila 2 = Datos
+            // data[0] serían los títulos (A1, B1), data[1] los datos (A2, B2)
+            const filaDato = data[1]; // Leemos la segunda fila
+            if(filaDato) {
+                const mensaje = filaDato[0]; // Columna A
+                const estado = (filaDato[1] || "").toUpperCase().trim(); // Columna B
+
+                if(estado === "ON" && mensaje) {
+                    document.getElementById('notice-text').innerText = mensaje;
+                    document.getElementById('notice-board').style.display = 'block';
+                } else {
+                    document.getElementById('notice-board').style.display = 'none';
+                }
+            }
+        }
+    }
+
     async function ejecutarBusqueda(nombre) {
         document.getElementById('search-area').style.display = 'none'; 
         document.getElementById('loading-spinner').style.display = 'block';
@@ -458,10 +529,9 @@
         let examenesPasados = [];
         let faltasEncontradas = []; 
         
-        // --- CHIVATO DEPURACIÓN ---
         let debugMsg = "";
         if(dataFaltas && dataFaltas.length > 0) {
-            let primeraFila = dataFaltas[1]; // Saltamos cabecera
+            let primeraFila = dataFaltas[1];
             if(primeraFila) {
                 debugMsg = `🔍 CHIVATO: Leídas ${dataFaltas.length} filas.\nEjemplo fila 2: Col0(Tstamp):${primeraFila[0]} | Col1(Fecha):${primeraFila[1]} | Col2(Hora):${primeraFila[2]} | Col3(Alumno):${primeraFila[3]}`;
             }
@@ -515,7 +585,6 @@
 
                     let item = {
                         fecha: fechaStr || "Fecha pte.",
-                        // hora: REMOVIDO PARA USAR ESPACIO
                         asignatura: asigStr || "Examen",
                         nota: notaStr
                     };
@@ -529,32 +598,58 @@
             });
         }
 
-        // 3. FALTAS (Indices TSV: 0=Timestamp, 1=DiaFecha, 2=Hora, 3=Nombre)
+        // 3. FALTAS
         if(dataFaltas && dataFaltas.length > 0) {
             dataFaltas.forEach(row => {
-                // Columna 3 es NOMBRE
                 if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
-                    
-                    // EXTRAER FECHA LIMPIA (BUSCA DD/MM/YYYY)
                     let fechaRaw = row[1] || "";
                     let fechaMatch = fechaRaw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
                     let fechaLimpia = fechaMatch ? fechaMatch[0] : fechaRaw;
 
                     faltasEncontradas.push({
-                        fecha: fechaLimpia, // Col 1: Día (limpio)
-                        hora: row[2] || "Hora s/d", // Col 2: Hora
+                        fecha: fechaLimpia,
+                        hora: row[2] || "Hora s/d",
                         rawDate: fechaMatch ? new Date(fechaMatch[3], fechaMatch[2]-1, fechaMatch[1]) : new Date(0)
                     });
                 }
             });
-            // Ordenar por fecha extraída
             faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         }
+        
+        // --- ACTUALIZAR ENLACE WHATSAPP ---
+        const nombreFormateado = formatName(nombre);
+        const mensajeWA = `Hola Elisa, soy el padre/madre de ${nombreFormateado}. Te escribo porque...`;
+        document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(mensajeWA)}`;
 
         document.getElementById('loading-spinner').style.display = 'none';
         
         if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0) {
             
+            // --- GENERAR DASHBOARD RESUMEN ---
+            let htmlDashboard = "";
+            if(examenesFuturos.length > 0 || faltasEncontradas.length > 0) {
+                if(examenesFuturos.length > 0) {
+                    htmlDashboard += `
+                        <div class="dash-card d-examen" onclick="cambiarPestana('examenes')">
+                            <span class="dash-num">${examenesFuturos.length}</span>
+                            <span class="dash-label">Exámenes</span>
+                        </div>`;
+                }
+                if(faltasEncontradas.length > 0) {
+                    htmlDashboard += `
+                        <div class="dash-card d-falta" onclick="cambiarPestana('faltas')">
+                            <span class="dash-num">${faltasEncontradas.length}</span>
+                            <span class="dash-label">Faltas</span>
+                        </div>`;
+                }
+            } else {
+                htmlDashboard += `
+                    <div class="dash-card d-ok">
+                        <span class="dash-num">✅</span>
+                        <span class="dash-label">Todo al día</span>
+                    </div>`;
+            }
+
             // HTML HORARIO
             let htmlHorario = "";
             if(clasesRaw.length > 0) {
@@ -590,7 +685,7 @@
                 htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`;
             }
 
-            // HTML EXÁMENES (NUEVO DISEÑO: SIN FIJADO, MATERIA GRANDE)
+            // HTML EXÁMENES
             let htmlExamenes = "";
             if(examenesFuturos.length > 0) {
                 examenesFuturos.forEach(ex => {
@@ -642,7 +737,7 @@
                 htmlNotas = `<div class="empty-state">No hay registro de exámenes pasados.</div>`;
             }
 
-            // HTML FALTAS (Con nota añadida al final)
+            // HTML FALTAS
             let htmlFaltas = "";
             if(faltasEncontradas.length > 0) {
                 faltasEncontradas.forEach(fa => {
@@ -663,12 +758,10 @@
                 htmlFaltas = `<div class="empty-state">¡Genial! No tienes faltas registradas.</div>`;
             }
             
-            // AÑADIR CHIVATO SI NO HAY FALTAS
             if(faltasEncontradas.length === 0 && debugMsg !== "") {
                htmlFaltas += `<div class="debug-info">${debugMsg}</div>`; 
             }
 
-            // === AÑADIR NOTA INFORMATIVA AL FINAL ===
             htmlFaltas += `
                 <div class="policy-note">
                     <strong>ℹ️ NOTA IMPORTANTE:</strong><br>
@@ -676,15 +769,21 @@
                 </div>
             `;
 
-            // BADGES
-            let badgeExamen = examenesFuturos.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-aviso); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesFuturos.length}</span>` : "";
-            let badgeFalta = faltasEncontradas.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-falta); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${faltasEncontradas.length}</span>` : "";
+            // BADGES PESTAÑAS (Puntito rojo si hay algo)
+            let badgeExamen = examenesFuturos.length > 0 ? `🔴` : "";
+            let badgeFalta = faltasEncontradas.length > 0 ? `🔴` : "";
 
+            let ahora = new Date();
+            let horaStr = ahora.getHours() + ":" + String(ahora.getMinutes()).padStart(2,'0');
 
             let htmlFinal = `
                 <h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
-                    Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${formatName(nombre)}</span>
+                    Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${nombreFormateado}</span>
                 </h3>
+
+                <div class="dashboard-summary">
+                    ${htmlDashboard}
+                </div>
 
                 <div class="tabs-nav">
                     <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
@@ -708,6 +807,8 @@
                 <div id="content-faltas" class="tab-content">
                     ${htmlFaltas}
                 </div>
+                
+                <div class="footer-update">Datos actualizados hoy a las ${horaStr}</div>
             `;
             
             document.getElementById('resultado').innerHTML = htmlFinal;
@@ -770,11 +871,16 @@
         document.getElementById('search-area').style.display = 'block';
         document.getElementById('magicInput').value = '';
         document.getElementById('magicInput').focus();
+        // Reset Whatsapp
+        document.getElementById('whatsapp-link').href = "https://wa.me/34693067214";
         const chips = document.querySelectorAll('.student-chip');
         chips.forEach(c => c.style.display = 'inline-block');
     };
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Cargar avisos nada más entrar
+        cargarAvisos();
+        
         const input = document.getElementById('magicInput');
         const btn = document.getElementById('btnBuscar');
         const btnCopiar = document.getElementById('btnCopiar');
