@@ -120,32 +120,26 @@
             background: #f0f4f8; 
             border-radius: 12px; 
             margin-bottom: 25px; 
-            gap: 4px; /* Pequeña separación */
-            
-            /* 🔥 OCUPA TODO EL ANCHO DISPONIBLE */
+            gap: 4px; 
             width: 100%;
             padding: 5px;
-            box-sizing: border-box; /* Asegura que el padding no sume al 100% */
+            box-sizing: border-box; 
         }
 
         .tab-btn {
-            /* 🔥 flex: 1 obliga a que todos los botones crezcan para ocupar el mismo espacio */
             flex: 1; 
-            
             padding: 12px 2px;
             border: none; 
             background: transparent; 
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 13px; /* Tamaño base */
+            font-size: 13px; 
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
-            
-            /* Centrado absoluto */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -194,7 +188,6 @@
 
         @media (max-width: 480px) {
             .result-header-flex { font-size: 18px; }
-            /* Ajuste fino para que el texto quepa en pantallas muy estrechas */
             .tab-btn { font-size: 11px; padding: 12px 0; }
         }
 
@@ -215,10 +208,9 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
-        /* Contenedor padre de las pestañas para el swipe */
         #tabs-container-wrapper {
-            touch-action: pan-y; /* Permite scroll vertical pero detecta horizontal */
-            min-height: 200px; /* Zona táctil mínima */
+            touch-action: pan-y; 
+            min-height: 200px; 
         }
 
         .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
@@ -228,8 +220,23 @@
 
         #resultado { margin-top: 35px; text-align: left; }
         
+        /* 🔥 AJUSTES PARA ALINEAR LA TARJETA (GAP Y CENTRADO) */
         .result-card { 
-            background: linear-gradient(145deg, #ffffff, #fdfdfd); margin-bottom: 15px; padding: 20px; border-radius: 15px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; box-shadow: 4px 4px 15px rgba(0,0,0,0.03); position: relative; transition: all 0.3s ease;
+            background: linear-gradient(145deg, #ffffff, #fdfdfd); 
+            margin-bottom: 15px; 
+            padding: 20px; 
+            border-radius: 15px; 
+            border: 1px solid rgba(0,0,0,0.05); 
+            
+            /* Flexbox para alinear */
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; /* Centrado vertical perfecto */
+            gap: 15px; /* 🔥 ESPACIO OBLIGATORIO ENTRE TEXTO Y ETIQUETA */
+            
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.03); 
+            position: relative; 
+            transition: all 0.3s ease;
         }
 
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
@@ -258,7 +265,15 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
         }
 
-        .card-info { display: flex; flex-direction: column; gap: 2px; }
+        /* 🔥 ASEGURAMOS QUE LA INFO OCUPE EL ESPACIO DISPONIBLE */
+        .card-info { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 2px; 
+            flex: 1; /* Ocupa todo el espacio izquierdo */
+            min-width: 0; /* Evita desbordamientos */
+        }
+        
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
         .clock-icon { width: 18px; height: 18px; border: 2px solid var(--c-primary); border-radius: 50%; position: relative; flex-shrink: 0; }
@@ -267,7 +282,23 @@
         .clock-icon.icon-falta::after { background: var(--c-falta); }
         .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
 
-        .badge { padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: white; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; min-width: 60px; }
+        /* 🔥 AJUSTES PARA QUE LA ETIQUETA NO SE APLASTE NI SE DESCENTRE */
+        .badge { 
+            padding: 8px 16px; 
+            border-radius: 8px; 
+            font-size: 11px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            color: white; 
+            letter-spacing: 1px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            text-align: center; 
+            min-width: 60px;
+            
+            flex-shrink: 0; /* IMPIDE QUE SE ENCOJA */
+            align-self: center; /* FUERZA EL CENTRADO VERTICAL */
+        }
+        
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
         .bg-examen { background: var(--c-primary); } 
