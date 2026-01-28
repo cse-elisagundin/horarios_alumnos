@@ -125,19 +125,42 @@
 
         .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* AJUSTES MÓVIL (Nombre en una linea) */
+        /* AJUSTES MÓVIL Y ALINEACIÓN DEL TÍTULO */
+        
+        /* Contenedor flexible para el título del resultado */
+        .result-header-flex {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap; /* Permite que baje si es necesario, pero intenta mantener línea */
+            justify-content: center;
+            align-items: baseline; /* Alinea por la línea base del texto */
+            gap: 6px;
+            margin-bottom: 20px;
+            color: var(--c-primary);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.17em; /* Tamaño h3 estándar */
+        }
+
+        .name-span { 
+            font-family: 'Schoolbell', cursive; 
+            color: var(--c-accent); 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.15); 
+            font-size: 1.2em; /* Un pelín más grande para destacar */
+            white-space: nowrap;
+        }
+
         @media (max-width: 480px) {
             .tab-btn { font-size: 10px; padding: 10px 1px; }
             .tabs-nav { gap: 3px; padding: 4px; }
             
-            /* Nombre truncado si es excesivamente largo aun con la abreviatura */
-            .name-span { 
-                white-space: nowrap; 
-                display: inline-block; 
-                max-width: 250px; 
-                overflow: hidden; 
-                text-overflow: ellipsis; 
-                vertical-align: bottom;
+            /* En móvil, aseguramos que el nombre no rompa el diseño si aun así es largo */
+            .name-span {
+                max-width: 280px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: inline-block;
+                vertical-align: bottom; 
             }
         }
 
@@ -325,19 +348,26 @@
     // ✅ FUNCIÓN ORIGINAL DE CAPITALIZAR (REQUERIDA POR EL HELPER)
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // ✅ NUEVA LÓGICA DE NOMBRE INTELIGENTE (Nombre + Ap1 + Ap2.)
+    // ✅ NUEVA LÓGICA DE NOMBRE INTELIGENTE MEJORADA PARA 4 PALABRAS
     function formatNameSmart(nombre) {
         let n = nombre.trim().toLowerCase();
         let parts = n.split(/\s+/);
+        let formattedParts = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1));
         
-        // Si tiene más de 2 palabras (ej. "Juan Pérez García")
-        if (parts.length > 2) {
-            let last = parts.pop(); // Saca el último (García)
-            // Reconstruye el principio (Juan Pérez)
-            let resto = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
-            // Toma la inicial del último (G.)
-            let inicial = last.charAt(0).toUpperCase() + ".";
-            return resto + " " + inicial;
+        // Si tiene 4 o más palabras (Nombre1 Nombre2 Apellido1 Apellido2)
+        // Ejemplo: Francisco Javier Rodríguez Fernández
+        if (formattedParts.length >= 4) {
+            // Nombre1 (Completo)
+            // Nombre2 (Inicial + punto)
+            // Apellido1 (Completo)
+            // Apellido2 (Inicial + punto)
+            // Resultado: Francisco J. Rodríguez F.
+            return `${formattedParts[0]} ${formattedParts[1][0]}. ${formattedParts[2]} ${formattedParts[formattedParts.length-1][0]}.`;
+        }
+        
+        // Si tiene 3 palabras (Juan Pérez García) -> Juan Pérez G.
+        if (formattedParts.length === 3) {
+            return `${formattedParts[0]} ${formattedParts[1]} ${formattedParts[2][0]}.`;
         }
         
         // Si son 2 o menos, formato normal
@@ -441,7 +471,6 @@
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         
-        // ✅ USAMOS LA NUEVA FUNCIÓN SMART AQUI
         const nF = formatNameSmart(nombre);
 
         document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
@@ -469,8 +498,13 @@
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
             
-            // ✅ AQUI SE APLICA EL NOMBRE ACORTADO EN HTML
-            document.getElementById('resultado').innerHTML = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">Horario de <span class="name-span" style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); font-size:1.1em; white-space: nowrap;">${nF}</span></h3><div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div><div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
+            // ✅ APLICAMOS EL DIV FLEXIBLE PARA ALINEAR TEXTO Y NOMBRE
+            document.getElementById('resultado').innerHTML = `
+                <div class="result-header-flex">
+                    <span>Horario de</span>
+                    <span class="name-span">${nF}</span>
+                </div>
+                <div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div><div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
             
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
         } else {
