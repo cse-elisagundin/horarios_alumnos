@@ -35,9 +35,7 @@
             
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
-            
-            /* Color para Faltas (Naranja Alerta) */
-            --c-falta: #ff9800;
+            --c-falta: #ff9800; /* Naranja Alerta */
 
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
@@ -156,12 +154,7 @@
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
         .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
-        
-        /* ESTILO TARJETA FALTA */
-        .result-card.type-falta { 
-            border-left: 6px solid var(--c-falta); 
-            background-color: #fffbf0; 
-        }
+        .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
 
         /* BADGES */
         .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
@@ -181,11 +174,7 @@
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
         .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
-        
-        .falta-badge-alert { 
-            display: block; left: auto; right: 20px; 
-            background: var(--c-falta); color: white; 
-        }
+        .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
 
         .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
         .result-card.is-live .live-badge { display: block; }
@@ -211,7 +200,6 @@
             background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg);
         }
         
-        /* Icono naranja para faltas */
         .clock-icon.icon-falta { border-color: var(--c-falta); }
         .clock-icon.icon-falta::after { background: var(--c-falta); }
 
@@ -329,7 +317,7 @@
     // ✅ URL DE EXÁMENES
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
 
-    // ✅ URL DE FALTAS (Insertada)
+    // ✅ URL DE FALTAS (Insertada la tuya)
     const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=csv";
 
     const urls = {
@@ -357,6 +345,14 @@
 
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+    
+    // --- NUEVA FUNCIÓN DE NORMALIZACIÓN DE TEXTO ---
+    // Elimina tildes y convierte a minúsculas para comparar mejor
+    function limpiarTexto(t) {
+        return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+    
+    // Mantenemos formatName para mostrarlo bonito en pantalla (con mayúsculas)
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
     function esNombreValido(texto) {
@@ -426,7 +422,8 @@
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
         
-        const nombreBuscado = nombre.toLowerCase().trim();
+        // USAMOS LA NUEVA FUNCIÓN DE LIMPIEZA
+        const nombreBuscado = limpiarTexto(nombre);
         const dias = Object.keys(urls);
         
         const promesasHorario = dias.map(dia => leerHoja(urls[dia]));
@@ -449,7 +446,8 @@
                 if(horaApoyo && horaApoyo.includes(":")) {
                     for(let c=1; c<=6; c++) { 
                         let val = row[c] || "";
-                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
+                        // COMPARAMOS USANDO LIMPIEZA DE TILDES
+                        if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) {
                             clasesRaw.push({ dia, h: horaApoyo, materia: "Apoyo", tipo: "apoyo", fullText: val });
                         }
                     }
@@ -458,7 +456,7 @@
                 if(horaIngles && horaIngles.includes(":")) {
                     for(let c=8; c<=13; c++) { 
                         let val = row[c] || "";
-                        if(esNombreValido(val) && val.toLowerCase().includes(nombreBuscado)) {
+                        if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) {
                             clasesRaw.push({ dia, h: horaIngles, materia: "Inglés", tipo: "ingles", fullText: val });
                         }
                     }
@@ -472,8 +470,8 @@
 
         if(dataExamenes && dataExamenes.length > 0) {
             dataExamenes.forEach(row => {
-                // Verificar si el nombre está en la Columna C (índice 2)
-                if(row[2] && row[2].toLowerCase().includes(nombreBuscado)) {
+                // Verificar nombre (Col C / Index 2) con limpieza
+                if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado)) {
                     
                     let fechaStr = row[0]; // Col A: Fecha
                     let asigStr = row[1];  // Col B: Asignatura
@@ -503,27 +501,26 @@
             });
         }
 
-        // 3. FALTAS (Indices actualizados: B:Fecha, C:Hora, D:Nombre)
+        // 3. FALTAS (Actualizado con limpieza y extracción de fecha robusta)
         if(dataFaltas && dataFaltas.length > 0) {
             dataFaltas.forEach(row => {
                 // Columna D (Índice 3) es el NOMBRE
-                if(row[3] && row[3].toLowerCase().includes(nombreBuscado)) {
+                if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
+                    
+                    // EXTRAER FECHA LIMPIA (BUSCA DD/MM/YYYY)
+                    let fechaRaw = row[1] || "";
+                    let fechaMatch = fechaRaw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    let fechaLimpia = fechaMatch ? fechaMatch[0] : fechaRaw;
+
                     faltasEncontradas.push({
-                        fecha: row[1] || "Fecha s/d", // Col B: Día
-                        hora: row[2] || "Hora s/d"    // Col C: Hora
+                        fecha: fechaLimpia, // Col B: Día (limpio)
+                        hora: row[2] || "Hora s/d", // Col C: Hora
+                        rawDate: fechaMatch ? new Date(fechaMatch[3], fechaMatch[2]-1, fechaMatch[1]) : new Date(0)
                     });
                 }
             });
-            // Ordenar faltas: Convertir dd/mm/yyyy para ordenar
-            faltasEncontradas.sort((a,b) => {
-                // Función auxiliar para parsear fechas dd/mm/yyyy
-                const parseDate = (dateStr) => {
-                    const parts = dateStr.split(' ')[1] ? dateStr.split(' ')[1].split('/') : dateStr.split('/');
-                    if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
-                    return new Date(0);
-                };
-                return parseDate(b.fecha) - parseDate(a.fecha);
-            });
+            // Ordenar por fecha extraída
+            faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         }
 
         document.getElementById('loading-spinner').style.display = 'none';
@@ -716,10 +713,11 @@
 
     window.filtrarDirectorioMain = () => {
         const input = document.getElementById('magicInput');
-        const filtro = input.value.toLowerCase();
+        // USAMOS LA LIMPIEZA AQUI TAMBIEN
+        const filtro = limpiarTexto(input.value);
         const chips = document.querySelectorAll('.student-chip');
         chips.forEach(chip => {
-            const txt = chip.textContent.toLowerCase();
+            const txt = limpiarTexto(chip.textContent);
             chip.style.display = txt.includes(filtro) ? 'inline-block' : 'none';
         });
         if(filtro === "") chips.forEach(c => c.style.display = 'inline-block');
