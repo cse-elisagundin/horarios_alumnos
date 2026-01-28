@@ -266,7 +266,7 @@
             white-space: pre-wrap; font-family: monospace;
         }
 
-        /* === NUEVO ESTILO: NOTA INFORMATIVA FALTAS === */
+        /* === NOTA INFORMATIVA FALTAS === */
         .policy-note {
             margin-top: 25px;
             padding: 15px;
@@ -463,7 +463,6 @@
         if(dataFaltas && dataFaltas.length > 0) {
             let primeraFila = dataFaltas[1]; // Saltamos cabecera
             if(primeraFila) {
-                // Preparamos el mensaje pero no lo mostramos si todo va bien
                 debugMsg = `🔍 CHIVATO: Leídas ${dataFaltas.length} filas.\nEjemplo fila 2: Col0(Tstamp):${primeraFila[0]} | Col1(Fecha):${primeraFila[1]} | Col2(Hora):${primeraFila[2]} | Col3(Alumno):${primeraFila[3]}`;
             }
         }
@@ -516,7 +515,7 @@
 
                     let item = {
                         fecha: fechaStr || "Fecha pte.",
-                        hora: "Fijado",
+                        // hora: REMOVIDO PARA USAR ESPACIO
                         asignatura: asigStr || "Examen",
                         nota: notaStr
                     };
@@ -591,21 +590,20 @@
                 htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`;
             }
 
-            // HTML EXÁMENES
+            // HTML EXÁMENES (NUEVO DISEÑO: SIN FIJADO, MATERIA GRANDE)
             let htmlExamenes = "";
             if(examenesFuturos.length > 0) {
                 examenesFuturos.forEach(ex => {
                     htmlExamenes += `
                     <div class="result-card type-examen">
                         <div class="examen-badge-alert">📌 EXAMEN</div>
-                        <div class="card-info">
+                        <div class="card-info" style="flex:1">
                             <span class="card-day">${ex.fecha}</span>
-                            <div class="card-time-wrapper">
-                                <div class="clock-icon" style="border-color:var(--c-primary)"></div>
-                                <span class="card-time" style="color:var(--c-primary); font-size:18px;">${ex.hora}</span>
+                            <div style="font-size:22px; font-weight:800; color:var(--c-primary); margin-top:2px; line-height:1.2;">
+                                ${ex.asignatura}
                             </div>
                         </div>
-                        <span class="badge bg-examen">📝 ${ex.asignatura}</span>
+                        <span class="badge bg-examen" style="font-size:10px; padding:5px 10px;">PENDIENTE</span>
                     </div>`;
                 });
             } else {
@@ -674,7 +672,7 @@
             htmlFaltas += `
                 <div class="policy-note">
                     <strong>ℹ️ NOTA IMPORTANTE:</strong><br>
-                    Las faltas recuperables hay que comentarlas con Elisa. En caso de ser recuperables, solo se pueden realizar en el mismo curso y no son acumulables a cursos posteriores.
+                    Las faltas recuperables hay que comentarlas con Elisa. En caso de ser recuperables, solo se pueden realizar en el mismo curso y no son acumulables.
                 </div>
             `;
 
@@ -830,4 +828,3 @@
 </script>
 </body>
 </html>
-
