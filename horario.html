@@ -125,11 +125,20 @@
 
         .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* AJUSTES MÓVIL */
+        /* AJUSTES MÓVIL (Nombre en una linea) */
         @media (max-width: 480px) {
             .tab-btn { font-size: 10px; padding: 10px 1px; }
             .tabs-nav { gap: 3px; padding: 4px; }
-            .name-span { white-space: nowrap; display: inline-block; }
+            
+            /* Nombre truncado si es excesivamente largo aun con la abreviatura */
+            .name-span { 
+                white-space: nowrap; 
+                display: inline-block; 
+                max-width: 250px; 
+                overflow: hidden; 
+                text-overflow: ellipsis; 
+                vertical-align: bottom;
+            }
         }
 
         input { 
@@ -312,7 +321,28 @@
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
+    
+    // ✅ FUNCIÓN ORIGINAL DE CAPITALIZAR (REQUERIDA POR EL HELPER)
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
+
+    // ✅ NUEVA LÓGICA DE NOMBRE INTELIGENTE (Nombre + Ap1 + Ap2.)
+    function formatNameSmart(nombre) {
+        let n = nombre.trim().toLowerCase();
+        let parts = n.split(/\s+/);
+        
+        // Si tiene más de 2 palabras (ej. "Juan Pérez García")
+        if (parts.length > 2) {
+            let last = parts.pop(); // Saca el último (García)
+            // Reconstruye el principio (Juan Pérez)
+            let resto = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+            // Toma la inicial del último (G.)
+            let inicial = last.charAt(0).toUpperCase() + ".";
+            return resto + " " + inicial;
+        }
+        
+        // Si son 2 o menos, formato normal
+        return formatName(nombre);
+    }
 
     function esNombreValido(texto) {
         if (!texto || texto.length < 2) return false;
@@ -375,7 +405,6 @@
     }
 
     async function ejecutarBusqueda(nombre) {
-        // ✅ OCULTAR ERROR SI SE REALIZA UNA BÚSQUEDA NUEVA
         document.getElementById('error-msg').style.display = 'none';
         
         document.getElementById('search-area').style.display = 'none'; 
@@ -412,7 +441,9 @@
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         
-        const nF = formatName(nombre);
+        // ✅ USAMOS LA NUEVA FUNCIÓN SMART AQUI
+        const nF = formatNameSmart(nombre);
+
         document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
         document.getElementById('loading-spinner').style.display = 'none';
         
@@ -437,7 +468,10 @@
             if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => htmlFaltas += `<div class="result-card type-falta"><div class="falta-badge-alert">⚠️ AUSENCIA</div><div class="card-info"><span class="card-day">${fa.fecha}</span><div class="card-time-wrapper"><div class="clock-icon icon-falta"></div><span class="card-time" style="color:var(--c-falta);">${fa.hora}</span></div></div><span class="badge bg-falta">FALTA</span></div>`); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
+            
+            // ✅ AQUI SE APLICA EL NOMBRE ACORTADO EN HTML
             document.getElementById('resultado').innerHTML = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">Horario de <span class="name-span" style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); font-size:1.1em; white-space: nowrap;">${nF}</span></h3><div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div><div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
+            
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
         } else {
             document.getElementById('error-msg').innerText = "Nombre no encontrado."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
@@ -460,7 +494,6 @@
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
     document.getElementById('btnReset').onclick = () => {
-        // ✅ LIMPIAR ERROR AL RESETEAR
         document.getElementById('error-msg').style.display = 'none';
         document.getElementById('resultado').innerHTML = ''; document.getElementById('actions-panel').style.display = 'none'; document.getElementById('search-area').style.display = 'block';
         document.getElementById('magicInput').value = '';
@@ -474,7 +507,6 @@
             if(!SISTEMA_DESBLOQUEADO) {
                 if (btoa(val) === _0x8F) {
                     SISTEMA_DESBLOQUEADO = true; 
-                    // ✅ LIMPIAR ERROR AL DESBLOQUEAR CORRECTAMENTE
                     document.getElementById('error-msg').style.display = 'none';
                     document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
                     input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
