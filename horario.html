@@ -259,7 +259,7 @@
         
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
         
-        /* Debug info styles */
+        /* Estilo para el chivato (Debug) */
         .debug-info { 
             font-size: 10px; color: #ccc; margin-top: 30px; 
             text-align: center; padding: 10px; border-top: 1px dashed #eee; 
@@ -324,8 +324,8 @@
     // ✅ URL DE EXÁMENES
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
 
-    // ✅ URL DE FALTAS: IMPORTANTE -> output=tsv para evitar error de comas
-    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=tsv";
+    // ✅ URL DE FALTAS CONSTRUIDA A MANO (GID 1356052707 + TSV)
+    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
@@ -449,10 +449,9 @@
         if(dataFaltas && dataFaltas.length > 0) {
             let primeraFila = dataFaltas[1]; // Saltamos cabecera
             if(primeraFila) {
+                // Preparamos el mensaje pero no lo mostramos si todo va bien
                 debugMsg = `🔍 CHIVATO: Leídas ${dataFaltas.length} filas.\nEjemplo fila 2: Col0(Tstamp):${primeraFila[0]} | Col1(Fecha):${primeraFila[1]} | Col2(Hora):${primeraFila[2]} | Col3(Alumno):${primeraFila[3]}`;
             }
-        } else {
-            debugMsg = "🔍 CHIVATO: No se ha podido descargar el archivo de Faltas o está vacío.";
         }
 
         // 1. HORARIO
@@ -653,7 +652,7 @@
             }
             
             // AÑADIR CHIVATO SI NO HAY FALTAS
-            if(faltasEncontradas.length === 0) {
+            if(faltasEncontradas.length === 0 && debugMsg !== "") {
                htmlFaltas += `<div class="debug-info">${debugMsg}</div>`; 
             }
 
