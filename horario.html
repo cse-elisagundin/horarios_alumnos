@@ -45,21 +45,26 @@
         body { 
             font-family: 'Outfit', 'Segoe UI', sans-serif; 
             background-color: var(--bg-body); 
-            margin: 0; padding: 15px;
+            margin: 0; padding: 20px;
             display: flex; justify-content: center; align-items: center; 
             min-height: 100vh; color: #333;
             transition: padding-top 0.3s ease;
         }
 
-        /* --- BANNER INFINITO --- */
+        /* --- ESTILOS DEL BANNER INFINITO CORPORATIVO --- */
         .ticker-wrap {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 40px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
             background-color: var(--c-primary);
             border-bottom: 2px solid var(--c-accent);
-            overflow: hidden; white-space: nowrap;
-            display: none; align-items: center; z-index: 10000;
+            overflow: hidden;
+            white-space: nowrap;
+            display: none; 
+            align-items: center;
+            z-index: 10000;
         }
 
         .ticker-move {
@@ -70,8 +75,11 @@
         .ticker-item {
             display: inline-block;
             padding: 0 50px;
-            color: white; font-weight: 700; font-size: 14px;
-            text-transform: uppercase; letter-spacing: 1px;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         @keyframes ticker-scroll {
@@ -81,78 +89,157 @@
 
         .container { 
             background-color: var(--bg-container); 
-            padding: 30px 20px; border-radius: 20px; 
+            padding: 40px; border-radius: 20px; 
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
             width: 100%; max-width: 500px; text-align: center;
-            position: relative; z-index: 1; overflow: hidden; 
+            position: relative; z-index: 1;
+            overflow: hidden; 
         }
 
-        .logo-img { max-width: 140px; margin-bottom: 15px; }
-        .brand-line { height: 5px; width: 100px; margin: 0 auto 20px; background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
+        .web-brand { margin-bottom: 25px; }
+        .logo-img { max-width: 160px; }
 
-        h2 { color: var(--c-primary); margin-bottom: 8px; font-size: 24px; font-weight: 800; text-transform: uppercase; }
-        #status-indicator { font-size: 10px; color: #8898aa; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        .brand-line {
+            height: 5px; width: 120px; margin: 15px auto 0;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 10px;
+        }
+
+        h2 { 
+            color: var(--c-primary); margin-bottom: 10px; 
+            font-size: 26px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+        
+        #status-indicator {
+            font-size: 11px; color: #8898aa; margin-bottom: 25px; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+        }
 
         input { 
-            width: 100%; padding: 16px; border: 2px solid #e1e9f0; border-radius: 12px; font-size: 16px; margin-bottom: 10px; box-sizing: border-box; text-align: center; transition: all 0.3s ease; color: var(--c-primary); font-weight: 600; background-color: #fafbfc;
+            width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
+            border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
+            box-sizing: border-box; text-align: center;
+            transition: all 0.3s ease; color: var(--c-primary);
+            font-weight: 600; background-color: #fafbfc;
         }
-        input:focus { border-color: var(--c-secondary); outline: none; background-color: #fff; }
+        input:focus { border-color: var(--c-secondary); background-color: #fff; box-shadow: 0 0 0 5px rgba(43, 148, 204, 0.1); outline: none; }
 
         .btn-main { 
-            width: 100%; padding: 16px; background-color: var(--c-primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; transition: all 0.3s ease;
+            width: 100%; padding: 16px; background-color: var(--c-primary); 
+            color: white; border: none; border-radius: 12px; 
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
         }
+        .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
-        /* --- BOTONERA TABS OPTIMIZADA --- */
         .tabs-nav {
-            display: flex; background: #f0f4f8; padding: 4px; border-radius: 12px; margin-bottom: 25px; gap: 4px;
+            display: flex; background: #f0f4f8; padding: 5px; border-radius: 12px; margin-bottom: 25px; gap: 5px;
         }
 
         .tab-btn {
-            flex: 1; padding: 10px 2px; border: none; background: transparent; color: #8898aa; font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 11px; border-radius: 9px; cursor: pointer; text-transform: uppercase; white-space: nowrap; transition: 0.3s;
+            flex: 1; padding: 12px 2px; border: none; background: transparent; color: #8898aa; font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 11px; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; position: relative; white-space: nowrap;
         }
 
-        .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+        .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* --- RESULTADOS --- */
-        .result-card { background: #fff; margin-bottom: 12px; padding: 15px; border-radius: 15px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: relative; }
+        /* Ajustes específicos para móviles */
+        @media (max-width: 480px) {
+            .tabs-nav { gap: 2px; padding: 3px; }
+            .tab-btn { font-size: 9px; padding: 10px 1px; letter-spacing: 0; }
+            .container { padding: 30px 15px; }
+            .student-name-container { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; }
+        }
+
+        .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        #resultado { margin-top: 35px; text-align: left; }
+        
+        .result-card { 
+            background: linear-gradient(145deg, #ffffff, #fdfdfd); margin-bottom: 15px; padding: 20px; border-radius: 15px; border: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; box-shadow: 4px 4px 15px rgba(0,0,0,0.03); position: relative; transition: all 0.3s ease;
+        }
+
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
-        .result-card.type-nota { border-left: 6px solid #ccc; }
+        .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
         .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
 
-        .card-day { font-weight: 800; color: #a1aab2; font-size: 11px; text-transform: uppercase; }
-        .card-time { font-size: 19px; color: var(--c-primary); font-weight: 800; }
-        .badge { padding: 6px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; }
+        .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
+            display: none; position: absolute; top: -10px; left: 20px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
+        .soon-badge { background: var(--soon-yellow); color: #555; }
+        .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
+        .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
+
+        .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
+        .result-card.is-live .live-badge { display: block; }
+        .result-card.is-soon { border: 2px solid var(--soon-yellow); background-color: #fffdf5; }
+        .result-card.is-soon .soon-badge { display: block; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        .card-info { display: flex; flex-direction: column; gap: 2px; }
+        .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
+        .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .clock-icon { width: 18px; height: 18px; border: 2px solid var(--c-primary); border-radius: 50%; position: relative; flex-shrink: 0; }
+        .clock-icon::after { content: ''; position: absolute; width: 6px; height: 2px; background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg); }
+        .clock-icon.icon-falta { border-color: var(--c-falta); }
+        .clock-icon.icon-falta::after { background: var(--c-falta); }
+        .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
+
+        .badge { padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; color: white; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; min-width: 60px; }
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
-        .bg-examen { background: var(--c-primary); }
+        .bg-examen { background: var(--c-primary); } 
         .bg-falta { background: var(--c-falta); }
 
-        /* --- FIX NOMBRE ALUMNO (UNA LÍNEA) --- */
-        .student-name-header {
-            color: var(--c-primary); margin-bottom: 20px; font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 18px;
-        }
-        .student-name-span {
-            color: var(--c-accent); font-family: 'Schoolbell', cursive; white-space: nowrap; display: inline-block; font-size: 1.1em;
-        }
+        .grade-display { font-size: 24px; font-weight: 900; padding: 5px 15px; border-radius: 10px; min-width: 60px; text-align: center; }
+        .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
+        .grade-fail { color: var(--grade-fail); border: 2px solid var(--grade-fail); background: rgba(220, 53, 69, 0.1); }
+        .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; }
 
         #actions-panel { display: none; margin-top: 20px; }
-        .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-        .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 13px; cursor: pointer; padding: 10px; width: 100%; opacity: 0.7; }
+        .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
+        .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
 
-        .whatsapp-float { position: fixed; bottom: 20px; right: 20px; background-color: #25D366; color: white; padding: 10px 20px; border-radius: 50px; text-decoration: none; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 999; font-weight: bold; font-size: 14px; }
-        .whatsapp-icon { width: 20px; height: 20px; fill: white; }
+        #directory-area { display: none; margin-top: 15px; text-align: left; max-height: 300px; overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; border-radius: 12px; background: #fafbfc; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
+        .student-chip { display: inline-block; background: white; border: 1px solid var(--c-secondary); color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-transform: capitalize; }
+        .student-chip:hover { background: var(--c-secondary); color: white; transform: scale(1.05); }
 
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; width: 100%; }
+        .btn-reset:hover { opacity: 1; color: var(--c-accent); }
 
-        @media (max-width: 400px) {
-            .tab-btn { font-size: 9px; padding: 8px 1px; }
-            .student-name-header { font-size: 16px; }
+        .whatsapp-float { position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); z-index: 9999; font-weight: bold; font-size: 15px; transition: all 0.3s ease; }
+        .whatsapp-float:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
+        .whatsapp-icon { width: 22px; height: 22px; fill: white; }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
+        .policy-note { margin-top: 25px; padding: 15px; background-color: #eef2f7; border-left: 4px solid var(--c-primary); border-radius: 8px; font-size: 13px; color: #555; text-align: left; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .footer-update { margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic; }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
+            .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .ticker-wrap { display: none !important; }
+            .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .result-card { break-inside: avoid; border: 1px solid #eee; }
+            .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none !important; }
+            .result-card.is-live, .result-card.is-soon { border: 1px solid #eee; background: white; box-shadow: none; transform: none; }
+            .tab-content { display: block !important; }
         }
-
-        @media print { .ticker-wrap, .whatsapp-float, #search-area, #actions-panel { display: none !important; } }
     </style>
 </head>
 <body>
@@ -170,12 +257,12 @@
     <div id="search-area">
         <h2>Horarios</h2>
         <div id="status-indicator">Consulta tu planificación semanal</div>
-        <input type="text" id="magicInput" placeholder="Introduce nombre..." autocomplete="off">
+        <input type="text" id="magicInput" placeholder="Contraseña..." autocomplete="off">
         <button id="btnBuscar" class="btn-main">ENTRAR</button>
         <div id="directory-area"></div>
     </div>
 
-    <div id="loading-spinner" style="display:none; margin: 20px auto;">Cargando...</div>
+    <div id="loading-spinner" class="spinner"></div>
     <p id="error-msg" style="display:none; color:var(--error); font-weight:bold; margin-top:20px;"></p>
     
     <div id="resultado"></div>
@@ -191,6 +278,12 @@
 </a>
 
 <script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw_horario.js').then(reg => console.log('SW registrado')).catch(err => console.log('Error SW', err));
+        });
+    }
+
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
     let globalAviso = null; 
@@ -207,82 +300,238 @@
         "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
     };
 
+    let memoriaCache = {}; 
+
     function leerHoja(url) {
+        if (!url || url.includes("PON_AQUI")) return Promise.resolve([]);
+        if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
+            let parseConfig = { download:true, skipEmptyLines:true };
+            if(url.includes("output=tsv")) parseConfig.delimiter = "\t";
             Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, skipEmptyLines:true, delimiter: url.includes("output=tsv") ? "\t" : ",",
-                complete: res => resolve(res.data), error: () => resolve([]) 
+                ...parseConfig,
+                complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
+                error: e => resolve([]) 
             });
         });
     }
 
+    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
-    function esNombreValido(texto) { if (!texto || texto.length < 2) return false; const t = texto.toUpperCase().trim(); const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "CLASE"]; return !prohibidos.some(p => t.includes(p)); }
+
+    function esNombreValido(texto) {
+        if (!texto || texto.length < 2) return false;
+        const t = texto.toUpperCase().trim();
+        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "FECHA", "ASIGNATURA"];
+        if (prohibidos.some(p => t.includes(p))) return false;
+        if (/\d/.test(t) && t.includes(':')) return false;
+        return true;
+    }
+
+    function agruparClases(clases) {
+        if(clases.length === 0) return [];
+        const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+        clases.sort((a, b) => {
+            const diffDia = diasOrden.indexOf(a.dia) - diasOrden.indexOf(b.dia);
+            if (diffDia !== 0) return diffDia;
+            return a.startMins - b.startMins;
+        });
+        let grupos = []; let actual = null;
+        clases.forEach(clase => {
+            const startMins = timeToMins(clase.h);
+            if (actual) {
+                if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
+                    actual.endMins += 30; 
+                    if (!actual.fullText.includes(clase.fullText)) actual.fullText += " / " + clase.fullText;
+                    return;
+                } else { grupos.push(actual); }
+            }
+            actual = { dia: clase.dia, startMins: startMins, endMins: startMins + 30, materia: clase.materia, tipo: clase.tipo, fullText: clase.fullText };
+        });
+        if (actual) grupos.push(actual);
+        return grupos;
+    }
+
+    function getEstadoClase(diaClase, startMins, endMins) {
+        const now = new Date(); const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const hoy = diasSemana[now.getDay()]; const nowMins = now.getHours() * 60 + now.getMinutes();
+        if (diaClase !== hoy) return null;
+        if (nowMins >= startMins && nowMins < endMins) return 'live';
+        if (nowMins >= (startMins - 30) && nowMins < startMins) return 'soon';
+        return null;
+    }
+
+    window.cambiarPestana = function(pestanaId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('btn-tab-' + pestanaId).classList.add('active');
+        document.getElementById('content-' + pestanaId).classList.add('active');
+    };
 
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
-        if (data && data.length > 1) {
-            const mensaje = data[1][0]; const estado = (data[1][1] || "").toUpperCase().trim();
-            if(estado === "ON" && mensaje) {
-                const ticker = document.getElementById('global-ticker');
-                const content = document.getElementById('ticker-content');
-                const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
-                content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
-                ticker.style.display = "flex";
-                document.body.style.paddingTop = "40px";
+        if (data && data.length > 0) {
+            const filaDato = data[1]; 
+            if(filaDato) {
+                const mensaje = filaDato[0]; const estado = (filaDato[1] || "").toUpperCase().trim();
+                if(estado === "ON" && mensaje) {
+                    globalAviso = mensaje;
+                    const ticker = document.getElementById('global-ticker');
+                    const content = document.getElementById('ticker-content');
+                    const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
+                    content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
+                    ticker.style.display = "flex";
+                    document.body.style.paddingTop = "40px";
+                }
             }
         }
     }
 
-    window.cambiarPestana = function(pId) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.getElementById('btn-tab-' + pId).classList.add('active');
-        document.getElementById('content-' + pId).classList.add('active');
-    };
-
     async function ejecutarBusqueda(nombre) {
-        const buscado = limpiarTexto(nombre); if(!buscado) return;
-        document.getElementById('search-area').style.display = 'none';
+        document.getElementById('search-area').style.display = 'none'; 
         document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('resultado').innerHTML = '';
+        const nombreBuscado = limpiarTexto(nombre); const dias = Object.keys(urls);
+        const promesasHorario = dias.map(dia => leerHoja(urls[dia]));
+        const [resultadosHorario, dataExamenes, dataFaltas] = await Promise.all([Promise.all(promesasHorario), leerHoja(URL_EXAMENES), leerHoja(URL_FALTAS)]);
         
-        const promesas = Object.values(urls).map(u => leerHoja(u));
-        const [examData, ...dayData] = await Promise.all([leerHoja(URL_EXAMENES), ...promesas]);
-        
-        let clasesHtml = ""; 
-        const dias = Object.keys(urls);
-        dayData.forEach((data, idx) => {
+        let clasesRaw = []; let examenesFuturos = []; let examenesPasados = []; let faltasEncontradas = []; 
+        dias.forEach((dia, idx) => {
+            const data = resultadosHorario[idx]; if(!data) return;
             data.forEach(row => {
-                if (row.some(c => esNombreValido(c) && limpiarTexto(c).includes(buscado))) {
-                    clasesHtml += `<div class="result-card type-apoyo"><div class="card-info"><span class="card-day">${dias[idx]}</span><br><span class="card-time">${row[0]}</span></div><span class="badge bg-apoyo">CLASE</span></div>`;
+                let hA = (row[0] || "").trim().substring(0,5);
+                if(hA && hA.includes(":")) {
+                    for(let c=1; c<=6; c++) { 
+                        let val = row[c] || ""; if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) clasesRaw.push({ dia, h: hA, materia: "Apoyo", tipo: "apoyo", fullText: val });
+                    }
+                }
+                let hI = (row[7] || "").trim().substring(0,5);
+                if(hI && hI.includes(":")) {
+                    for(let c=8; c<=13; c++) { 
+                        let val = row[c] || ""; if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) clasesRaw.push({ dia, h: hI, materia: "Inglés", tipo: "ingles", fullText: val });
+                    }
                 }
             });
         });
 
-        document.getElementById('loading-spinner').style.display = 'none';
-        const nombreFormateado = formatName(nombre);
+        const hoy = new Date(); hoy.setHours(0,0,0,0);
+        if(dataExamenes) {
+            dataExamenes.forEach(row => {
+                if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado)) {
+                    let fS = row[0]; let aS = row[1]; let nS = (row[3] || "").trim();
+                    let fO = new Date(fS); if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } fO.setHours(0,0,0,0);
+                    let item = { fecha: fS || "Fecha pte.", asignatura: aS || "Examen", nota: nS };
+                    if (item.nota !== "" || fO < hoy) examenesPasados.push(item); else examenesFuturos.push(item);
+                }
+            });
+        }
+
+        if(dataFaltas) {
+            dataFaltas.forEach(row => {
+                if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
+                    let fR = row[1] || ""; let fM = fR.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    faltasEncontradas.push({ fecha: fM ? fM[0] : fR, hora: row[2] || "Hora s/d", rawDate: fM ? new Date(fM[3], fM[2]-1, fM[1]) : new Date(0) });
+                }
+            });
+            faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
+        }
         
-        document.getElementById('resultado').innerHTML = `
-            <div class="student-name-header">Horario de <span class="student-name-span">${nombreFormateado}</span></div>
-            <div class="tabs-nav">
-                <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 Horario</button>
-                <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 Exámenes</button>
-                <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 Notas</button>
-                <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ Faltas</button>
-            </div>
-            <div id="content-horario" class="tab-content active">${clasesHtml || '<p>No hay clases.</p>'}</div>
-            <div id="content-examenes" class="tab-content"><p>Sin exámenes próximos.</p></div>
-            <div id="content-notas" class="tab-content"><p>Sin notas registradas.</p></div>
-            <div id="content-faltas" class="tab-content"><p>Sin faltas.</p></div>
-        `;
-        document.getElementById('actions-panel').style.display = 'block';
+        const nF = formatName(nombre);
+        document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
+        document.getElementById('loading-spinner').style.display = 'none';
+        
+        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0) {
+            let htmlHorario = "";
+            if(clasesRaw.length > 0) {
+                agruparClases(clasesRaw).forEach(item => {
+                    const hT = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
+                    const est = getEstadoClase(item.dia, item.startMins, item.endMins);
+                    let eC = ""; let bL = "";
+                    if (est === 'live') { eC = "is-live"; bL = `<div class="live-badge">🔴 EN CLASE AHORA</div>`; } 
+                    else if (est === 'soon') { eC = "is-soon"; bL = `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>`; }
+                    htmlHorario += `<div class="result-card type-${item.tipo} ${eC}">${bL}<div class="card-info"><span class="card-day">${item.dia}</span><div class="card-time-wrapper"><div class="clock-icon"></div><span class="card-time">${hT}</span></div></div><span class="badge bg-${item.tipo}">${item.materia}</span></div>`;
+                });
+            } else htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`;
+
+            let htmlExamenes = "";
+            if(examenesFuturos.length > 0) {
+                examenesFuturos.forEach(ex => htmlExamenes += `<div class="result-card type-examen"><div class="examen-badge-alert">📌 EXAMEN</div><div class="card-info" style="flex:1"><span class="card-day">${ex.fecha}</span><div style="font-size:22px; font-weight:800; color:var(--c-primary); margin-top:2px; line-height:1.2;">${ex.asignatura}</div></div><span class="badge bg-examen" style="font-size:10px; padding:5px 10px;">PENDIENTE</span></div>`);
+            } else htmlExamenes = `<div class="empty-state">No hay exámenes próximos.</div>`;
+
+            let htmlNotas = "";
+            if(examenesPasados.length > 0) {
+                examenesPasados.reverse().forEach(ex => {
+                    let vN = `<span class="grade-pending">Pendiente de saber nota</span>`;
+                    if(ex.nota) {
+                        let nN = parseFloat(ex.nota.replace(',','.'));
+                        if(!isNaN(nN)) { let cN = nN >= 5 ? 'grade-pass' : 'grade-fail'; vN = `<span class="grade-display ${cN}">${ex.nota}</span>`; } 
+                        else vN = `<span class="grade-display grade-pass" style="font-size:14px">${ex.nota}</span>`;
+                    }
+                    htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day" style="font-size:11px;">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px; margin-top:2px;">${ex.asignatura}</div></div>${vN}</div>`;
+                });
+            } else htmlNotas = `<div class="empty-state">No hay registro de exámenes pasados.</div>`;
+
+            let htmlFaltas = "";
+            if(faltasEncontradas.length > 0) {
+                faltasEncontradas.forEach(fa => htmlFaltas += `<div class="result-card type-falta"><div class="falta-badge-alert">⚠️ AUSENCIA</div><div class="card-info"><span class="card-day">${fa.fecha}</span><div class="card-time-wrapper"><div class="clock-icon icon-falta"></div><span class="card-time" style="color:var(--c-falta); font-size:18px;">${fa.hora}</span></div></div><span class="badge bg-falta">FALTA</span></div>`);
+            } else htmlFaltas = `<div class="empty-state">¡Genial! No tienes faltas registradas.</div>`;
+            htmlFaltas += `<div class="policy-note"><strong>ℹ️ NOTA IMPORTANTE:</strong><br><br> Las faltas recuperables hay que comentarlas con Elisa. En caso de ser recuperables, solo se pueden realizar en el mismo curso y no son acumulables.</div>`;
+
+            let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
+            let tH = new Date(); let hS = tH.getHours() + ":" + String(tH.getMinutes()).padStart(2,'0');
+
+            document.getElementById('resultado').innerHTML = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">Horario de <span class="student-name-container" style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em; white-space: nowrap;">${nF}</span></h3><div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}</div><div class="footer-update">Datos actualizados hoy a las ${hS}</div>`;
+            if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
+        } else {
+            document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
+        }
     }
+
+    async function cargarDirectorio() {
+        const area = document.getElementById('directory-area'); area.innerHTML = "<div style='color:#999; font-size:14px; margin-top:10px;'>Cargando lista de alumnos...</div>"; area.style.display = 'block';
+        const promesas = Object.values(urls).map(url => leerHoja(url)); const resultados = await Promise.all(promesas);
+        let alumnos = new Set();
+        resultados.forEach(data => { if(data) data.forEach(row => { for(let c=1; c<=6; c++){ let txt = (row[c] || "").trim(); if(esNombreValido(txt)) alumnos.add(txt.toLowerCase()); } for(let c=8; c<=13; c++){ let txt = (row[c] || "").trim(); if(esNombreValido(txt)) alumnos.add(txt.toLowerCase()); } }); });
+        let html = ""; Array.from(alumnos).sort().forEach(n => html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`); area.innerHTML = html;
+    }
+
+    window.filtrarDirectorioMain = () => {
+        const i = document.getElementById('magicInput'); const f = limpiarTexto(i.value);
+        document.querySelectorAll('.student-chip').forEach(chip => { chip.style.display = limpiarTexto(chip.textContent).includes(f) ? 'inline-block' : 'none'; });
+    };
+
+    window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
+
+    document.getElementById('btnReset').onclick = () => {
+        document.getElementById('resultado').innerHTML = ''; document.getElementById('actions-panel').style.display = 'none'; document.getElementById('search-area').style.display = 'block';
+        document.getElementById('magicInput').value = ''; document.getElementById('whatsapp-link').href = "https://wa.me/34693067214";
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
-        document.getElementById('btnBuscar').onclick = () => ejecutarBusqueda(document.getElementById('magicInput').value);
-        document.getElementById('btnReset').onclick = () => location.reload();
+        const input = document.getElementById('magicInput'); const btn = document.getElementById('btnBuscar');
+        const login = () => {
+            const val = input.value.trim(); if(!val) return;
+            if(!SISTEMA_DESBLOQUEADO) {
+                if (btoa(val) === _0x8F) {
+                    SISTEMA_DESBLOQUEADO = true; document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
+                    input.value = ""; input.placeholder = "Busca o selecciona alumno..."; document.getElementById('btnBuscar').innerText = "BUSCAR";
+                    cargarDirectorio(); input.onkeyup = window.filtrarDirectorioMain;
+                } else ejecutarBusqueda(val);
+            } else ejecutarBusqueda(val);
+        };
+        btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
+        document.getElementById('btnCopiar').onclick = () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url).then(() => { 
+                const original = document.getElementById('btnCopiar').innerText; document.getElementById('btnCopiar').innerText = "✅ ENLACE COPIADO";
+                setTimeout(() => document.getElementById('btnCopiar').innerText = original, 2000);
+            });
+        };
+        const p = new URLSearchParams(window.location.search).get('alumno'); if(p) { input.value = p; ejecutarBusqueda(p); }
+        setInterval(() => { if(document.getElementById('resultado').innerHTML !== '') ejecutarBusqueda(document.getElementById('magicInput').value); }, 60000);
     });
 </script>
 </body>
