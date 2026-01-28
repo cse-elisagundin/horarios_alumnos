@@ -125,43 +125,45 @@
 
         .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
 
-        /* AJUSTES MÓVIL Y ALINEACIÓN DEL TÍTULO */
+        /* --- CABECERA DE RESULTADOS OPTIMIZADA --- */
         
-        /* Contenedor flexible para el título del resultado */
         .result-header-flex {
             display: flex;
             flex-direction: row;
-            flex-wrap: wrap; /* Permite que baje si es necesario, pero intenta mantener línea */
+            flex-wrap: nowrap; /* 🔥 Obliga a mantenerse en una línea */
             justify-content: center;
-            align-items: baseline; /* Alinea por la línea base del texto */
+            align-items: baseline; /* 🔥 Alinea la base de las letras perfectamente */
             gap: 6px;
             margin-bottom: 20px;
             color: var(--c-primary);
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
-            font-size: 1.17em; /* Tamaño h3 estándar */
+            font-size: 22px; 
+            line-height: 1.2;
+            width: 100%;
         }
 
         .name-span { 
             font-family: 'Schoolbell', cursive; 
             color: var(--c-accent); 
             text-shadow: 1px 1px 2px rgba(0,0,0,0.15); 
-            font-size: 1.2em; /* Un pelín más grande para destacar */
+            font-size: 1.1em;
+            white-space: nowrap; /* No rompe línea */
+            overflow: hidden;
+            text-overflow: ellipsis; /* Puntos suspensivos si falla todo lo demás */
+            flex-shrink: 1; /* Permite encoger si no cabe */
+        }
+
+        .label-span {
             white-space: nowrap;
+            flex-shrink: 0; /* "Horario de" nunca se encoge */
         }
 
         @media (max-width: 480px) {
             .tab-btn { font-size: 10px; padding: 10px 1px; }
             .tabs-nav { gap: 3px; padding: 4px; }
-            
-            /* En móvil, aseguramos que el nombre no rompa el diseño si aun así es largo */
-            .name-span {
-                max-width: 280px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                display: inline-block;
-                vertical-align: bottom; 
-            }
+            /* Ajuste de tamaño en móvil para que quepa mejor */
+            .result-header-flex { font-size: 18px; }
         }
 
         input { 
@@ -344,33 +346,30 @@
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
-    
-    // ✅ FUNCIÓN ORIGINAL DE CAPITALIZAR (REQUERIDA POR EL HELPER)
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // ✅ NUEVA LÓGICA DE NOMBRE INTELIGENTE MEJORADA PARA 4 PALABRAS
+    // ✅ LÓGICA DE NOMBRE SUPER COMPACTA
+    function formatNameForDisplay(originalName) {
+        let smartName = formatNameSmart(originalName);
+        
+        // Si estamos en móvil (menos de 480px) Y el nombre sigue siendo largo (>15 caracteres)
+        if (window.innerWidth < 480 && smartName.length > 15) { 
+             let parts = originalName.trim().toLowerCase().split(/\s+/);
+             // Primer Nombre COMPLETO + Iniciales de TODO lo demás
+             let first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+             let initials = parts.slice(1).map(p => p.charAt(0).toUpperCase() + ".").join(" ");
+             return first + " " + initials;
+        }
+        return smartName;
+    }
+
+    // Lógica intermedia (la que ya tenías)
     function formatNameSmart(nombre) {
         let n = nombre.trim().toLowerCase();
         let parts = n.split(/\s+/);
         let formattedParts = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1));
-        
-        // Si tiene 4 o más palabras (Nombre1 Nombre2 Apellido1 Apellido2)
-        // Ejemplo: Francisco Javier Rodríguez Fernández
-        if (formattedParts.length >= 4) {
-            // Nombre1 (Completo)
-            // Nombre2 (Inicial + punto)
-            // Apellido1 (Completo)
-            // Apellido2 (Inicial + punto)
-            // Resultado: Francisco J. Rodríguez F.
-            return `${formattedParts[0]} ${formattedParts[1][0]}. ${formattedParts[2]} ${formattedParts[formattedParts.length-1][0]}.`;
-        }
-        
-        // Si tiene 3 palabras (Juan Pérez García) -> Juan Pérez G.
-        if (formattedParts.length === 3) {
-            return `${formattedParts[0]} ${formattedParts[1]} ${formattedParts[2][0]}.`;
-        }
-        
-        // Si son 2 o menos, formato normal
+        if (formattedParts.length >= 4) return `${formattedParts[0]} ${formattedParts[1][0]}. ${formattedParts[2]} ${formattedParts[formattedParts.length-1][0]}.`;
+        if (formattedParts.length === 3) return `${formattedParts[0]} ${formattedParts[1]} ${formattedParts[2][0]}.`;
         return formatName(nombre);
     }
 
@@ -471,7 +470,8 @@
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         
-        const nF = formatNameSmart(nombre);
+        // ✅ USAMOS LA NUEVA FUNCIÓN "DISPLAY" AQUI
+        const nF = formatNameForDisplay(nombre);
 
         document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
         document.getElementById('loading-spinner').style.display = 'none';
@@ -498,10 +498,9 @@
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
             
-            // ✅ APLICAMOS EL DIV FLEXIBLE PARA ALINEAR TEXTO Y NOMBRE
             document.getElementById('resultado').innerHTML = `
                 <div class="result-header-flex">
-                    <span>Horario de</span>
+                    <span class="label-span">Horario de</span>
                     <span class="name-span">${nF}</span>
                 </div>
                 <div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div><div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
