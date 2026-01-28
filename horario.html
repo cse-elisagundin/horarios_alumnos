@@ -258,6 +258,13 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
+        
+        /* Debug info styles */
+        .debug-info { 
+            font-size: 10px; color: #ccc; margin-top: 30px; 
+            text-align: center; padding: 10px; border-top: 1px dashed #eee; 
+            white-space: pre-wrap; font-family: monospace;
+        }
 
         @media print {
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
@@ -317,8 +324,8 @@
     // ✅ URL DE EXÁMENES
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
 
-    // ✅ URL DE FALTAS (Insertada la tuya)
-    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=csv";
+    // ✅ URL DE FALTAS: IMPORTANTE -> output=tsv para evitar error de comas
+    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=tsv";
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
@@ -334,9 +341,12 @@
         if (!url || url.includes("PON_AQUI")) return Promise.resolve([]);
         if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
+            // DETECTAR SI ES FALTAS PARA USAR TABULADOR
+            let parseConfig = { download:true, skipEmptyLines:true };
+            if(url.includes("output=tsv")) parseConfig.delimiter = "\t";
+            
             Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, 
-                skipEmptyLines:true, 
+                ...parseConfig,
                 complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
                 error: e => { console.error("Error cargando", url); resolve([]); } 
             });
@@ -346,13 +356,11 @@
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     
-    // --- NUEVA FUNCIÓN DE NORMALIZACIÓN DE TEXTO ---
-    // Elimina tildes y convierte a minúsculas para comparar mejor
+    // FUNCIÓN DE LIMPIEZA DE TEXTO (Quita tildes para búsqueda)
     function limpiarTexto(t) {
         return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
     }
     
-    // Mantenemos formatName para mostrarlo bonito en pantalla (con mayúsculas)
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
     function esNombreValido(texto) {
@@ -422,7 +430,6 @@
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
         
-        // USAMOS LA NUEVA FUNCIÓN DE LIMPIEZA
         const nombreBuscado = limpiarTexto(nombre);
         const dias = Object.keys(urls);
         
@@ -436,6 +443,17 @@
         let examenesFuturos = [];
         let examenesPasados = [];
         let faltasEncontradas = []; 
+        
+        // --- CHIVATO DEPURACIÓN ---
+        let debugMsg = "";
+        if(dataFaltas && dataFaltas.length > 0) {
+            let primeraFila = dataFaltas[1]; // Saltamos cabecera
+            if(primeraFila) {
+                debugMsg = `🔍 CHIVATO: Leídas ${dataFaltas.length} filas.\nEjemplo fila 2: Col0(Tstamp):${primeraFila[0]} | Col1(Fecha):${primeraFila[1]} | Col2(Hora):${primeraFila[2]} | Col3(Alumno):${primeraFila[3]}`;
+            }
+        } else {
+            debugMsg = "🔍 CHIVATO: No se ha podido descargar el archivo de Faltas o está vacío.";
+        }
 
         // 1. HORARIO
         dias.forEach((dia, idx) => {
@@ -446,7 +464,6 @@
                 if(horaApoyo && horaApoyo.includes(":")) {
                     for(let c=1; c<=6; c++) { 
                         let val = row[c] || "";
-                        // COMPARAMOS USANDO LIMPIEZA DE TILDES
                         if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) {
                             clasesRaw.push({ dia, h: horaApoyo, materia: "Apoyo", tipo: "apoyo", fullText: val });
                         }
@@ -470,7 +487,6 @@
 
         if(dataExamenes && dataExamenes.length > 0) {
             dataExamenes.forEach(row => {
-                // Verificar nombre (Col C / Index 2) con limpieza
                 if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado)) {
                     
                     let fechaStr = row[0]; // Col A: Fecha
@@ -501,10 +517,10 @@
             });
         }
 
-        // 3. FALTAS (Actualizado con limpieza y extracción de fecha robusta)
+        // 3. FALTAS (Indices TSV: 0=Timestamp, 1=DiaFecha, 2=Hora, 3=Nombre)
         if(dataFaltas && dataFaltas.length > 0) {
             dataFaltas.forEach(row => {
-                // Columna D (Índice 3) es el NOMBRE
+                // Columna 3 es NOMBRE
                 if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
                     
                     // EXTRAER FECHA LIMPIA (BUSCA DD/MM/YYYY)
@@ -513,8 +529,8 @@
                     let fechaLimpia = fechaMatch ? fechaMatch[0] : fechaRaw;
 
                     faltasEncontradas.push({
-                        fecha: fechaLimpia, // Col B: Día (limpio)
-                        hora: row[2] || "Hora s/d", // Col C: Hora
+                        fecha: fechaLimpia, // Col 1: Día (limpio)
+                        hora: row[2] || "Hora s/d", // Col 2: Hora
                         rawDate: fechaMatch ? new Date(fechaMatch[3], fechaMatch[2]-1, fechaMatch[1]) : new Date(0)
                     });
                 }
@@ -635,6 +651,11 @@
             } else {
                 htmlFaltas = `<div class="empty-state">¡Genial! No tienes faltas registradas.</div>`;
             }
+            
+            // AÑADIR CHIVATO SI NO HAY FALTAS
+            if(faltasEncontradas.length === 0) {
+               htmlFaltas += `<div class="debug-info">${debugMsg}</div>`; 
+            }
 
             // BADGES
             let badgeExamen = examenesFuturos.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-aviso); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesFuturos.length}</span>` : "";
@@ -713,7 +734,6 @@
 
     window.filtrarDirectorioMain = () => {
         const input = document.getElementById('magicInput');
-        // USAMOS LA LIMPIEZA AQUI TAMBIEN
         const filtro = limpiarTexto(input.value);
         const chips = document.querySelectorAll('.student-chip');
         chips.forEach(chip => {
