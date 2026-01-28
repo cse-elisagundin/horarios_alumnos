@@ -259,11 +259,25 @@
         
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
         
-        /* Estilo para el chivato (Debug) */
+        /* Chivato Debug */
         .debug-info { 
             font-size: 10px; color: #ccc; margin-top: 30px; 
             text-align: center; padding: 10px; border-top: 1px dashed #eee; 
             white-space: pre-wrap; font-family: monospace;
+        }
+
+        /* === NUEVO ESTILO: NOTA INFORMATIVA FALTAS === */
+        .policy-note {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #eef2f7;
+            border-left: 4px solid var(--c-primary);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #555;
+            text-align: left;
+            line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         }
 
         @media print {
@@ -630,7 +644,7 @@
                 htmlNotas = `<div class="empty-state">No hay registro de exámenes pasados.</div>`;
             }
 
-            // HTML FALTAS
+            // HTML FALTAS (Con nota añadida al final)
             let htmlFaltas = "";
             if(faltasEncontradas.length > 0) {
                 faltasEncontradas.forEach(fa => {
@@ -655,6 +669,14 @@
             if(faltasEncontradas.length === 0 && debugMsg !== "") {
                htmlFaltas += `<div class="debug-info">${debugMsg}</div>`; 
             }
+
+            // === AÑADIR NOTA INFORMATIVA AL FINAL ===
+            htmlFaltas += `
+                <div class="policy-note">
+                    <strong>ℹ️ NOTA IMPORTANTE:</strong><br>
+                    Las faltas recuperables hay que comentarlas con Elisa. En caso de ser recuperables, solo se pueden realizar en el mismo curso y no son acumulables.
+                </div>
+            `;
 
             // BADGES
             let badgeExamen = examenesFuturos.length > 0 ? `<span class="badge-count" style="display:inline-block; background:var(--c-aviso); color:white; border-radius:50%; padding:2px 6px; font-size:10px; margin-left:5px;">${examenesFuturos.length}</span>` : "";
