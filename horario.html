@@ -3,55 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Horario Alumnos - CSE Elisa Gundín</title>
+    <meta name="theme-color" content="#243c7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest_horario.json">
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+
     <style>
+        /* =========================================
+           🎨 ESTILOS GENERALES
+           ========================================= */
         :root { 
             --c-primary: #243c7a;   
             --c-secondary: #2b94cc; 
             --c-accent: #fa65c3;    
             --bg-body: #f4f6f9;
             --bg-container: #ffffff;
+            --whatsapp: #25D366; 
+            --error: #dc3545;
+            --live-green: #25D366;
+            --soon-yellow: #FFC107;
+            
+            --c-examen: #243c7a; 
+            --c-aviso: #dc3545;
+            --c-falta: #ff9800; 
+
+            --grade-pass: #25D366; 
+            --grade-fail: #dc3545; 
+            --grade-pending: #a1aab2; 
         }
         
         body { 
-            font-family: 'Outfit', sans-serif; 
+            font-family: 'Outfit', 'Segoe UI', sans-serif; 
             background-color: var(--bg-body); 
             margin: 0; padding: 20px;
             display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh;
-            transition: padding-top 0.3s ease; 
+            min-height: 100vh; color: #333;
+            transition: padding-top 0.3s ease; /* Para acomodar el banner cuando aparezca */
         }
 
-        /* --- BANNER INFINITO CORPORATIVO --- */
+        /* --- ESTILOS DEL BANNER INFINITO --- */
         .ticker-wrap {
             position: fixed;
-            top: 0; left: 0;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 40px;
             background-color: var(--c-primary);
-            border-bottom: 3px solid var(--c-accent);
+            border-bottom: 2px solid var(--c-accent);
             overflow: hidden;
-            z-index: 9999;
-            display: none;
+            white-space: nowrap;
+            display: none; /* Se activa por JS */
             align-items: center;
+            z-index: 10000;
         }
 
         .ticker-move {
             display: inline-block;
-            white-space: nowrap;
-            animation: ticker-animation 40s linear infinite;
+            padding-left: 0;
+            animation: ticker-scroll 30s linear infinite;
         }
 
         .ticker-item {
             display: inline-block;
-            padding: 0 60px;
+            padding: 0 40px;
             color: white;
             font-weight: 700;
             font-size: 14px;
             text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        @keyframes ticker-animation {
+        @keyframes ticker-scroll {
             0% { transform: translateX(0); }
             100% { transform: translateX(-50%); }
         }
@@ -61,20 +93,262 @@
             padding: 40px; border-radius: 20px; 
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
             width: 100%; max-width: 500px; text-align: center;
-            position: relative;
+            position: relative; z-index: 1;
+            overflow: hidden; 
         }
-        /* ... El resto de tus estilos se mantienen iguales ... */
+
+        /* HEADER */
         .web-brand { margin-bottom: 25px; }
         .logo-img { max-width: 160px; }
-        .brand-line { height: 5px; width: 120px; margin: 15px auto 0; background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
-        input { width: 100%; padding: 18px; border: 2px solid #e1e9f0; border-radius: 12px; margin-bottom: 10px; text-align: center; font-weight: 600; }
-        .btn-main { width: 100%; padding: 16px; background-color: var(--c-primary); color: white; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+        .brand-line {
+            height: 5px; width: 120px; margin: 15px auto 0;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 10px;
+        }
+
+        h2 { 
+            color: var(--c-primary); margin-bottom: 10px; 
+            font-size: 26px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+        
+        #status-indicator {
+            font-size: 11px; color: #8898aa; margin-bottom: 25px; 
+            text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
+        }
+
+        /* --- BANNER HORIZONTAL (DENTRO DE RESULTADOS) --- */
+        .full-width-banner {
+            background-color: #fff3cd; 
+            color: #856404;
+            border-bottom: 2px solid #ffeeba;
+            padding: 15px 20px;
+            margin: 0 -40px 25px -40px; 
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .banner-icon { font-size: 20px; }
+        .banner-text { font-weight: 700; }
+
+        /* INPUTS & BOTONES */
+        input { 
+            width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
+            border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
+            box-sizing: border-box; text-align: center;
+            transition: all 0.3s ease; color: var(--c-primary);
+            font-weight: 600; background-color: #fafbfc;
+        }
+        input:focus { border-color: var(--c-secondary); background-color: #fff; box-shadow: 0 0 0 5px rgba(43, 148, 204, 0.1); outline: none; }
+
+        .btn-main { 
+            width: 100%; padding: 16px; background-color: var(--c-primary); 
+            color: white; border: none; border-radius: 12px; 
+            font-size: 16px; font-weight: 700; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
+        }
+        .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
+
+        /* PESTAÑAS */
+        .tabs-nav {
+            display: flex;
+            background: #f0f4f8;
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            gap: 5px;
+            overflow-x: auto; 
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 5px;
+            border: none;
+            background: transparent;
+            color: #8898aa;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px; 
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: var(--c-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* RESULTADOS */
+        #resultado { margin-top: 35px; text-align: left; }
+        
+        .result-card { 
+            background: linear-gradient(145deg, #ffffff, #fdfdfd);
+            margin-bottom: 15px; padding: 20px; border-radius: 15px; 
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 4px 4px 15px rgba(0,0,0,0.03);
+            position: relative; 
+            transition: all 0.3s ease;
+        }
+
+        .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
+        .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
+        .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
+        .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
+        .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
+
+        /* BADGES */
+        .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
+            display: none;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
+        .soon-badge { background: var(--soon-yellow); color: #555; }
+        .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
+        .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
+
+        .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
+        .result-card.is-live .live-badge { display: block; }
+        .result-card.is-soon { border: 2px solid var(--soon-yellow); background-color: #fffdf5; }
+        .result-card.is-soon .soon-badge { display: block; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+
+        .card-info { display: flex; flex-direction: column; gap: 2px; }
+        .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
+        
+        .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .clock-icon {
+            width: 18px; height: 18px; border: 2px solid var(--c-primary);
+            border-radius: 50%; position: relative; flex-shrink: 0;
+        }
+        .clock-icon::after {
+            content: ''; position: absolute; width: 6px; height: 2px;
+            background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg);
+        }
+        
+        .clock-icon.icon-falta { border-color: var(--c-falta); }
+        .clock-icon.icon-falta::after { background: var(--c-falta); }
+
+        .card-time { font-size: 22px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;}
+
+        .badge {
+            padding: 8px 16px; border-radius: 8px; font-size: 11px; font-weight: 800;
+            text-transform: uppercase; color: white; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center; min-width: 60px;
+        }
+        .bg-apoyo { background: var(--c-secondary); }
+        .bg-ingles { background: var(--c-accent); }
+        .bg-examen { background: var(--c-primary); } 
+        .bg-falta { background: var(--c-falta); }
+
+        .grade-display {
+            font-size: 24px; font-weight: 900; padding: 5px 15px;
+            border-radius: 10px; min-width: 60px; text-align: center;
+        }
+        .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
+        .grade-fail { color: var(--grade-fail); border: 2px solid var(--grade-fail); background: rgba(220, 53, 69, 0.1); }
+        .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; }
+
+        #actions-panel { display: none; margin-top: 20px; }
+        .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
+        .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
+
+        #directory-area { 
+            display: none; margin-top: 15px; text-align: left; max-height: 300px;
+            overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; 
+            border-radius: 12px; background: #fafbfc; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .student-chip { 
+            display: inline-block; background: white; border: 1px solid var(--c-secondary); 
+            color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; 
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; 
+            text-transform: capitalize; 
+        }
+        .student-chip:hover { background: var(--c-secondary); color: white; transform: scale(1.05); }
+
+        .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; width: 100%; }
+        .btn-reset:hover { opacity: 1; color: var(--c-accent); }
+
+        .whatsapp-float {
+            position: fixed; bottom: 25px; right: 25px; background-color: #25D366; 
+            color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none;
+            display: flex; align-items: center; gap: 10px; 
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); z-index: 9999; 
+            font-weight: bold; font-size: 15px; transition: all 0.3s ease;
+        }
+        .whatsapp-float:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
+        .whatsapp-icon { width: 22px; height: 22px; fill: white; }
+
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
+        
+        .policy-note {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #eef2f7;
+            border-left: 4px solid var(--c-primary);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #555;
+            text-align: left;
+            line-height: 1.5;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        
+        .footer-update {
+            margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic;
+        }
+
+        @media print {
+            body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
+            .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .full-width-banner, .ticker-wrap { display: none !important; }
+            .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .result-card { break-inside: avoid; border: 1px solid #eee; }
+            .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none !important; }
+            .result-card.is-live, .result-card.is-soon { border: 1px solid #eee; background: white; box-shadow: none; transform: none; }
+            .tab-content { display: block !important; }
+        }
     </style>
 </head>
 <body>
 
-<div id="top-banner" class="ticker-wrap">
-    <div class="ticker-move">
+<div id="global-ticker" class="ticker-wrap">
+    <div class="ticker-move" id="ticker-content">
         </div>
 </div>
 
@@ -83,48 +357,386 @@
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
         <div class="brand-line"></div>
     </div>
+    
     <div id="search-area">
+        <h2>Horarios</h2>
+        <div id="status-indicator">Consulta tu planificación semanal</div>
         <input type="text" id="magicInput" placeholder="Contraseña..." autocomplete="off">
         <button id="btnBuscar" class="btn-main">ENTRAR</button>
+        <div id="directory-area"></div>
     </div>
+
+    <div id="loading-spinner" class="spinner"></div>
+    <p id="error-msg" style="display:none; color:var(--error); font-weight:bold; margin-top:20px;"></p>
+    
     <div id="resultado"></div>
+    
+    <div id="actions-panel">
+        <button id="btnCopiar" class="btn-share">🔗 COPIAR ENLACE PADRES</button>
+        <button id="btnReset" class="btn-reset">🔄 REALIZAR OTRA BÚSQUEDA</button>
+    </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<a href="https://wa.me/34693067214" id="whatsapp-link" class="whatsapp-float" target="_blank">
+    <svg class="whatsapp-icon" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
 <script>
-    // ... Tus variables de URL y lógica de PapaParse ...
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw_horario.js')
+                .then(reg => console.log('Service Worker registrado'))
+                .catch(err => console.log('Error registrando SW', err));
+        });
+    }
+
+    const _0x8F = "MDEwNTIz"; 
+    let SISTEMA_DESBLOQUEADO = false; 
+    let globalAviso = null; 
+    
+    const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
+    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
     const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
 
-    async function leerHoja(url) {
+    const urls = {
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+    };
+
+    let memoriaCache = {}; 
+
+    function leerHoja(url) {
+        if (!url || url.includes("PON_AQUI")) return Promise.resolve([]);
+        if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
         return new Promise(resolve => {
+            let parseConfig = { download:true, skipEmptyLines:true };
+            if(url.includes("output=tsv")) parseConfig.delimiter = "\t";
+            
             Papa.parse(url + "&t=" + Date.now(), { 
-                download:true, delimiter: "\t", skipEmptyLines:true,
-                complete: res => resolve(res.data),
-                error: () => resolve([])
+                ...parseConfig,
+                complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
+                error: e => { console.error("Error cargando", url); resolve([]); } 
             });
         });
     }
 
+    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
+    
+    function limpiarTexto(t) {
+        return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    }
+    
+    function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
+
+    function esNombreValido(texto) {
+        if (!texto || texto.length < 2) return false;
+        const t = texto.toUpperCase().trim();
+        const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "FECHA", "ASIGNATURA"];
+        if (prohibidos.some(p => t.includes(p))) return false;
+        if (/\d/.test(t) && t.includes(':')) return false;
+        return true;
+    }
+
+    function agruparClases(clases) {
+        if(clases.length === 0) return [];
+        const diasOrden = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+        clases.sort((a, b) => {
+            const diffDia = diasOrden.indexOf(a.dia) - diasOrden.indexOf(b.dia);
+            if (diffDia !== 0) return diffDia;
+            return a.startMins - b.startMins;
+        });
+
+        let grupos = [];
+        let actual = null;
+        clases.forEach(clase => {
+            const startMins = timeToMins(clase.h);
+            if (actual) {
+                if (actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
+                    actual.endMins += 30; 
+                    if (!actual.fullText.includes(clase.fullText)) {
+                        actual.fullText += " / " + clase.fullText;
+                    }
+                    return;
+                } else { grupos.push(actual); }
+            }
+            actual = { 
+                dia: clase.dia, 
+                startMins: startMins, 
+                endMins: startMins + 30, 
+                materia: clase.materia, 
+                tipo: clase.tipo,
+                fullText: clase.fullText
+            };
+        });
+        if (actual) grupos.push(actual);
+        return grupos;
+    }
+
+    function getEstadoClase(diaClase, startMins, endMins) {
+        const now = new Date();
+        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const hoy = diasSemana[now.getDay()];
+        const nowMins = now.getHours() * 60 + now.getMinutes();
+        if (diaClase !== hoy) return null;
+        if (nowMins >= startMins && nowMins < endMins) return 'live';
+        if (nowMins >= (startMins - 30) && nowMins < startMins) return 'soon';
+        return null;
+    }
+
+    window.cambiarPestana = function(pestanaId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById('btn-tab-' + pestanaId).classList.add('active');
+        document.getElementById('content-' + pestanaId).classList.add('active');
+    };
+
+    // ✅ ACTUALIZADO: CARGA DEL BANNER INFINITO
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
-        if (data && data.length > 1) {
-            const mensaje = data[1][0];
-            const estado = (data[1][1] || "").toUpperCase().trim();
-            if(estado === "ON" && mensaje) {
-                const banner = document.getElementById('top-banner');
-                const tickerMove = banner.querySelector('.ticker-move');
-                const item = `<span class="ticker-item">📢 ${mensaje}</span>`;
-                // Repetimos el item muchas veces para que siempre haya texto en pantalla
-                tickerMove.innerHTML = item.repeat(15); 
-                banner.style.display = "flex";
-                document.body.style.paddingTop = "60px";
+        if (data && data.length > 0) {
+            const filaDato = data[1]; 
+            if(filaDato) {
+                const mensaje = filaDato[0]; 
+                const estado = (filaDato[1] || "").toUpperCase().trim();
+                
+                if(estado === "ON" && mensaje) {
+                    globalAviso = mensaje;
+                    const ticker = document.getElementById('global-ticker');
+                    const tickerContent = document.getElementById('ticker-content');
+                    
+                    // Repetimos el mensaje para que siempre haya texto en pantalla
+                    const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
+                    tickerContent.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
+                    
+                    ticker.style.display = "flex";
+                    document.body.style.paddingTop = "40px"; // Deja espacio para el banner fijo
+                }
             }
         }
     }
 
+    async function ejecutarBusqueda(nombre) {
+        document.getElementById('search-area').style.display = 'none'; 
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('resultado').innerHTML = '';
+        
+        const nombreBuscado = limpiarTexto(nombre);
+        const dias = Object.keys(urls);
+        
+        const promesasHorario = dias.map(dia => leerHoja(urls[dia]));
+        const promesaExamenes = leerHoja(URL_EXAMENES);
+        const promesaFaltas = leerHoja(URL_FALTAS); 
+        
+        const [resultadosHorario, dataExamenes, dataFaltas] = await Promise.all([Promise.all(promesasHorario), promesaExamenes, promesaFaltas]);
+        
+        let clasesRaw = [];
+        let examenesFuturos = [];
+        let examenesPasados = [];
+        let faltasEncontradas = []; 
+        
+        dias.forEach((dia, idx) => {
+            const data = resultadosHorario[idx];
+            if(!data) return;
+            data.forEach(row => {
+                let horaApoyo = (row[0] || "").trim().substring(0,5);
+                if(horaApoyo && horaApoyo.includes(":")) {
+                    for(let c=1; c<=6; c++) { 
+                        let val = row[c] || "";
+                        if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) {
+                            clasesRaw.push({ dia, h: horaApoyo, materia: "Apoyo", tipo: "apoyo", fullText: val });
+                        }
+                    }
+                }
+                let horaIngles = (row[7] || "").trim().substring(0,5);
+                if(horaIngles && horaIngles.includes(":")) {
+                    for(let c=8; c<=13; c++) { 
+                        let val = row[c] || "";
+                        if(esNombreValido(val) && limpiarTexto(val).includes(nombreBuscado)) {
+                            clasesRaw.push({ dia, h: horaIngles, materia: "Inglés", tipo: "ingles", fullText: val });
+                        }
+                    }
+                }
+            });
+        });
+
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        if(dataExamenes && dataExamenes.length > 0) {
+            dataExamenes.forEach(row => {
+                if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado)) {
+                    let fechaStr = row[0];
+                    let asigStr = row[1];
+                    let notaStr = (row[3] || "").trim();
+                    let fechaObj = new Date(fechaStr);
+                    if(!isNaN(fechaObj.getTime())) { fechaObj.setHours(0,0,0,0); } else { fechaObj = new Date(); fechaObj.setDate(fechaObj.getDate() + 1); }
+                    let item = { fecha: fechaStr || "Fecha pte.", asignatura: asigStr || "Examen", nota: notaStr };
+                    if (item.nota !== "" || fechaObj < hoy) { examenesPasados.push(item); } else { examenesFuturos.push(item); }
+                }
+            });
+        }
+
+        if(dataFaltas && dataFaltas.length > 0) {
+            dataFaltas.forEach(row => {
+                if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
+                    let fechaRaw = row[1] || "";
+                    let fechaMatch = fechaRaw.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+                    let fechaLimpia = fechaMatch ? fechaMatch[0] : fechaRaw;
+                    faltasEncontradas.push({ fecha: fechaLimpia, hora: row[2] || "Hora s/d", rawDate: fechaMatch ? new Date(fechaMatch[3], fechaMatch[2]-1, fechaMatch[1]) : new Date(0) });
+                }
+            });
+            faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
+        }
+        
+        const nombreFormateado = formatName(nombre);
+        const mensajeWA = `Hola Elisa, soy el padre/madre de ${nombreFormateado}. Te escribo porque...`;
+        document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(mensajeWA)}`;
+
+        document.getElementById('loading-spinner').style.display = 'none';
+        
+        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0) {
+            
+            let htmlBanner = "";
+            if(globalAviso) {
+                htmlBanner = `<div class="full-width-banner"><span class="banner-icon">📢</span><span class="banner-text">${globalAviso}</span></div>`;
+            }
+
+            let htmlHorario = "";
+            if(clasesRaw.length > 0) {
+                const clasesAgrupadas = agruparClases(clasesRaw);
+                clasesAgrupadas.forEach(item => {
+                    const horarioTexto = `${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}`;
+                    const estado = getEstadoClase(item.dia, item.startMins, item.endMins);
+                    let extraClass = ""; let badgeLive = "";
+                    if (estado === 'live') { extraClass = "is-live"; badgeLive = `<div class="live-badge">🔴 EN CLASE AHORA</div>`; } 
+                    else if (estado === 'soon') { extraClass = "is-soon"; badgeLive = `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>`; }
+                    htmlHorario += `<div class="result-card type-${item.tipo} ${extraClass}">${badgeLive}<div class="card-info"><span class="card-day">${item.dia}</span><div class="card-time-wrapper"><div class="clock-icon"></div><span class="card-time">${horarioTexto}</span></div></div><span class="badge bg-${item.tipo}">${item.materia}</span></div>`;
+                });
+            } else { htmlHorario = `<div class="empty-state">No hay clases regulares asignadas.</div>`; }
+
+            let htmlExamenes = "";
+            if(examenesFuturos.length > 0) {
+                examenesFuturos.forEach(ex => {
+                    htmlExamenes += `<div class="result-card type-examen"><div class="examen-badge-alert">📌 EXAMEN</div><div class="card-info" style="flex:1"><span class="card-day">${ex.fecha}</span><div style="font-size:22px; font-weight:800; color:var(--c-primary); margin-top:2px; line-height:1.2;">${ex.asignatura}</div></div><span class="badge bg-examen" style="font-size:10px; padding:5px 10px;">PENDIENTE</span></div>`;
+                });
+            } else { htmlExamenes = `<div class="empty-state">No hay exámenes próximos.</div>`; }
+
+            let htmlNotas = "";
+            if(examenesPasados.length > 0) {
+                examenesPasados.reverse().forEach(ex => {
+                    let visualNota = `<span class="grade-pending">Pendiente de saber nota</span>`;
+                    if(ex.nota) {
+                        let numNota = parseFloat(ex.nota.replace(',','.'));
+                        if(!isNaN(numNota)) { let claseNota = numNota >= 5 ? 'grade-pass' : 'grade-fail'; visualNota = `<span class="grade-display ${claseNota}">${ex.nota}</span>`; } 
+                        else { visualNota = `<span class="grade-display grade-pass" style="font-size:14px">${ex.nota}</span>`; }
+                    }
+                    htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day" style="font-size:11px;">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px; margin-top:2px;">${ex.asignatura}</div></div>${visualNota}</div>`;
+                });
+            } else { htmlNotas = `<div class="empty-state">No hay registro de exámenes pasados.</div>`; }
+
+            let htmlFaltas = "";
+            if(faltasEncontradas.length > 0) {
+                faltasEncontradas.forEach(fa => {
+                    htmlFaltas += `<div class="result-card type-falta"><div class="falta-badge-alert">⚠️ AUSENCIA</div><div class="card-info"><span class="card-day">${fa.fecha}</span><div class="card-time-wrapper"><div class="clock-icon icon-falta"></div><span class="card-time" style="color:var(--c-falta); font-size:18px;">${fa.hora}</span></div></div><span class="badge bg-falta">FALTA</span></div>`;
+                });
+            } else { htmlFaltas = `<div class="empty-state">¡Genial! No tienes faltas registradas.</div>`; }
+            htmlFaltas += `<div class="policy-note"><strong>ℹ️ NOTA IMPORTANTE:</strong><br><br> Las faltas recuperables hay que comentarlas con Elisa. En caso de ser recuperables, solo se pueden realizar en el mismo curso y no son acumulables.</div>`;
+
+            let badgeExamen = examenesFuturos.length > 0 ? `🔴` : "";
+            let badgeFalta = faltasEncontradas.length > 0 ? `🔴` : "";
+            let ahora = new Date(); let horaStr = ahora.getHours() + ":" + String(ahora.getMinutes()).padStart(2,'0');
+
+            let htmlFinal = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${nombreFormateado}</span></h3>${htmlBanner}<div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${badgeExamen}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${badgeFalta}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}</div><div class="footer-update">Datos actualizados hoy a las ${horaStr}</div>`;
+            document.getElementById('resultado').innerHTML = htmlFinal;
+            if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
+        } else {
+            document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre.";
+            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('search-area').style.display = 'block';
+        }
+    }
+
+    async function cargarDirectorio() {
+        const area = document.getElementById('directory-area');
+        area.innerHTML = "<div style='color:#999; font-size:14px; margin-top:10px;'>Cargando lista de alumnos...</div>"; 
+        area.style.display = 'block';
+        const promesas = Object.values(urls).map(url => leerHoja(url));
+        const resultados = await Promise.all(promesas);
+        let alumnos = new Set();
+        resultados.forEach(data => {
+            if(!data) return;
+            data.forEach(row => {
+                for(let c=1; c<=6; c++){ let txt = (row[c] || "").trim(); if(esNombreValido(txt)) alumnos.add(txt.toLowerCase()); }
+                for(let c=8; c<=13; c++){ let txt = (row[c] || "").trim(); if(esNombreValido(txt)) alumnos.add(txt.toLowerCase()); }
+            });
+        });
+        let html = "";
+        Array.from(alumnos).sort().forEach(n => { html += `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`; });
+        area.innerHTML = html;
+    }
+
+    window.filtrarDirectorioMain = () => {
+        const input = document.getElementById('magicInput');
+        const filtro = limpiarTexto(input.value);
+        const chips = document.querySelectorAll('.student-chip');
+        chips.forEach(chip => { const txt = limpiarTexto(chip.textContent); chip.style.display = txt.includes(filtro) ? 'inline-block' : 'none'; });
+        if(filtro === "") chips.forEach(c => c.style.display = 'inline-block');
+    };
+
+    window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
+
+    document.getElementById('btnReset').onclick = () => {
+        document.getElementById('resultado').innerHTML = '';
+        document.getElementById('actions-panel').style.display = 'none';
+        document.getElementById('search-area').style.display = 'block';
+        document.getElementById('magicInput').value = '';
+        document.getElementById('magicInput').focus();
+        document.getElementById('whatsapp-link').href = "https://wa.me/34693067214";
+        const chips = document.querySelectorAll('.student-chip');
+        chips.forEach(c => c.style.display = 'inline-block');
+    };
+
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
-        // ... El resto de tu lógica de login y búsqueda ...
+        const input = document.getElementById('magicInput');
+        const btn = document.getElementById('btnBuscar');
+        const btnCopiar = document.getElementById('btnCopiar');
+        const login = () => {
+            const val = input.value.trim();
+            if(!val) return;
+            if(!SISTEMA_DESBLOQUEADO) {
+                if (btoa(val) === _0x8F) {
+                    SISTEMA_DESBLOQUEADO = true;
+                    document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
+                    input.value = ""; input.placeholder = "Busca o selecciona alumno...";
+                    document.getElementById('btnBuscar').innerText = "BUSCAR";
+                    cargarDirectorio();
+                    input.onkeyup = window.filtrarDirectorioMain;
+                } else { ejecutarBusqueda(val); }
+            } else { ejecutarBusqueda(val); }
+        };
+        btn.onclick = login;
+        input.onkeypress = e => { if(e.key === 'Enter') login(); };
+        btnCopiar.onclick = () => {
+            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
+            navigator.clipboard.writeText(url).then(() => { 
+                const original = btnCopiar.innerText;
+                btnCopiar.innerText = "✅ ENLACE COPIADO";
+                setTimeout(() => btnCopiar.innerText = original, 2000);
+            });
+        };
+        const p = new URLSearchParams(window.location.search).get('alumno');
+        if(p) { input.value = p; ejecutarBusqueda(p); }
+        setInterval(() => {
+            if(document.getElementById('resultado').innerHTML !== '') {
+                const nombreActual = document.getElementById('magicInput').value;
+                if(nombreActual) ejecutarBusqueda(nombreActual);
+            }
+        }, 60000);
     });
 </script>
 </body>
