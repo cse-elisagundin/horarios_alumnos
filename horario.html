@@ -114,58 +114,48 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- 🔘 BOTONERA SCROLL HORIZONTAL ESTIRADA --- */
+        /* --- 🔘 BOTONERA ESTIRADA Y FULL WIDTH --- */
         .tabs-nav {
             display: flex; 
             background: #f0f4f8; 
             border-radius: 12px; 
             margin-bottom: 25px; 
-            gap: 10px; /* Separación entre botones */
+            gap: 4px; /* Pequeña separación */
             
-            /* SCROLL */
-            overflow-x: auto; 
-            white-space: nowrap; 
-            -webkit-overflow-scrolling: touch; 
-            
-            /* 🔥 CLAVE: Padding interno para que quepa la sombra sin cortarse */
-            padding: 10px; 
-            
-            /* Ocultar barra scroll estética */
-            scrollbar-width: none; 
+            /* 🔥 OCUPA TODO EL ANCHO DISPONIBLE */
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box; /* Asegura que el padding no sume al 100% */
         }
-        .tabs-nav::-webkit-scrollbar { display: none; }
 
         .tab-btn {
-            /* 🔥 CLAVE: flex: 0 0 auto impide que se encojan. Mantiene su tamaño real */
-            flex: 0 0 auto; 
+            /* 🔥 flex: 1 obliga a que todos los botones crezcan para ocupar el mismo espacio */
+            flex: 1; 
             
-            /* Tamaño y forma */
-            padding: 14px 20px; /* Más relleno interno */
-            min-width: 110px;   /* 🔥 Ancho mínimo para que se vean "estirados" */
-            
+            padding: 12px 2px;
             border: none; 
             background: transparent; 
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 13px; 
+            font-size: 13px; /* Tamaño base */
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
             text-transform: uppercase; 
             letter-spacing: 0.5px; 
             
-            /* Para centrar texto e iconos si los hubiera */
+            /* Centrado absoluto */
             display: flex;
             align-items: center;
             justify-content: center;
+            text-align: center;
         }
 
         .tab-btn.active { 
             background: white; 
             color: var(--c-primary); 
-            /* Sombra más marcada para destacar */
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
             transform: translateY(-1px); 
         }
 
@@ -204,8 +194,8 @@
 
         @media (max-width: 480px) {
             .result-header-flex { font-size: 18px; }
-            /* En móvil ajustamos un poco el tamaño de fuente de los botones */
-            .tab-btn { font-size: 12px; }
+            /* Ajuste fino para que el texto quepa en pantallas muy estrechas */
+            .tab-btn { font-size: 11px; padding: 12px 0; }
         }
 
         input { 
@@ -224,6 +214,12 @@
             text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
+
+        /* Contenedor padre de las pestañas para el swipe */
+        #tabs-container-wrapper {
+            touch-action: pan-y; /* Permite scroll vertical pero detecta horizontal */
+            min-height: 200px; /* Zona táctil mínima */
+        }
 
         .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
         .tab-content.active { display: block; }
@@ -393,11 +389,8 @@
     // ✅ LÓGICA DE NOMBRE SUPER COMPACTA
     function formatNameForDisplay(originalName) {
         let smartName = formatNameSmart(originalName);
-        
-        // Si estamos en móvil (menos de 480px) Y el nombre sigue siendo largo (>15 caracteres)
         if (window.innerWidth < 480 && smartName.length > 15) { 
              let parts = originalName.trim().toLowerCase().split(/\s+/);
-             // Primer Nombre COMPLETO + Iniciales de TODO lo demás
              let first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
              let initials = parts.slice(1).map(p => p.charAt(0).toUpperCase() + ".").join(" ");
              return first + " " + initials;
@@ -405,7 +398,7 @@
         return smartName;
     }
 
-    // Lógica intermedia (la que ya tenías)
+    // Lógica intermedia
     function formatNameSmart(nombre) {
         let n = nombre.trim().toLowerCase();
         let parts = n.split(/\s+/);
@@ -458,6 +451,10 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('btn-tab-' + pId).classList.add('active');
         document.getElementById('content-' + pId).classList.add('active');
+        
+        // Actualizamos el estado actual para los gestos
+        const tabs = ['horario', 'examenes', 'notas', 'faltas'];
+        currentTabIndex = tabs.indexOf(pId);
     };
 
     async function cargarAvisos() {
@@ -512,7 +509,6 @@
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         
-        // ✅ USAMOS LA NUEVA FUNCIÓN "DISPLAY" AQUI
         const nF = formatNameForDisplay(nombre);
 
         document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
@@ -540,12 +536,28 @@
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
             
+            // 🔥 Añadimos un ID wrapper al contenedor de pestañas para detectar el swipe
             document.getElementById('resultado').innerHTML = `
                 <div class="result-header-flex">
                     <span class="label-span">Horario de</span>
                     <span class="name-span">${nF}</span>
                 </div>
-                <div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div><div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
+                <div class="tabs-nav">
+                    <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
+                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button>
+                    <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button>
+                    <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button>
+                </div>
+                <div id="tabs-container-wrapper">
+                    <div id="content-horario" class="tab-content active">${htmlHorario}</div>
+                    <div id="content-examenes" class="tab-content">${htmlExamenes}</div>
+                    <div id="content-notas" class="tab-content">${htmlNotas}</div>
+                    <div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div>
+                </div>
+                <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
+            
+            // Inicializar el listener de gestos
+            initSwipeGestures();
             
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
         } else {
@@ -567,6 +579,45 @@
     };
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
+
+    // --- 👆 LÓGICA DE GESTOS (SWIPE) PARA CAMBIAR PESTAÑA ---
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let currentTabIndex = 0;
+    const tabOrder = ['horario', 'examenes', 'notas', 'faltas'];
+
+    function initSwipeGestures() {
+        const gestureZone = document.getElementById('tabs-container-wrapper');
+        if(!gestureZone) return;
+
+        gestureZone.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, {passive: true});
+
+        gestureZone.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleGesture();
+        }, {passive: true});
+    }
+
+    function handleGesture() {
+        // Umbral mínimo para considerar que es un swipe intencional (50px)
+        if (touchEndX < touchStartX - 50) {
+            // Deslizar izquierda -> Pestaña Siguiente
+            if (currentTabIndex < tabOrder.length - 1) {
+                currentTabIndex++;
+                cambiarPestana(tabOrder[currentTabIndex]);
+            }
+        }
+        if (touchEndX > touchStartX + 50) {
+            // Deslizar derecha -> Pestaña Anterior
+            if (currentTabIndex > 0) {
+                currentTabIndex--;
+                cambiarPestana(tabOrder[currentTabIndex]);
+            }
+        }
+    }
+    // -----------------------------------------------------
 
     document.getElementById('btnReset').onclick = () => {
         document.getElementById('error-msg').style.display = 'none';
