@@ -48,15 +48,57 @@
             margin: 0; padding: 20px;
             display: flex; justify-content: center; align-items: center; 
             min-height: 100vh; color: #333;
+            /* Transición para cuando aparezca el banner superior */
+            transition: padding-top 0.3s ease; 
         }
 
+        /* --- NUEVO BANNER INFINITO (MARQUEE) --- */
+        .ticker-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 44px; /* Altura del banner */
+            background-color: #fff3cd; /* Fondo amarillo aviso */
+            border-bottom: 2px solid #ffeeba;
+            overflow: hidden;
+            z-index: 9999;
+            display: none; /* Se activa con JS si hay aviso */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            align-items: center;
+        }
+
+        .ticker-move {
+            display: inline-block;
+            white-space: nowrap;
+            /* La animación hace que entre por la derecha y salga por la izquierda */
+            padding-left: 100%; 
+            animation: ticker 25s linear infinite;
+        }
+
+        .ticker-item {
+            display: inline-block;
+            padding: 0 2rem;
+            color: #856404;
+            font-weight: 800;
+            font-size: 16px;
+            line-height: 44px; /* Centrado vertical */
+            text-transform: uppercase;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* CONTENEDOR PRINCIPAL */
         .container { 
             background-color: var(--bg-container); 
             padding: 40px; border-radius: 20px; 
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
             width: 100%; max-width: 500px; text-align: center;
             position: relative; z-index: 1;
-            overflow: hidden; /* Para que el banner no se salga de los bordes redondeados */
+            overflow: hidden; 
         }
 
         /* HEADER */
@@ -79,24 +121,6 @@
             font-size: 11px; color: #8898aa; margin-bottom: 25px; 
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
-
-        /* --- NUEVO BANNER HORIZONTAL (AVISOS) --- */
-        .full-width-banner {
-            background-color: #fff3cd; /* Fondo amarillo aviso */
-            color: #856404;
-            border-bottom: 2px solid #ffeeba;
-            padding: 15px 20px;
-            margin: 0 -40px 25px -40px; /* Truco para que ocupe todo el ancho ignorando el padding del contenedor */
-            text-align: center;
-            font-size: 14px;
-            line-height: 1.5;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .banner-icon { font-size: 20px; }
-        .banner-text { font-weight: 700; }
 
         /* INPUTS & BOTONES */
         input { 
@@ -299,7 +323,7 @@
         @media print {
             body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; background: white; }
             .container { box-shadow: none; border: none; padding: 0; width: 100%; max-width: 100%; }
-            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .full-width-banner { display: none !important; }
+            #search-area, #actions-panel, .whatsapp-float, .btn-reset, #btnDirectorio, .tabs-nav, .ticker-wrap { display: none !important; }
             .badge { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .result-card { break-inside: avoid; border: 1px solid #eee; }
             .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none !important; }
@@ -309,6 +333,12 @@
     </style>
 </head>
 <body>
+
+<div id="top-banner" class="ticker-wrap">
+    <div class="ticker-move">
+        <span id="banner-text" class="ticker-item">AVISO IMPORTANTE</span>
+    </div>
+</div>
 
 <div class="container">
     <div class="web-brand">
@@ -350,7 +380,7 @@
 
     const _0x8F = "MDEwNTIz"; 
     let SISTEMA_DESBLOQUEADO = false; 
-    let globalAviso = null; // Guardará el aviso cargado
+    let globalAviso = null; 
     
     // ✅ URL DE EXÁMENES
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
@@ -457,7 +487,7 @@
         document.getElementById('content-' + pestanaId).classList.add('active');
     };
 
-    // Carga silenciosa del aviso
+    // ✅ CARGA Y MUESTRA DEL BANNER GLOBAL
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
         if (data && data.length > 0) {
@@ -468,6 +498,12 @@
                 
                 if(estado === "ON" && mensaje) {
                     globalAviso = mensaje;
+                    // Mostrar banner superior
+                    const banner = document.getElementById('top-banner');
+                    const text = document.getElementById('banner-text');
+                    text.innerText = "📢 " + mensaje;
+                    banner.style.display = "flex"; // Usar flex para centrar vertical
+                    document.body.style.paddingTop = "60px"; // Empujar contenido hacia abajo
                 }
             }
         }
@@ -580,17 +616,6 @@
         
         if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0) {
             
-            // --- GENERAR HTML BANNER (Solo si existe) ---
-            let htmlBanner = "";
-            if(globalAviso) {
-                htmlBanner = `
-                    <div class="full-width-banner">
-                        <span class="banner-icon">📢</span>
-                        <span class="banner-text">${globalAviso}</span>
-                    </div>
-                `;
-            }
-
             // HTML HORARIO
             let htmlHorario = "";
             if(clasesRaw.length > 0) {
@@ -701,7 +726,8 @@
 
             htmlFaltas += `
                 <div class="policy-note">
-                    <strong>ℹ️ NOTA IMPORTANTE:</strong><br>
+                    <strong>ℹ️ NOTA IMPORTANTE:</strong>
+
                     Las faltas recuperables hay que comentarlas con Elisa. En caso de ser recuperables, solo se pueden realizar en el mismo curso y no son acumulables.
                 </div>
             `;
@@ -717,8 +743,6 @@
                 <h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">
                     Horario de <span style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em;">${nombreFormateado}</span>
                 </h3>
-
-                ${htmlBanner}
 
                 <div class="tabs-nav">
                     <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
