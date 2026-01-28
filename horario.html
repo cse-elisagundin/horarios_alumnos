@@ -51,13 +51,11 @@
             transition: padding-top 0.3s ease;
         }
 
-        /* --- ESTILOS DEL BANNER INFINITO CORPORATIVO --- */
+        /* --- BANNER SUPERIOR CORPORATIVO (CORREGIDO) --- */
         .ticker-wrap {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 40px;
+            top: 0; left: 0;
+            width: 100%; height: 40px;
             background-color: var(--c-primary);
             border-bottom: 2px solid var(--c-accent);
             overflow: hidden;
@@ -116,6 +114,24 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
+        /* BOTONERA TABS (OPTIMIZADA MÓVIL) */
+        .tabs-nav {
+            display: flex; background: #f0f4f8; padding: 5px; border-radius: 12px; margin-bottom: 25px; gap: 5px;
+        }
+
+        .tab-btn {
+            flex: 1; padding: 12px 2px; border: none; background: transparent; color: #8898aa; font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 13px; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; position: relative; white-space: nowrap;
+        }
+
+        .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+
+        /* AJUSTES MÓVIL ESTRICTOS */
+        @media (max-width: 480px) {
+            .tab-btn { font-size: 10px; padding: 10px 1px; }
+            .tabs-nav { gap: 3px; padding: 4px; }
+            h3 span.name-span { white-space: nowrap; display: inline-block; font-size: 0.9em; }
+        }
+
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
             border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
@@ -132,24 +148,6 @@
             text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
-
-        .tabs-nav {
-            display: flex; background: #f0f4f8; padding: 5px; border-radius: 12px; margin-bottom: 25px; gap: 5px;
-        }
-
-        .tab-btn {
-            flex: 1; padding: 12px 2px; border: none; background: transparent; color: #8898aa; font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 11px; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; position: relative; white-space: nowrap;
-        }
-
-        .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-
-        /* Ajustes específicos para móviles */
-        @media (max-width: 480px) {
-            .tabs-nav { gap: 2px; padding: 3px; }
-            .tab-btn { font-size: 9px; padding: 10px 1px; letter-spacing: 0; }
-            .container { padding: 30px 15px; }
-            .student-name-container { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.1em; }
-        }
 
         .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
         .tab-content.active { display: block; }
@@ -370,6 +368,7 @@
         document.getElementById('content-' + pestanaId).classList.add('active');
     };
 
+    // ✅ BANNER REPETIDO PARA LOOP INFINITO SIN HUECOS
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
         if (data && data.length > 0) {
@@ -381,6 +380,7 @@
                     const ticker = document.getElementById('global-ticker');
                     const content = document.getElementById('ticker-content');
                     const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
+                    // Repetimos el mensaje 10 veces para asegurar que cubra toda la pantalla
                     content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
                     ticker.style.display = "flex";
                     document.body.style.paddingTop = "40px";
@@ -482,7 +482,8 @@
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
             let tH = new Date(); let hS = tH.getHours() + ":" + String(tH.getMinutes()).padStart(2,'0');
 
-            document.getElementById('resultado').innerHTML = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">Horario de <span class="student-name-container" style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em; white-space: nowrap;">${nF}</span></h3><div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}</div><div class="footer-update">Datos actualizados hoy a las ${hS}</div>`;
+            // ✅ NOMBRE ALUMNO EN UNA LÍNEA (name-span)
+            document.getElementById('resultado').innerHTML = `<h3 style="color:var(--c-primary); margin-bottom:20px; font-family:'Outfit', sans-serif; font-weight: 700;">Horario de <span class="name-span" style="color:var(--c-accent); font-family:'Schoolbell', cursive; text-shadow: 1px 1px 2px rgba(0,0,0,0.15); letter-spacing: 0.5px; font-size:1.1em; white-space: nowrap;">${nF}</span></h3><div class="tabs-nav"><button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button><button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button><button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button><button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button></div><div id="content-horario" class="tab-content active">${htmlHorario}</div><div id="content-examenes" class="tab-content">${htmlExamenes}</div><div id="content-notas" class="tab-content">${htmlNotas}</div><div id="content-faltas" class="tab-content">${htmlFaltas}</div><div class="footer-update">Datos actualizados hoy a las ${hS}</div>`;
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
         } else {
             document.getElementById('error-msg').innerText = "No hemos encontrado ese nombre."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
