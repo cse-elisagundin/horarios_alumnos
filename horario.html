@@ -375,6 +375,9 @@
     }
 
     async function ejecutarBusqueda(nombre) {
+        // ✅ OCULTAR ERROR SI SE REALIZA UNA BÚSQUEDA NUEVA
+        document.getElementById('error-msg').style.display = 'none';
+        
         document.getElementById('search-area').style.display = 'none'; 
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
@@ -457,6 +460,8 @@
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
     document.getElementById('btnReset').onclick = () => {
+        // ✅ LIMPIAR ERROR AL RESETEAR
+        document.getElementById('error-msg').style.display = 'none';
         document.getElementById('resultado').innerHTML = ''; document.getElementById('actions-panel').style.display = 'none'; document.getElementById('search-area').style.display = 'block';
         document.getElementById('magicInput').value = '';
     };
@@ -469,6 +474,8 @@
             if(!SISTEMA_DESBLOQUEADO) {
                 if (btoa(val) === _0x8F) {
                     SISTEMA_DESBLOQUEADO = true; 
+                    // ✅ LIMPIAR ERROR AL DESBLOQUEAR CORRECTAMENTE
+                    document.getElementById('error-msg').style.display = 'none';
                     document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
                     input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
                     cargarDirectorio(); input.onkeyup = window.filtrarDirectorioMain;
