@@ -11,18 +11,15 @@
     
     <style>
         :root { 
-            /* TUS COLORES EXACTOS */
-            --c-primary: #243c7a;   /* Azul Oscuro */
-            --c-secondary: #2b94cc; /* Azul Claro */
-            --c-pink: #fa65c3;      /* Rosa Corporativo */
+            --c-primary: #243c7a;   /* Azul Oscuro (Fondo) */
+            --c-secondary: #2b94cc; /* Azul Claro (Texto Nombre) */
+            --c-pink: #fa65c3;      /* Rosa (Acento) */
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             
-            /* DEGRADADO CORPORATIVO: 
-               Fondo radial que centra la atención.
-               Combina tus dos azules para dar profundidad. */
+            /* Fondo azul corporativo */
             background: radial-gradient(circle at center, #365299 0%, var(--c-primary) 100%);
             
             margin: 0;
@@ -44,7 +41,6 @@
             padding: 20px;
             max-width: 1200px;
             width: 100%;
-            /* Animación de entrada */
             animation: fadeIn 1.2s ease-out;
         }
 
@@ -53,11 +49,9 @@
             width: 280px;
             height: 280px;
             object-fit: contain;
-            /* Círculo blanco detrás del logo para que resalte sobre el azul */
             background: white; 
             border-radius: 50%;
             padding: 20px;
-            /* Sombra suave */
             box-shadow: 0 10px 40px rgba(0,0,0,0.4);
         }
 
@@ -72,16 +66,35 @@
             font-weight: 800;
             line-height: 1;
             text-shadow: 2px 4px 10px rgba(0,0,0,0.2);
+            color: white; /* "CSE" en blanco */
         }
 
-        /* "Elisa Gundín" en el color ROSA de la marca */
+        /* ESTILO DEL NOMBRE */
         .h1-highlight {
-            color: var(--c-pink); 
+            color: var(--c-secondary); /* AZUL SECUNDARIO */
             display: block;
+            margin-top: 10px;
+        }
+
+        /* TRUCO PARA LA Tilde ROSA */
+        .special-i {
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* La tilde rosa */
+        .special-i::after {
+            content: '´';           /* Dibujamos la tilde */
+            position: absolute;
+            left: 50%;
+            top: -0.15em;           /* Ajustamos la altura */
+            transform: translateX(-50%); /* Centramos exactamente */
+            color: var(--c-pink);   /* COLOR ROSA */
+            font-weight: 800;
         }
 
         p.subtitle {
-            margin: 15px 0 0 5px;
+            margin: 20px 0 0 5px;
             font-size: 1.5rem;
             font-weight: 300;
             letter-spacing: 4px;
@@ -105,13 +118,13 @@
             }
 
             .logo-img {
-                width: 160px; /* Ajustado para móvil */
+                width: 160px;
                 height: 160px;
                 padding: 15px;
             }
 
             h1 {
-                font-size: 3rem; /* Texto más contenido en móvil */
+                font-size: 3rem;
             }
 
             p.subtitle {
@@ -120,7 +133,6 @@
             }
         }
 
-        /* Animación */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -133,7 +145,12 @@
         <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="logo-img">
         
         <div class="text-group">
-            <h1>CSE <br><span class="h1-highlight">Elisa Gundín</span></h1>
+            <h1>
+                CSE <br>
+                <span class="h1-highlight">
+                    Elisa Gund<span class="special-i">&#305;</span>n
+                    </span>
+            </h1>
             <p class="subtitle">Centre d'Estudis i Suport Educatiu</p>
         </div>
     </div>
