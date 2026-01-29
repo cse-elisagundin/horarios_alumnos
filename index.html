@@ -11,17 +11,15 @@
     
     <style>
         :root { 
-            --c-primary: #243c7a;   /* Azul Oscuro (Fondo) */
-            --c-secondary: #2b94cc; /* Azul Claro (Texto Nombre) */
-            --c-pink: #fa65c3;      /* Rosa (Acento) */
+            --c-primary: #243c7a;   /* Azul Oscuro */
+            --c-secondary: #2b94cc; /* Azul Claro */
+            --c-pink: #fa65c3;      /* Rosa */
+            --c-whatsapp: #25D366;  /* Verde WhatsApp */
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            
-            /* Fondo azul corporativo */
             background: radial-gradient(circle at center, #365299 0%, var(--c-primary) 100%);
-            
             margin: 0;
             padding: 0;
             height: 100vh;
@@ -58,6 +56,9 @@
         /* TEXTOS */
         .text-group {
             text-align: left;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         h1 {
@@ -66,35 +67,24 @@
             font-weight: 800;
             line-height: 1;
             text-shadow: 2px 4px 10px rgba(0,0,0,0.2);
-            color: white; /* "CSE" en blanco */
+            color: white;
         }
 
-        /* ESTILO DEL NOMBRE */
         .h1-highlight {
-            color: var(--c-secondary); /* AZUL SECUNDARIO */
+            color: var(--c-secondary);
             display: block;
             margin-top: 10px;
         }
 
-        /* TRUCO PARA LA Tilde ROSA */
-        .special-i {
-            position: relative;
-            display: inline-block;
-        }
-        
-        /* La tilde rosa */
+        /* Truco tilde rosa */
+        .special-i { position: relative; display: inline-block; }
         .special-i::after {
-            content: '´';           /* Dibujamos la tilde */
-            position: absolute;
-            left: 50%;
-            top: -0.15em;           /* Ajustamos la altura */
-            transform: translateX(-50%); /* Centramos exactamente */
-            color: var(--c-pink);   /* COLOR ROSA */
-            font-weight: 800;
+            content: '´'; position: absolute; left: 50%; top: -0.15em;
+            transform: translateX(-50%); color: var(--c-pink); font-weight: 800;
         }
 
         p.subtitle {
-            margin: 20px 0 0 5px;
+            margin: 20px 0 30px 5px; /* Margen inferior aumentado para separar botones */
             font-size: 1.5rem;
             font-weight: 300;
             letter-spacing: 4px;
@@ -105,16 +95,60 @@
             display: inline-block;
         }
 
+        /* --- BOTONERA --- */
+        .button-container {
+            display: flex;
+            gap: 15px; /* Espacio entre botones */
+            margin-left: 5px; /* Alinear con el subtítulo */
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 28px;
+            border-radius: 50px; /* Forma de píldora */
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 2px solid transparent; /* Para evitar saltos al renderizar */
+        }
+
+        .btn:hover {
+            transform: translateY(-3px); /* Efecto elevación */
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Estilos específicos */
+        .btn-whatsapp {
+            background-color: var(--c-whatsapp);
+        }
+
+        .btn-call {
+            background-color: var(--c-secondary); /* Azul claro */
+        }
+        
+        /* Iconos dentro de los botones */
+        .btn-icon {
+            margin-right: 10px;
+            font-size: 1.3rem;
+        }
+
         /* --- VERSIÓN MÓVIL --- */
         @media (max-width: 900px) {
             .main-container {
                 flex-direction: column;
                 text-align: center;
-                gap: 25px;
+                gap: 30px;
             }
 
             .text-group {
                 text-align: center;
+                align-items: center; /* Centra los botones en móvil */
             }
 
             .logo-img {
@@ -123,13 +157,27 @@
                 padding: 15px;
             }
 
-            h1 {
-                font-size: 3rem;
-            }
+            h1 { font-size: 3rem; }
 
             p.subtitle {
                 font-size: 0.9rem;
                 letter-spacing: 2px;
+                margin-bottom: 25px;
+            }
+
+            /* Botones en móvil: uno encima del otro o al lado según espacio */
+            .button-container {
+                flex-direction: row; 
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%; /* Botones anchos en móvil para pulsar fácil */
+                max-width: 250px; /* Pero no gigantes */
+                padding: 15px 20px; /* Más zona táctil */
             }
         }
 
@@ -149,9 +197,19 @@
                 CSE <br>
                 <span class="h1-highlight">
                     Elisa Gund<span class="special-i">&#305;</span>n
-                    </span>
+                </span>
             </h1>
             <p class="subtitle">Centre d'Estudis i Suport Educatiu</p>
+
+            <div class="button-container">
+                <a href="https://wa.me/34693067214?text=Hola,%20quisiera%20informaci%C3%B3n%20sobre%20las%20clases" target="_blank" class="btn btn-whatsapp">
+                    <span class="btn-icon">💬</span> WhatsApp
+                </a>
+                
+                <a href="tel:+34693067214" class="btn btn-call">
+                    <span class="btn-icon">📞</span> Llamar
+                </a>
+            </div>
         </div>
     </div>
 
