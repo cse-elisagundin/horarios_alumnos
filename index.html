@@ -36,7 +36,8 @@
         .welcome-card {
             background: white;
             width: 100%;
-            max-width: 380px;
+            /* AUMENTADO: Un poco más ancho para que quepan las letras grandes */
+            max-width: 450px; 
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.1);
             overflow: hidden;
@@ -46,26 +47,41 @@
         /* Cabecera con Logo */
         .header-brand {
             background: linear-gradient(135deg, var(--c-primary) 0%, #1e3266 100%);
-            padding: 45px 20px 35px;
+            padding: 50px 20px 40px; /* Un poco más de espacio vertical */
             color: white;
-            /* Forma curva suave abajo */
-            border-bottom-left-radius: 50% 20px;
-            border-bottom-right-radius: 50% 20px;
+            border-bottom-left-radius: 50% 30px;
+            border-bottom-right-radius: 50% 30px;
         }
 
         .logo-img {
-            width: 130px;
-            height: 130px;
+            /* AUMENTADO: Logo mucho más grande */
+            width: 220px;
+            height: 220px;
             object-fit: contain;
             background: white;
             border-radius: 50%;
-            padding: 10px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-            margin-bottom: 15px;
+            padding: 15px; /* Un poco más de borde blanco */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
         }
 
-        h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 0.5px; }
-        p.subtitle { margin: 8px 0 0; opacity: 0.9; font-size: 15px; font-weight: 300; letter-spacing: 1px; text-transform: uppercase; }
+        h1 { 
+            margin: 0; 
+            /* AUMENTADO: Texto mucho más grande */
+            font-size: 38px; 
+            font-weight: 800; 
+            letter-spacing: 1px;
+            line-height: 1.1; /* Para que si salta de línea no se separe mucho */
+        }
+
+        p.subtitle { 
+            margin: 10px 0 0; 
+            opacity: 0.9; 
+            font-size: 16px; /* Ligeramente más grande */
+            font-weight: 300; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+        }
 
         /* Contenido Principal */
         .content { padding: 40px 30px; }
@@ -79,11 +95,11 @@
         }
 
         .contact-btn {
-            width: 60px; height: 60px;
-            border-radius: 15px;
+            width: 65px; height: 65px; /* Botones un pelín más grandes */
+            border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
             text-decoration: none;
-            font-size: 28px;
+            font-size: 30px;
             transition: all 0.3s ease;
             box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             border: 2px solid transparent;
@@ -100,15 +116,15 @@
 
         /* Estilo para la imagen de WhatsApp */
         .ws-icon {
-            width: 36px;
-            height: 36px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
             filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));
         }
 
         .footer {
             margin-top: 40px;
-            font-size: 13px;
+            font-size: 14px;
             color: #aaa;
             font-weight: 500;
         }
@@ -119,8 +135,8 @@
     <div class="welcome-card">
         <div class="header-brand">
             <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="logo-img">
-            <h1>CSE Elisa Gundín</h1>
-            <p class="subtitle">CENTRE D'ESTUDIS I SUPORT EDUCATIU</p>
+            <h1>CSE<br>Elisa Gundín</h1>
+            <p class="subtitle">Centre d'Estudis i Suport Educatiu</p>
         </div>
 
         <div class="content">
@@ -131,7 +147,7 @@
                 <a href="tel:+34693067214" class="contact-btn phone" aria-label="Llamar">
                     📞
                 </a>
-                <a href="https://maps.app.goo.gl/AHHDABHxHWmWvJTN7" target="_blank" class="contact-btn location" aria-label="Ubicación">
+                <a href="https://www.google.com/maps/search/?api=1&query=CSE+Elisa+Gundin+El+Pinos" target="_blank" class="contact-btn location" aria-label="Ubicación">
                     📍
                 </a>
             </div>
