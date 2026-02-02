@@ -248,8 +248,8 @@
         /* 🔥 ESTILO TACHADO/USADO 🔥 */
         .result-card.type-recuperada { 
             border-left: 6px solid var(--c-usada); 
-            background-color: #f0f0f0; /* Fondo gris claro */
-            opacity: 0.7; /* Un poco transparente para dar sensación de "viejo" */
+            background-color: #f0f0f0; 
+            opacity: 0.7; 
         }
 
         .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
@@ -447,6 +447,34 @@
     function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
+    // --- NUEVA FUNCIÓN PARA FORMATEAR FECHAS A "DD/MM/AA" ---
+    function formatearFechaCorta(textoFecha) {
+        if (!textoFecha) return "??/??/??";
+        let t = textoFecha.trim();
+
+        // Caso 1: Viene como YYYY-MM-DD (Estándar de Google Sheets a veces)
+        // Ejemplo: 2024-05-20 -> 20/05/24
+        if (t.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            let parts = t.split('-'); 
+            return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+        }
+        
+        // Caso 2: Viene como YYYY/MM/DD
+        if (t.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
+            let parts = t.split('/'); 
+            return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
+        }
+
+        // Caso 3: Ya viene como DD/MM/YYYY
+        // Ejemplo: 20/05/2024 -> 20/05/24
+        if (t.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+             let parts = t.split('/');
+             return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2].slice(-2)}`;
+        }
+        
+        return t; // Si no cuadra con nada, devuelve el original
+    }
+
     function formatNameForDisplay(originalName) {
         let smartName = formatNameSmart(originalName);
         if (window.innerWidth < 480 && smartName.length > 15) { 
@@ -554,24 +582,38 @@
         if(dataExamenes) dataExamenes.forEach(row => {
             if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado)) {
                 let fO = new Date(row[0]); if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } fO.setHours(0,0,0,0);
-                let item = { fecha: row[0] || "Fecha pte.", asignatura: row[1] || "Examen", nota: (row[3] || "").trim() };
+                // También aplicamos formato bonito a exámenes
+                let fechaBonitaExamen = formatearFechaCorta(row[0]);
+                let item = { fecha: fechaBonitaExamen || "Fecha pte.", asignatura: row[1] || "Examen", nota: (row[3] || "").trim() };
                 if (item.nota !== "" || fO < hoy) examenesPasados.push(item); else examenesFuturos.push(item);
             }
         });
 
         if(dataFaltas) dataFaltas.forEach(row => {
             if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
-                let fM = (row[1] || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                // Leemos horas (Col 4) y Estado (Col 5)
+                // Obtenemos la fecha cruda del Excel
+                let rawDateStr = row[1];
+                
+                // Convertimos a objeto fecha JS para poder ordenar cronológicamente
+                let dateObj = new Date(rawDateStr);
+                // Si la fecha en Excel es DD/MM/YYYY, JS a veces falla, intentamos parsear manual si hace falta
+                if (isNaN(dateObj.getTime())) {
+                    let parts = rawDateStr.split('/');
+                    if (parts.length === 3) dateObj = new Date(parts[2], parts[1]-1, parts[0]);
+                }
+                
+                // Formateamos visualmente a DD/MM/AA
+                let fechaVisual = formatearFechaCorta(rawDateStr);
+                
                 let horas = row[4] ? row[4].replace(',', '.') : "0";
                 let estadoFalta = (row[5] || "PENDIENTE").toUpperCase().trim();
                 
                 faltasEncontradas.push({ 
-                    fecha: fM ? fM[0] : row[1], 
+                    fecha: fechaVisual, 
                     hora: row[2] || "", 
                     horasPerdidas: horas,
                     estado: estadoFalta, 
-                    rawDate: fM ? new Date(fM[3], fM[2]-1, fM[1]) : new Date(0) 
+                    rawDate: dateObj
                 });
             }
         });
