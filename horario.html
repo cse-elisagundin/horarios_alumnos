@@ -36,7 +36,7 @@
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
             --c-falta: #ff9800; 
-            --c-recuperada: #28a745; /* Color verde para recuperadas */
+            --c-usada: #9e9e9e; /* Color GRIS para usadas */
 
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
@@ -244,7 +244,13 @@
         
         /* FALTAS - Estilos Dinámicos */
         .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
-        .result-card.type-recuperada { border-left: 6px solid var(--c-recuperada); background-color: #f4fff7; opacity: 0.9; }
+        
+        /* 🔥 ESTILO TACHADO/USADO 🔥 */
+        .result-card.type-recuperada { 
+            border-left: 6px solid var(--c-usada); 
+            background-color: #f0f0f0; /* Fondo gris claro */
+            opacity: 0.7; /* Un poco transparente para dar sensación de "viejo" */
+        }
 
         .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
             display: none; position: absolute; top: -10px; left: 20px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -256,7 +262,14 @@
         
         /* Badges de Faltas */
         .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
-        .recuperada-badge-alert { display: block; position: absolute; top: -10px; right: 20px; background: var(--c-recuperada); color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        
+        /* BADGE GRIS DE USADA */
+        .recuperada-badge-alert { 
+            display: block; position: absolute; top: -10px; right: 20px; 
+            background: var(--c-usada); color: white; 
+            font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; 
+            text-transform: uppercase; letter-spacing: 1px; box-shadow: none;
+        }
 
         .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
         .result-card.is-live .live-badge { display: block; }
@@ -274,6 +287,10 @@
         }
         
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
+        
+        /* CLASE PARA TACHAR FECHA */
+        .card-day.is-tachado { text-decoration: line-through; opacity: 0.8; }
+
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
         
         .clock-icon { width: 16px; height: 16px; border: 2px solid var(--c-primary); border-radius: 50%; position: relative; flex-shrink: 0; }
@@ -281,10 +298,6 @@
         .clock-icon.icon-falta { border-color: var(--c-falta); }
         .clock-icon.icon-falta::after { background: var(--c-falta); }
         
-        /* Reloj Verde para recuperada */
-        .clock-icon.icon-recuperada { border-color: var(--c-recuperada); }
-        .clock-icon.icon-recuperada::after { background: var(--c-recuperada); }
-
         .card-time { 
             font-size: 20px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;
         }
@@ -298,13 +311,18 @@
         .bg-ingles { background: var(--c-accent); }
         .bg-examen { background: var(--c-primary); } 
         .bg-falta { background: var(--c-falta); }
-        .bg-recuperada { background: var(--c-recuperada); }
-
+        
         /* Estilo para las HORAS GRANDES en faltas */
         .hours-big-display {
             font-size: 28px; font-weight: 900; color: var(--c-falta); line-height: 1;
         }
-        .hours-big-display.is-recuperada { color: var(--c-recuperada); }
+        
+        /* 🔥 CLASE PARA TACHAR HORAS 🔥 */
+        .hours-big-display.is-tachado { 
+            color: var(--c-usada); 
+            text-decoration: line-through; 
+        }
+
         .hours-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; text-align: right; display: block; margin-top: 2px;}
 
         .grade-display { font-size: 24px; font-weight: 900; padding: 5px 15px; border-radius: 10px; min-width: 60px; text-align: center; margin-left: auto; }
@@ -541,7 +559,6 @@
             }
         });
 
-        // ⚠️ LOGICA FALTAS ACTUALIZADA
         if(dataFaltas) dataFaltas.forEach(row => {
             if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
                 let fM = (row[1] || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
@@ -582,7 +599,7 @@
                 htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px;">${ex.asignatura}</div></div>${vN}</div>`;
             }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
 
-            // ⚠️ VISUALIZACIÓN FALTAS (SIN HORA, CON ESTADO)
+            // ⚠️ VISUALIZACIÓN FALTAS (TACHADO SI ESTÁ USADA)
             let htmlFaltas = "";
             let tieneFaltasPendientes = false;
             
@@ -591,8 +608,10 @@
                 if(!esRecuperada) tieneFaltasPendientes = true;
                 
                 let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
+                
+                // Si está usada (recuperada), tachamos y cambiamos el badge
                 let badgeHtml = esRecuperada 
-                    ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
+                    ? `<div class="recuperada-badge-alert">⛔ USADA</div>` 
                     : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
                 
                 let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `${fa.horasPerdidas}h` : "--";
@@ -601,17 +620,17 @@
                 <div class="result-card ${claseTipo}">
                     ${badgeHtml}
                     <div class="card-info">
-                        <span class="card-day" style="font-size:14px; color:#555;">${fa.fecha}</span>
+                        <span class="card-day ${esRecuperada ? 'is-tachado' : ''}">${fa.fecha}</span>
                     </div>
                     <div>
-                        <span class="hours-big-display ${esRecuperada ? 'is-recuperada' : ''}">${displayHoras}</span>
+                        <span class="hours-big-display ${esRecuperada ? 'is-tachado' : ''}">${displayHoras}</span>
                         <span class="hours-label">PERDIDAS</span>
                     </div>
                 </div>`;
             }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; 
-            // Solo mostramos el punto rojo en la pestaña si hay faltas NO recuperadas
+            // Solo mostramos el punto rojo en la pestaña si hay faltas NO recuperadas (pendientes)
             let bF = tieneFaltasPendientes ? `🔴` : "";
             
             document.getElementById('resultado').innerHTML = `<br>
