@@ -36,6 +36,7 @@
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
             --c-falta: #ff9800; 
+            --c-recuperada: #28a745; /* Color verde para recuperadas */
 
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
@@ -114,7 +115,7 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- 🔘 BOTONERA ESTIRADA DE BORDE A BORDE --- */
+        /* --- 🔘 BOTONERA --- */
         .tabs-nav {
             display: flex; 
             background: #f0f4f8; 
@@ -156,7 +157,7 @@
             transform: translateY(-1px); 
         }
 
-        /* --- CABECERA DE RESULTADOS (NOMBRE) --- */
+        /* --- CABECERA --- */
         .result-header-flex {
             display: flex;
             flex-direction: row;
@@ -206,7 +207,6 @@
         }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
 
-        /* Contenedor padre de las pestañas para el swipe */
         #tabs-container-wrapper {
             touch-action: pan-y; 
             min-height: 200px; 
@@ -220,22 +220,18 @@
         #resultado { margin-top: 35px; text-align: left; }
         
         /* =========================================
-           🔥 CORRECCIÓN MÓVIL (FLEXBOX)
+           🔥 TARJETAS DE RESULTADOS
            ========================================= */
         .result-card { 
             background: linear-gradient(145deg, #ffffff, #fdfdfd); 
             margin-bottom: 15px; 
-            padding: 15px; /* Optimizado para móvil */
+            padding: 15px; 
             border-radius: 15px; 
             border: 1px solid rgba(0,0,0,0.05); 
-            
-            /* -- FLEXBOX para evitar solapamiento -- */
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            /* ------------------------------------- */
-            
             box-shadow: 4px 4px 15px rgba(0,0,0,0.03); 
             position: relative; 
             transition: all 0.3s ease;
@@ -245,7 +241,10 @@
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
         .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
+        
+        /* FALTAS - Estilos Dinámicos */
         .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
+        .result-card.type-recuperada { border-left: 6px solid var(--c-recuperada); background-color: #f4fff7; opacity: 0.9; }
 
         .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
             display: none; position: absolute; top: -10px; left: 20px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -254,7 +253,10 @@
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
         .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
+        
+        /* Badges de Faltas */
         .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
+        .recuperada-badge-alert { display: block; position: absolute; top: -10px; right: 20px; background: var(--c-recuperada); color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
         .result-card.is-live .live-badge { display: block; }
@@ -268,64 +270,42 @@
         }
 
         .card-info { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 2px; 
-            
-            /* -- Permite que el texto se adapte -- */
-            flex: 1;
-            min-width: 0; 
-            /* ----------------------------------- */
+            display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; 
         }
         
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        
         .clock-icon { width: 16px; height: 16px; border: 2px solid var(--c-primary); border-radius: 50%; position: relative; flex-shrink: 0; }
         .clock-icon::after { content: ''; position: absolute; width: 5px; height: 2px; background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg); }
         .clock-icon.icon-falta { border-color: var(--c-falta); }
         .clock-icon.icon-falta::after { background: var(--c-falta); }
         
+        /* Reloj Verde para recuperada */
+        .clock-icon.icon-recuperada { border-color: var(--c-recuperada); }
+        .clock-icon.icon-recuperada::after { background: var(--c-recuperada); }
+
         .card-time { 
-            font-size: 20px; /* Ajustado para móvil */
-            color: var(--c-primary); 
-            font-weight: 800; 
-            letter-spacing: -0.5px; 
-            white-space: nowrap;
+            font-size: 20px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;
         }
 
         .badge { 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            font-size: 10px; 
-            font-weight: 800; 
-            text-transform: uppercase; 
-            color: white; 
-            letter-spacing: 1px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            text-align: center; 
-        }
-        
-        /* Wrapper para la derecha de la tarjeta (Badge + Horas) */
-        .card-right-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 5px;
-            flex-shrink: 0;
-            margin-left: auto;
-        }
-        
-        .horas-perdidas-tag {
-            font-size: 11px;
-            color: #dc3545; /* Rojo alerta */
-            font-weight: 700;
-            white-space: nowrap;
+            padding: 8px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; 
+            color: white; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; 
         }
         
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
         .bg-examen { background: var(--c-primary); } 
         .bg-falta { background: var(--c-falta); }
+        .bg-recuperada { background: var(--c-recuperada); }
+
+        /* Estilo para las HORAS GRANDES en faltas */
+        .hours-big-display {
+            font-size: 28px; font-weight: 900; color: var(--c-falta); line-height: 1;
+        }
+        .hours-big-display.is-recuperada { color: var(--c-recuperada); }
+        .hours-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; text-align: right; display: block; margin-top: 2px;}
 
         .grade-display { font-size: 24px; font-weight: 900; padding: 5px 15px; border-radius: 10px; min-width: 60px; text-align: center; margin-left: auto; }
         .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
@@ -354,15 +334,13 @@
         .policy-note { margin-top: 25px; padding: 15px; background-color: #eef2f7; border-left: 4px solid var(--c-primary); border-radius: 8px; font-size: 13px; color: #555; text-align: left; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .footer-update { margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic; }
 
-        /* AJUSTES PARA PANTALLAS PEQUEÑAS */
         @media (max-width: 480px) {
             .result-header-flex { font-size: 18px; }
             .tab-btn { font-size: 10px; padding: 10px 0; }
-            
-            /* Ajuste fino para móviles */
             .result-card { padding: 15px 12px; }
-            .card-time { font-size: 18px; } /* Texto un poco más pequeño en móvil */
+            .card-time { font-size: 18px; }
             .badge { padding: 6px 10px; font-size: 9px; }
+            .hours-big-display { font-size: 24px; }
         }
 
         @media print {
@@ -451,7 +429,6 @@
     function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // ✅ LÓGICA DE NOMBRE SUPER COMPACTA
     function formatNameForDisplay(originalName) {
         let smartName = formatNameSmart(originalName);
         if (window.innerWidth < 480 && smartName.length > 15) { 
@@ -463,7 +440,6 @@
         return smartName;
     }
 
-    // Lógica intermedia
     function formatNameSmart(nombre) {
         let n = nombre.trim().toLowerCase();
         let parts = n.split(/\s+/);
@@ -517,7 +493,6 @@
         document.getElementById('btn-tab-' + pId).classList.add('active');
         document.getElementById('content-' + pId).classList.add('active');
         
-        // Actualizamos el estado actual para los gestos
         const tabs = ['horario', 'examenes', 'notas', 'faltas'];
         currentTabIndex = tabs.indexOf(pId);
     };
@@ -566,15 +541,19 @@
             }
         });
 
+        // ⚠️ LOGICA FALTAS ACTUALIZADA
         if(dataFaltas) dataFaltas.forEach(row => {
             if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
                 let fM = (row[1] || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                // ⚠️ MODIFICACIÓN: Capturamos la columna 4 (Horas Perdidas)
+                // Leemos horas (Col 4) y Estado (Col 5)
                 let horas = row[4] ? row[4].replace(',', '.') : "0";
+                let estadoFalta = (row[5] || "PENDIENTE").toUpperCase().trim();
+                
                 faltasEncontradas.push({ 
                     fecha: fM ? fM[0] : row[1], 
-                    hora: row[2] || "Hora s/d", 
-                    horasPerdidas: horas, // Guardamos el valor
+                    hora: row[2] || "", 
+                    horasPerdidas: horas,
+                    estado: estadoFalta, 
                     rawDate: fM ? new Date(fM[3], fM[2]-1, fM[1]) : new Date(0) 
                 });
             }
@@ -603,30 +582,38 @@
                 htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px;">${ex.asignatura}</div></div>${vN}</div>`;
             }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
 
+            // ⚠️ VISUALIZACIÓN FALTAS (SIN HORA, CON ESTADO)
             let htmlFaltas = "";
+            let tieneFaltasPendientes = false;
+            
             if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => {
-                // ⚠️ MODIFICACIÓN: Mostrar las horas debajo del badge
-                let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `<div class="horas-perdidas-tag">⏱️ ${fa.horasPerdidas}h</div>` : "";
+                let esRecuperada = fa.estado.includes("RECUPERADA") || fa.estado.includes("PAGADA") || fa.estado.includes("OK");
+                if(!esRecuperada) tieneFaltasPendientes = true;
                 
-                htmlFaltas += `<div class="result-card type-falta">
-                    <div class="falta-badge-alert">⚠️ AUSENCIA</div>
+                let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
+                let badgeHtml = esRecuperada 
+                    ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
+                    : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
+                
+                let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `${fa.horasPerdidas}h` : "--";
+
+                htmlFaltas += `
+                <div class="result-card ${claseTipo}">
+                    ${badgeHtml}
                     <div class="card-info">
-                        <span class="card-day">${fa.fecha}</span>
-                        <div class="card-time-wrapper">
-                            <div class="clock-icon icon-falta"></div>
-                            <span class="card-time" style="color:var(--c-falta);">${fa.hora}</span>
-                        </div>
+                        <span class="card-day" style="font-size:14px; color:#555;">${fa.fecha}</span>
                     </div>
-                    <div class="card-right-wrapper">
-                        <span class="badge bg-falta">FALTA</span>
-                        ${displayHoras}
+                    <div>
+                        <span class="hours-big-display ${esRecuperada ? 'is-recuperada' : ''}">${displayHoras}</span>
+                        <span class="hours-label">PERDIDAS</span>
                     </div>
                 </div>`;
             }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
-            let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
+            let bE = examenesFuturos.length > 0 ? `🔴` : ""; 
+            // Solo mostramos el punto rojo en la pestaña si hay faltas NO recuperadas
+            let bF = tieneFaltasPendientes ? `🔴` : "";
             
-            // 🔥 Añadimos un ID wrapper al contenedor de pestañas para detectar el swipe
             document.getElementById('resultado').innerHTML = `<br>
                 <div class="result-header-flex">
                     <span class="label-span">Horario de</span>
@@ -646,7 +633,6 @@
                 </div>
                 <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
             
-            // Inicializar el listener de gestos
             initSwipeGestures();
             
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
@@ -670,7 +656,7 @@
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
-    // --- 👆 LÓGICA DE GESTOS (SWIPE) PARA CAMBIAR PESTAÑA ---
+    // --- 👆 LÓGICA DE GESTOS (SWIPE) ---
     let touchStartX = 0;
     let touchEndX = 0;
     let currentTabIndex = 0;
@@ -691,23 +677,19 @@
     }
 
     function handleGesture() {
-        // Umbral mínimo para considerar que es un swipe intencional (50px)
         if (touchEndX < touchStartX - 50) {
-            // Deslizar izquierda -> Pestaña Siguiente
             if (currentTabIndex < tabOrder.length - 1) {
                 currentTabIndex++;
                 cambiarPestana(tabOrder[currentTabIndex]);
             }
         }
         if (touchEndX > touchStartX + 50) {
-            // Deslizar derecha -> Pestaña Anterior
             if (currentTabIndex > 0) {
                 currentTabIndex--;
                 cambiarPestana(tabOrder[currentTabIndex]);
             }
         }
     }
-    // -----------------------------------------------------
 
     document.getElementById('btnReset').onclick = () => {
         document.getElementById('error-msg').style.display = 'none';
