@@ -303,11 +303,23 @@
             letter-spacing: 1px; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
             text-align: center; 
-            
-            /* -- PROTECCIÓN: No encogerse -- */
+        }
+        
+        /* Wrapper para la derecha de la tarjeta (Badge + Horas) */
+        .card-right-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
             flex-shrink: 0;
             margin-left: auto;
-            /* ----------------------------- */
+        }
+        
+        .horas-perdidas-tag {
+            font-size: 11px;
+            color: #dc3545; /* Rojo alerta */
+            font-weight: 700;
+            white-space: nowrap;
         }
         
         .bg-apoyo { background: var(--c-secondary); }
@@ -557,7 +569,14 @@
         if(dataFaltas) dataFaltas.forEach(row => {
             if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
                 let fM = (row[1] || "").match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-                faltasEncontradas.push({ fecha: fM ? fM[0] : row[1], hora: row[2] || "Hora s/d", rawDate: fM ? new Date(fM[3], fM[2]-1, fM[1]) : new Date(0) });
+                // ⚠️ MODIFICACIÓN: Capturamos la columna 4 (Horas Perdidas)
+                let horas = row[4] ? row[4].replace(',', '.') : "0";
+                faltasEncontradas.push({ 
+                    fecha: fM ? fM[0] : row[1], 
+                    hora: row[2] || "Hora s/d", 
+                    horasPerdidas: horas, // Guardamos el valor
+                    rawDate: fM ? new Date(fM[3], fM[2]-1, fM[1]) : new Date(0) 
+                });
             }
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
@@ -585,12 +604,30 @@
             }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
 
             let htmlFaltas = "";
-            if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => htmlFaltas += `<div class="result-card type-falta"><div class="falta-badge-alert">⚠️ AUSENCIA</div><div class="card-info"><span class="card-day">${fa.fecha}</span><div class="card-time-wrapper"><div class="clock-icon icon-falta"></div><span class="card-time" style="color:var(--c-falta);">${fa.hora}</span></div></div><span class="badge bg-falta">FALTA</span></div>`); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
+            if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => {
+                // ⚠️ MODIFICACIÓN: Mostrar las horas debajo del badge
+                let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `<div class="horas-perdidas-tag">⏱️ ${fa.horasPerdidas}h</div>` : "";
+                
+                htmlFaltas += `<div class="result-card type-falta">
+                    <div class="falta-badge-alert">⚠️ AUSENCIA</div>
+                    <div class="card-info">
+                        <span class="card-day">${fa.fecha}</span>
+                        <div class="card-time-wrapper">
+                            <div class="clock-icon icon-falta"></div>
+                            <span class="card-time" style="color:var(--c-falta);">${fa.hora}</span>
+                        </div>
+                    </div>
+                    <div class="card-right-wrapper">
+                        <span class="badge bg-falta">FALTA</span>
+                        ${displayHoras}
+                    </div>
+                </div>`;
+            }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; let bF = faltasEncontradas.length > 0 ? `🔴` : "";
             
             // 🔥 Añadimos un ID wrapper al contenedor de pestañas para detectar el swipe
-            document.getElementById('resultado').innerHTML = `
+            document.getElementById('resultado').innerHTML = `<br>
                 <div class="result-header-flex">
                     <span class="label-span">Horario de</span>
                     <span class="name-span">${nF}</span>
