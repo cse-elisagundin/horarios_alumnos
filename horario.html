@@ -36,7 +36,7 @@
             --c-examen: #243c7a; 
             --c-aviso: #dc3545;
             --c-falta: #ff9800; 
-            --c-usada: #9e9e9e; /* Color GRIS para recuperadas/tachadas */
+            --c-usada: #9e9e9e; 
 
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
@@ -241,16 +241,8 @@
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
         .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
-        
-        /* FALTAS - Estilos Dinámicos */
         .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
-        
-        /* 🔥 ESTILO TACHADO/USADO 🔥 */
-        .result-card.type-recuperada { 
-            border-left: 6px solid var(--c-usada); 
-            background-color: #f0f0f0; 
-            opacity: 0.7; 
-        }
+        .result-card.type-recuperada { border-left: 6px solid var(--c-usada); background-color: #f0f0f0; opacity: 0.7; }
 
         .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
             display: none; position: absolute; top: -10px; left: 20px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -259,11 +251,8 @@
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
         .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
-        
-        /* Badges de Faltas */
         .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
         
-        /* BADGE GRIS DE USADA/RECUPERADA */
         .recuperada-badge-alert { 
             display: block; position: absolute; top: -10px; right: 20px; 
             background: var(--c-usada); color: white; 
@@ -287,8 +276,6 @@
         }
         
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
-        
-        /* CLASE PARA TACHAR FECHA */
         .card-day.is-tachado { text-decoration: line-through; opacity: 0.8; }
 
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
@@ -312,16 +299,8 @@
         .bg-examen { background: var(--c-primary); } 
         .bg-falta { background: var(--c-falta); }
         
-        /* Estilo para las HORAS GRANDES en faltas */
-        .hours-big-display {
-            font-size: 28px; font-weight: 900; color: var(--c-falta); line-height: 1;
-        }
-        
-        /* 🔥 CLASE PARA TACHAR HORAS 🔥 */
-        .hours-big-display.is-tachado { 
-            color: var(--c-usada); 
-            text-decoration: line-through; 
-        }
+        .hours-big-display { font-size: 28px; font-weight: 900; color: var(--c-falta); line-height: 1; }
+        .hours-big-display.is-tachado { color: var(--c-usada); text-decoration: line-through; }
 
         .hours-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; text-align: right; display: block; margin-top: 2px;}
 
@@ -352,13 +331,45 @@
         .policy-note { margin-top: 25px; padding: 15px; background-color: #eef2f7; border-left: 4px solid var(--c-primary); border-radius: 8px; font-size: 13px; color: #555; text-align: left; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .footer-update { margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic; }
 
+        /* =========================================
+           📱 OPTIMIZACIÓN MÓVIL (FULL WIDTH)
+           ========================================= */
         @media (max-width: 480px) {
-            .result-header-flex { font-size: 18px; }
-            .tab-btn { font-size: 10px; padding: 10px 0; }
-            .result-card { padding: 15px 12px; }
-            .card-time { font-size: 18px; }
-            .badge { padding: 6px 10px; font-size: 9px; }
-            .hours-big-display { font-size: 24px; }
+            /* 1. Reducir bordes externos para ganar espacio */
+            body { 
+                padding: 0; /* Sin margen gris */
+                background-color: white; /* Para que no se vea corte raro */
+            }
+            
+            /* 2. Estirar el contenedor blanco casi al borde */
+            .container { 
+                padding: 15px 5px; /* Minimal padding */
+                width: 100%;
+                border-radius: 0;
+                box-shadow: none; /* Look más "app" */
+                max-width: 100%;
+            }
+
+            /* 3. Ajustar la botonera para que quepan todos en 1 fila */
+            .tabs-nav {
+                gap: 2px; /* Reducir hueco entre botones */
+                padding: 0; /* Sin relleno extra */
+                background: transparent;
+                margin-bottom: 15px;
+            }
+
+            .tab-btn {
+                font-size: 10.5px; /* Letra ajustada para que quepa EXÁMENES */
+                padding: 10px 0; /* Menos relleno vertical */
+                letter-spacing: 0; 
+                gap: 3px; /* Icono más cerca del texto */
+            }
+            
+            /* 4. Título más pequeño para que no ocupe tanto */
+            .result-header-flex { 
+                font-size: 18px; 
+                margin-bottom: 15px;
+            }
         }
 
         @media print {
