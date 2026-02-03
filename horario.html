@@ -431,7 +431,6 @@
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('search-area').style.display = 'none';
         
-        // Llamada segura al script
         fetch(CONSERJE_URL + "?id=" + encodeURIComponent(id))
             .then(response => response.text())
             .then(nombre => {
@@ -770,15 +769,42 @@
         };
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
         
+        // --- 🔴 BOTÓN COPIAR AUTOMÁTICO (INTEGRADO CON LA URL DE TU SCRIPT) ---
         document.getElementById('btnCopiar').onclick = () => {
-            // NOTA: Como el sistema es "Blind Privacy" (privado), la web no sabe el ID del alumno
-            // Así que el botón genera el enlace clásico por nombre.
-            // Para usar el enlace corto, la academia debe mirar el Excel y generarlo manualmente.
-            const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
-            navigator.clipboard.writeText(url).then(() => { 
-                const original = document.getElementById('btnCopiar').innerText; document.getElementById('btnCopiar').innerText = "✅ COPIADO";
-                setTimeout(() => document.getElementById('btnCopiar').innerText = original, 2000);
-            });
+            const btn = document.getElementById('btnCopiar');
+            const nombreAlumno = input.value.trim();
+            
+            if(!nombreAlumno) return;
+
+            // 1. Ponemos el botón en modo "Pensando..."
+            const textoOriginal = btn.innerText;
+            btn.innerText = "⏳ GENERANDO ENLACE...";
+            
+            // 2. Preguntamos al Conserje (Apps Script) por el código del alumno
+            fetch(CONSERJE_URL + "?nombre=" + encodeURIComponent(nombreAlumno))
+                .then(response => response.text())
+                .then(codigo => {
+                    let urlFinal = "";
+                    
+                    if (codigo && codigo !== "NO_TIENE_CODIGO" && !codigo.includes("Error")) {
+                        // SI TIENE CÓDIGO -> Usamos el link corto y seguro
+                        urlFinal = window.location.href.split('?')[0] + "?id=" + codigo;
+                    } else {
+                        // SI NO TIENE CÓDIGO -> Usamos el link largo antiguo (plan B)
+                        urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumno);
+                    }
+
+                    // 3. Copiamos al portapapeles
+                    navigator.clipboard.writeText(urlFinal).then(() => { 
+                        btn.innerText = "✅ ENLACE COPIADO";
+                        setTimeout(() => btn.innerText = textoOriginal, 2000);
+                    });
+                })
+                .catch(err => {
+                    console.error("Error generando enlace", err);
+                    btn.innerText = "❌ ERROR AL GENERAR";
+                    setTimeout(() => btn.innerText = textoOriginal, 2000);
+                });
         };
 
         // Mantener compatibilidad con enlaces viejos ?alumno=...
