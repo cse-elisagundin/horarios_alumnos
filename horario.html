@@ -20,7 +20,7 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS GENERALES
+           🎨 ESTILOS GENERALES (INTACTOS)
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -335,43 +335,12 @@
            📱 OPTIMIZACIÓN MÓVIL (FULL WIDTH)
            ========================================= */
         @media (max-width: 480px) {
-            /* 1. Reducir bordes externos para ganar espacio */
-            body { 
-                padding: 0; /* Sin margen gris */
-                background-color: white; /* Para que no se vea corte raro */
-            }
-            
-            /* 2. Estirar el contenedor blanco casi al borde */
-            .container { 
-                padding: 15px 5px; /* Minimal padding */
-                width: 100%;
-                border-radius: 0;
-                box-shadow: none; /* Look más "app" */
-                max-width: 100%;
-            }
-
-            /* 3. Ajustar la botonera para que quepan todos en 1 fila */
-            .tabs-nav {
-                gap: 2px; /* Reducir hueco entre botones */
-                padding: 0; /* Sin relleno extra */
-                background: transparent;
-                margin-bottom: 15px;
-            }
-
-            .tab-btn {
-                font-size: 10.5px; /* Letra ajustada para que quepa EXÁMENES */
-                padding: 10px 0; /* Menos relleno vertical */
-                letter-spacing: 0; 
-                gap: 3px; /* Icono más cerca del texto */
-            }
-            
-            /* 4. Título más pequeño para que no ocupe tanto */
-            .result-header-flex { 
-                font-size: 18px; 
-                margin-bottom: 15px;
-            }
+            body { padding: 0; background-color: white; }
+            .container { padding: 15px 5px; width: 100%; border-radius: 0; box-shadow: none; max-width: 100%; }
+            .tabs-nav { gap: 2px; padding: 0; background: transparent; margin-bottom: 15px; }
+            .tab-btn { font-size: 10.5px; padding: 10px 0; letter-spacing: 0; gap: 3px; }
+            .result-header-flex { font-size: 18px; margin-bottom: 15px; }
         }
-
         @media print {
             body { -webkit-print-color-adjust: exact !important; background: white; }
             .container { box-shadow: none; border: none; padding: 0; width: 100%; }
@@ -425,6 +394,10 @@
     let SISTEMA_DESBLOQUEADO = false; 
     let globalAviso = null; 
     
+    // --- 🔐 TU CONSERJE PRIVADO (APPS SCRIPT) ---
+    const CONSERJE_URL = "https://script.google.com/macros/s/AKfycby1mP3NRDHxCbY0hBlrx_SAetCMltT6VRG_HZPFxeniqQa-e1v53ZTm5FYEB1r9tlMH/exec";
+
+    // --- URLs ORIGINALES ---
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
     const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
     const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
@@ -453,37 +426,45 @@
         });
     }
 
+    // --- Función para Consultar al Conserje (Apps Script) ---
+    function consultarConserje(id) {
+        document.getElementById('loading-spinner').style.display = 'block';
+        document.getElementById('search-area').style.display = 'none';
+        
+        // Llamada segura al script
+        fetch(CONSERJE_URL + "?id=" + encodeURIComponent(id))
+            .then(response => response.text())
+            .then(nombre => {
+                if (nombre && nombre !== "NO_ENCONTRADO" && !nombre.includes("Error")) {
+                    ejecutarBusqueda(nombre);
+                } else {
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    document.getElementById('error-msg').innerText = "Código no válido o alumno no encontrado.";
+                    document.getElementById('error-msg').style.display = 'block';
+                    document.getElementById('search-area').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error("Error conserje:", error);
+                document.getElementById('loading-spinner').style.display = 'none';
+                document.getElementById('error-msg').innerText = "Error de conexión. Inténtalo de nuevo.";
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('search-area').style.display = 'block';
+            });
+    }
+
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
     function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
     function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
-    // --- NUEVA FUNCIÓN PARA FORMATEAR FECHAS A "DD/MM/AA" ---
     function formatearFechaCorta(textoFecha) {
         if (!textoFecha) return "??/??/??";
         let t = textoFecha.trim();
-
-        // Caso 1: Viene como YYYY-MM-DD (Estándar de Google Sheets a veces)
-        // Ejemplo: 2024-05-20 -> 20/05/24
-        if (t.match(/^\d{4}-\d{2}-\d{2}$/)) {
-            let parts = t.split('-'); 
-            return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
-        }
-        
-        // Caso 2: Viene como YYYY/MM/DD
-        if (t.match(/^\d{4}\/\d{2}\/\d{2}$/)) {
-            let parts = t.split('/'); 
-            return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`;
-        }
-
-        // Caso 3: Ya viene como DD/MM/YYYY
-        // Ejemplo: 20/05/2024 -> 20/05/24
-        if (t.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
-             let parts = t.split('/');
-             return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2].slice(-2)}`;
-        }
-        
-        return t; // Si no cuadra con nada, devuelve el original
+        if (t.match(/^\d{4}-\d{2}-\d{2}$/)) { let parts = t.split('-'); return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`; }
+        if (t.match(/^\d{4}\/\d{2}\/\d{2}$/)) { let parts = t.split('/'); return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`; }
+        if (t.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) { let parts = t.split('/'); return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2].slice(-2)}`; }
+        return t;
     }
 
     function formatNameForDisplay(originalName) {
@@ -656,7 +637,6 @@
                 
                 let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
                 
-                // Si está usada (recuperada), tachamos y cambiamos el badge
                 let badgeHtml = esRecuperada 
                     ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
                     : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
@@ -677,7 +657,6 @@
             }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
             let bE = examenesFuturos.length > 0 ? `🔴` : ""; 
-            // Solo mostramos el punto rojo en la pestaña si hay faltas NO recuperadas (pendientes)
             let bF = tieneFaltasPendientes ? `🔴` : "";
             
             document.getElementById('resultado').innerHTML = `<br>
@@ -765,6 +744,14 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
+        
+        // 1. CHEQUEO DEL CÓDIGO SECRETO AL INICIO
+        const idSecreto = new URLSearchParams(window.location.search).get('id');
+        if (idSecreto) {
+            // Si hay ?id=XYZ, preguntamos al conserje
+            consultarConserje(idSecreto);
+        }
+
         const input = document.getElementById('magicInput'); const btn = document.getElementById('btnBuscar');
         const login = () => {
             const val = input.value.trim(); if(!val) return;
@@ -782,14 +769,21 @@
             } else ejecutarBusqueda(val);
         };
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
+        
         document.getElementById('btnCopiar').onclick = () => {
+            // NOTA: Como el sistema es "Blind Privacy" (privado), la web no sabe el ID del alumno
+            // Así que el botón genera el enlace clásico por nombre.
+            // Para usar el enlace corto, la academia debe mirar el Excel y generarlo manualmente.
             const url = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(input.value.trim());
             navigator.clipboard.writeText(url).then(() => { 
                 const original = document.getElementById('btnCopiar').innerText; document.getElementById('btnCopiar').innerText = "✅ COPIADO";
                 setTimeout(() => document.getElementById('btnCopiar').innerText = original, 2000);
             });
         };
-        const p = new URLSearchParams(window.location.search).get('alumno'); if(p) ejecutarBusqueda(p);
+
+        // Mantener compatibilidad con enlaces viejos ?alumno=...
+        const p = new URLSearchParams(window.location.search).get('alumno'); 
+        if(p && !idSecreto) ejecutarBusqueda(p);
     });
 </script>
 </body>
