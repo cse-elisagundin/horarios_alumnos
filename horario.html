@@ -1,4 +1,4 @@
-¡<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -9,8 +9,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest_horario.json">
-    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
-    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
@@ -20,7 +21,7 @@
 
     <style>
         /* =========================================
-           🎨 ESTILOS GENERALES (INTACTOS)
+           🎨 ESTILOS GENERALES
            ========================================= */
         :root { 
             --c-primary: #243c7a;   
@@ -190,12 +191,15 @@
             flex-shrink: 0; 
         }
 
+        /* Input arreglado para evitar iconos raros */
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
             border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
             box-sizing: border-box; text-align: center;
             transition: all 0.3s ease; color: var(--c-primary);
             font-weight: 600; background-color: #fafbfc;
+            -webkit-appearance: none;
+            appearance: none;
         }
         input:focus { border-color: var(--c-secondary); background-color: #fff; box-shadow: 0 0 0 5px rgba(43, 148, 204, 0.1); outline: none; }
 
@@ -356,14 +360,16 @@
 
 <div class="container">
     <div class="web-brand">
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="logo-img" alt="Logo">
+        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="logo-img" alt="Logo">
         <div class="brand-line"></div>
     </div>
     
     <div id="search-area">
         <h2>Horarios</h2>
         <div id="status-indicator">Sistema Bloqueado</div>
-        <input type="text" id="magicInput" placeholder="Introduce contraseña..." autocomplete="off">
+        
+        <input type="text" id="magicInput" placeholder="Introduce contraseña..." autocomplete="off" spellcheck="false" data-lpignore="true">
+        
         <button id="btnBuscar" class="btn-main">ENTRAR</button>
         <div id="directory-area"></div>
     </div>
@@ -394,7 +400,6 @@
     let SISTEMA_DESBLOQUEADO = false; 
     let globalAviso = null; 
     
-    // --- URLs ORIGINALES ---
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
     const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
     const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
@@ -597,7 +602,6 @@
                 htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px;">${ex.asignatura}</div></div>${vN}</div>`;
             }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
 
-            // ⚠️ VISUALIZACIÓN FALTAS (TACHADO SI ESTÁ USADA)
             let htmlFaltas = "";
             let tieneFaltasPendientes = false;
             
@@ -606,11 +610,9 @@
                 if(!esRecuperada) tieneFaltasPendientes = true;
                 
                 let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
-                
                 let badgeHtml = esRecuperada 
                     ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
                     : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
-                
                 let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `${fa.horasPerdidas}h` : "--";
 
                 htmlFaltas += `
@@ -649,7 +651,6 @@
                 <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
             
             initSwipeGestures();
-            
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
         } else {
             document.getElementById('error-msg').innerText = "Nombre no encontrado."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
@@ -671,7 +672,7 @@
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
-    // --- 👆 LÓGICA DE GESTOS (SWIPE) ---
+    // --- GESTOS SWIPE ---
     let touchStartX = 0;
     let touchEndX = 0;
     let currentTabIndex = 0;
@@ -681,29 +682,13 @@
         const gestureZone = document.getElementById('tabs-container-wrapper');
         if(!gestureZone) return;
 
-        gestureZone.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
-
-        gestureZone.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleGesture();
-        }, {passive: true});
+        gestureZone.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+        gestureZone.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleGesture(); }, {passive: true});
     }
 
     function handleGesture() {
-        if (touchEndX < touchStartX - 50) {
-            if (currentTabIndex < tabOrder.length - 1) {
-                currentTabIndex++;
-                cambiarPestana(tabOrder[currentTabIndex]);
-            }
-        }
-        if (touchEndX > touchStartX + 50) {
-            if (currentTabIndex > 0) {
-                currentTabIndex--;
-                cambiarPestana(tabOrder[currentTabIndex]);
-            }
-        }
+        if (touchEndX < touchStartX - 50) { if (currentTabIndex < tabOrder.length - 1) { currentTabIndex++; cambiarPestana(tabOrder[currentTabIndex]); } }
+        if (touchEndX > touchStartX + 50) { if (currentTabIndex > 0) { currentTabIndex--; cambiarPestana(tabOrder[currentTabIndex]); } }
     }
 
     document.getElementById('btnReset').onclick = () => {
@@ -715,8 +700,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
         
-        // --- LIMPIEZA: Eliminamos la lógica de ?id=... del "conserje" ---
-        // Solo mantenemos la búsqueda clásica por nombre si viene en la URL
+        // --- 🔴 VERSIÓN CLÁSICA (SIN CONSERJE/ID) ---
         const p = new URLSearchParams(window.location.search).get('alumno'); 
         if(p) ejecutarBusqueda(p);
 
@@ -738,14 +722,14 @@
         };
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
         
-        // --- 🔴 BOTÓN COPIAR SIMPLE Y RÁPIDO (SIN ID) ---
+        // --- BOTÓN COPIAR CLÁSICO (INSTANTÁNEO) ---
         document.getElementById('btnCopiar').onclick = () => {
             const btn = document.getElementById('btnCopiar');
             const nombreAlumno = input.value.trim();
             
             if(!nombreAlumno) return;
 
-            // Generamos URL clásica con nombre (lo que pediste)
+            // Enlace directo con nombre y %20 (automático al codificar)
             const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumno);
 
             navigator.clipboard.writeText(urlFinal).then(() => { 
