@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+¡<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -394,9 +394,6 @@
     let SISTEMA_DESBLOQUEADO = false; 
     let globalAviso = null; 
     
-    // --- 🔐 TU CONSERJE PRIVADO (APPS SCRIPT) ---
-    const CONSERJE_URL = "https://script.google.com/macros/s/AKfycby1mP3NRDHxCbY0hBlrx_SAetCMltT6VRG_HZPFxeniqQa-e1v53ZTm5FYEB1r9tlMH/exec";
-
     // --- URLs ORIGINALES ---
     const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
     const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
@@ -424,32 +421,6 @@
                 error: () => resolve([]) 
             });
         });
-    }
-
-    // --- Función para Consultar al Conserje (Apps Script) ---
-    function consultarConserje(id) {
-        document.getElementById('loading-spinner').style.display = 'block';
-        document.getElementById('search-area').style.display = 'none';
-        
-        fetch(CONSERJE_URL + "?id=" + encodeURIComponent(id))
-            .then(response => response.text())
-            .then(nombre => {
-                if (nombre && nombre !== "NO_ENCONTRADO" && !nombre.includes("Error")) {
-                    ejecutarBusqueda(nombre);
-                } else {
-                    document.getElementById('loading-spinner').style.display = 'none';
-                    document.getElementById('error-msg').innerText = "Código no válido o alumno no encontrado.";
-                    document.getElementById('error-msg').style.display = 'block';
-                    document.getElementById('search-area').style.display = 'block';
-                }
-            })
-            .catch(error => {
-                console.error("Error conserje:", error);
-                document.getElementById('loading-spinner').style.display = 'none';
-                document.getElementById('error-msg').innerText = "Error de conexión. Inténtalo de nuevo.";
-                document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('search-area').style.display = 'block';
-            });
     }
 
     function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
@@ -744,12 +715,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
         
-        // 1. CHEQUEO DEL CÓDIGO SECRETO AL INICIO
-        const idSecreto = new URLSearchParams(window.location.search).get('id');
-        if (idSecreto) {
-            // Si hay ?id=XYZ, preguntamos al conserje
-            consultarConserje(idSecreto);
-        }
+        // --- LIMPIEZA: Eliminamos la lógica de ?id=... del "conserje" ---
+        // Solo mantenemos la búsqueda clásica por nombre si viene en la URL
+        const p = new URLSearchParams(window.location.search).get('alumno'); 
+        if(p) ejecutarBusqueda(p);
 
         const input = document.getElementById('magicInput'); const btn = document.getElementById('btnBuscar');
         const login = () => {
@@ -769,47 +738,22 @@
         };
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
         
-        // --- 🔴 BOTÓN COPIAR AUTOMÁTICO (INTEGRADO CON LA URL DE TU SCRIPT) ---
+        // --- 🔴 BOTÓN COPIAR SIMPLE Y RÁPIDO (SIN ID) ---
         document.getElementById('btnCopiar').onclick = () => {
             const btn = document.getElementById('btnCopiar');
             const nombreAlumno = input.value.trim();
             
             if(!nombreAlumno) return;
 
-            // 1. Ponemos el botón en modo "Pensando..."
-            const textoOriginal = btn.innerText;
-            btn.innerText = "⏳ GENERANDO ENLACE...";
-            
-            // 2. Preguntamos al Conserje (Apps Script) por el código del alumno
-            fetch(CONSERJE_URL + "?nombre=" + encodeURIComponent(nombreAlumno))
-                .then(response => response.text())
-                .then(codigo => {
-                    let urlFinal = "";
-                    
-                    if (codigo && codigo !== "NO_TIENE_CODIGO" && !codigo.includes("Error")) {
-                        // SI TIENE CÓDIGO -> Usamos el link corto y seguro
-                        urlFinal = window.location.href.split('?')[0] + "?id=" + codigo;
-                    } else {
-                        // SI NO TIENE CÓDIGO -> Usamos el link largo antiguo (plan B)
-                        urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumno);
-                    }
+            // Generamos URL clásica con nombre (lo que pediste)
+            const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumno);
 
-                    // 3. Copiamos al portapapeles
-                    navigator.clipboard.writeText(urlFinal).then(() => { 
-                        btn.innerText = "✅ ENLACE COPIADO";
-                        setTimeout(() => btn.innerText = textoOriginal, 2000);
-                    });
-                })
-                .catch(err => {
-                    console.error("Error generando enlace", err);
-                    btn.innerText = "❌ ERROR AL GENERAR";
-                    setTimeout(() => btn.innerText = textoOriginal, 2000);
-                });
+            navigator.clipboard.writeText(urlFinal).then(() => { 
+                const original = btn.innerText;
+                btn.innerText = "✅ ENLACE COPIADO";
+                setTimeout(() => btn.innerText = original, 2000);
+            });
         };
-
-        // Mantener compatibilidad con enlaces viejos ?alumno=...
-        const p = new URLSearchParams(window.location.search).get('alumno'); 
-        if(p && !idSecreto) ejecutarBusqueda(p);
     });
 </script>
 </body>
