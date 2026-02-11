@@ -63,8 +63,8 @@
         <div v-if="!authenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4f6f9] p-4">
             <div class="login-container p-10 w-full max-w-md text-center">
                 <div class="mb-6">
-                    <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" 
-                         alt="Logo" class="h-16 mx-auto mb-2">
+                    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" 
+                         alt="Logo" class="h-16 mx-auto mb-2 object-contain">
                     <div class="brand-line"></div>
                 </div>
                 
@@ -90,7 +90,7 @@
         <div class="w-1/4 bg-white border-r border-gray-200 flex flex-col shadow-xl z-20">
             <div class="p-5 bg-[#243c7a] text-white">
                 <div class="flex items-center gap-3">
-                    <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="h-8 brightness-0 invert">
+                    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="h-8 brightness-0 invert object-contain">
                     <h1 class="font-bold text-lg leading-tight">Gestión<br><span class="text-[#fa65c3]">Alumnos</span></h1>
                 </div>
             </div>
@@ -278,11 +278,10 @@
     const { createApp } = Vue;
 
     // --- CONFIGURACIÓN DE SEGURIDAD ---
-    // 1. Contraseña en Base64 ('010523' -> 'MDEwNTIz')
+    // 1. Contraseña en Base64 (010523)
     const PASS_HASH = "MDEwNTIz"; 
     
-    // 2. URL del Script en Base64 (LA TUYA)
-    // Esto evita que salga en texto plano al ver código fuente.
+    // 2. URL del Script en Base64 (Encriptada para que no sea visible fácilmente)
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
     createApp({
