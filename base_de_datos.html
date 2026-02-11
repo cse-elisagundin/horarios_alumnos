@@ -31,11 +31,9 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Animaciones */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-        /* Animación Modal Éxito */
         .pop-enter-active, .pop-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.8) translateY(20px); }
 
@@ -77,8 +75,13 @@
 
     <transition name="fade">
         <div v-if="!authenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4f6f9] p-4">
-            <div class="login-container p-10 w-full max-w-md text-center">
-                <div class="mb-6">
+            <div class="login-container p-10 w-full max-w-md text-center relative overflow-hidden">
+                
+                <div v-if="loading" class="absolute top-0 left-0 h-1 bg-blue-100 w-full">
+                    <div class="h-full bg-[#fa65c3] animate-[loading_1s_ease-in-out_infinite] w-1/3"></div>
+                </div>
+
+                <div class="mb-6 mt-4">
                     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" 
                          alt="Logo" class="h-20 mx-auto mb-2 object-contain">
                     <div class="brand-line"></div>
@@ -96,6 +99,10 @@
                 
                 <p v-if="loginError" class="mt-4 text-red-500 font-bold text-xs animate-pulse">
                     ⚠️ Contraseña incorrecta
+                </p>
+                
+                <p v-if="loading" class="mt-4 text-gray-400 text-[10px] animate-pulse">
+                    Sincronizando base de datos...
                 </p>
             </div>
         </div>
@@ -126,7 +133,7 @@
             </div>
 
             <div class="flex-1 overflow-y-auto bg-white">
-                <div v-if="loading" class="text-center p-8 text-[#243c7a]">
+                <div v-if="loading && list.length === 0" class="text-center p-8 text-[#243c7a]">
                     <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Cargando...
                 </div>
                 
@@ -337,23 +344,21 @@
                 if (btoa(this.passwordInput) === PASS_HASH) {
                     this.authenticated = true;
                     this.loginError = false;
-                    this.apiUrl = atob(ENCRYPTED_URL);
-                    this.loadData();
+                    // Ya no cargamos datos aquí, porque se cargaron al inicio (mounted)
                 } else {
                     this.loginError = true;
                     this.passwordInput = '';
                 }
             },
             logout() {
-                this.authenticated = false;
-                this.passwordInput = '';
-                this.list = [];
-                this.selected = null;
-                this.apiUrl = ''; 
+                // Al cerrar sesión, recargamos la página entera para limpiar datos
+                location.reload();
             },
             async loadData() {
                 this.loading = true;
                 try {
+                    // Desciframos URL e iniciamos carga
+                    this.apiUrl = atob(ENCRYPTED_URL);
                     const res = await fetch(this.apiUrl);
                     const json = await res.json();
                     if (json.status === 'success') {
@@ -378,29 +383,36 @@
                 this.selected = { id: 'TEMP' }; 
             },
             selectStudent(s) {
-                // 1. Establecer formulario clonado
-                this.form = { ...s };
+                // 1. Clonar datos para romper referencias y evitar edición en vivo en la lista
+                let tempForm = JSON.parse(JSON.stringify(s));
                 
-                // 2. Intentar arreglar fecha sin explotar
+                // 2. Manejo ROBUSTO de fechas para que no explote
                 try {
-                    if (this.form.nacimiento) {
-                        // Si es string largo ISO
-                        if (typeof this.form.nacimiento === 'string' && this.form.nacimiento.includes('T')) {
-                             this.form.nacimiento = this.form.nacimiento.split('T')[0];
+                    // Si el campo existe
+                    if (tempForm.nacimiento) {
+                        // Caso A: Viene como "2024-05-20T14:00..." (ISO String de Google)
+                        if (typeof tempForm.nacimiento === 'string' && tempForm.nacimiento.includes('T')) {
+                             tempForm.nacimiento = tempForm.nacimiento.split('T')[0];
                         } 
-                        // Intento genérico
-                        let d = new Date(this.form.nacimiento);
-                        if (!isNaN(d.getTime())) {
-                            this.form.nacimiento = d.toISOString().split('T')[0];
-                        } else {
-                            this.form.nacimiento = '';
+                        // Caso B: Viene como objeto o string simple, intentamos convertir
+                        else {
+                            let d = new Date(tempForm.nacimiento);
+                            if (!isNaN(d.getTime())) {
+                                // Truco para ajustar zona horaria y que no reste un día
+                                const offset = d.getTimezoneOffset();
+                                d = new Date(d.getTime() - (offset*60*1000));
+                                tempForm.nacimiento = d.toISOString().split('T')[0];
+                            } else {
+                                tempForm.nacimiento = ''; // Fecha inválida, limpiamos
+                            }
                         }
                     }
-                } catch(e) { 
-                    console.log("Fecha ignorada"); 
-                    this.form.nacimiento = ''; 
+                } catch(e) {
+                    console.error("Error fecha ignorado:", e);
+                    tempForm.nacimiento = ''; 
                 }
 
+                this.form = tempForm;
                 this.isNew = false;
                 this.selected = s; // ESTO ABRE EL PANEL
             },
@@ -413,10 +425,12 @@
                     this.showSuccess = true;
                     this.successMessage = this.isNew ? 'Alumno creado correctamente' : 'Ficha actualizada';
                     
+                    // Recargar datos en segundo plano para que la lista se actualice
+                    this.loadData();
+
                     setTimeout(() => {
                         this.showSuccess = false;
                         this.selected = null; 
-                        this.loadData();
                         this.saving = false;
                     }, 2000);
                 } catch (e) { 
@@ -424,8 +438,18 @@
                     this.saving = false; 
                 }
             }
+        },
+        mounted() {
+            // CARGA AUTOMÁTICA AL ABRIR LA WEB (ANTES DE LOGIN)
+            this.loadData();
         }
     }).mount('#app');
 </script>
+<style>
+    @keyframes loading {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(400%); }
+    }
+</style>
 </body>
 </html>
