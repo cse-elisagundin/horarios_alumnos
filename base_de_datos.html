@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ficha Alumnos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Un poco de estilo extra para los inputs */
+        input, select, textarea { transition: all 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #2563eb; ring: 2px; }
+        /* Ocultar scrollbar en la lista pero permitir scroll */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen overflow-hidden text-sm font-sans">
+
+<div id="app" class="flex h-full">
+    
+    <div class="w-1/4 bg-white border-r flex flex-col shadow-xl z-20">
+        <div class="p-5 bg-slate-800 text-white shadow-md">
+            <h1 class="font-bold text-lg flex items-center gap-2">
+                <i class="fas fa-database"></i> Base de Datos
+            </h1>
+        </div>
+        
+        <div class="p-3 bg-gray-50 border-b space-y-2">
+            <div class="relative">
+                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                <input v-model="search" type="text" placeholder="Buscar apellido..." 
+                       class="w-full pl-9 p-2 border rounded shadow-sm outline-none focus:ring-2 focus:ring-blue-400 transition">
+            </div>
+            <button @click="createNew" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 font-bold shadow transition flex items-center justify-center gap-2">
+                <i class="fas fa-plus"></i> Nueva Ficha
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto bg-gray-50">
+            <div v-if="loading" class="text-center p-6 text-gray-500">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>Cargando datos...
+            </div>
+            
+            <div v-else-if="filteredList.length === 0" class="text-center p-6 text-gray-400">
+                No hay resultados
+            </div>
+
+            <div v-else v-for="s in filteredList" :key="s.id" @click="selectStudent(s)"
+                 class="p-4 border-b bg-white hover:bg-blue-50 cursor-pointer transition relative group"
+                 :class="selected && selected.id === s.id ? 'bg-blue-100 border-l-4 border-l-blue-600' : 'border-l-4 border-l-transparent'">
+                <div class="font-bold text-gray-800 text-base">{{ s.apellidos }}, {{ s.nombre }}</div>
+                <div class="text-xs text-gray-500 mt-1 flex justify-between items-center">
+                    <span class="truncate max-w-[120px]"><i class="fas fa-school mr-1"></i>{{ s.curso }}</span>
+                    <span v-if="s.dni" class="bg-gray-200 px-2 py-0.5 rounded text-[10px]">{{ s.dni }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-3/4 bg-gray-200 h-full flex flex-col relative">
+        
+        <div v-if="selected" class="flex-1 overflow-y-auto p-6 pb-20">
+            <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
+                
+                <div class="bg-white p-6 border-b flex justify-between items-center sticky top-0 z-30 shadow-sm bg-opacity-95 backdrop-blur">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">
+                            {{ isNew ? 'Alta de Nuevo Alumno' : form.nombre + ' ' + form.apellidos }}
+                        </h2>
+                        <p class="text-xs text-gray-400 mt-1 flex gap-2">
+                            <span v-if="!isNew">ID: {{ selected.id }}</span>
+                        </p>
+                    </div>
+                    <div class="flex gap-3">
+                        <button type="button" @click="selected = null" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded transition border">
+                            Cerrar
+                        </button>
+                        <button @click="saveData" :disabled="saving" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 shadow font-bold flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                            <i v-if="saving" class="fas fa-spinner fa-spin"></i>
+                            <i v-else class="fas fa-save"></i>
+                            {{ saving ? 'Guardando...' : 'Guardar Ficha' }}
+                        </button>
+                    </div>
+                </div>
+
+                <form @submit.prevent="saveData" class="p-8 space-y-8">
+                    
+                    <section>
+                        <h3 class="font-bold text-blue-800 mb-4 flex items-center gap-2 border-b pb-2">
+                            <span class="bg-blue-100 p-1.5 rounded text-blue-600"><i class="fas fa-user"></i></span> Datos del Alumno
+                        </h3>
+                        <div class="grid grid-cols-4 gap-5">
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Nombre</label>
+                                <input v-model="form.nombre" required class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Apellidos</label>
+                                <input v-model="form.apellidos" required class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">DNI / NIE</label>
+                                <input v-model="form.dni" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Fecha Nacimiento</label>
+                                <input type="date" v-model="form.nacimiento" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <span class="bg-gray-200 p-1.5 rounded text-gray-600"><i class="fas fa-map-marker-alt"></i></span> Dirección
+                        </h3>
+                        <div class="grid grid-cols-6 gap-5">
+                            <div class="col-span-3">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Domicilio</label>
+                                <input v-model="form.direccion" placeholder="Calle, número, piso..." class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">C. Postal</label>
+                                <input v-model="form.cp" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Población</label>
+                                <input v-model="form.poblacion" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Provincia</label>
+                                <input v-model="form.provincia" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="font-bold text-yellow-700 mb-4 flex items-center gap-2 border-b pb-2">
+                            <span class="bg-yellow-100 p-1.5 rounded text-yellow-600"><i class="fas fa-graduation-cap"></i></span> Académico y Contacto
+                        </h3>
+                        <div class="grid grid-cols-4 gap-5">
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Colegio</label>
+                                <input v-model="form.colegio" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Curso</label>
+                                <input v-model="form.curso" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Teléfono Alumno</label>
+                                <div class="flex">
+                                    <input v-model="form.tlf" class="w-full p-2 border rounded-l bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                                    <a v-if="form.tlf" :href="'https://wa.me/34' + form.tlf.replace(/\s/g, '')" target="_blank" class="bg-green-500 text-white px-3 rounded-r flex items-center hover:bg-green-600 transition" title="WhatsApp Web">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-span-1">
+                                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Email Alumno</label>
+                                <input v-model="form.email" type="email" class="w-full p-2 border rounded bg-gray-50 focus:bg-white outline-none focus:ring-2 focus:ring-blue-200">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="grid grid-cols-2 gap-8">
+                        <div class="bg-green-50 p-5 rounded border border-green-200 shadow-sm relative">
+                            <div class="absolute -top-3 left-4 bg-green-600 text-white text-xs px-2 py-1 rounded font-bold">FAMILIAR 1</div>
+                            <div class="mt-2 space-y-3">
+                                <div>
+                                    <label class="text-xs font-bold text-green-800">Nombre Completo</label>
+                                    <input v-model="form.fam1_nombre" class="w-full p-2 border rounded border-green-200 focus:ring-green-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-green-800">Relación</label>
+                                    <select v-model="form.fam1_relacion" class="w-full p-2 border rounded border-green-200 bg-white">
+                                        <option value="" disabled>Selecciona...</option>
+                                        <option>Mamá</option><option>Papá</option><option>Tutor Legal</option><option>Abuelo/a</option><option>Otro</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-xs font-bold text-green-800">Teléfono</label>
+                                        <div class="flex">
+                                            <input v-model="form.fam1_tlf" class="w-full p-2 border rounded-l border-green-200">
+                                            <a v-if="form.fam1_tlf" :href="'https://wa.me/34' + form.fam1_tlf.replace(/\s/g, '')" target="_blank" class="bg-green-600 text-white px-2 rounded-r flex items-center justify-center hover:bg-green-700"><i class="fab fa-whatsapp"></i></a>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-green-800">Email</label>
+                                        <input v-model="form.fam1_email" class="w-full p-2 border rounded border-green-200">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded border border-gray-200 shadow-sm relative opacity-90 hover:opacity-100 transition">
+                             <div class="absolute -top-3 left-4 bg-gray-500 text-white text-xs px-2 py-1 rounded font-bold">FAMILIAR 2</div>
+                             <div class="mt-2 space-y-3">
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500">Nombre Completo</label>
+                                    <input v-model="form.fam2_nombre" class="w-full p-2 border rounded outline-none focus:border-gray-400">
+                                </div>
+                                <div>
+                                    <label class="text-xs font-bold text-gray-500">Relación</label>
+                                    <select v-model="form.fam2_relacion" class="w-full p-2 border rounded bg-white">
+                                        <option value="" disabled>Selecciona...</option>
+                                        <option>Mamá</option><option>Papá</option><option>Tutor Legal</option><option>Abuelo/a</option><option>Otro</option>
+                                    </select>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-500">Teléfono</label>
+                                        <div class="flex">
+                                            <input v-model="form.fam2_tlf" class="w-full p-2 border rounded-l">
+                                            <a v-if="form.fam2_tlf" :href="'https://wa.me/34' + form.fam2_tlf.replace(/\s/g, '')" target="_blank" class="bg-gray-400 text-white px-2 rounded-r flex items-center justify-center hover:bg-gray-500"><i class="fab fa-whatsapp"></i></a>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-xs font-bold text-gray-500">Email</label>
+                                        <input v-model="form.fam2_email" class="w-full p-2 border rounded">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                </form>
+            </div>
+        </div>
+
+        <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
+            <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse">
+                <i class="fas fa-folder-open text-6xl text-blue-300"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-600">Base de Datos Alumnos</h2>
+            <p class="mt-2">Selecciona una ficha de la izquierda o crea una nueva</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==========================================================
+    //  AQUÍ ES DONDE TIENES QUE PEGAR TU URL DEL SCRIPT
+    // ==========================================================
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzOxeZb3MZ-cmVdnF20DFkW7EkzoZyuK6ZwlLiJimmglb5iMrCWsBAgFbwWMrF7ncky/exec'; 
+
+    const { createApp } = Vue;
+
+    createApp({
+        data() {
+            return {
+                list: [],
+                search: '',
+                selected: null,
+                isNew: false,
+                loading: false,
+                saving: false,
+                form: {}
+            }
+        },
+        computed: {
+            filteredList() {
+                if (!this.search) return this.list;
+                const t = this.search.toLowerCase();
+                // Filtramos por nombre, apellidos o DNI
+                return this.list.filter(s => 
+                    (s.nombre && s.nombre.toLowerCase().includes(t)) || 
+                    (s.apellidos && s.apellidos.toLowerCase().includes(t)) ||
+                    (s.dni && String(s.dni).toLowerCase().includes(t))
+                );
+            }
+        },
+        methods: {
+            // Cargar datos desde Google Sheets
+            async loadData() {
+                this.loading = true;
+                try {
+                    const res = await fetch(API_URL);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        // Ordenamos alfabéticamente por APELLIDOS
+                        this.list = json.data.sort((a, b) => {
+                            if (!a.apellidos) return 1;
+                            if (!b.apellidos) return -1;
+                            return a.apellidos.localeCompare(b.apellidos);
+                        });
+                    }
+                } catch (e) { 
+                    console.error(e); 
+                    alert("No se pudo conectar con la base de datos.");
+                }
+                this.loading = false;
+            },
+            // Preparar formulario vacío
+            createNew() {
+                this.isNew = true;
+                this.form = { 
+                    nombre:'', apellidos:'', dni:'', nacimiento:'',
+                    direccion:'', cp:'', poblacion:'', provincia:'',
+                    colegio:'', curso:'', tlf:'', email:'',
+                    fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam1_email:'',
+                    fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', fam2_email:''
+                };
+                this.selected = { id: 'TEMP' }; 
+            },
+            // Seleccionar alumno para editar
+            selectStudent(s) {
+                this.isNew = false;
+                this.selected = s;
+                // Formatear la fecha para que el input type="date" la entienda (YYYY-MM-DD)
+                let f = '';
+                if (s.nacimiento) {
+                    try { f = new Date(s.nacimiento).toISOString().split('T')[0]; } catch(e){}
+                }
+                this.form = { ...s, nacimiento: f };
+            },
+            // Guardar datos (Crear o Editar)
+            async saveData() {
+                this.saving = true;
+                const payload = { 
+                    ...this.form, 
+                    action: this.isNew ? 'create' : 'update',
+                    id: this.selected.id 
+                };
+
+                try {
+                    // Enviamos los datos con 'no-cors' para evitar bloqueos de CORS de Google
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    // Esperamos 1.5s y recargamos
+                    setTimeout(() => {
+                        this.loadData();
+                        this.selected = null;
+                        this.saving = false;
+                        alert(this.isNew ? 'Alumno creado correctamente' : 'Ficha actualizada');
+                    }, 1500);
+
+                } catch (e) {
+                    alert('Error al guardar. Revisa tu conexión.');
+                    this.saving = false;
+                }
+            }
+        },
+        mounted() {
+            this.loadData(); // Cargar lista al abrir
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
