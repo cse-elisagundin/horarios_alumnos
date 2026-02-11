@@ -1,7 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión CSE Elisa Gundín</title>
+    
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        /* === PERSONALIZACIÓN CORPORATIVA === */
+        :root { 
+            --c-primary: #243c7a;   
+            --c-secondary: #2b94cc; 
+            --c-accent: #fa65c3;    
+            --bg-body: #f4f6f9;
+        }
+
+        body { font-family: 'Outfit', sans-serif; background-color: var(--bg-body); }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Animaciones generales */
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+        /* Animación para el Modal de Éxito */
+        .pop-enter-active, .pop-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.8) translateY(20px); }
+
+        .login-container {
+            background: white; border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12);
+        }
+        .brand-line {
+            height: 5px; width: 80px; margin: 15px auto;
+            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
+            border-radius: 10px;
+        }
+        
+        .btn-corp { background-color: var(--c-primary); transition: 0.3s; }
+        .btn-corp:hover { background-color: #1a2e5e; transform: translateY(-2px); }
+        
+        .input-corp { 
+            border: 2px solid #e1e9f0; transition: 0.3s; 
+            color: var(--c-primary); font-weight: 600;
+        }
+        .input-corp:focus { border-color: var(--c-secondary); outline: none; background: white; }
+    </style>
+</head>
+<body class="h-screen overflow-hidden text-sm">
+
+<div id="app" class="h-full flex flex-col relative">
+
+    <transition name="pop">
+        <div v-if="showSuccess" class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+            <div class="bg-white px-8 py-6 rounded-2xl shadow-2xl border-l-8 border-[#25D366] flex flex-col items-center gap-3 min-w-[300px]">
+                <div class="bg-green-100 p-3 rounded-full text-[#25D366]">
+                    <i class="fas fa-check text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-[#243c7a] uppercase tracking-wide">¡Guardado!</h3>
+                <p class="text-gray-500 font-semibold">{{ successMessage }}</p>
+            </div>
+        </div>
+    </transition>
+
+    <transition name="fade">
+        <div v-if="!authenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4f6f9] p-4">
+            <div class="login-container p-10 w-full max-w-md text-center">
+                <div class="mb-6">
+                    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" 
+                         alt="Logo" class="h-20 mx-auto mb-2 object-contain">
+                    <div class="brand-line"></div>
+                </div>
+                
+                <h2 class="text-2xl font-extrabold text-[#243c7a] mb-2 uppercase tracking-tight">Acceso Privado</h2>
+                <p class="text-gray-400 mb-6 text-xs font-semibold tracking-widest uppercase">Base de Datos Alumnos</p>
+                
+                <input type="password" v-model="passwordInput" @keyup.enter="login" placeholder="Contraseña..." 
+                       class="w-full p-4 rounded-xl input-corp text-center text-lg mb-4 bg-gray-50 placeholder-gray-300">
+                
+                <button @click="login" class="w-full py-4 text-white font-bold rounded-xl btn-corp uppercase tracking-wider shadow-lg">
+                    Entrar
+                </button>
+                
+                <p v-if="loginError" class="mt-4 text-red-500 font-bold text-xs animate-pulse">
+                    ⚠️ Contraseña incorrecta
+                </p>
+            </div>
+        </div>
+    </transition>
+
+    <div v-if="authenticated" class="flex h-full animate-opacity duration-700">
+        
+        <div class="w-1/4 bg-white border-r border-gray-200 flex flex-col shadow-xl z-20">
+            <div class="p-5 bg-[#243c7a] text-white">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white p-1 rounded-lg shadow-sm">
+                        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" 
+                             class="h-8 w-auto object-contain">
+                    </div>
+                    <h1 class="font-bold text-lg leading-tight">Gestión<br><span class="text-[#fa65c3]">Alumnos</span></h1>
+                </div>
+            </div>
+            
+            <div class="p-4 bg-gray-50 border-b space-y-3">
+                <div class="relative">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    <input v-model="search" type="text" placeholder="Buscar apellido..." 
+                           class="w-full pl-10 p-2.5 rounded-lg border border-gray-200 focus:border-[#2b94cc] outline-none shadow-sm">
+                </div>
+                <button @click="createNew" class="w-full bg-[#2b94cc] text-white py-2.5 rounded-lg hover:bg-[#207bb0] font-bold shadow flex justify-center gap-2 transition">
+                    <i class="fas fa-plus"></i> Nueva Ficha
+                </button>
+            </div>
+
+            <div class="flex-1 overflow-y-auto bg-white">
+                <div v-if="loading" class="text-center p-8 text-[#243c7a]">
+                    <i class="fas fa-circle-notch fa-spin text-2xl mb-2"></i><br>Cargando...
+                </div>
+                
+                <div v-else v-for="s in filteredList" :key="s.id" @click="selectStudent(s)"
+                     class="p-4 border-b border-gray-100 hover:bg-blue-50 cursor-pointer transition group relative"
+                     :class="selected && selected.id === s.id ? 'bg-blue-50 border-l-4 border-l-[#fa65c3]' : 'border-l-4 border-l-transparent'">
+                    <div class="font-bold text-[#243c7a] text-base">{{ s.apellidos }}, {{ s.nombre }}</div>
+                    <div class="text-xs text-gray-500 mt-1 flex justify-between items-center">
+                        <span class="truncate max-w-[120px]"><i class="fas fa-school mr-1 text-[#2b94cc]"></i>{{ s.curso }}</span>
+                        <span v-if="s.dni" class="bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold text-gray-400">{{ s.dni }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-2 border-t bg-gray-50">
+                <button @click="logout" class="w-full py-2 text-xs font-bold text-gray-400 hover:text-[#dc3545]">
+                    <i class="fas fa-lock"></i> CERRAR SESIÓN
+                </button>
+            </div>
+        </div>
+
+        <div class="w-3/4 bg-[#f4f6f9] h-full flex flex-col relative">
+            
+            <div v-if="selected" class="flex-1 overflow-y-auto p-8 pb-24">
+                <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                    
+                    <div class="bg-white p-6 border-b flex justify-between items-center sticky top-0 z-30 shadow-sm bg-opacity-95 backdrop-blur">
+                        <div>
+                            <h2 class="text-2xl font-extrabold text-[#243c7a]">
+                                {{ isNew ? 'Alta de Alumno' : form.nombre + ' ' + form.apellidos }}
+                            </h2>
+                            <p class="text-xs text-gray-400 mt-1" v-if="!isNew">ID REF: {{ selected.id }}</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button @click="selected = null" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg transition font-semibold">
+                                Cancelar
+                            </button>
+                            <button @click="saveData" :disabled="saving" class="bg-[#25D366] text-white px-6 py-2 rounded-lg hover:bg-[#1faa50] shadow-lg font-bold flex items-center gap-2 transition disabled:opacity-50">
+                                <i v-if="saving" class="fas fa-spinner fa-spin"></i>
+                                <i v-else class="fas fa-save"></i>
+                                {{ saving ? 'Guardando...' : 'Guardar Ficha' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <form class="p-8 space-y-10" @submit.prevent>
+                        
+                        <section>
+                            <h3 class="font-bold text-[#243c7a] mb-5 flex items-center gap-2 border-b pb-2">
+                                <span class="bg-blue-100 text-[#243c7a] p-1.5 rounded-md"><i class="fas fa-user"></i></span> Datos Personales
+                            </h3>
+                            <div class="grid grid-cols-4 gap-6">
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nombre</label>
+                                    <input v-model="form.nombre" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] focus:bg-white outline-none transition">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Apellidos</label>
+                                    <input v-model="form.apellidos" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] focus:bg-white outline-none transition">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">DNI / NIE</label>
+                                    <input v-model="form.dni" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] focus:bg-white outline-none transition">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nacimiento</label>
+                                    <input type="date" v-model="form.nacimiento" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] focus:bg-white outline-none transition">
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 class="font-bold text-[#243c7a] mb-5 flex items-center gap-2 border-b pb-2">
+                                <span class="bg-gray-200 text-gray-600 p-1.5 rounded-md"><i class="fas fa-map-marker-alt"></i></span> Dirección
+                            </h3>
+                            <div class="grid grid-cols-6 gap-6">
+                                <div class="col-span-3">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Domicilio</label>
+                                    <input v-model="form.direccion" placeholder="Calle, nº..." class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">CP</label>
+                                    <input v-model="form.cp" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Población</label>
+                                    <input v-model="form.poblacion" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Provincia</label>
+                                    <input v-model="form.provincia" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                            </div>
+                        </section>
+
+                        <section>
+                            <h3 class="font-bold text-[#243c7a] mb-5 flex items-center gap-2 border-b pb-2">
+                                <span class="bg-yellow-100 text-yellow-700 p-1.5 rounded-md"><i class="fas fa-graduation-cap"></i></span> Académico
+                            </h3>
+                            <div class="grid grid-cols-4 gap-6">
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Colegio</label>
+                                    <input v-model="form.colegio" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Curso</label>
+                                    <input v-model="form.curso" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Teléfono</label>
+                                    <input v-model="form.tlf" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                                <div class="col-span-1">
+                                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Email</label>
+                                    <input v-model="form.email" class="w-full p-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-[#2b94cc] outline-none">
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="grid grid-cols-2 gap-8">
+                            <div class="bg-green-50 p-6 rounded-2xl border border-green-100 relative">
+                                <div class="absolute -top-3 left-6 bg-[#25D366] text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">FAMILIAR 1</div>
+                                <div class="space-y-4 mt-2">
+                                    <input v-model="form.fam1_nombre" placeholder="Nombre Completo" class="w-full p-3 rounded-lg border border-green-200 bg-white focus:ring-2 ring-green-100 outline-none">
+                                    <select v-model="form.fam1_relacion" class="w-full p-3 rounded-lg border border-green-200 bg-white">
+                                        <option value="" disabled>Relación...</option>
+                                        <option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option>
+                                    </select>
+                                    <div class="flex gap-2">
+                                        <input v-model="form.fam1_tlf" placeholder="Teléfono" class="w-full p-3 rounded-lg border border-green-200">
+                                        <a v-if="form.fam1_tlf" :href="'https://wa.me/34'+form.fam1_tlf.replace(/\s/g,'')" target="_blank" class="bg-[#25D366] text-white px-4 rounded-lg flex items-center hover:bg-green-600"><i class="fab fa-whatsapp text-xl"></i></a>
+                                    </div>
+                                    <input v-model="form.fam1_email" placeholder="Email" class="w-full p-3 rounded-lg border border-green-200">
+                                </div>
+                            </div>
+
+                            <div class="bg-gray-100 p-6 rounded-2xl border border-gray-200 relative opacity-90 hover:opacity-100 transition">
+                                <div class="absolute -top-3 left-6 bg-gray-400 text-white text-[10px] px-3 py-1 rounded-full font-bold tracking-wider">FAMILIAR 2</div>
+                                <div class="space-y-4 mt-2">
+                                    <input v-model="form.fam2_nombre" placeholder="Nombre Completo" class="w-full p-3 rounded-lg border border-gray-300 outline-none">
+                                    <select v-model="form.fam2_relacion" class="w-full p-3 rounded-lg border border-gray-300 bg-white">
+                                        <option value="" disabled>Relación...</option>
+                                        <option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option>
+                                    </select>
+                                    <div class="flex gap-2">
+                                        <input v-model="form.fam2_tlf" placeholder="Teléfono" class="w-full p-3 rounded-lg border border-gray-300">
+                                        <a v-if="form.fam2_tlf" :href="'https://wa.me/34'+form.fam2_tlf.replace(/\s/g,'')" target="_blank" class="bg-gray-400 text-white px-4 rounded-lg flex items-center hover:bg-gray-500"><i class="fab fa-whatsapp text-xl"></i></a>
+                                    </div>
+                                    <input v-model="form.fam2_email" placeholder="Email" class="w-full p-3 rounded-lg border border-gray-300">
+                                </div>
+                            </div>
+                        </section>
+                    </form>
+                </div>
+            </div>
+
+            <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
+                <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse">
+                    <i class="fas fa-folder-open text-6xl text-[#2b94cc] opacity-50"></i>
+                </div>
+                <h2 class="text-xl font-bold text-[#243c7a]">Selecciona un alumno</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     const { createApp } = Vue;
 
-    // --- CONFIGURACIÓN DE SEGURIDAD ---
+    // CONFIGURACIÓN DE SEGURIDAD
     const PASS_HASH = "MDEwNTIz"; 
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
@@ -15,7 +310,7 @@
                 
                 list: [],
                 search: '',
-                selected: null, // Controla si se ve el formulario
+                selected: null,
                 isNew: false,
                 loading: false,
                 saving: false,
@@ -62,18 +357,13 @@
                     const res = await fetch(this.apiUrl);
                     const json = await res.json();
                     if (json.status === 'success') {
-                        // Asignamos los datos
                         this.list = json.data.sort((a, b) => {
-                            // Protección extra por si algún apellido viene vacío
                             let apA = a.apellidos || "";
                             let apB = b.apellidos || "";
                             return apA.localeCompare(apB);
                         });
                     }
-                } catch (e) { 
-                    console.error("Error cargando datos:", e);
-                    alert("Error de conexión. Revisa la consola."); 
-                }
+                } catch (e) { console.error(e); }
                 this.loading = false;
             },
             createNew() {
@@ -87,59 +377,43 @@
                 };
                 this.selected = { id: 'TEMP' }; 
             },
-            
-            // --- AQUÍ ESTABA EL PROBLEMA, ESTA ES LA VERSIÓN CORREGIDA ---
             selectStudent(s) {
-                console.log("Intentando abrir:", s); // Verás esto en la consola (F12)
-                
                 this.isNew = false;
                 
-                // 1. Copiamos los datos del alumno a una variable temporal 'tempForm'
-                // Usamos JSON parse/stringify para romper referencias y evitar errores raros
-                let tempForm = {};
-                try {
-                    tempForm = JSON.parse(JSON.stringify(s));
-                } catch(e) {
-                    tempForm = { ...s }; // Fallback simple
-                }
-
-                // 2. Intentamos arreglar la fecha sin que explote el programa
+                // 1. Clonar datos para romper referencias
+                let tempForm = JSON.parse(JSON.stringify(s));
+                
+                // 2. Manejo seguro de fechas para evitar errores que bloqueen el clic
                 try {
                     if (tempForm.nacimiento) {
-                        // Google Sheets a veces manda la fecha como texto largo ISO (2010-05-15T00:00:00.000Z)
-                        // Cortamos en la 'T' para quedarnos solo con la parte YYYY-MM-DD
-                        if (typeof tempForm.nacimiento === 'string' && tempForm.nacimiento.includes('T')) {
+                        // Si viene como string ISO largo (2020-05-15T00:00:00.000Z)
+                        if (typeof tempForm.nacimiento === 'string') {
                              tempForm.nacimiento = tempForm.nacimiento.split('T')[0];
                         } 
-                        // Si viene como objeto fecha o string raro, intentamos convertirlo
-                        else {
-                            let d = new Date(tempForm.nacimiento);
-                            // Si es una fecha válida
-                            if (!isNaN(d.getTime())) {
-                                tempForm.nacimiento = d.toISOString().split('T')[0];
-                            } else {
-                                // Si la fecha es inválida, la dejamos vacía para que no falle el input
-                                console.warn("Fecha inválida detectada:", tempForm.nacimiento);
-                                tempForm.nacimiento = '';
-                            }
+                        // Intento genérico de conversión
+                        let d = new Date(tempForm.nacimiento);
+                        if (!isNaN(d.getTime())) {
+                            tempForm.nacimiento = d.toISOString().split('T')[0];
+                        } else {
+                            tempForm.nacimiento = ''; // Si la fecha es inválida, se limpia
                         }
                     }
-                } catch(err) {
-                    console.error("Error procesando fecha, se dejará vacía:", err);
-                    tempForm.nacimiento = ''; // En caso de duda, limpiar fecha
+                } catch(e) {
+                    console.error("Error al procesar fecha:", e);
+                    tempForm.nacimiento = ''; 
                 }
 
-                // 3. Asignamos al formulario y activamos la vista
+                // 3. Asignar al formulario y abrir
                 this.form = tempForm;
-                this.selected = s; // ESTO ES LO QUE HACE QUE SE ABRA EL PANEL
+                this.selected = s;
             },
-
             async saveData() {
                 this.saving = true;
                 const payload = { ...this.form, action: this.isNew ? 'create' : 'update', id: this.selected.id };
                 try {
                     await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
                     
+                    // Activar modal de éxito
                     this.showSuccess = true;
                     this.successMessage = this.isNew ? 'Alumno creado correctamente' : 'Ficha actualizada';
                     
@@ -157,3 +431,5 @@
         }
     }).mount('#app');
 </script>
+</body>
+</html>
