@@ -31,11 +31,11 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Animaciones generales */
+        /* Animaciones */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-        /* Animación para el Modal de Éxito */
+        /* Animación Modal Éxito */
         .pop-enter-active, .pop-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.8) translateY(20px); }
 
@@ -378,34 +378,31 @@
                 this.selected = { id: 'TEMP' }; 
             },
             selectStudent(s) {
-                this.isNew = false;
+                // 1. Establecer formulario clonado
+                this.form = { ...s };
                 
-                // 1. Clonar datos para romper referencias
-                let tempForm = JSON.parse(JSON.stringify(s));
-                
-                // 2. Manejo seguro de fechas para evitar errores que bloqueen el clic
+                // 2. Intentar arreglar fecha sin explotar
                 try {
-                    if (tempForm.nacimiento) {
-                        // Si viene como string ISO largo (2020-05-15T00:00:00.000Z)
-                        if (typeof tempForm.nacimiento === 'string') {
-                             tempForm.nacimiento = tempForm.nacimiento.split('T')[0];
+                    if (this.form.nacimiento) {
+                        // Si es string largo ISO
+                        if (typeof this.form.nacimiento === 'string' && this.form.nacimiento.includes('T')) {
+                             this.form.nacimiento = this.form.nacimiento.split('T')[0];
                         } 
-                        // Intento genérico de conversión
-                        let d = new Date(tempForm.nacimiento);
+                        // Intento genérico
+                        let d = new Date(this.form.nacimiento);
                         if (!isNaN(d.getTime())) {
-                            tempForm.nacimiento = d.toISOString().split('T')[0];
+                            this.form.nacimiento = d.toISOString().split('T')[0];
                         } else {
-                            tempForm.nacimiento = ''; // Si la fecha es inválida, se limpia
+                            this.form.nacimiento = '';
                         }
                     }
-                } catch(e) {
-                    console.error("Error al procesar fecha:", e);
-                    tempForm.nacimiento = ''; 
+                } catch(e) { 
+                    console.log("Fecha ignorada"); 
+                    this.form.nacimiento = ''; 
                 }
 
-                // 3. Asignar al formulario y abrir
-                this.form = tempForm;
-                this.selected = s;
+                this.isNew = false;
+                this.selected = s; // ESTO ABRE EL PANEL
             },
             async saveData() {
                 this.saving = true;
@@ -413,7 +410,6 @@
                 try {
                     await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
                     
-                    // Activar modal de éxito
                     this.showSuccess = true;
                     this.successMessage = this.isNew ? 'Alumno creado correctamente' : 'Ficha actualizada';
                     
