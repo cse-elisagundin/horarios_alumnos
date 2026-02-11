@@ -27,16 +27,17 @@
 
         body { font-family: 'Outfit', sans-serif; background-color: var(--bg-body); }
         
-        /* Ajustes de scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Animaciones */
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-        /* Estilos específicos del Login */
+        /* Animación para el Modal de Éxito */
+        .pop-enter-active, .pop-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .pop-enter-from, .pop-leave-to { opacity: 0; transform: scale(0.8) translateY(20px); }
+
         .login-container {
             background: white; border-radius: 20px;
             box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12);
@@ -47,7 +48,6 @@
             border-radius: 10px;
         }
         
-        /* Botones y Controles */
         .btn-corp { background-color: var(--c-primary); transition: 0.3s; }
         .btn-corp:hover { background-color: #1a2e5e; transform: translateY(-2px); }
         
@@ -60,14 +60,26 @@
 </head>
 <body class="h-screen overflow-hidden text-sm">
 
-<div id="app" class="h-full flex flex-col">
+<div id="app" class="h-full flex flex-col relative">
+
+    <transition name="pop">
+        <div v-if="showSuccess" class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+            <div class="bg-white px-8 py-6 rounded-2xl shadow-2xl border-l-8 border-[#25D366] flex flex-col items-center gap-3 min-w-[300px]">
+                <div class="bg-green-100 p-3 rounded-full text-[#25D366]">
+                    <i class="fas fa-check text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-extrabold text-[#243c7a] uppercase tracking-wide">¡Guardado!</h3>
+                <p class="text-gray-500 font-semibold">{{ successMessage }}</p>
+            </div>
+        </div>
+    </transition>
 
     <transition name="fade">
         <div v-if="!authenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4f6f9] p-4">
             <div class="login-container p-10 w-full max-w-md text-center">
                 <div class="mb-6">
                     <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" 
-                         alt="Logo" class="h-16 mx-auto mb-2 object-contain">
+                         alt="Logo" class="h-20 mx-auto mb-2 object-contain">
                     <div class="brand-line"></div>
                 </div>
                 
@@ -93,7 +105,10 @@
         <div class="w-1/4 bg-white border-r border-gray-200 flex flex-col shadow-xl z-20">
             <div class="p-5 bg-[#243c7a] text-white">
                 <div class="flex items-center gap-3">
-                    <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="h-8 brightness-0 invert object-contain">
+                    <div class="bg-white p-1 rounded-lg shadow-sm">
+                        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" 
+                             class="h-8 w-auto object-contain">
+                    </div>
                     <h1 class="font-bold text-lg leading-tight">Gestión<br><span class="text-[#fa65c3]">Alumnos</span></h1>
                 </div>
             </div>
@@ -280,11 +295,8 @@
 <script>
     const { createApp } = Vue;
 
-    // --- CONFIGURACIÓN DE SEGURIDAD ---
-    // 1. Contraseña en Base64 (010523)
+    // CONFIGURACIÓN
     const PASS_HASH = "MDEwNTIz"; 
-    
-    // 2. URL del Script en Base64
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
     createApp({
@@ -293,15 +305,20 @@
                 authenticated: false,
                 passwordInput: '',
                 loginError: false,
-                apiUrl: '', // Se rellenará solo al loguearse
+                apiUrl: '', 
                 
-                // Datos App
+                // Estados de la app
                 list: [],
                 search: '',
                 selected: null,
                 isNew: false,
                 loading: false,
                 saving: false,
+                
+                // Notificación
+                showSuccess: false,
+                successMessage: '',
+                
                 form: {}
             }
         },
@@ -317,15 +334,11 @@
             }
         },
         methods: {
-            // --- LOGIN ---
             login() {
-                // Comparamos el hash de lo escrito con el hash guardado
                 if (btoa(this.passwordInput) === PASS_HASH) {
                     this.authenticated = true;
                     this.loginError = false;
-                    // DESENCRIPTAR URL AL VUELO
                     this.apiUrl = atob(ENCRYPTED_URL);
-                    // Cargar datos
                     this.loadData();
                 } else {
                     this.loginError = true;
@@ -337,10 +350,8 @@
                 this.passwordInput = '';
                 this.list = [];
                 this.selected = null;
-                this.apiUrl = ''; // Borramos URL de memoria
+                this.apiUrl = ''; 
             },
-
-            // --- LÓGICA BASE DE DATOS ---
             async loadData() {
                 this.loading = true;
                 try {
@@ -352,7 +363,7 @@
                             return a.apellidos.localeCompare(b.apellidos);
                         });
                     }
-                } catch (e) { alert("Error de conexión"); }
+                } catch (e) { console.error(e); }
                 this.loading = false;
             },
             createNew() {
@@ -364,27 +375,48 @@
                     fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam1_email:'',
                     fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', fam2_email:''
                 };
+                // ID Temporal para que se renderice el formulario
                 this.selected = { id: 'TEMP' }; 
             },
             selectStudent(s) {
                 this.isNew = false;
                 this.selected = s;
-                let f = '';
-                if (s.nacimiento) { try { f = new Date(s.nacimiento).toISOString().split('T')[0]; } catch(e){} }
-                this.form = { ...s, nacimiento: f };
+                // Clona los datos para no modificar la lista directamente mientras editas
+                let formData = { ...s };
+                
+                // Intento seguro de formatear fecha
+                formData.nacimiento = '';
+                if (s.nacimiento) { 
+                    try { 
+                        let d = new Date(s.nacimiento);
+                        if(!isNaN(d.getTime())) {
+                            formData.nacimiento = d.toISOString().split('T')[0];
+                        }
+                    } catch(e) { console.log('Error fecha', e); } 
+                }
+                this.form = formData;
             },
             async saveData() {
                 this.saving = true;
                 const payload = { ...this.form, action: this.isNew ? 'create' : 'update', id: this.selected.id };
                 try {
                     await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    
+                    // Mostrar notificación bonita
+                    this.showSuccess = true;
+                    this.successMessage = this.isNew ? 'Alumno creado correctamente' : 'Ficha actualizada';
+                    
+                    // Esperar 2 segundos para cerrar modal y recargar
                     setTimeout(() => {
+                        this.showSuccess = false;
+                        this.selected = null; // Volver al inicio para forzar refresco limpio
                         this.loadData();
-                        this.selected = null;
                         this.saving = false;
-                        alert(this.isNew ? 'Alumno creado' : 'Guardado correctamente');
-                    }, 1500);
-                } catch (e) { alert('Error al guardar'); this.saving = false; }
+                    }, 2000);
+                } catch (e) { 
+                    alert('Error al conectar con Google Sheets'); 
+                    this.saving = false; 
+                }
             }
         }
     }).mount('#app');
