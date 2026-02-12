@@ -167,11 +167,15 @@
                         <div class="flex items-center gap-3">
                             <div class="flex items-center gap-2 mr-4 bg-gray-100 p-1.5 rounded-lg">
                                 <span class="text-[10px] font-bold uppercase transition-colors" :class="!form.baja ? 'text-green-600' : 'text-gray-400'">Alta</span>
-                                <button @click="form.baja = !form.baja" class="relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none" :class="form.baja ? 'bg-gray-400' : 'bg-[#25D366]'">
-                                    <div class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full shadow transition-transform duration-200" :class="form.baja ? 'translate-x-5' : 'translate-x-0'"></div>
+                                <button @click="form.baja = !form.baja" 
+                                        class="relative w-10 h-5 rounded-full transition-colors duration-200 focus:outline-none"
+                                        :class="form.baja ? 'bg-gray-400' : 'bg-[#25D366]'">
+                                    <div class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full shadow transition-transform duration-200"
+                                         :class="form.baja ? 'translate-x-5' : 'translate-x-0'"></div>
                                 </button>
                                 <span class="text-[10px] font-bold uppercase transition-colors" :class="form.baja ? 'text-red-500' : 'text-gray-400'">Baja</span>
                             </div>
+
                             <button @click="selected = null" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg">Cancelar</button>
                             <button @click="saveData" :disabled="saving" class="bg-[#25D366] text-white px-6 py-2 rounded-lg hover:bg-[#1faa50] font-bold shadow-lg flex items-center gap-2">
                                 <i v-if="saving" class="fas fa-spinner fa-spin"></i>
@@ -209,8 +213,8 @@
                         <section class="grid grid-cols-2 gap-8">
                             <div class="bg-green-50 p-6 rounded-2xl border border-green-200">
                                 <div class="font-bold text-green-800 mb-4">FAMILIAR 1</div>
-                                <input v-model="form.fam1_nombre" placeholder="Nombre Completo" class="w-full p-2 mb-3 border rounded bg-white">
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-3">
+                                    <input v-model="form.fam1_nombre" placeholder="Nombre Completo" class="w-full p-2 border rounded bg-white">
                                     <select v-model="form.fam1_relacion" class="w-full p-2 border rounded bg-white">
                                         <option value="" disabled>Relación...</option>
                                         <option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option>
@@ -224,8 +228,8 @@
                             
                             <div class="bg-gray-100 p-6 rounded-2xl border border-gray-200">
                                 <div class="font-bold text-gray-600 mb-4">FAMILIAR 2</div>
-                                <input v-model="form.fam2_nombre" placeholder="Nombre Completo" class="w-full p-2 mb-3 border rounded bg-white">
-                                <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-3">
+                                    <input v-model="form.fam2_nombre" placeholder="Nombre Completo" class="w-full p-2 border rounded bg-white">
                                     <select v-model="form.fam2_relacion" class="w-full p-2 border rounded bg-white">
                                         <option value="" disabled>Relación...</option>
                                         <option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option>
@@ -299,51 +303,16 @@
                 this.selected = { id: 'TEMP' };
             },
             selectStudent(s) {
-                // Copia base
-                let temp = JSON.parse(JSON.stringify(s));
-
-                // === CORRECCIÓN DE DESPLAZAMIENTO DE COLUMNAS (PARCHE) ===
-                // El backend lee mal las columnas porque se borraron los emails en Excel.
-                // Aquí reasignamos los datos a su lugar correcto.
+                // COPIA LIMPIA - SIN INTENTAR ADIVINAR COLUMNAS
+                let tempForm = JSON.parse(JSON.stringify(s));
                 
-                // Corrección Familiar 1
-                // Si el nombre parece una relación (ej: "Mamá"), intercambiamos
-                if (temp.fam1_nombre === 'Mamá' || temp.fam1_nombre === 'Papá' || temp.fam1_nombre === 'Tutor') {
-                     // El dato 'fam1_nombre' es en realidad la relación
-                     // El dato 'fam1_tlf' es en realidad el nombre
-                     // El dato 'fam1_relacion' es en realidad el teléfono
-                     let realRel = temp.fam1_nombre;
-                     let realName = temp.fam1_tlf;
-                     let realTlf = temp.fam1_relacion;
-                     
-                     temp.fam1_nombre = realName;
-                     temp.fam1_relacion = realRel;
-                     temp.fam1_tlf = realTlf;
-                }
-
-                // Corrección Familiar 2
-                // Si el nombre parece un teléfono (tiene números), intercambiamos
-                if (temp.fam2_nombre && !isNaN(temp.fam2_nombre)) {
-                    // Aquí el desplazamiento suele ser mayor. 
-                    // Asumimos rotación similar para mostrarlo bien en pantalla
-                    let realTlf = temp.fam2_nombre; 
-                    let realName = temp.fam2_tlf; 
-                    let realRel = temp.fam2_relacion;
-                    
-                    temp.fam2_nombre = realName || ''; 
-                    temp.fam2_tlf = realTlf; 
-                    temp.fam2_relacion = realRel || ''; 
-                }
-                
-                // === FIN CORRECCIÓN ===
-
-                this.form = temp;
+                this.form = tempForm;
                 this.isNew = false;
                 this.selected = s;
 
-                // Limpieza de fecha
+                // Limpieza solo de fecha (para que no falle el input date)
                 try {
-                    let val = this.form.nacimiento;
+                    let val = tempForm.nacimiento;
                     let cleanDate = '';
                     if (val && typeof val === 'string') {
                         val = val.trim();
