@@ -192,7 +192,6 @@
     const { createApp } = Vue;
     // CONFIGURACIÓN
     const PASS_HASH = "MDEwNTIz"; 
-    // Asegúrate de que esta URL corresponde a tu NUEVA implementación
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
     createApp({
@@ -205,15 +204,26 @@
         },
         computed: {
             filteredList() {
-                // ARREGLO 2: Si no hay búsqueda, devuelve todo (respeta el filtro de bajas)
-                if (!this.search) {
-                     return this.list.filter(s => this.showInactive ? true : !s.baja);
-                }
+                // 1. OBTENEMOS LO QUE SE ESCRIBE
                 const t = this.search.toLowerCase();
+
                 return this.list.filter(s => {
-                    const matchText = (s.nombre?.toLowerCase().includes(t)) || (s.apellidos?.toLowerCase().includes(t)) || (s.dni?.includes(t));
-                    const matchState = this.showInactive ? true : !s.baja;
-                    return matchText && matchState;
+                    // 2. FILTRO DE BAJAS
+                    if (!this.showInactive && s.baja) return false;
+
+                    // 3. DATOS PREPARADOS PARA BÚSQUEDA "COMBO"
+                    // Esto arregla el problema del espacio
+                    const nombre = (s.nombre || "").toLowerCase();
+                    const apellidos = (s.apellidos || "").toLowerCase();
+                    const dni = (s.dni || "").toLowerCase();
+                    const nombreCompleto = `${nombre} ${apellidos}`; // "daniel garcía"
+                    
+                    // 4. LÓGICA DE COINCIDENCIA
+                    // Si el texto está en el nombre, apellidos, dni, O EN EL NOMBRE COMPLETO
+                    return nombre.includes(t) || 
+                           apellidos.includes(t) || 
+                           dni.includes(t) || 
+                           nombreCompleto.includes(t); // Esto permite encontrar "Daniel G"
                 });
             }
         },
@@ -249,13 +259,12 @@
                     this.isNew = false;
                     this.selected = s;
 
-                    // ARREGLO 1: Forzamos que los teléfonos sean texto al abrir la ficha
-                    // para que el HTML no se rompa al intentar leerlos
+                    // ARREGLO DE TELÉFONOS (Vital para que no falle el HTML)
                     this.form.fam1_tlf = String(this.form.fam1_tlf || '');
                     this.form.fam2_tlf = String(this.form.fam2_tlf || '');
                     this.form.tlf = String(this.form.tlf || '');
 
-                    // Limpieza segura de fecha
+                    // ARREGLO DE FECHA
                     try {
                         let val = tempForm.nacimiento;
                         let cleanDate = '';
