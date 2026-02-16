@@ -3,109 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horario Maestro Interactivo CSE</title>
+    <title>Horario Maestro CSE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        /* --- ESTÉTICA MAESTRA (PANTALLA) --- */
-        :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
+        :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
-        
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-print { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; background: var(--c-primary); color: white; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-print { background: var(--c-primary); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; text-transform: uppercase; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
         .tables-wrapper { display: flex; gap: 20px; }
-        .table-block { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
-        
+        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: white; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; height: 42px; position: relative; }
-        th { background: var(--c-primary); color: white; text-transform: uppercase; font-size: 11px; }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 11.5px; height: 42px; position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        th { background: var(--c-primary); color: white; }
+        .col-hora { width: 45px; font-weight: bold; background: #f9f9f9; }
 
         /* INTERACTIVIDAD */
-        td.slot { cursor: pointer; transition: background 0.1s; }
+        td.slot { cursor: pointer; }
         td.slot:hover { background-color: #fff9c4 !important; }
-        td.slot:hover::after { content: '✎'; position: absolute; right: 2px; top: 2px; font-size: 10px; color: #ff9800; }
-
-        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; pointer-events: none; }
+        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 3px 7px; border-radius: 8px; display: inline-block; pointer-events: none; }
         .name-tag:empty { display: none !important; }
 
         .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; }
         .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
         .nav-btn.active { background: var(--c-primary); color: white; }
 
-        /* QUICK EDITOR FLOTANTE */
         #quick-editor {
-            display: none; position: fixed; z-index: 10000; background: white;
-            padding: 15px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            border: 2px solid var(--c-primary); width: 240px;
+            display: none; position: fixed; z-index: 10000; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 2px solid var(--c-primary); width: 240px;
         }
-        .ed-input { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 13px; box-sizing: border-box; }
-        .ed-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
-
-        .print-only { display: none; }
+        .ed-input { width: 100%; margin-bottom: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
 
         /* =========================================================================
-           🖨️ CONFIGURACIÓN DE IMPRESIÓN MAESTRA (CORREGIDA)
+           🖨️ IMPRESIÓN MAESTRA (DISEÑO HORIZONTAL A4 - image_96e1f3.png)
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
-            body { background: white !important; padding: 0 !important; margin: 0 !important; display: block !important; }
+            body { background: white !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
             
-            /* Ocultar elementos web */
-            header, .days-nav, #quick-editor, .nav-btn, .test-badge, .digital-clock { display: none !important; }
-            .container { border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; padding: 0 !important; }
-
-            /* Estructura Maestra: Horario Izquierda, Notas Derecha */
-            .planning-container { display: none !important; }
-            .planning-container.visible { 
+            /* Layout de dos columnas estrictas */
+            .container { 
                 display: grid !important; 
-                grid-template-columns: 58% 40% !important; 
-                column-gap: 15px; 
-                width: 100% !important; 
+                grid-template-columns: 58% 38% !important; 
+                column-gap: 20px !important; 
+                border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; padding: 0 !important;
             }
+
+            header, .days-nav, #quick-editor, .nav-btn, .test-badge { display: none !important; }
+
+            .planning-container { display: none !important; }
+            .planning-container.visible { display: block !important; grid-column: 1; }
 
             .tables-wrapper { display: flex !important; flex-direction: column !important; gap: 10px !important; }
             .table-block { border: 1px solid #000 !important; border-radius: 0 !important; width: 100% !important; }
 
-            .print-only { display: block !important; }
-            .print-notes-side { border-left: 2.5px solid #000 !important; padding-left: 15px; background: white !important; }
-            
-            table { border: 1px solid #000 !important; width: 100% !important; }
-            th, td { border: 1px solid #000 !important; color: black !important; font-size: 13px !important; height: auto !important; padding: 2px !important; }
-            th { background: #eee !important; border-bottom: 2px solid #000 !important; }
-            .name-tag { background: none !important; color: black !important; font-weight: 900 !important; font-size: 15px !important; }
+            /* Columna de notas - image_96e1f3.png */
+            .print-only-notes { 
+                display: block !important; 
+                grid-column: 2; 
+                border-left: 2px solid #000 !important; 
+                padding-left: 15px !important; 
+                height: 100vh;
+            }
 
+            table { border: 1.5px solid #000 !important; }
+            th, td { border: 1px solid #000 !important; color: black !important; font-size: 11px !important; height: 26px !important; padding: 2px !important; }
+            th { background: #eee !important; font-weight: bold !important; }
+            .name-tag { background: none !important; border: none !important; color: black !important; padding: 0 !important; font-weight: 900 !important; }
+            
             .note-line { border-bottom: 1px solid #eee; height: 30px; width: 100%; }
         }
+        .print-only-notes { display: none; }
     </style>
 </head>
 <body>
 
 <div id="quick-editor">
-    <div id="ed-label" style="font-size: 10px; color: #999; margin-bottom: 8px; font-weight: bold;"></div>
+    <div id="ed-label" style="font-size: 10px; color: #999; margin-bottom: 5px; font-weight: bold;"></div>
     <input type="text" id="ed-val" class="ed-input" placeholder="Nombre completo...">
     <select id="ed-dur" class="ed-input">
         <option value="30">30 min</option>
         <option value="60">1 hora</option>
         <option value="90">1,5 horas</option>
     </select>
-    <button class="ed-btn" style="background:var(--c-primary); color:white;" onclick="aplicarExcepcion()">GUARDAR CAMBIO</button>
-    <button class="ed-btn" style="background:#eee;" onclick="cerrarEditor()">CANCELAR</button>
+    <button style="width:100%; padding:10px; background:var(--c-primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="aplicarExcepcion()">GUARDAR CAMBIO</button>
+    <button style="width:100%; padding:8px; background:#eee; border:none; border-radius:6px; margin-top:5px; cursor:pointer;" onclick="cerrarEditor()">CANCELAR</button>
 </div>
 
 <div class="container">
-    <div class="test-badge" style="background:#ff9800; color:white; text-align:center; font-weight:bold; padding:5px; border-radius:5px; margin-bottom:15px; text-transform:uppercase; font-size:12px;">Entorno de Pruebas: Capa Interactiva</div>
     <header>
-        <button class="btn-print" onclick="window.print()">🖨️ Imprimir Horario</button>
+        <div style="font-size:12px; font-weight:bold; text-transform:uppercase;">CSE Elisa Gundín</div>
+        <button class="btn-print" onclick="window.print()">🖨️ IMPRIMIR</button>
         <div id="clock" class="digital-clock">00:00:00</div>
     </header>
     <div class="days-nav" id="days-buttons"></div>
     <div id="schedule-container"></div>
 </div>
 
+<div class="print-only-notes">
+    <div style="display:flex; justify-content:space-between; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:10px;">
+        <h2 style="margin:0; font-size:24px;">NOTAS</h2>
+    </div>
+    <script>for(let i=0; i<28; i++) document.write('<div class="note-line"></div>');</script>
+</div>
+
 <script>
-    // CONFIGURACIÓN PROPORCIONADA
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
     const GID_HISTORIAL = "2008155671"; 
@@ -117,12 +120,10 @@
     async function cargarTodo() {
         const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
         try {
-            // 1. Cargar Historial (Capa de Cambios)
             const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
             const csvH = await resH.text();
             excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
 
-            // 2. Cargar Horarios Maestros
             const dias = Object.keys(GIDS);
             document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
 
@@ -135,41 +136,32 @@
                 const dataM = Papa.parse(csv).data;
 
                 let html = `<div id="view-${dia}" class="planning-container">
-                    <div class="print-only" style="margin-bottom:10px;">
-                        <h1 style="margin:0; font-size:18px;">${dia.toUpperCase()}</h1>
-                        <p style="margin:0; font-size:10px;">CSE ELISA GUNDÍN</p>
-                    </div>
                     <div class="tables-wrapper">
-                        <div class="table-block"><table><thead><tr><th style="width:50px">H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
+                        <div class="table-block"><table><thead><tr><th class="col-hora">H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
                 
                 let htmlIng = "";
                 for (let i = 1; i < dataM.length; i++) {
-                    const r = dataM[i]; if(!r[0]) continue;
+                    const r = dataM[i]; if(!r[0] && !r[7]) continue;
                     
-                    html += `<tr><td style="font-weight:bold;">${r[0]}</td>`;
+                    // APOYO (Busca por hora en columna 0)
+                    html += `<tr><td class="col-hora">${r[0]||''}</td>`;
                     for(let col=1; col<=6; col++) {
                         let full = buscarEx(dia, r[0], col, r[col]);
-                        let pila = full.split(' ')[0].toUpperCase();
-                        html += `<td class="slot" title="${full.toUpperCase()}" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
+                        let pila = full.trim().split(' ')[0].toUpperCase();
+                        html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
                     }
                     html += `</tr>`;
 
-                    htmlIng += `<tr><td style="font-weight:bold;">${r[7]||''}</td>`;
+                    // INGLÉS (Busca por hora en columna 7)
+                    htmlIng += `<tr><td class="col-hora">${r[7]||''}</td>`;
                     for(let col=8; col<=13; col++) {
                         let full = buscarEx(dia, r[7], col, r[col]);
-                        let pila = full.split(' ')[0].toUpperCase();
-                        htmlIng += `<td class="slot" title="${full.toUpperCase()}" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
+                        let pila = full.trim().split(' ')[0].toUpperCase();
+                        htmlIng += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
                     }
                     htmlIng += `</tr>`;
                 }
-                html += `</tbody></table></div>
-                         <div class="table-block"><table><thead><tr><th style="width:50px">H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div>
-                         
-                         <div class="print-only print-notes-side">
-                            <h2 style="font-size:16px; border-bottom:2px solid #000; margin:0 0 10px 0;">NOTAS</h2>
-                            ${Array(25).fill('<div class="note-line"></div>').join('')}
-                         </div>
-                    </div></div>`;
+                html += `</tbody></table></div><div class="table-block"><table><thead><tr><th class="col-hora">H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
                 container.innerHTML += html;
             }
             cambiarDia(dias[new Date().getDay()-1] || "Lunes");
@@ -177,6 +169,7 @@
     }
 
     function buscarEx(dia, hora, col, original) {
+        if(!hora) return original || "";
         const cambio = excepcionesHoy.find(ex => ex[1] === dia && ex[2] === hora && parseInt(ex[3]) === col);
         return cambio ? cambio[4] : (original || "");
     }
@@ -200,13 +193,7 @@
         const fecha = new Date().toISOString().split('T')[0];
         cerrarEditor();
         const url = `${APP_SCRIPT_URL}?v=action&fecha=${fecha}&pestana=${celdaActiva.dia}&hora=${celdaActiva.hora}&col=${celdaActiva.col}&val=${val}&dur=${dur}`;
-        
-        // Petición al servidor (usamos un pequeño truco para evitar bloqueos)
-        fetch(url, { method: 'GET', mode: 'no-cors' })
-        .then(() => {
-            alert("Cambio solicitado. La página se actualizará para mostrar el resultado.");
-            setTimeout(() => location.reload(), 800);
-        });
+        fetch(url, { mode: 'no-cors' }).then(() => { setTimeout(() => location.reload(), 600); });
     }
 
     function cambiarDia(dia) {
