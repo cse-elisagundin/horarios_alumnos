@@ -7,29 +7,26 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         /* ==========================================
-           CSS PARA PANTALLA (WEB)
+           CSS PARA PANTALLA (WEB) - IGUAL AL ORIGINAL
            ========================================== */
         :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
-        
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; }
         .btn-print { background: var(--c-primary); color: white; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
         .tables-wrapper { display: flex; gap: 20px; }
-        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
-        
+        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: white; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 8px; text-align: center; font-size: 12px; height: 40px; position: relative; }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; height: 42px; position: relative; }
         th { background: var(--c-primary); color: white; text-transform: uppercase; font-size: 11px; }
 
         .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; pointer-events: none; }
         .name-tag:empty { display: none !important; }
 
-        /* Estilos Editor e Interacción */
-        td.slot { cursor: pointer; transition: background 0.1s; }
+        td.slot { cursor: pointer; }
         td.slot:hover { background-color: #fff9c4 !important; }
         .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; }
         .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
@@ -41,48 +38,86 @@
             border: 2px solid var(--c-primary); width: 240px;
         }
         .ed-input { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 13px; box-sizing: border-box; }
-        
-        /* OCULTAR ELEMENTOS DE IMPRESIÓN EN WEB */
-        .print-only { display: none; }
+
+        /* OCULTAR ELEMENTOS EXCLUSIVOS DE IMPRESIÓN EN LA WEB */
+        .print-section { display: none; }
 
         /* ==========================================
-           CONFIGURACIÓN DE IMPRESIÓN (IDÉNTICA A TU IMAGEN)
+           CONFIGURACIÓN DE IMPRESIÓN (SÚPER RIGUROSA)
            ========================================== */
         @media print {
-            @page { size: A4 portrait; margin: 1cm; }
+            @page { size: A4 portrait; margin: 0.5cm; }
             
-            /* Ocultar todo lo que no es el horario del día activo */
-            body { background: white !important; margin: 0; padding: 0; }
-            .nav-btn, .days-nav, #quick-editor, .test-badge, header, .container { border: none !important; box-shadow: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
-            
-            /* Contenedor principal de impresión */
-            .planning-container { display: flex !important; flex-wrap: wrap; width: 100%; page-break-after: always; }
-            
-            /* Cabecera de impresión */
-            .print-header { display: block !important; width: 100%; margin-bottom: 10px; }
-            .print-header h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
-            .print-header p { margin: 0; font-size: 10px; color: #555; }
+            /* Ocultar todo lo innecesario */
+            nav, .nav-btn, .days-nav, #quick-editor, .test-badge, header, .container, #digital-clock, button { 
+                display: none !important; 
+            }
 
-            /* Estructura de dos columnas: Tablas e Notas */
-            .tables-wrapper { display: flex !important; flex-direction: row !important; gap: 20px; width: 100%; align-items: flex-start; }
-            
-            /* Columna de tablas (izquierda) */
-            .print-tables-col { width: 65%; display: flex; flex-direction: column; gap: 15px; }
-            .table-block { border: none !important; border-radius: 0 !important; width: 100% !important; }
-            
-            /* Columna de notas (derecha) */
-            .print-notes-col { display: block !important; width: 30%; border-left: 2px solid #000; padding-left: 15px; min-height: 800px; }
-            .print-notes-col h2 { font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 5px; }
-            .note-line { border-bottom: 1px solid #ccc; height: 30px; width: 100%; }
+            /* Reset de estilos del body para papel */
+            body { background: white !important; padding: 0 !important; margin: 0 !important; }
 
-            /* Estilo de tablas para imprimir (Bordes negros) */
-            table { width: 100% !important; border: 1.5px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; color: #000 !important; padding: 4px !important; font-size: 10px !important; height: 25px !important; }
-            th { background: #f0f0f0 !important; font-weight: bold !important; color: #000 !important; }
+            /* Contenedor de impresión: Disposición en dos columnas */
+            .planning-container { 
+                display: flex !important; 
+                flex-direction: row !important; 
+                flex-wrap: nowrap !important;
+                width: 100% !important; 
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Lado Izquierdo: Las dos tablas apiladas */
+            .print-tables-side { 
+                width: 65% !important; 
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            /* Lado Derecho: Notas */
+            .print-notes-side { 
+                display: block !important; 
+                width: 35% !important; 
+                padding-left: 15px !important;
+                border-left: 2px solid #000 !important;
+                min-height: 95vh;
+            }
+
+            /* Ajuste de Tablas para papel */
+            .table-block { 
+                border: none !important; 
+                width: 100% !important; 
+                margin-bottom: 5px !important;
+            }
+            
+            table { 
+                border: 1.5px solid #000 !important; 
+                width: 100% !important;
+            }
+            
+            th, td { 
+                border: 1px solid #000 !important; 
+                color: #000 !important; 
+                padding: 2px !important; 
+                font-size: 9px !important; 
+                height: 22px !important; /* Altura más compacta para que quepan ambas */
+                background: none !important;
+            }
+
+            th { background: #f0f0f0 !important; font-weight: bold !important; }
             .name-tag { background: none !important; color: #000 !important; padding: 0 !important; font-weight: bold; }
-            
-            /* Forzar visualización de tablas en bloque vertical */
-            .tables-wrapper > .table-block { flex: none !important; }
+
+            /* Cabecera de impresión (Nombre del día y centro) */
+            .print-header { 
+                display: block !important; 
+                margin-bottom: 10px !important; 
+            }
+            .print-header h1 { margin: 0; font-size: 16px; text-transform: uppercase; }
+            .print-header p { margin: 0; font-size: 9px; }
+
+            /* Líneas de notas */
+            .print-notes-side h2 { font-size: 12px; border-bottom: 1.5px solid #000; padding-bottom: 2px; margin-top: 0; }
+            .note-line { border-bottom: 1px solid #ccc; height: 28px; width: 100%; }
         }
     </style>
 </head>
@@ -96,12 +131,12 @@
         <option value="60">1 hora</option>
         <option value="90">1.5 horas</option>
     </select>
-    <button style="width:100%; background:var(--c-primary); color:white; border:none; padding:8px; cursor:pointer;" onclick="aplicarExcepcion()">APLICAR</button>
-    <button style="width:100%; background:#eee; border:none; padding:5px; margin-top:5px; cursor:pointer;" onclick="cerrarEditor()">CANCELAR</button>
+    <button style="width:100%; background:var(--c-primary); color:white; border:none; padding:8px;" onclick="aplicarExcepcion()">APLICAR</button>
+    <button style="width:100%; background:#eee; border:none; padding:5px; margin-top:5px;" onclick="cerrarEditor()">CANCELAR</button>
 </div>
 
 <div class="container">
-    <div class="test-badge" style="background:#ff9800; color:white; text-align:center; font-weight:bold; padding:5px; border-radius:5px; margin-bottom:15px; text-transform:uppercase; font-size:12px;">Entorno de Pruebas: Impresión Optimizada</div>
+    <div class="test-badge" style="background:#ff9800; color:white; text-align:center; font-weight:bold; padding:5px; border-radius:5px; margin-bottom:15px; text-transform:uppercase; font-size:12px;">Modo Pruebas: Diseño de Impresión Final</div>
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir Horario</button>
         <div id="clock" class="digital-clock">00:00:00</div>
@@ -121,69 +156,95 @@
 
     async function cargarTodo() {
         const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
-        const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
-        const csvH = await resH.text();
-        excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
+        try {
+            const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
+            const csvH = await resH.text();
+            excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
 
-        const dias = Object.keys(GIDS);
-        document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+            const dias = Object.keys(GIDS);
+            document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
 
-        for (const dia of dias) {
-            const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
-            const csv = await res.text();
-            const dataM = Papa.parse(csv).data;
+            for (const dia of dias) {
+                const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
+                const csv = await res.text();
+                const dataM = Papa.parse(csv).data;
 
-            let html = `<div id="view-${dia}" class="planning-container" style="display:none">
-                <div class="print-only print-header">
-                    <h1>${dia.toUpperCase()}</h1>
-                    <p>CSE ELISA GUNDÍN</p>
-                </div>
+                // ESTRUCTURA REDISEÑADA PARA IMPRESIÓN
+                let html = `<div id="view-${dia}" class="planning-container" style="display:none">
+                    
+                    <div class="print-tables-side">
+                        <div class="print-section print-header">
+                            <h1>${dia.toUpperCase()}</h1>
+                            <p>CSE ELISA GUNDÍN</p>
+                        </div>
 
-                <div class="tables-wrapper">
-                    <div class="print-tables-col">
                         <div class="table-block">
                             <table>
-                                <thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead>
+                                <thead><tr><th style="width:15%">H</th><th colspan="6">APOYO</th></tr></thead>
                                 <tbody>`;
-            
-            let htmlIng = "";
-            for (let i = 1; i < dataM.length; i++) {
-                const r = dataM[i]; if(!r[0]) continue;
-                html += `<tr><td>${r[0]}</td>`;
-                for(let col=1; col<=6; col++) {
-                    let v = buscarEx(dia, r[0], col, r[col]);
-                    html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${v}')"><span class="name-tag">${v.toUpperCase()}</span></td>`;
-                }
-                html += `</tr>`;
+                
+                let htmlIng = "";
+                for (let i = 1; i < dataM.length; i++) {
+                    const r = dataM[i]; if(!r[0]) continue;
+                    
+                    let v1_f = buscarEx(dia, r[0], 1, r[1]);
+                    let v2_f = buscarEx(dia, r[0], 2, r[2]);
+                    let v3_f = buscarEx(dia, r[0], 3, r[3]);
+                    let v4_f = buscarEx(dia, r[0], 4, r[4]);
+                    let v5_f = buscarEx(dia, r[0], 5, r[5]);
+                    let v6_f = buscarEx(dia, r[0], 6, r[6]);
 
-                htmlIng += `<tr><td>${r[7]||''}</td>`;
-                for(let col=8; col<=13; col++) {
-                    let v = buscarEx(dia, r[7], col, r[col]);
-                    htmlIng += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${v}')"><span class="name-tag">${v.toUpperCase()}</span></td>`;
+                    html += `<tr>
+                        <td style="font-weight:bold">${r[0]}</td>
+                        <td class="slot" title="${v1_f}" onclick="abrirEditor(this,'${dia}','${r[0]}',1,'${v1_f}')"><span class="name-tag">${v1_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v2_f}" onclick="abrirEditor(this,'${dia}','${r[0]}',2,'${v2_f}')"><span class="name-tag">${v2_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v3_f}" onclick="abrirEditor(this,'${dia}','${r[0]}',3,'${v3_f}')"><span class="name-tag">${v3_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v4_f}" onclick="abrirEditor(this,'${dia}','${r[0]}',4,'${v4_f}')"><span class="name-tag">${v4_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v5_f}" onclick="abrirEditor(this,'${dia}','${r[0]}',5,'${v5_f}')"><span class="name-tag">${v5_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v6_f}" onclick="abrirEditor(this,'${dia}','${r[0]}',6,'${v6_f}')"><span class="name-tag">${v6_f.split(' ')[0]}</span></td>
+                    </tr>`;
+
+                    let v8_f = buscarEx(dia, r[7], 8, r[8]);
+                    let v9_f = buscarEx(dia, r[7], 9, r[9]);
+                    let v10_f = buscarEx(dia, r[7], 10, r[10]);
+                    let v11_f = buscarEx(dia, r[7], 11, r[11]);
+                    let v12_f = buscarEx(dia, r[7], 12, r[12]);
+                    let v13_f = buscarEx(dia, r[7], 13, r[13]);
+
+                    htmlIng += `<tr>
+                        <td style="font-weight:bold">${r[7]||''}</td>
+                        <td class="slot" title="${v8_f}" onclick="abrirEditor(this,'${dia}','${r[7]}',8,'${v8_f}')"><span class="name-tag">${v8_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v9_f}" onclick="abrirEditor(this,'${dia}','${r[7]}',9,'${v9_f}')"><span class="name-tag">${v9_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v10_f}" onclick="abrirEditor(this,'${dia}','${r[7]}',10,'${v10_f}')"><span class="name-tag">${v10_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v11_f}" onclick="abrirEditor(this,'${dia}','${r[7]}',11,'${v11_f}')"><span class="name-tag">${v11_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v12_f}" onclick="abrirEditor(this,'${dia}','${r[7]}',12,'${v12_f}')"><span class="name-tag">${v12_f.split(' ')[0]}</span></td>
+                        <td class="slot" title="${v13_f}" onclick="abrirEditor(this,'${dia}','${r[7]}',13,'${v13_f}')"><span class="name-tag">${v13_f.split(' ')[0]}</span></td>
+                    </tr>`;
                 }
-                htmlIng += `</tr>`;
-            }
-            
-            html += `</tbody></table></div>
-                    <div class="table-block">
-                        <table>
-                            <thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead>
-                            <tbody>${htmlIng}</tbody>
-                        </table>
+                
+                html += `</tbody></table></div>
+                        
+                        <div class="table-block">
+                            <table>
+                                <thead><tr><th style="width:15%">H</th><th colspan="6">INGLÉS</th></tr></thead>
+                                <tbody>${htmlIng}</tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div class="print-only print-notes-col">
-                    <h2>NOTAS</h2>
-                    ${Array(25).fill('<div class="note-line"></div>').join('')}
-                </div>
-            </div></div>`;
-            document.getElementById('schedule-container').innerHTML += html;
-        }
-        cambiarDia(dias[new Date().getDay()-1] || "Lunes");
+                    <div class="print-section print-notes-side">
+                        <h2>NOTAS</h2>
+                        ${Array(28).fill('<div class="note-line"></div>').join('')}
+                    </div>
+                </div>`;
+                document.getElementById('schedule-container').innerHTML += html;
+            }
+            cambiarDia(dias[new Date().getDay()-1] || "Lunes");
+        } catch(e) { console.error(e); }
     }
 
     function buscarEx(dia, hora, col, original) {
+        if(!hora) return "";
         const cambio = excepcionesHoy.find(ex => ex[1] === dia && ex[2] === hora && parseInt(ex[3]) === col);
         return cambio ? cambio[4] : (original || "");
     }
@@ -214,7 +275,7 @@
         document.querySelectorAll('.planning-container').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         if(document.getElementById(`view-${dia}`)) {
-            document.getElementById(`view-${dia}`).style.display = 'block';
+            document.getElementById(`view-${dia}`).style.display = 'flex'; // Usar flex para la web también
             document.getElementById(`btn-${dia}`).classList.add('active');
         }
     }
