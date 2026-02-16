@@ -6,44 +6,44 @@
     <title>Horario Inteligente CSE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        /* (Tus estilos se mantienen igual que en la versión anterior) */
         :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
-        .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; }
+        .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; font-size: 12px; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-admin { background: #333; color: #ffeb3b; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; }
+        .btn-admin { background: #333; color: #ffeb3b; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; font-size: 13px; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
         .tables-wrapper { display: flex; gap: 20px; }
-        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: white; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: 1px solid #eee; padding: 8px; text-align: center; font-size: 13px; height: 42px; }
-        th { background: var(--c-primary); color: white; }
+        th { background: var(--c-primary); color: white; font-size: 11px; letter-spacing: 1px; }
         .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; }
         .name-tag:empty { display: none !important; }
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; }
-        .nav-btn { padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
-        .nav-btn.active { background: var(--c-primary); color: white; }
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; }
+        .nav-btn { padding: 10px 18px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; }
+        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
         #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .admin-content { background: white; width: 400px; height: 600px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; }
+        .admin-content { background: white; width: 420px; height: 620px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="test-badge">HORARIO FIJO CON CAPA DE CAMBIOS (MODO PRUEBA)</div>
+    <div class="test-badge">Entorno de Pruebas: Capa Inteligente Automática</div>
     <header>
-        <button class="btn-admin" onclick="toggleAdmin()">⚙️ GESTIONAR CAMBIOS HOY</button>
+        <button class="btn-admin" onclick="toggleAdmin()">⚙️ GESTIONAR FALTAS / BLOQUES</button>
         <div id="clock" class="digital-clock">00:00:00</div>
     </header>
     <div class="days-nav" id="days-buttons"></div>
+    <div id="loading" style="text-align:center; padding:50px; font-style:italic; color:#999;">Mezclando base y cambios...</div>
     <div id="schedule-container"></div>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
-        <div style="background:#333; padding:10px; color:white; display:flex; justify-content:space-between;">
-            <span style="font-weight:bold;">Editor Historial</span>
-            <button onclick="toggleAdmin()" style="background:none; border:none; color:white; cursor:pointer;">✖</button>
+        <div style="background:#333; padding:12px; color:white; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-weight:bold; font-size:14px; color:#ffeb3b;">Panel Editor CSE</span>
+            <button onclick="toggleAdmin()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">✖</button>
         </div>
         <iframe id="admin-frame" style="width:100%; height:100%; border:none;"></iframe>
     </div>
@@ -52,11 +52,9 @@
 <script>
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
-    
-    // GIDS MAESTROS
     const GIDS = { "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517", "Jueves": "314818236", "Viernes": "1396865785" };
     
-    // !!! PON AQUÍ EL GID DE LA PESTAÑA HISTORIAL !!!
+    // !!! PON AQUÍ EL GID DE TU PESTAÑA HISTORIAL !!!
     const GID_HISTORIAL = "2008155671"; 
 
     let excepcionesHoy = [];
@@ -73,70 +71,54 @@
     }
 
     async function cargarTodo() {
-        const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
-        
-        // 1. Leer el Historial de cambios
-        const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
-        const csvH = await resH.text();
-        const dataH = Papa.parse(csvH).data;
-        
-        // Filtrar cambios que sean para hoy
-        excepcionesHoy = dataH.filter(fila => fila[0] === hoyFecha);
-
-        // 2. Cargar los horarios maestros
-        const dias = Object.keys(GIDS);
-        document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d}</button>`).join('');
-
-        for (const dia of dias) {
-            const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
-            const csv = await res.text();
-            const dataMaster = Papa.parse(csv).data;
-
-            let html = `<div id="view-${dia}" class="planning-container" style="display:none">
-                <div class="tables-wrapper">
-                    <div class="table-block"><table><thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
+        try {
+            const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
             
-            let htmlIng = "";
-            for (let i = 1; i < dataMaster.length; i++) {
-                const r = dataMaster[i]; if(!r[0]) continue;
+            // 1. Cargar Historial
+            const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
+            const csvH = await resH.text();
+            excepcionesHoy = Papa.parse(csvH).data.filter(fila => fila[0] === hoyFecha);
+
+            // 2. Generar vistas
+            const dias = Object.keys(GIDS);
+            document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+
+            for (const dia of dias) {
+                const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
+                const csv = await res.text();
+                const dataM = Papa.parse(csv).data;
+
+                let html = `<div id="view-${dia}" class="planning-container" style="display:none">
+                    <div class="tables-wrapper">
+                        <div class="table-block"><table><thead><tr><th>HORA</th><th colspan="6">TABLA APOYO</th></tr></thead><tbody>`;
                 
-                // Procesar Fila Apoyo
-                let celdasApoyo = [1,2,3,4,5,6].map(col => {
-                    let valor = buscarExcepcion(dia, r[0], col, r[col]);
-                    return `<td><span class="name-tag">${valor.toUpperCase()}</span></td>`;
-                }).join('');
-
-                // Procesar Fila Inglés
-                let celdasIng = [8,9,10,11,12,13].map(col => {
-                    let valor = buscarExcepcion(dia, r[7], col, r[col]);
-                    return `<td><span class="name-tag">${valor.toUpperCase()}</span></td>`;
-                }).join('');
-
-                html += `<tr><td>${r[0]}</td>${celdasApoyo}</tr>`;
-                htmlIng += `<tr><td>${r[7]||''}</td>${celdasIng}</tr>`;
+                let htmlIng = "";
+                for (let i = 1; i < dataM.length; i++) {
+                    const r = dataM[i]; if(!r[0]) continue;
+                    
+                    html += `<tr><td style="font-weight:bold">${r[0]}</td>${[1,2,3,4,5,6].map(col => `<td><span class="name-tag">${buscarExcepcion(dia, r[0], col, r[col]).toUpperCase()}</span></td>`).join('')}</tr>`;
+                    htmlIng += `<tr><td style="font-weight:bold">${r[7]||''}</td>${[8,9,10,11,12,13].map(col => `<td><span class="name-tag">${buscarExcepcion(dia, r[7], col, r[col]).toUpperCase()}</span></td>`).join('')}</tr>`;
+                }
+                html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>HORA</th><th colspan="6">TABLA INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
+                document.getElementById('schedule-container').innerHTML += html;
             }
-            html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
-            document.getElementById('schedule-container').innerHTML += html;
-        }
-        cambiarDia(dias[new Date().getDay()-1] || "Lunes");
+            document.getElementById('loading').style.display = 'none';
+            cambiarDia(dias[new Date().getDay()-1] || "Lunes");
+        } catch(e) { document.getElementById('loading').innerText = "Error cargando. Revisa el GID de Historial."; }
     }
 
-    // FUNCIÓN CLAVE: Busca si hay un "post-it" en el historial para esta celda
-    function buscarExcepcion(dia, hora, col, valorOriginal) {
-        // excepcionesHoy columnas: 0:FECHA, 1:PESTAÑA, 2:HORA, 3:COLUMNA, 4:VALOR
+    function buscarExcepcion(dia, hora, col, original) {
         const cambio = excepcionesHoy.find(ex => ex[1] === dia && ex[2] === hora && parseInt(ex[3]) === col);
-        
-        if (cambio) {
-            return cambio[4]; // Si hay cambio, devolvemos el nuevo valor (puede ser vacío)
-        }
-        return valorOriginal; // Si no hay cambio, devolvemos el fijo
+        return cambio ? cambio[4] : original;
     }
 
     function cambiarDia(dia) {
         document.querySelectorAll('.planning-container').forEach(v => v.style.display = 'none');
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`view-${dia}`).style.display = 'block';
-        document.getElementById(`btn-${dia}`).classList.add('active');
+        if(document.getElementById(`view-${dia}`)) {
+            document.getElementById(`view-${dia}`).style.display = 'block';
+            document.getElementById(`btn-${dia}`).classList.add('active');
+        }
     }
 
     setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
