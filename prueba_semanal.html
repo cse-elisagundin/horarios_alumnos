@@ -3,29 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horario Semanal CSE (Copia)</title>
+    <title>Horario TEST CSE</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* ESTILOS BÁSICOS */
+        /* --- ESTILOS VISUALES --- */
         :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
-        .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        /* Borde Naranja para indicar que es el ENTORNO DE PRUEBAS */
+        .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
+        .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
         /* HEADER */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: transform 0.1s; }
+        .btn-action:active { transform: scale(0.95); }
         .btn-print { background: var(--c-primary); color: white; }
-        .btn-admin { background: #333; color: #ffeb3b; }
+        
+        /* Botón Admin Gris Oscuro para diferenciar */
+        .btn-admin { background: #333; color: #ffeb3b; border: 2px solid #333; }
+        
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
         /* AVISOS Y ESTADOS */
         .status-banner { margin: 10px 0 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; display: none; }
-        .status-festivo { background: #ffebee; color: #c62828; border: 1px dashed #ef5350; }
-        .status-aviso { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
-        .status-cambio { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+        .status-festivo { background: #ffebee; color: #c62828; border: 2px dashed #ef5350; }
+        .status-aviso { background: #fff3e0; color: #e65100; border: 2px solid #ffb74d; }
+        .status-cambio { background: #e3f2fd; color: #0d47a1; border: 2px solid #90caf9; white-space: pre-line; }
 
         /* TABLAS */
         .planning-container { display: none; }
@@ -34,56 +41,77 @@
         
         .tables-wrapper { display: flex; gap: 20px; }
         .table-block { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+        
+        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #eee; }
+        .mobile-section-title.ing { color: var(--c-accent); }
+
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        th { background: var(--c-primary); color: white; text-transform: uppercase; }
+        th { background: var(--c-primary); color: white; text-transform: uppercase; padding: 10px; }
         .col-hora { width: 50px; background: #fff; font-weight: bold; color: var(--c-primary); }
         .student-cell { cursor: help; }
-        .name-tag { font-weight: bold; color: var(--c-primary); }
+        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 2px 6px; border-radius: 4px; }
         
         /* BOTONES DÍAS */
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; }
-        .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
-        .nav-btn.active { background: var(--c-primary); color: white; }
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; padding-bottom: 5px; }
+        .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
+        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
+        /* MÓVIL */
         @media (max-width: 900px) {
             .tables-wrapper { flex-direction: column; }
+            .mobile-section-title { display: block; }
             table thead { display: none; }
             table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #eee; height: auto; }
-            table tbody td.col-hora { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; }
-            table tbody td:not(.col-hora) { height: 40px; display: flex; align-items: center; justify-content: center; }
+            table tbody td.col-hora { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
+            table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; }
         }
         
         .spinner { text-align: center; margin: 20px; font-style: italic; color: #999; }
+        
+        /* IMPRESIÓN */
+        @media print {
+            .btn-action, .days-nav, .test-badge, .no-print { display: none !important; }
+            .container { border: none; box-shadow: none; width: 100%; max-width: none; }
+            .planning-container.visible { display: block !important; }
+            body { background: white; zoom: 70%; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+    <div class="test-badge">⚠️ MODO PRUEBAS (Usando Hoja Copia) ⚠️</div>
+
     <header>
         <div>
             <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-            <button class="btn-action btn-admin" onclick="toggleAdmin()">⚙️ Panel Control</button>
+            <button class="btn-action btn-admin" onclick="abrirAdmin()">⚙️ Panel Control (Test)</button>
         </div>
         <div id="digital-clock" class="digital-clock">00:00:00</div>
     </header>
 
     <div id="status-banner" class="status-banner"></div>
+
     <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" class="spinner">Cargando datos...</div>
+    <div id="loading" class="spinner">Conectando con Hoja de Pruebas...</div>
     <div id="schedule-container"></div>
 </div>
 
 <script>
-    // 👇 DATOS CONFIGURADOS AUTOMÁTICAMENTE PARA TU COPIA 👇
+    // ==========================================
+    // ⚙️ CONFIGURACIÓN DE TU ENTORNO DE PRUEBAS
+    // ==========================================
     
-    // Tu Script
+    // 1. URL DEL SCRIPT (Back-end)
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     
-    // Tu Hoja Copia
+    // 2. ID DE LA HOJA DE CÁLCULO (Copia)
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
     
-    // Tus GIDs (Días del original, CONFIG de la copia)
+    // 3. IDs DE LAS PESTAÑAS (GIDs)
+    // "CONFIG" usa el ID nuevo que me diste.
+    // Los días usan los IDs originales (se mantienen al copiar la hoja).
     const GIDS = {
         "Lunes": "0", 
         "Martes": "1905233272",
@@ -93,24 +121,25 @@
         "CONFIG": "2008155671"
     };
 
-    // --- NO TOCAR NADA DE AQUÍ PARA ABAJO ---
+    // ==========================================
     
-    // Usamos el export directo que es más seguro para copias
+    // Función para construir la URL de lectura (CSV)
     function getUrl(gid) {
         return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
     }
 
-    // --- FUNCIONES ---
-    function toggleAdmin() {
-        // Abre el panel admin en pestaña nueva para evitar bloqueos
+    // --- FUNCIÓN DEL BOTÓN ADMIN ---
+    function abrirAdmin() {
+        // Abre en pestaña nueva para evitar errores de conexión
         window.open(APP_SCRIPT_URL + "?v=admin", '_blank');
     }
 
     let configData = [];
 
+    // Función genérica para leer CSV
     function leerHoja(gid) {
         return new Promise(resolve => {
-            Papa.parse(getUrl(gid), { 
+            Papa.parse(getUrl(gid) + "&t=" + Date.now(), { // Añadimos tiempo para evitar caché
                 download: true, 
                 skipEmptyLines: true, 
                 complete: res => resolve(res.data), 
@@ -119,60 +148,96 @@
         });
     }
 
+    // --- LÓGICA PRINCIPAL DE CARGA ---
     async function cargarTodo() {
-        // 1. Cargar Configuración
-        configData = await leerHoja(GIDS["CONFIG"]);
-        verificarEstadoDia(new Date());
+        try {
+            // 1. Cargar Configuración primero (Festivos/Avisos)
+            configData = await leerHoja(GIDS["CONFIG"]);
+            const estado = verificarEstadoDia(new Date());
 
-        // 2. Cargar Horarios
-        const container = document.getElementById('schedule-container');
-        const btnContainer = document.getElementById('days-buttons');
-        const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-        
-        const promesas = dias.map(dia => leerHoja(GIDS[dia]));
-        const todosLosDatos = await Promise.all(promesas);
-
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-        btnContainer.innerHTML = btns;
-        container.innerHTML = ""; 
-
-        dias.forEach((dia, index) => {
-            const data = todosLosDatos[index]; 
-            if (!data || data.length === 0) return;
-
-            const headers = data[0] || [];
-            let html = `<div id="view-${dia}" class="planning-container">
-                <div style="text-align:center; margin-bottom:10px;"><h2>${dia.toUpperCase()}</h2></div>
-                <div class="tables-wrapper">
-                    <div class="table-block"><div class="mobile-section-title">Apoyo</div>
-                    <table><thead><tr><th>H</th><th>Alumnos</th></tr></thead><tbody>`;
+            // Si es festivo, quizás no queramos cargar el horario, pero por ahora cargamos todo
+            // para que veas que funciona.
             
-            let htmlIngles = "";
+            // 2. Cargar Horarios de Lunes a Viernes
+            const container = document.getElementById('schedule-container');
+            const btnContainer = document.getElementById('days-buttons');
+            const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
             
-            for(let i = 1; i < data.length; i++) {
-                const row = data[i]; if(!row || (!row[0] && !row[7])) continue;
+            const promesas = dias.map(dia => leerHoja(GIDS[dia]));
+            const todosLosDatos = await Promise.all(promesas);
+
+            // Crear botones de navegación
+            let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+            btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+            btnContainer.innerHTML = btns;
+            container.innerHTML = ""; 
+
+            // Renderizar cada día
+            dias.forEach((dia, index) => {
+                const data = todosLosDatos[index]; 
                 
-                // Generar filas simples
-                html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += `<td>${crearBadge(row[k])}</td>`;
-                html += `</tr>`;
+                if (!data || data.length === 0) {
+                    // Si falla la carga, mostramos un aviso discreto
+                    console.warn(`No hay datos para ${dia}`);
+                    return; 
+                }
 
-                htmlIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
-                for(let k=8; k<=13; k++) htmlIngles += `<td>${crearBadge(row[k])}</td>`;
-                htmlIngles += `</tr>`;
-            }
-            html += `</tbody></table></div>
-                     <div class="table-block"><div class="mobile-section-title ing">Inglés</div>
-                     <table><thead><tr><th>H</th><th>Alumnos</th></tr></thead><tbody>${htmlIngles}</tbody></table></div>
-                </div></div>`;
-            container.innerHTML += html;
-        });
+                const headers = data[0] || [];
+                // Cabeceras estimadas
+                const h_apoyo = headers.slice(1, 7); 
+                const h_ingles = headers.slice(8, 14);
 
-        document.getElementById('loading').style.display = 'none';
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(GIDS[hoy] ? hoy : "Lunes");
+                let html = `<div id="view-${dia}" class="planning-container">
+                    <div style="text-align:center; margin-bottom:10px;"><h2>${dia.toUpperCase()}</h2></div>
+                    <div class="tables-wrapper">
+                        
+                        <div class="table-block">
+                            <div class="mobile-section-title">Apoyo</div>
+                            <table>
+                                <thead><tr><th>H</th><th>${h_apoyo.join("</th><th>")}</th></tr></thead>
+                                <tbody>`;
+                
+                let htmlIngles = "";
+                
+                for(let i = 1; i < data.length; i++) {
+                    const row = data[i]; if(!row || (!row[0] && !row[7])) continue;
+                    
+                    // Filas Apoyo
+                    html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
+                    for(let k=1; k<=6; k++) html += `<td>${crearBadge(row[k])}</td>`;
+                    html += `</tr>`;
+
+                    // Filas Inglés
+                    htmlIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
+                    for(let k=8; k<=13; k++) htmlIngles += `<td>${crearBadge(row[k])}</td>`;
+                    htmlIngles += `</tr>`;
+                }
+                
+                html += `</tbody></table></div>
+                         
+                         <div class="table-block">
+                            <div class="mobile-section-title ing">Inglés</div>
+                             <table>
+                                <thead><tr><th>H</th><th>${h_ingles.join("</th><th>")}</th></tr></thead>
+                                <tbody>${htmlIngles}</tbody>
+                             </table>
+                         </div>
+                    </div></div>`;
+                
+                container.innerHTML += html;
+            });
+
+            document.getElementById('loading').style.display = 'none';
+            
+            // Mostrar el día actual por defecto
+            const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+            let hoy = mapDay[new Date().getDay()];
+            cambiarDia(GIDS[hoy] ? hoy : "Lunes");
+
+        } catch (e) {
+            document.getElementById('loading').innerText = "Error cargando datos. Revisa la consola.";
+            console.error(e);
+        }
     }
 
     function crearBadge(nombre) {
@@ -182,7 +247,8 @@
     }
 
     function verificarEstadoDia(fechaObj) {
-        if (!configData || configData.length < 2) return;
+        if (!configData || configData.length < 2) return null;
+        
         const dia = ("0" + fechaObj.getDate()).slice(-2);
         const mes = ("0" + (fechaObj.getMonth() + 1)).slice(-2);
         const anio = fechaObj.getFullYear();
@@ -190,26 +256,31 @@
 
         let estado = null;
         for (let i = 1; i < configData.length; i++) {
-            if (configData[i][0] === hoyStr) { estado = { tipo: configData[i][1], mensaje: configData[i][2] }; break; }
+            // Asumimos Columna A=Fecha, B=Tipo, C=Mensaje
+            if (configData[i][0] === hoyStr) { 
+                estado = { tipo: configData[i][1], mensaje: configData[i][2] }; 
+                break; 
+            }
         }
 
         const banner = document.getElementById('status-banner');
         if (estado) {
             banner.style.display = 'block';
-            banner.className = 'status-banner'; 
+            banner.className = 'status-banner'; // reset clases
             if (estado.tipo === 'FESTIVO') {
                 banner.classList.add('status-festivo');
-                banner.innerText = `🎉 ESTADO: FESTIVO (${estado.mensaje})`;
+                banner.innerText = `🎉 DÍA FESTIVO / CERRADO (${estado.mensaje})`;
             } else if (estado.tipo === 'AVISO') {
                 banner.classList.add('status-aviso');
                 banner.innerText = `⚠️ AVISO: ${estado.mensaje}`;
             } else if (estado.tipo === 'CAMBIO') {
                 banner.classList.add('status-cambio');
-                banner.innerHTML = `🔄 <b>HORARIO ESPECIAL:</b><br>${estado.mensaje}`;
+                banner.innerHTML = `🔄 <b>HORARIO ESPECIAL HOY:</b><br>${estado.mensaje}`;
             }
         } else {
             banner.style.display = 'none';
         }
+        return estado;
     }
 
     function cambiarDia(dia) {
@@ -223,10 +294,12 @@
         });
     }
 
+    // Reloj digital simple
     setInterval(() => {
-        document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString();
+        document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES');
     }, 1000);
 
+    // Iniciar
     document.addEventListener('DOMContentLoaded', cargarTodo);
 </script>
 </body>
