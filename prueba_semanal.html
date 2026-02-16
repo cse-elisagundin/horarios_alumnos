@@ -3,113 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Inteligente CSE</title>
+    <title>Horario Maestro Interactivo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
+        /* --- ESTILOS ORIGINALES REPETIDOS --- */
         :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
-        .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; font-size: 12px; }
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-admin { background: #333; color: #ffeb3b; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; font-size: 13px; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
         .tables-wrapper { display: flex; gap: 20px; }
         .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: white; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 8px; text-align: center; font-size: 13px; height: 42px; }
-        th { background: var(--c-primary); color: white; font-size: 11px; letter-spacing: 1px; }
-        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: center; font-size: 13px; height: 42px; position: relative; }
+        th { background: var(--c-primary); color: white; text-transform: uppercase; font-size: 11px; }
+        
+        /* LOGICA INTERACTIVA */
+        td.slot { cursor: pointer; transition: background 0.2s; }
+        td.slot:hover { background: #fff9c4 !important; }
+        td.slot:hover::after { content: '✎'; position: absolute; right: 2px; top: 2px; font-size: 10px; color: #ff9800; }
+
+        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; pointer-events: none; }
         .name-tag:empty { display: none !important; }
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; }
-        .nav-btn { padding: 10px 18px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
-        #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .admin-content { background: white; width: 420px; height: 620px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; }
+        .nav-btn { padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .nav-btn.active { background: var(--c-primary); color: white; }
+
+        /* MINI EDITOR FLOTANTE */
+        #quick-editor {
+            display: none; position: fixed; z-index: 10000; background: white;
+            padding: 15px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border: 2px solid var(--c-primary); width: 240px;
+        }
+        .ed-input { width: 100%; margin-bottom: 8px; padding: 6px; border-radius: 5px; border: 1px solid #ccc; font-size: 12px; }
+        .ed-btn { width: 100%; padding: 8px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-ok { background: var(--c-primary); color: white; }
+        .btn-ko { background: #eee; color: #666; margin-top: 5px; font-size: 11px; }
+
+        /* --- CONFIGURACION DE IMPRESIÓN IDENTICA --- */
+        @media print {
+            .nav-btn, .days-nav, #quick-editor, .mode-tag { display: none !important; }
+            .container { border: none; box-shadow: none; width: 100%; max-width: none; padding: 0; }
+            .planning-container { display: block !important; page-break-after: always; }
+            body { background: white; zoom: 75%; }
+            table { page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body>
+
+<div id="quick-editor">
+    <div id="ed-label" style="font-size: 10px; color: #999; margin-bottom: 5px;"></div>
+    <input type="text" id="ed-val" class="ed-input" placeholder="Nombre o dejar vacío...">
+    <select id="ed-dur" class="ed-input">
+        <option value="30">Sesión de 30 min</option>
+        <option value="60">Sesión de 1 hora</option>
+        <option value="90">Sesión de 1,5 horas</option>
+    </select>
+    <button class="ed-btn btn-ok" onclick="aplicarExcepcion()">APLICAR CAMBIO</button>
+    <button class="ed-btn btn-ko" onclick="cerrarEditor()">CANCELAR</button>
+</div>
+
 <div class="container">
-    <div class="test-badge">Entorno de Pruebas: Capa Inteligente Automática</div>
     <header>
-        <button class="btn-admin" onclick="toggleAdmin()">⚙️ GESTIONAR FALTAS / BLOQUES</button>
+        <div class="mode-tag" style="background:#333; color:#ffeb3b; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:bold;">● EDICIÓN INTERACTIVA ACTIVA</div>
         <div id="clock" class="digital-clock">00:00:00</div>
     </header>
     <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" style="text-align:center; padding:50px; font-style:italic; color:#999;">Mezclando base y cambios...</div>
     <div id="schedule-container"></div>
-</div>
-
-<div id="admin-modal">
-    <div class="admin-content">
-        <div style="background:#333; padding:12px; color:white; display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:bold; font-size:14px; color:#ffeb3b;">Panel Editor CSE</span>
-            <button onclick="toggleAdmin()" style="background:none; border:none; color:white; cursor:pointer; font-size:20px;">✖</button>
-        </div>
-        <iframe id="admin-frame" style="width:100%; height:100%; border:none;"></iframe>
-    </div>
 </div>
 
 <script>
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
     const GIDS = { "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517", "Jueves": "314818236", "Viernes": "1396865785" };
-    
-    // !!! PON AQUÍ EL GID DE TU PESTAÑA HISTORIAL !!!
     const GID_HISTORIAL = "2008155671"; 
 
     let excepcionesHoy = [];
-
-    function toggleAdmin() {
-        const modal = document.getElementById('admin-modal');
-        if (modal.style.display === 'flex') {
-            modal.style.display = 'none';
-            location.reload();
-        } else {
-            document.getElementById('admin-frame').src = APP_SCRIPT_URL + "?v=admin";
-            modal.style.display = 'flex';
-        }
-    }
+    let celdaActiva = null;
 
     async function cargarTodo() {
-        try {
-            const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
-            
-            // 1. Cargar Historial
-            const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
-            const csvH = await resH.text();
-            excepcionesHoy = Papa.parse(csvH).data.filter(fila => fila[0] === hoyFecha);
+        const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
+        
+        // 1. Cargar Capa de Cambios (Historial)
+        const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
+        const csvH = await resH.text();
+        excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
 
-            // 2. Generar vistas
-            const dias = Object.keys(GIDS);
-            document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+        // 2. Generar Horarios
+        const dias = Object.keys(GIDS);
+        document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
 
-            for (const dia of dias) {
-                const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
-                const csv = await res.text();
-                const dataM = Papa.parse(csv).data;
+        for (const dia of dias) {
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
+            const csv = await res.text();
+            const dataM = Papa.parse(csv).data;
 
-                let html = `<div id="view-${dia}" class="planning-container" style="display:none">
-                    <div class="tables-wrapper">
-                        <div class="table-block"><table><thead><tr><th>HORA</th><th colspan="6">TABLA APOYO</th></tr></thead><tbody>`;
+            let html = `<div id="view-${dia}" class="planning-container" style="display:none">
+                <h2 style="text-align:center; color:var(--c-primary); font-size:18px;">${dia.toUpperCase()}</h2>
+                <div class="tables-wrapper">
+                    <div class="table-block"><table><thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
+            let htmlIng = "";
+
+            for (let i = 1; i < dataM.length; i++) {
+                const r = dataM[i]; if(!r[0]) continue;
                 
-                let htmlIng = "";
-                for (let i = 1; i < dataM.length; i++) {
-                    const r = dataM[i]; if(!r[0]) continue;
-                    
-                    html += `<tr><td style="font-weight:bold">${r[0]}</td>${[1,2,3,4,5,6].map(col => `<td><span class="name-tag">${buscarExcepcion(dia, r[0], col, r[col]).toUpperCase()}</span></td>`).join('')}</tr>`;
-                    htmlIng += `<tr><td style="font-weight:bold">${r[7]||''}</td>${[8,9,10,11,12,13].map(col => `<td><span class="name-tag">${buscarExcepcion(dia, r[7], col, r[col]).toUpperCase()}</span></td>`).join('')}</tr>`;
+                // APOYO
+                html += `<tr><td style="font-weight:bold; width:60px; background:#f9f9f9;">${r[0]}</td>`;
+                for(let col=1; col<=6; col++) {
+                    let v = buscarCambio(dia, r[0], col, r[col]);
+                    html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${v}')"><span class="name-tag">${v.toUpperCase()}</span></td>`;
                 }
-                html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>HORA</th><th colspan="6">TABLA INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
-                document.getElementById('schedule-container').innerHTML += html;
+                html += `</tr>`;
+
+                // INGLÉS
+                htmlIng += `<tr><td style="font-weight:bold; width:60px; background:#f9f9f9;">${r[7]||''}</td>`;
+                for(let col=8; col<=13; col++) {
+                    let v = buscarCambio(dia, r[7], col, r[col]);
+                    htmlIng += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${v}')"><span class="name-tag">${v.toUpperCase()}</span></td>`;
+                }
+                htmlIng += `</tr>`;
             }
-            document.getElementById('loading').style.display = 'none';
-            cambiarDia(dias[new Date().getDay()-1] || "Lunes");
-        } catch(e) { document.getElementById('loading').innerText = "Error cargando. Revisa el GID de Historial."; }
+            html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
+            document.getElementById('schedule-container').innerHTML += html;
+        }
+        cambiarDia(dias[new Date().getDay()-1] || "Lunes");
     }
 
-    function buscarExcepcion(dia, hora, col, original) {
+    function buscarCambio(dia, hora, col, original) {
         const cambio = excepcionesHoy.find(ex => ex[1] === dia && ex[2] === hora && parseInt(ex[3]) === col);
         return cambio ? cambio[4] : original;
+    }
+
+    function abrirEditor(el, dia, hora, col, actual) {
+        celdaActiva = { dia, hora, col };
+        const rect = el.getBoundingClientRect();
+        const ed = document.getElementById('quick-editor');
+        
+        document.getElementById('ed-label').innerText = `EDITANDO: ${dia} ${hora} (Col ${col})`;
+        document.getElementById('ed-val').value = actual;
+        
+        ed.style.display = 'block';
+        ed.style.top = (rect.top + window.scrollY - 10) + 'px';
+        ed.style.left = (rect.left + 20) + 'px';
+    }
+
+    function cerrarEditor() { document.getElementById('quick-editor').style.display = 'none'; }
+
+    function aplicarExcepcion() {
+        const val = document.getElementById('ed-val').value;
+        const dur = document.getElementById('ed-dur').value;
+        const fecha = new Date().toISOString().split('T')[0];
+        
+        cerrarEditor();
+        const url = `${APP_SCRIPT_URL}?v=action&fecha=${fecha}&pestana=${celdaActiva.dia}&hora=${celdaActiva.hora}&col=${celdaActiva.col}&val=${val}&dur=${dur}`;
+        
+        alert("Guardando cambio en Historial... la página se actualizará sola.");
+        fetch(url, { mode: 'no-cors' }).then(() => location.reload());
     }
 
     function cambiarDia(dia) {
@@ -121,7 +172,7 @@
         }
     }
 
-    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString('es-ES'); }, 1000);
     window.onload = cargarTodo;
 </script>
 </body>
