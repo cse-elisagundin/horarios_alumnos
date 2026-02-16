@@ -3,229 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horario Semanal CSE - INTERNO</title>
+    <title>Horario Semanal CSE (Copia)</title>
     
     <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES (WEB) --- */
-        :root { 
-            --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;       
-            --bg-body: #f4f6f9; --bg-container: #ffffff;
-            --highlight-row: rgba(250, 101, 195, 0.12);
-            --dynamic-col-width: 70px;
-        }
-        
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; -webkit-tap-highlight-color: transparent; }
-
-        .container { width: 95%; max-width: 1600px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(36, 60, 122, 0.08); }
-
-        /* BRANDING */
-        .web-brand { text-align: center; margin-bottom: 20px; }
-        .web-logo-img { height: 70px; object-fit: contain; }
-        .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
+        /* ESTILOS BÁSICOS */
+        :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
+        .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
 
         /* HEADER */
-        header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-        .header-left { display: flex; gap: 10px; align-items: center; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
+        .btn-print { background: var(--c-primary); color: white; }
+        .btn-admin { background: #333; color: #ffeb3b; }
+        .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
-        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; text-transform: uppercase; transition: transform 0.2s; border: none; }
-        .btn-action:active { transform: scale(0.95); }
-        .btn-print { background-color: var(--c-primary); color: white; border: 2px solid var(--c-primary); }
-        .btn-edit { background-color: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
-        
-        /* BOTÓN ADMIN NUEVO */
-        .btn-admin { background-color: #2b2b2b; color: #ffeb3b; border: 2px solid #2b2b2b; }
-
-        /* PANEL DE ADMINISTRACIÓN (IFRAME) */
-        #admin-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;
-        }
-        .admin-content {
-            background: white; width: 90%; max-width: 500px; height: 80vh; border-radius: 15px;
-            overflow: hidden; position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: flex; flex-direction: column;
-        }
-        .admin-header {
-            padding: 10px; background: #eee; text-align: right; border-bottom: 1px solid #ddd;
-        }
-        .btn-close {
-            background: none; border: none; font-size: 20px; cursor: pointer; font-weight: bold; color: #333;
-        }
-        iframe { width: 100%; height: 100%; border: none; }
-
-        /* VISUALIZACIÓN DE ESTADO ACTUAL */
-        .status-banner {
-            margin: 10px 0 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; display: none;
-        }
+        /* AVISOS Y ESTADOS */
+        .status-banner { margin: 10px 0 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; display: none; }
         .status-festivo { background: #ffebee; color: #c62828; border: 1px dashed #ef5350; }
         .status-aviso { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; }
         .status-cambio { background: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
 
-        /* TABLAS Y RELOJ */
-        .live-info-panel { text-align: right; display: flex; flex-direction: column; gap: 8px; min-width: 250px; }
-        .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); letter-spacing: 1px; }
-        
-        .planning-container { display: none; animation: fadeIn 0.4s ease; }
-        .planning-container.visible { display: block; }
+        /* TABLAS */
+        .planning-container { display: none; }
+        .planning-container.visible { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        .tables-wrapper { display: flex; gap: 20px; align-items: flex-start; }
-        .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; box-shadow: 0 0 0 1px #dce1e6; }
-        
-        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid #dce1e6; }
-        .mobile-section-title.ing { color: var(--c-accent); }
-
+        .tables-wrapper { display: flex; gap: 20px; }
+        .table-block { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        tbody tr { height: 42px; }
-        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
-        th.col-hora { background: white !important; color: var(--c-primary) !important; border-bottom: 2px solid var(--c-primary) !important; }
-        .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; border-right: 1px solid #ddd; }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        th { background: var(--c-primary); color: white; text-transform: uppercase; }
+        .col-hora { width: 50px; background: #fff; font-weight: bold; color: var(--c-primary); }
+        .student-cell { cursor: help; }
+        .name-tag { font-weight: bold; color: var(--c-primary); }
         
-        .student-cell { font-weight: normal; transition: all 0.5s ease; cursor: help; }
-        .name-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 900; text-transform: uppercase; color: var(--c-primary); border: 1px solid transparent; }
-        
-        .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; transform: scale(1.05); }
-        .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border-color: rgba(43, 148, 204, 0.5); }
-        .status-exit .name-tag { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; }
+        /* BOTONES DÍAS */
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; }
+        .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .nav-btn.active { background: var(--c-primary); color: white; }
 
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; justify-content: center; }
-        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
-        
-        .print-only-notes { display: none; }
-
-        /* MÓVIL */
         @media (max-width: 900px) {
-            header { flex-direction: column; align-items: center; }
-            .live-info-panel { text-align: center; width: 100%; }
-            .container { padding: 10px; width: 100%; box-sizing: border-box; }
-            .tables-wrapper { flex-direction: column; gap: 30px; }
-            .table-block { width: 100%; }
-            .mobile-section-title { display: block; }
+            .tables-wrapper { flex-direction: column; }
             table thead { display: none; }
-            tbody tr { height: auto; display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
-            table tbody td.col-hora { grid-row: 1 / 3; grid-column: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; background: white !important; color: var(--c-primary) !important; border-right: 1px solid #eee; }
-            table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: normal; line-height: 1.1; }
+            table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #eee; height: auto; }
+            table tbody td.col-hora { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; }
+            table tbody td:not(.col-hora) { height: 40px; display: flex; align-items: center; justify-content: center; }
         }
-
-        @media print {
-            .no-print-dynamic, .web-brand, header, .days-nav, #admin-modal, .status-banner { display: none !important; }
-            @page { size: A4 landscape; margin: 5mm; } 
-            body { background: white !important; display: grid !important; grid-template-columns: 58% 40% !important; column-gap: 15px; height: 100vh; width: 100%; overflow: hidden; zoom: 65%; }
-            .container { grid-column: 1; width: 100% !important; border: none !important; box-shadow: none !important; display: block !important; }
-            .planning-container.visible { display: block !important; }
-            .tables-wrapper { display: flex !important; flex-direction: column !important; gap: 5px !important; }
-            .table-block { width: 100% !important; border: 1px solid #000 !important; }
-            .print-only-notes { grid-column: 2; display: block !important; width: 100% !important; height: 98%; border: none !important; padding: 15px; box-sizing: border-box; background: white !important; }
-            table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
-            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
-            .col-hora { width: 50px !important; text-align: center !important; }
-            .name-tag { background: transparent !important; color: black !important; border: none !important; padding: 0 !important; font-size: 15px !important; }
-            .notes-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-        }
+        
+        .spinner { text-align: center; margin: 20px; font-style: italic; color: #999; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="web-brand">
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
-        <div class="brand-line"></div>
-    </div>
-
     <header>
-        <div class="header-left">
+        <div>
             <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-            <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar Excel</a>
             <button class="btn-action btn-admin" onclick="toggleAdmin()">⚙️ Panel Control</button>
         </div>
-        
-        <div class="live-info-panel no-print-dynamic">
-            <div id="digital-clock" class="digital-clock">00:00:00</div>
-        </div>
+        <div id="digital-clock" class="digital-clock">00:00:00</div>
     </header>
 
     <div id="status-banner" class="status-banner"></div>
-
     <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" class="spinner">Cargando...</div>
+    <div id="loading" class="spinner">Cargando datos...</div>
     <div id="schedule-container"></div>
 </div>
 
-<div class="print-only-notes">
-    <div class="notes-header">
-        <h2 class="notes-title">NOTAS</h2>
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="notes-logo" style="height:40px">
-    </div>
-</div>
-
-<div id="admin-modal">
-    <div class="admin-content">
-        <div class="admin-header">
-            <button class="btn-close" onclick="toggleAdmin()">✖ CERRAR</button>
-        </div>
-        <iframe id="admin-frame" src=""></iframe>
-    </div>
-</div>
-
 <script>
-    // 👇👇👇 CONFIGURACIÓN AUTOMÁTICA 👇👇👇
-    // URL DE TU SCRIPT
+    // 👇 DATOS CONFIGURADOS AUTOMÁTICAMENTE PARA TU COPIA 👇
+    
+    // Tu Script
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     
-    // GID DE LA PESTAÑA 'CONFIG'
-    const CONFIG_GID = "2008155671"; 
-
-    // Enlace para editar el Excel
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit"; 
-    document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
-
-    // 👇 URLS DE LOS DÍAS
-    const BASE_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?single=true&output=csv&gid=";
+    // Tu Hoja Copia
+    const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
     
-    const urls = {
-        "CONFIG": BASE_CSV + CONFIG_GID, // Para leer estados
-        "Lunes": BASE_CSV + "0",         
-        "Martes": BASE_CSV + "1905233272",
-        "Miércoles": BASE_CSV + "745373517",
-        "Jueves": BASE_CSV + "314818236",
-        "Viernes": BASE_CSV + "1396865785"
+    // Tus GIDs (Días del original, CONFIG de la copia)
+    const GIDS = {
+        "Lunes": "0", 
+        "Martes": "1905233272",
+        "Miércoles": "745373517",
+        "Jueves": "314818236",
+        "Viernes": "1396865785",
+        "CONFIG": "2008155671"
     };
 
-    // --- LÓGICA DEL PANEL ADMIN ---
-    function toggleAdmin() {
-        const modal = document.getElementById('admin-modal');
-        const frame = document.getElementById('admin-frame');
-        
-        if (modal.style.display === 'flex') {
-            modal.style.display = 'none';
-            // Al cerrar, recargamos para ver cambios (festivos, etc)
-            if(confirm("¿Has hecho cambios? Pulsa Aceptar para recargar la página.")) location.reload();
-        } else {
-            // Abrimos el panel admin en modo ADMIN
-            if (!frame.src) frame.src = APP_SCRIPT_URL + "?v=admin";
-            modal.style.display = 'flex';
-        }
+    // --- NO TOCAR NADA DE AQUÍ PARA ABAJO ---
+    
+    // Usamos el export directo que es más seguro para copias
+    function getUrl(gid) {
+        return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
     }
 
-    // --- CARGA DE DATOS ---
+    // --- FUNCIONES ---
+    function toggleAdmin() {
+        // Abre el panel admin en pestaña nueva para evitar bloqueos
+        window.open(APP_SCRIPT_URL + "?v=admin", '_blank');
+    }
+
     let configData = [];
 
-    function leerHoja(url) {
+    function leerHoja(gid) {
         return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
+            Papa.parse(getUrl(gid), { 
+                download: true, 
+                skipEmptyLines: true, 
+                complete: res => resolve(res.data), 
+                error: () => resolve([]) 
+            });
         });
     }
 
     async function cargarTodo() {
-        // 1. Cargar Configuración primero
-        configData = await leerHoja(urls["CONFIG"]);
+        // 1. Cargar Configuración
+        configData = await leerHoja(GIDS["CONFIG"]);
         verificarEstadoDia(new Date());
 
         // 2. Cargar Horarios
@@ -233,7 +129,7 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
         
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
+        const promesas = dias.map(dia => leerHoja(GIDS[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
@@ -243,63 +139,50 @@
 
         dias.forEach((dia, index) => {
             const data = todosLosDatos[index]; 
-            const headers = data[0] || [];
-            const h_apoyo_hora = headers[0] || "H";
-            const h_apoyo_alum = headers.slice(1, 7);
-            const h_ing_hora = headers[7] || "H";
-            const h_ing_alum = headers.slice(8, 14);
+            if (!data || data.length === 0) return;
 
-            let filasApoyo = ""; let filasIngles = "";
+            const headers = data[0] || [];
+            let html = `<div id="view-${dia}" class="planning-container">
+                <div style="text-align:center; margin-bottom:10px;"><h2>${dia.toUpperCase()}</h2></div>
+                <div class="tables-wrapper">
+                    <div class="table-block"><div class="mobile-section-title">Apoyo</div>
+                    <table><thead><tr><th>H</th><th>Alumnos</th></tr></thead><tbody>`;
+            
+            let htmlIngles = "";
             
             for(let i = 1; i < data.length; i++) {
                 const row = data[i]; if(!row || (!row[0] && !row[7])) continue;
                 
-                let nombresPilaMap = {};
-                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
-                    let full = (row[idx] || "").trim();
-                    if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
-                });
+                // Generar filas simples
+                html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
+                for(let k=1; k<=6; k++) html += `<td>${crearBadge(row[k])}</td>`;
+                html += `</tr>`;
 
-                const generarCelda = (full, colIdx, timeColIndex) => {
-                    if(!full) return `<td></td>`;
-                    full = full.trim();
-                    let first = full.split(" ")[0].toUpperCase();
-                    let display = first;
-                    if(nombresPilaMap[first] > 1) { let partes = full.split(" "); if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; }
-                    
-                    let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
-                    let startTimeStr = data[startRow][timeColIndex];
-                    let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
-                    let lastBlockTimeStr = data[endRow][timeColIndex];
-                    
-                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
-                };
-
-                filasApoyo += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) filasApoyo += generarCelda(row[k], k, 0);
-                filasApoyo += `</tr>`;
-
-                filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`; 
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
-                filasIngles += `</tr>`;
+                htmlIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
+                for(let k=8; k<=13; k++) htmlIngles += `<td>${crearBadge(row[k])}</td>`;
+                htmlIngles += `</tr>`;
             }
-
-            let html = `<div id="view-${dia}" class="planning-container">
-                <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2></div>
-                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">📚 Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasApoyo}</tbody></table></div>
-                <div class="table-block"><div class="mobile-section-title ing">🇬🇧 Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
+            html += `</tbody></table></div>
+                     <div class="table-block"><div class="mobile-section-title ing">Inglés</div>
+                     <table><thead><tr><th>H</th><th>Alumnos</th></tr></thead><tbody>${htmlIngles}</tbody></table></div>
+                </div></div>`;
             container.innerHTML += html;
         });
 
         document.getElementById('loading').style.display = 'none';
         const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
         let hoy = mapDay[new Date().getDay()];
-        cambiarDia(urls[hoy] ? hoy : "Lunes");
+        cambiarDia(GIDS[hoy] ? hoy : "Lunes");
+    }
+
+    function crearBadge(nombre) {
+        if (!nombre) return "";
+        let corto = nombre.trim().split(" ")[0].toUpperCase();
+        return `<span class="name-tag">${corto}</span>`;
     }
 
     function verificarEstadoDia(fechaObj) {
         if (!configData || configData.length < 2) return;
-        
         const dia = ("0" + fechaObj.getDate()).slice(-2);
         const mes = ("0" + (fechaObj.getMonth() + 1)).slice(-2);
         const anio = fechaObj.getFullYear();
@@ -313,47 +196,20 @@
         const banner = document.getElementById('status-banner');
         if (estado) {
             banner.style.display = 'block';
-            banner.className = 'status-banner'; // reset
+            banner.className = 'status-banner'; 
             if (estado.tipo === 'FESTIVO') {
                 banner.classList.add('status-festivo');
-                banner.innerText = `🎉 ESTADO DE HOY: FESTIVO/CERRADO (${estado.mensaje})`;
+                banner.innerText = `🎉 ESTADO: FESTIVO (${estado.mensaje})`;
             } else if (estado.tipo === 'AVISO') {
                 banner.classList.add('status-aviso');
-                banner.innerText = `⚠️ AVISO ACTIVO: ${estado.mensaje}`;
+                banner.innerText = `⚠️ AVISO: ${estado.mensaje}`;
             } else if (estado.tipo === 'CAMBIO') {
                 banner.classList.add('status-cambio');
-                banner.innerHTML = `🔄 <b>HORARIO ESPECIAL ACTIVO:</b><br>${estado.mensaje.replace(/\n/g, ", ")}`;
+                banner.innerHTML = `🔄 <b>HORARIO ESPECIAL:</b><br>${estado.mensaje}`;
             }
         } else {
             banner.style.display = 'none';
         }
-    }
-
-    function actualizarReloj() {
-        const now = new Date();
-        document.getElementById('digital-clock').innerText = now.toLocaleTimeString('es-ES', { hour12: false });
-        
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[now.getDay()];
-        const contenedorHoy = document.getElementById(`view-${hoy}`);
-        if (contenedorHoy && contenedorHoy.classList.contains('visible')) {
-            contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
-                cell.classList.remove('status-entry', 'status-exit', 'status-active');
-                const startMin = parseTimeStr(cell.getAttribute('data-start-time'));
-                const endMin = parseTimeStr(cell.getAttribute('data-end-block-time')) + 30;
-                if(!startMin) return;
-                if (currentMinutes >= (startMin - 5) && currentMinutes <= (startMin + 5)) cell.classList.add('status-entry');
-                else if (currentMinutes >= (endMin - 5) && currentMinutes <= (endMin + 5)) cell.classList.add('status-exit');
-                else if (currentMinutes > (startMin + 5) && currentMinutes < (endMin - 5)) cell.classList.add('status-active');
-            });
-        }
-    }
-
-    function parseTimeStr(timeStr) {
-        if (!timeStr || !timeStr.includes(':')) return null;
-        const [h, m] = timeStr.split(':').map(Number);
-        return h * 60 + m;
     }
 
     function cambiarDia(dia) {
@@ -365,14 +221,13 @@
             let esActivo = (btn.innerText.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && btn.innerText === 'VER TODO');
             btn.classList.toggle('active', esActivo);
         });
-        actualizarReloj();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        cargarTodo();
-        setInterval(actualizarReloj, 1000);
-        setInterval(cargarTodo, 300000); 
-    });
+    setInterval(() => {
+        document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString();
+    }, 1000);
+
+    document.addEventListener('DOMContentLoaded', cargarTodo);
 </script>
 </body>
 </html>
