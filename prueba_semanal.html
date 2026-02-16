@@ -13,7 +13,6 @@
         :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
         
-        /* Borde Naranja para indicar que es el ENTORNO DE PRUEBAS */
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
         .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
@@ -22,9 +21,7 @@
         .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: transform 0.1s; }
         .btn-action:active { transform: scale(0.95); }
         .btn-print { background: var(--c-primary); color: white; }
-        
         .btn-admin { background: #333; color: #ffeb3b; border: 2px solid #333; }
-        
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
         /* AVISOS Y ESTADOS */
@@ -48,7 +45,6 @@
         th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         th { background: var(--c-primary); color: white; text-transform: uppercase; padding: 10px; }
         .col-hora { width: 50px; background: #fff; font-weight: bold; color: var(--c-primary); }
-        .student-cell { cursor: help; }
         .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 2px 6px; border-radius: 4px; }
         
         .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; padding-bottom: 5px; }
@@ -73,9 +69,9 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .admin-title { font-weight: bold; font-size: 14px; color: #ffeb3b; }
-        .btn-close {
-            background: none; border: none; font-size: 24px; cursor: pointer; color: white; line-height: 1;
-        }
+        .admin-tools { display: flex; align-items: center; gap: 15px; }
+        .btn-fallback { color: #00d4ff; font-size: 11px; cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; }
+        .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: white; line-height: 1; }
         iframe { width: 100%; height: 100%; border: none; background: #f4f6f9; }
 
         @media (max-width: 900px) {
@@ -87,13 +83,6 @@
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; }
         }
         .spinner { text-align: center; margin: 20px; font-style: italic; color: #999; }
-        
-        @media print {
-            .btn-action, .days-nav, .test-badge, .no-print, #admin-modal { display: none !important; }
-            .container { border: none; box-shadow: none; width: 100%; max-width: none; }
-            .planning-container.visible { display: block !important; }
-            body { background: white; zoom: 70%; }
-        }
     </style>
 </head>
 <body>
@@ -118,8 +107,11 @@
 <div id="admin-modal">
     <div class="admin-content">
         <div class="admin-header">
-            <span class="admin-title">Panel de Control (Test)</span>
-            <button class="btn-close" onclick="toggleAdmin()">×</button>
+            <span class="admin-title">Panel de Control</span>
+            <div class="admin-tools">
+                <button class="btn-fallback" onclick="abrirPestanaNueva()">¿Pantalla blanca? Abrir aquí</button>
+                <button class="btn-close" onclick="toggleAdmin()">×</button>
+            </div>
         </div>
         <iframe id="admin-frame" src=""></iframe>
     </div>
@@ -130,20 +122,11 @@
     // ⚙️ CONFIGURACIÓN DE TU ENTORNO DE PRUEBAS
     // ==========================================
     
-    // 1. URL DEL SCRIPT (Back-end) - ACTUALIZADA CON TU NUEVA IMPLEMENTACIÓN
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
-    
-    // 2. ID DE LA HOJA DE CÁLCULO (Copia)
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
-    
-    // 3. IDs DE LAS PESTAÑAS (GIDs ACTUALIZADOS)
     const GIDS = {
-        "Lunes": "0", 
-        "Martes": "1905233272",
-        "Miércoles": "745373517",
-        "Jueves": "314818236",
-        "Viernes": "1396865785",
-        "CONFIG": "2008155671"
+        "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517",
+        "Jueves": "314818236", "Viernes": "1396865785", "CONFIG": "2008155671"
     };
 
     // ==========================================
@@ -152,22 +135,23 @@
         return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
     }
 
-    // --- FUNCIÓN DEL BOTÓN ADMIN (MODAL) ---
     function toggleAdmin() {
         const modal = document.getElementById('admin-modal');
         const frame = document.getElementById('admin-frame');
+        const urlAdmin = APP_SCRIPT_URL + "?v=admin";
 
         if (modal.style.display === 'flex') {
             modal.style.display = 'none';
-            // Al cerrar, recargamos la página para ver cambios
-            if(confirm("¿Has hecho cambios? Pulsa Aceptar para recargar el horario.")) {
-                location.reload();
-            }
+            frame.src = ""; 
+            if(confirm("¿Quieres recargar la página para ver los cambios?")) location.reload();
         } else {
-            // Cargar el iframe del panel admin
-            if (!frame.src) frame.src = APP_SCRIPT_URL + "?v=admin";
+            frame.src = urlAdmin;
             modal.style.display = 'flex';
         }
+    }
+
+    function abrirPestanaNueva() {
+        window.open(APP_SCRIPT_URL + "?v=admin", '_blank');
     }
 
     let configData = [];
@@ -178,10 +162,7 @@
                 download: true, 
                 skipEmptyLines: true, 
                 complete: res => resolve(res.data), 
-                error: (err) => {
-                    console.error("Error cargando GID " + gid, err);
-                    resolve([]);
-                }
+                error: (err) => resolve([])
             });
         });
     }
@@ -223,11 +204,11 @@
                     const row = data[i]; if(!row || (!row[0] && !row[7])) continue;
                     
                     html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                    for(let k=1; k<=6; k++) html += `<td>${crearBadge(row[k])}</td>`;
+                    for(let k=1; k<=6; k++) html += `<td><span class="name-tag">${row[k].trim().split(" ")[0].toUpperCase()}</span></td>`;
                     html += `</tr>`;
 
                     htmlIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
-                    for(let k=8; k<=13; k++) htmlIngles += `<td>${crearBadge(row[k])}</td>`;
+                    for(let k=8; k<=13; k++) htmlIngles += `<td><span class="name-tag">${row[k].trim().split(" ")[0].toUpperCase()}</span></td>`;
                     htmlIngles += `</tr>`;
                 }
                 
@@ -244,14 +225,8 @@
             cambiarDia(GIDS[hoy] ? hoy : "Lunes");
 
         } catch (e) {
-            document.getElementById('loading').innerText = "Error cargando datos. Revisa la publicación de la hoja.";
+            document.getElementById('loading').innerText = "Error cargando datos.";
         }
-    }
-
-    function crearBadge(nombre) {
-        if (!nombre) return "";
-        let corto = nombre.trim().split(" ")[0].toUpperCase();
-        return `<span class="name-tag">${corto}</span>`;
     }
 
     function verificarEstadoDia(fechaObj) {
