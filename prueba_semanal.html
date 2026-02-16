@@ -3,88 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Maestro Interactivo CSE</title>
+    <title>Horario Maestro CSE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        /* CSS ORIGINAL DE SEMANAL.HTML */
-        :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
-        
+        /* ==========================================
+           CSS PARA PANTALLA (WEB)
+           ========================================== */
+        :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        
-        /* BOTÓN DE IMPRESIÓN REINSTALADO */
-        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: transform 0.1s; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; }
         .btn-print { background: var(--c-primary); color: white; }
-        .btn-print:active { transform: scale(0.95); }
-
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
         .tables-wrapper { display: flex; gap: 20px; }
-        .table-block { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
         
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; height: 42px; position: relative; }
-        th { background: var(--c-primary); color: white; text-transform: uppercase; padding: 10px; font-size: 11px; }
+        th, td { border: 1px solid #eee; padding: 8px; text-align: center; font-size: 12px; height: 40px; position: relative; }
+        th { background: var(--c-primary); color: white; text-transform: uppercase; font-size: 11px; }
 
-        /* INTERACTIVIDAD Y ETIQUETAS */
-        td.slot { cursor: pointer; transition: background 0.1s; }
-        td.slot:hover { background-color: #fff9c4 !important; }
-        
-        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 2px 6px; border-radius: 4px; display: inline-block; pointer-events: none; }
+        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; pointer-events: none; }
         .name-tag:empty { display: none !important; }
 
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; padding-bottom: 5px; }
-        .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
+        /* Estilos Editor e Interacción */
+        td.slot { cursor: pointer; transition: background 0.1s; }
+        td.slot:hover { background-color: #fff9c4 !important; }
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; }
+        .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .nav-btn.active { background: var(--c-primary); color: white; }
 
-        /* EDITOR FLOTANTE */
         #quick-editor {
             display: none; position: fixed; z-index: 10000; background: white;
             padding: 15px; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.3);
             border: 2px solid var(--c-primary); width: 240px;
         }
         .ed-input { width: 100%; margin-bottom: 8px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 13px; box-sizing: border-box; }
-        .ed-btn { width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; margin-top: 5px; }
-        .btn-ok { background: var(--c-primary); color: white; }
-        .btn-ko { background: #eee; color: #666; font-size: 11px; }
+        
+        /* OCULTAR ELEMENTOS DE IMPRESIÓN EN WEB */
+        .print-only { display: none; }
 
-        /* IMPRESIÓN RIGUROSA */
+        /* ==========================================
+           CONFIGURACIÓN DE IMPRESIÓN (IDÉNTICA A TU IMAGEN)
+           ========================================== */
         @media print {
-            .nav-btn, .days-nav, #quick-editor, .mode-tag, .btn-action, .test-badge { display: none !important; }
-            .container { border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important; }
-            .planning-container { display: block !important; page-break-after: always; }
-            body { background: white !important; margin: 0 !important; padding: 0 !important; }
-            table { width: 100% !important; border: 1px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; color: black !important; }
-            th { background: #eee !important; color: black !important; }
-            .name-tag { background: none !important; border: none !important; color: black !important; padding: 0 !important; }
+            @page { size: A4 portrait; margin: 1cm; }
+            
+            /* Ocultar todo lo que no es el horario del día activo */
+            body { background: white !important; margin: 0; padding: 0; }
+            .nav-btn, .days-nav, #quick-editor, .test-badge, header, .container { border: none !important; box-shadow: none !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            
+            /* Contenedor principal de impresión */
+            .planning-container { display: flex !important; flex-wrap: wrap; width: 100%; page-break-after: always; }
+            
+            /* Cabecera de impresión */
+            .print-header { display: block !important; width: 100%; margin-bottom: 10px; }
+            .print-header h1 { margin: 0; font-size: 18px; text-transform: uppercase; }
+            .print-header p { margin: 0; font-size: 10px; color: #555; }
+
+            /* Estructura de dos columnas: Tablas e Notas */
+            .tables-wrapper { display: flex !important; flex-direction: row !important; gap: 20px; width: 100%; align-items: flex-start; }
+            
+            /* Columna de tablas (izquierda) */
+            .print-tables-col { width: 65%; display: flex; flex-direction: column; gap: 15px; }
+            .table-block { border: none !important; border-radius: 0 !important; width: 100% !important; }
+            
+            /* Columna de notas (derecha) */
+            .print-notes-col { display: block !important; width: 30%; border-left: 2px solid #000; padding-left: 15px; min-height: 800px; }
+            .print-notes-col h2 { font-size: 14px; text-transform: uppercase; border-bottom: 1px solid #000; padding-bottom: 5px; }
+            .note-line { border-bottom: 1px solid #ccc; height: 30px; width: 100%; }
+
+            /* Estilo de tablas para imprimir (Bordes negros) */
+            table { width: 100% !important; border: 1.5px solid #000 !important; }
+            th, td { border: 1px solid #000 !important; color: #000 !important; padding: 4px !important; font-size: 10px !important; height: 25px !important; }
+            th { background: #f0f0f0 !important; font-weight: bold !important; color: #000 !important; }
+            .name-tag { background: none !important; color: #000 !important; padding: 0 !important; font-weight: bold; }
+            
+            /* Forzar visualización de tablas en bloque vertical */
+            .tables-wrapper > .table-block { flex: none !important; }
         }
     </style>
 </head>
 <body>
 
 <div id="quick-editor">
-    <div id="ed-label" style="font-size: 10px; color: #999; margin-bottom: 8px; font-weight: bold;"></div>
-    <input type="text" id="ed-val" class="ed-input" placeholder="Nombre completo...">
+    <div id="ed-label" style="font-size: 10px; color: #999; margin-bottom: 5px;"></div>
+    <input type="text" id="ed-val" class="ed-input" placeholder="Nombre...">
     <select id="ed-dur" class="ed-input">
-        <option value="30">Sesión de 30 min</option>
-        <option value="60">Sesión de 1 hora</option>
-        <option value="90">Sesión de 1,5 horas</option>
+        <option value="30">30 min</option>
+        <option value="60">1 hora</option>
+        <option value="90">1.5 horas</option>
     </select>
-    <button class="ed-btn btn-ok" onclick="aplicarExcepcion()">APLICAR HOY</button>
-    <button class="ed-btn btn-ko" onclick="cerrarEditor()">CANCELAR</button>
+    <button style="width:100%; background:var(--c-primary); color:white; border:none; padding:8px; cursor:pointer;" onclick="aplicarExcepcion()">APLICAR</button>
+    <button style="width:100%; background:#eee; border:none; padding:5px; margin-top:5px; cursor:pointer;" onclick="cerrarEditor()">CANCELAR</button>
 </div>
 
 <div class="container">
-    <div class="test-badge" style="background:#ff9800; color:white; text-align:center; font-weight:bold; padding:5px; border-radius:5px; margin-bottom:15px; text-transform:uppercase; font-size:12px;">Entorno Interactiva con Capa de Historial</div>
-    
+    <div class="test-badge" style="background:#ff9800; color:white; text-align:center; font-weight:bold; padding:5px; border-radius:5px; margin-bottom:15px; text-transform:uppercase; font-size:12px;">Entorno de Pruebas: Impresión Optimizada</div>
     <header>
         <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir Horario</button>
         <div id="clock" class="digital-clock">00:00:00</div>
     </header>
-
     <div class="days-nav" id="days-buttons"></div>
     <div id="schedule-container"></div>
 </div>
@@ -100,64 +121,66 @@
 
     async function cargarTodo() {
         const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
-        
-        try {
-            const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
-            const csvH = await resH.text();
-            excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
+        const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
+        const csvH = await resH.text();
+        excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
 
-            const dias = Object.keys(GIDS);
-            document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
+        const dias = Object.keys(GIDS);
+        document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
 
-            for (const dia of dias) {
-                const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
-                const csv = await res.text();
-                const dataM = Papa.parse(csv).data;
+        for (const dia of dias) {
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
+            const csv = await res.text();
+            const dataM = Papa.parse(csv).data;
 
-                let html = `<div id="view-${dia}" class="planning-container" style="display:none">
-                    <h2 style="text-align:center; color:var(--c-primary); font-size:18px; margin-top:0;">${dia.toUpperCase()}</h2>
-                    <div class="tables-wrapper">
+            let html = `<div id="view-${dia}" class="planning-container" style="display:none">
+                <div class="print-only print-header">
+                    <h1>${dia.toUpperCase()}</h1>
+                    <p>CSE ELISA GUNDÍN</p>
+                </div>
+
+                <div class="tables-wrapper">
+                    <div class="print-tables-col">
                         <div class="table-block">
                             <table>
                                 <thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead>
                                 <tbody>`;
-                
-                let htmlIng = "";
-
-                for (let i = 1; i < dataM.length; i++) {
-                    const r = dataM[i]; if(!r[0]) continue;
-                    
-                    // Fila Apoyo
-                    html += `<tr><td style="font-weight:bold; width:60px; background:#f9f9f9;">${r[0]}</td>`;
-                    for(let col=1; col<=6; col++) {
-                        let fullName = buscarEx(dia, r[0], col, r[col]);
-                        let firstName = fullName.trim().split(" ")[0];
-                        html += `<td class="slot" title="${fullName}" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${fullName}')"><span class="name-tag">${firstName.toUpperCase()}</span></td>`;
-                    }
-                    html += `</tr>`;
-
-                    // Fila Inglés
-                    htmlIng += `<tr><td style="font-weight:bold; width:60px; background:#f9f9f9;">${r[7]||''}</td>`;
-                    for(let col=8; col<=13; col++) {
-                        let fullName = buscarEx(dia, r[7], col, r[col]);
-                        let firstName = fullName.trim().split(" ")[0];
-                        htmlIng += `<td class="slot" title="${fullName}" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${fullName}')"><span class="name-tag">${firstName.toUpperCase()}</span></td>`;
-                    }
-                    htmlIng += `</tr>`;
+            
+            let htmlIng = "";
+            for (let i = 1; i < dataM.length; i++) {
+                const r = dataM[i]; if(!r[0]) continue;
+                html += `<tr><td>${r[0]}</td>`;
+                for(let col=1; col<=6; col++) {
+                    let v = buscarEx(dia, r[0], col, r[col]);
+                    html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${v}')"><span class="name-tag">${v.toUpperCase()}</span></td>`;
                 }
-                
-                html += `</tbody></table></div>
-                         <div class="table-block">
-                            <table>
-                                <thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead>
-                                <tbody>${htmlIng}</tbody>
-                            </table>
-                         </div>
-                    </div></div>`;
-                document.getElementById('schedule-container').innerHTML += html;
+                html += `</tr>`;
+
+                htmlIng += `<tr><td>${r[7]||''}</td>`;
+                for(let col=8; col<=13; col++) {
+                    let v = buscarEx(dia, r[7], col, r[col]);
+                    htmlIng += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${v}')"><span class="name-tag">${v.toUpperCase()}</span></td>`;
+                }
+                htmlIng += `</tr>`;
             }
-            cambiarDia(dias[new Date().getDay()-1] || "Lunes");
-        } catch(e) { console.error("Error cargando:", e); }
+            
+            html += `</tbody></table></div>
+                    <div class="table-block">
+                        <table>
+                            <thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead>
+                            <tbody>${htmlIng}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="print-only print-notes-col">
+                    <h2>NOTAS</h2>
+                    ${Array(25).fill('<div class="note-line"></div>').join('')}
+                </div>
+            </div></div>`;
+            document.getElementById('schedule-container').innerHTML += html;
+        }
+        cambiarDia(dias[new Date().getDay()-1] || "Lunes");
     }
 
     function buscarEx(dia, hora, col, original) {
@@ -184,10 +207,7 @@
         const fecha = new Date().toISOString().split('T')[0];
         cerrarEditor();
         const url = `${APP_SCRIPT_URL}?v=action&fecha=${fecha}&pestana=${celdaActiva.dia}&hora=${celdaActiva.hora}&col=${celdaActiva.col}&val=${val}&dur=${dur}`;
-        document.body.style.opacity = "0.5";
-        fetch(url, { mode: 'no-cors' }).then(() => {
-            setTimeout(() => location.reload(), 600);
-        });
+        fetch(url, { mode: 'no-cors' }).then(() => { setTimeout(() => location.reload(), 500); });
     }
 
     function cambiarDia(dia) {
