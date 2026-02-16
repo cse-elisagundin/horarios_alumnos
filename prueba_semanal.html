@@ -23,7 +23,6 @@
         .btn-action:active { transform: scale(0.95); }
         .btn-print { background: var(--c-primary); color: white; }
         
-        /* Botón Admin */
         .btn-admin { background: #333; color: #ffeb3b; border: 2px solid #333; }
         
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
@@ -52,26 +51,25 @@
         .student-cell { cursor: help; }
         .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 2px 6px; border-radius: 4px; }
         
-        /* BOTONES DÍAS */
         .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; padding-bottom: 5px; }
         .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* 🔥 ESTILOS PARA LA VENTANA FLOTANTE (MODAL) 🔥 */
+        /* 🔥 VENTANA MODAL (Panel de Control) 🔥 */
         #admin-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(2px);
         }
         .admin-content {
-            background: white; width: 90%; max-width: 500px; height: 85vh; border-radius: 15px;
+            background: white; width: 95%; max-width: 500px; height: 85vh; border-radius: 15px;
             overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
             display: flex; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
         .admin-header {
-            padding: 10px 15px; background: #333; color: white; text-align: right; 
+            padding: 10px 15px; background: #333; color: white; 
             display: flex; justify-content: space-between; align-items: center;
         }
         .admin-title { font-weight: bold; font-size: 14px; color: #ffeb3b; }
@@ -80,7 +78,6 @@
         }
         iframe { width: 100%; height: 100%; border: none; background: #f4f6f9; }
 
-        /* MÓVIL */
         @media (max-width: 900px) {
             .tables-wrapper { flex-direction: column; }
             .mobile-section-title { display: block; }
@@ -89,10 +86,8 @@
             table tbody td.col-hora { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; }
         }
-        
         .spinner { text-align: center; margin: 20px; font-style: italic; color: #999; }
         
-        /* IMPRESIÓN */
         @media print {
             .btn-action, .days-nav, .test-badge, .no-print, #admin-modal { display: none !important; }
             .container { border: none; box-shadow: none; width: 100%; max-width: none; }
@@ -109,13 +104,12 @@
     <header>
         <div>
             <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-            <button class="btn-action btn-admin" onclick="toggleAdmin()">⚙️ Panel Control</button>
+            <button class="btn-action btn-admin" onclick="toggleAdmin()">⚙️ Panel Control (Test)</button>
         </div>
         <div id="digital-clock" class="digital-clock">00:00:00</div>
     </header>
 
     <div id="status-banner" class="status-banner"></div>
-
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner">Cargando datos...</div>
     <div id="schedule-container"></div>
@@ -136,7 +130,7 @@
     // ⚙️ CONFIGURACIÓN DE TU ENTORNO DE PRUEBAS
     // ==========================================
     
-    // 1. URL DEL SCRIPT (Back-end)
+    // 1. URL DEL SCRIPT (Back-end) - ACTUALIZADA CON TU NUEVA IMPLEMENTACIÓN
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     
     // 2. ID DE LA HOJA DE CÁLCULO (Copia)
@@ -154,24 +148,23 @@
 
     // ==========================================
     
-    // Función para construir la URL de lectura (CSV)
     function getUrl(gid) {
         return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
     }
 
-    // --- FUNCIÓN DEL BOTÓN ADMIN (MODIFICADA PARA MODAL) ---
+    // --- FUNCIÓN DEL BOTÓN ADMIN (MODAL) ---
     function toggleAdmin() {
         const modal = document.getElementById('admin-modal');
         const frame = document.getElementById('admin-frame');
 
         if (modal.style.display === 'flex') {
             modal.style.display = 'none';
-            // Al cerrar, recargamos la página para ver los cambios
-            if(confirm("¿Recargar página para ver los cambios?")) {
+            // Al cerrar, recargamos la página para ver cambios
+            if(confirm("¿Has hecho cambios? Pulsa Aceptar para recargar el horario.")) {
                 location.reload();
             }
         } else {
-            // Cargar el iframe solo cuando se abre
+            // Cargar el iframe del panel admin
             if (!frame.src) frame.src = APP_SCRIPT_URL + "?v=admin";
             modal.style.display = 'flex';
         }
@@ -179,7 +172,6 @@
 
     let configData = [];
 
-    // Función genérica para leer CSV
     function leerHoja(gid) {
         return new Promise(resolve => {
             Papa.parse(getUrl(gid) + "&t=" + Date.now(), { 
@@ -194,14 +186,11 @@
         });
     }
 
-    // --- LÓGICA PRINCIPAL DE CARGA ---
     async function cargarTodo() {
         try {
-            // 1. Cargar Configuración primero
             configData = await leerHoja(GIDS["CONFIG"]);
-            const estado = verificarEstadoDia(new Date());
+            verificarEstadoDia(new Date());
             
-            // 2. Cargar Horarios
             const container = document.getElementById('schedule-container');
             const btnContainer = document.getElementById('days-buttons');
             const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
@@ -255,7 +244,7 @@
             cambiarDia(GIDS[hoy] ? hoy : "Lunes");
 
         } catch (e) {
-            document.getElementById('loading').innerText = "Error cargando datos.";
+            document.getElementById('loading').innerText = "Error cargando datos. Revisa la publicación de la hoja.";
         }
     }
 
