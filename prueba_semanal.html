@@ -9,19 +9,20 @@
         :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
+        
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-print { background: var(--c-primary); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; text-transform: uppercase; }
+        .btn-print { background: var(--c-primary); color: white; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
         .tables-wrapper { display: flex; gap: 20px; }
         .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; background: white; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 11.5px; height: 42px; position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        th { background: var(--c-primary); color: white; }
+        th, td { border: 1px solid #eee; padding: 4px; text-align: center; font-size: 11px; height: 42px; position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        th { background: var(--c-primary); color: white; text-transform: uppercase; font-size: 10px; }
         .col-hora { width: 45px; font-weight: bold; background: #f9f9f9; }
 
         /* INTERACTIVIDAD */
-        td.slot { cursor: pointer; }
+        td.slot { cursor: pointer; transition: background 0.1s; }
         td.slot:hover { background-color: #fff9c4 !important; }
         .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 3px 7px; border-radius: 8px; display: inline-block; pointer-events: none; }
         .name-tag:empty { display: none !important; }
@@ -36,43 +37,40 @@
         .ed-input { width: 100%; margin-bottom: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN MAESTRA (DISEÑO HORIZONTAL A4 - image_96e1f3.png)
+           🖨️ IMPRESIÓN MAESTRA RIGUROSA (Horizontal - image_96e1f3.png)
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
-            body { background: white !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; }
+            body { background: white !important; padding: 0 !important; margin: 0 !important; overflow: hidden !important; width: 100% !important; }
             
-            /* Layout de dos columnas estrictas */
+            header, .days-nav, #quick-editor, .nav-btn, .test-badge { display: none !important; }
+
             .container { 
                 display: grid !important; 
                 grid-template-columns: 58% 38% !important; 
-                column-gap: 20px !important; 
+                column-gap: 4% !important; 
                 border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; padding: 0 !important;
             }
-
-            header, .days-nav, #quick-editor, .nav-btn, .test-badge { display: none !important; }
 
             .planning-container { display: none !important; }
             .planning-container.visible { display: block !important; grid-column: 1; }
 
-            .tables-wrapper { display: flex !important; flex-direction: column !important; gap: 10px !important; }
-            .table-block { border: 1px solid #000 !important; border-radius: 0 !important; width: 100% !important; }
+            .tables-wrapper { display: flex !important; flex-direction: column !important; gap: 8px !important; }
+            .table-block { border: 1.5px solid #000 !important; border-radius: 0 !important; width: 100% !important; }
 
-            /* Columna de notas - image_96e1f3.png */
             .print-only-notes { 
                 display: block !important; 
                 grid-column: 2; 
                 border-left: 2px solid #000 !important; 
                 padding-left: 15px !important; 
-                height: 100vh;
+                height: 98vh;
             }
 
-            table { border: 1.5px solid #000 !important; }
-            th, td { border: 1px solid #000 !important; color: black !important; font-size: 11px !important; height: 26px !important; padding: 2px !important; }
-            th { background: #eee !important; font-weight: bold !important; }
-            .name-tag { background: none !important; border: none !important; color: black !important; padding: 0 !important; font-weight: 900 !important; }
-            
-            .note-line { border-bottom: 1px solid #eee; height: 30px; width: 100%; }
+            table { border-collapse: collapse !important; border: 1px solid #000 !important; }
+            th, td { border: 1px solid #000 !important; color: black !important; font-size: 10px !important; height: 26px !important; padding: 1px !important; }
+            th { background: #f0f0f0 !important; font-weight: bold !important; }
+            .name-tag { background: none !important; color: black !important; padding: 0 !important; font-weight: 900 !important; }
+            .note-line { border-bottom: 1px solid #ccc; height: 30px; width: 100%; }
         }
         .print-only-notes { display: none; }
     </style>
@@ -87,7 +85,7 @@
         <option value="60">1 hora</option>
         <option value="90">1,5 horas</option>
     </select>
-    <button style="width:100%; padding:10px; background:var(--c-primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="aplicarExcepcion()">GUARDAR CAMBIO</button>
+    <button style="width:100%; padding:10px; background:var(--c-primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer;" onclick="aplicarExcepcion()">GUARDAR</button>
     <button style="width:100%; padding:8px; background:#eee; border:none; border-radius:6px; margin-top:5px; cursor:pointer;" onclick="cerrarEditor()">CANCELAR</button>
 </div>
 
@@ -102,9 +100,7 @@
 </div>
 
 <div class="print-only-notes">
-    <div style="display:flex; justify-content:space-between; border-bottom:2px solid #000; padding-bottom:5px; margin-bottom:10px;">
-        <h2 style="margin:0; font-size:24px;">NOTAS</h2>
-    </div>
+    <h2 style="margin:0; font-size:22px; border-bottom:2px solid #000;">NOTAS</h2>
     <script>for(let i=0; i<28; i++) document.write('<div class="note-line"></div>');</script>
 </div>
 
@@ -114,7 +110,7 @@
     const GID_HISTORIAL = "2008155671"; 
     const GIDS = { "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517", "Jueves": "314818236", "Viernes": "1396865785" };
 
-    let excepcionesHoy = [];
+    let historialCompleto = [];
     let celdaActiva = null;
 
     async function cargarTodo() {
@@ -122,7 +118,8 @@
         try {
             const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
             const csvH = await resH.text();
-            excepcionesHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
+            // Guardamos todo el historial filtrado por fecha
+            historialCompleto = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
 
             const dias = Object.keys(GIDS);
             document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
@@ -143,21 +140,19 @@
                 for (let i = 1; i < dataM.length; i++) {
                     const r = dataM[i]; if(!r[0] && !r[7]) continue;
                     
-                    // APOYO (Busca por hora en columna 0)
                     html += `<tr><td class="col-hora">${r[0]||''}</td>`;
                     for(let col=1; col<=6; col++) {
                         let full = buscarEx(dia, r[0], col, r[col]);
-                        let pila = full.trim().split(' ')[0].toUpperCase();
+                        let pila = full ? full.trim().split(' ')[0].toUpperCase() : "";
                         html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[0]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
                     }
                     html += `</tr>`;
 
-                    // INGLÉS (Busca por hora en columna 7)
                     htmlIng += `<tr><td class="col-hora">${r[7]||''}</td>`;
                     for(let col=8; col<=13; col++) {
                         let full = buscarEx(dia, r[7], col, r[col]);
-                        let pila = full.trim().split(' ')[0].toUpperCase();
-                        htmlIng += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
+                        let pila = full ? full.trim().split(' ')[0].toUpperCase() : "";
+                        html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
                     }
                     htmlIng += `</tr>`;
                 }
@@ -168,10 +163,17 @@
         } catch(e) { console.error(e); }
     }
 
+    // FUNCIÓN CORREGIDA: Busca desde el final del array para priorizar el último cambio
     function buscarEx(dia, hora, col, original) {
         if(!hora) return original || "";
-        const cambio = excepcionesHoy.find(ex => ex[1] === dia && ex[2] === hora && parseInt(ex[3]) === col);
-        return cambio ? cambio[4] : (original || "");
+        // Buscamos de atrás hacia adelante (más reciente)
+        for (let i = historialCompleto.length - 1; i >= 0; i--) {
+            const ex = historialCompleto[i];
+            if (ex[1] === dia && ex[2] === hora && String(ex[3]) === String(col)) {
+                return ex[4]; // Devolvemos el valor encontrado (aunque sea vacío para borrar)
+            }
+        }
+        return (original || "");
     }
 
     function abrirEditor(el, dia, hora, col, actual) {
@@ -179,10 +181,10 @@
         const rect = el.getBoundingClientRect();
         const ed = document.getElementById('quick-editor');
         document.getElementById('ed-label').innerText = `${dia} - ${hora}`;
-        document.getElementById('ed-val').value = actual;
+        document.getElementById('ed-val').value = actual === "undefined" ? "" : actual;
         ed.style.display = 'block';
         ed.style.top = (rect.top + window.scrollY - 10) + 'px';
-        ed.style.left = (rect.left + 20) + 'px';
+        ed.style.left = (rect.left + 10) + 'px';
     }
 
     function cerrarEditor() { document.getElementById('quick-editor').style.display = 'none'; }
@@ -193,7 +195,7 @@
         const fecha = new Date().toISOString().split('T')[0];
         cerrarEditor();
         const url = `${APP_SCRIPT_URL}?v=action&fecha=${fecha}&pestana=${celdaActiva.dia}&hora=${celdaActiva.hora}&col=${celdaActiva.col}&val=${val}&dur=${dur}`;
-        fetch(url, { mode: 'no-cors' }).then(() => { setTimeout(() => location.reload(), 600); });
+        fetch(url, { mode: 'no-cors' }).then(() => { setTimeout(() => location.reload(), 700); });
     }
 
     function cambiarDia(dia) {
