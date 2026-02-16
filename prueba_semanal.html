@@ -109,9 +109,7 @@
     // 2. ID DE LA HOJA DE CÁLCULO (Copia)
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
     
-    // 3. IDs DE LAS PESTAÑAS (GIDs)
-    // "CONFIG" usa el ID nuevo que me diste.
-    // Los días usan los IDs originales (se mantienen al copiar la hoja).
+    // 3. IDs DE LAS PESTAÑAS (GIDs ACTUALIZADOS)
     const GIDS = {
         "Lunes": "0", 
         "Martes": "1905233272",
@@ -125,6 +123,7 @@
     
     // Función para construir la URL de lectura (CSV)
     function getUrl(gid) {
+        // Usamos el formato export que funciona mejor para leer pestañas sueltas
         return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
     }
 
@@ -143,7 +142,10 @@
                 download: true, 
                 skipEmptyLines: true, 
                 complete: res => resolve(res.data), 
-                error: () => resolve([]) 
+                error: (err) => {
+                    console.error("Error cargando GID " + gid, err);
+                    resolve([]);
+                }
             });
         });
     }
@@ -154,9 +156,6 @@
             // 1. Cargar Configuración primero (Festivos/Avisos)
             configData = await leerHoja(GIDS["CONFIG"]);
             const estado = verificarEstadoDia(new Date());
-
-            // Si es festivo, quizás no queramos cargar el horario, pero por ahora cargamos todo
-            // para que veas que funciona.
             
             // 2. Cargar Horarios de Lunes a Viernes
             const container = document.getElementById('schedule-container');
@@ -177,8 +176,7 @@
                 const data = todosLosDatos[index]; 
                 
                 if (!data || data.length === 0) {
-                    // Si falla la carga, mostramos un aviso discreto
-                    console.warn(`No hay datos para ${dia}`);
+                    console.warn(`No hay datos para ${dia} (GID: ${GIDS[dia]})`);
                     return; 
                 }
 
@@ -235,7 +233,7 @@
             cambiarDia(GIDS[hoy] ? hoy : "Lunes");
 
         } catch (e) {
-            document.getElementById('loading').innerText = "Error cargando datos. Revisa la consola.";
+            document.getElementById('loading').innerText = "Error cargando datos. Verifica que la hoja está PUBLICADA en la web.";
             console.error(e);
         }
     }
