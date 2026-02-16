@@ -23,7 +23,7 @@
         .btn-action:active { transform: scale(0.95); }
         .btn-print { background: var(--c-primary); color: white; }
         
-        /* Botón Admin Gris Oscuro para diferenciar */
+        /* Botón Admin */
         .btn-admin { background: #333; color: #ffeb3b; border: 2px solid #333; }
         
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
@@ -57,6 +57,29 @@
         .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
+        /* 🔥 ESTILOS PARA LA VENTANA FLOTANTE (MODAL) 🔥 */
+        #admin-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+        .admin-content {
+            background: white; width: 90%; max-width: 500px; height: 85vh; border-radius: 15px;
+            overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        
+        .admin-header {
+            padding: 10px 15px; background: #333; color: white; text-align: right; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .admin-title { font-weight: bold; font-size: 14px; color: #ffeb3b; }
+        .btn-close {
+            background: none; border: none; font-size: 24px; cursor: pointer; color: white; line-height: 1;
+        }
+        iframe { width: 100%; height: 100%; border: none; background: #f4f6f9; }
+
         /* MÓVIL */
         @media (max-width: 900px) {
             .tables-wrapper { flex-direction: column; }
@@ -71,7 +94,7 @@
         
         /* IMPRESIÓN */
         @media print {
-            .btn-action, .days-nav, .test-badge, .no-print { display: none !important; }
+            .btn-action, .days-nav, .test-badge, .no-print, #admin-modal { display: none !important; }
             .container { border: none; box-shadow: none; width: 100%; max-width: none; }
             .planning-container.visible { display: block !important; }
             body { background: white; zoom: 70%; }
@@ -86,7 +109,7 @@
     <header>
         <div>
             <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-            <button class="btn-action btn-admin" onclick="abrirAdmin()">⚙️ Panel Control (Test)</button>
+            <button class="btn-action btn-admin" onclick="toggleAdmin()">⚙️ Panel Control</button>
         </div>
         <div id="digital-clock" class="digital-clock">00:00:00</div>
     </header>
@@ -94,8 +117,18 @@
     <div id="status-banner" class="status-banner"></div>
 
     <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" class="spinner">Conectando con Hoja de Pruebas...</div>
+    <div id="loading" class="spinner">Cargando datos...</div>
     <div id="schedule-container"></div>
+</div>
+
+<div id="admin-modal">
+    <div class="admin-content">
+        <div class="admin-header">
+            <span class="admin-title">Panel de Control (Test)</span>
+            <button class="btn-close" onclick="toggleAdmin()">×</button>
+        </div>
+        <iframe id="admin-frame" src=""></iframe>
+    </div>
 </div>
 
 <script>
@@ -123,14 +156,25 @@
     
     // Función para construir la URL de lectura (CSV)
     function getUrl(gid) {
-        // Usamos el formato export que funciona mejor para leer pestañas sueltas
         return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
     }
 
-    // --- FUNCIÓN DEL BOTÓN ADMIN ---
-    function abrirAdmin() {
-        // Abre en pestaña nueva para evitar errores de conexión
-        window.open(APP_SCRIPT_URL + "?v=admin", '_blank');
+    // --- FUNCIÓN DEL BOTÓN ADMIN (MODIFICADA PARA MODAL) ---
+    function toggleAdmin() {
+        const modal = document.getElementById('admin-modal');
+        const frame = document.getElementById('admin-frame');
+
+        if (modal.style.display === 'flex') {
+            modal.style.display = 'none';
+            // Al cerrar, recargamos la página para ver los cambios
+            if(confirm("¿Recargar página para ver los cambios?")) {
+                location.reload();
+            }
+        } else {
+            // Cargar el iframe solo cuando se abre
+            if (!frame.src) frame.src = APP_SCRIPT_URL + "?v=admin";
+            modal.style.display = 'flex';
+        }
     }
 
     let configData = [];
@@ -138,7 +182,7 @@
     // Función genérica para leer CSV
     function leerHoja(gid) {
         return new Promise(resolve => {
-            Papa.parse(getUrl(gid) + "&t=" + Date.now(), { // Añadimos tiempo para evitar caché
+            Papa.parse(getUrl(gid) + "&t=" + Date.now(), { 
                 download: true, 
                 skipEmptyLines: true, 
                 complete: res => resolve(res.data), 
@@ -153,11 +197,11 @@
     // --- LÓGICA PRINCIPAL DE CARGA ---
     async function cargarTodo() {
         try {
-            // 1. Cargar Configuración primero (Festivos/Avisos)
+            // 1. Cargar Configuración primero
             configData = await leerHoja(GIDS["CONFIG"]);
             const estado = verificarEstadoDia(new Date());
             
-            // 2. Cargar Horarios de Lunes a Viernes
+            // 2. Cargar Horarios
             const container = document.getElementById('schedule-container');
             const btnContainer = document.getElementById('days-buttons');
             const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
@@ -165,76 +209,53 @@
             const promesas = dias.map(dia => leerHoja(GIDS[dia]));
             const todosLosDatos = await Promise.all(promesas);
 
-            // Crear botones de navegación
             let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
             btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
             btnContainer.innerHTML = btns;
             container.innerHTML = ""; 
 
-            // Renderizar cada día
             dias.forEach((dia, index) => {
                 const data = todosLosDatos[index]; 
-                
-                if (!data || data.length === 0) {
-                    console.warn(`No hay datos para ${dia} (GID: ${GIDS[dia]})`);
-                    return; 
-                }
+                if (!data || data.length === 0) return;
 
                 const headers = data[0] || [];
-                // Cabeceras estimadas
                 const h_apoyo = headers.slice(1, 7); 
                 const h_ingles = headers.slice(8, 14);
 
                 let html = `<div id="view-${dia}" class="planning-container">
                     <div style="text-align:center; margin-bottom:10px;"><h2>${dia.toUpperCase()}</h2></div>
                     <div class="tables-wrapper">
-                        
                         <div class="table-block">
                             <div class="mobile-section-title">Apoyo</div>
-                            <table>
-                                <thead><tr><th>H</th><th>${h_apoyo.join("</th><th>")}</th></tr></thead>
-                                <tbody>`;
+                            <table><thead><tr><th>H</th><th>${h_apoyo.join("</th><th>")}</th></tr></thead><tbody>`;
                 
                 let htmlIngles = "";
-                
                 for(let i = 1; i < data.length; i++) {
                     const row = data[i]; if(!row || (!row[0] && !row[7])) continue;
                     
-                    // Filas Apoyo
                     html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                     for(let k=1; k<=6; k++) html += `<td>${crearBadge(row[k])}</td>`;
                     html += `</tr>`;
 
-                    // Filas Inglés
                     htmlIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
                     for(let k=8; k<=13; k++) htmlIngles += `<td>${crearBadge(row[k])}</td>`;
                     htmlIngles += `</tr>`;
                 }
                 
                 html += `</tbody></table></div>
-                         
-                         <div class="table-block">
-                            <div class="mobile-section-title ing">Inglés</div>
-                             <table>
-                                <thead><tr><th>H</th><th>${h_ingles.join("</th><th>")}</th></tr></thead>
-                                <tbody>${htmlIngles}</tbody>
-                             </table>
-                         </div>
+                         <div class="table-block"><div class="mobile-section-title ing">Inglés</div>
+                         <table><thead><tr><th>H</th><th>${h_ingles.join("</th><th>")}</th></tr></thead><tbody>${htmlIngles}</tbody></table></div>
                     </div></div>`;
-                
                 container.innerHTML += html;
             });
 
             document.getElementById('loading').style.display = 'none';
-            
-            // Mostrar el día actual por defecto
             const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
             let hoy = mapDay[new Date().getDay()];
             cambiarDia(GIDS[hoy] ? hoy : "Lunes");
 
         } catch (e) {
-            document.getElementById('loading').innerText = "Error cargando datos. Verifica que la hoja está PUBLICADA en la web.";
-            console.error(e);
+            document.getElementById('loading').innerText = "Error cargando datos.";
         }
     }
 
@@ -246,7 +267,6 @@
 
     function verificarEstadoDia(fechaObj) {
         if (!configData || configData.length < 2) return null;
-        
         const dia = ("0" + fechaObj.getDate()).slice(-2);
         const mes = ("0" + (fechaObj.getMonth() + 1)).slice(-2);
         const anio = fechaObj.getFullYear();
@@ -254,7 +274,6 @@
 
         let estado = null;
         for (let i = 1; i < configData.length; i++) {
-            // Asumimos Columna A=Fecha, B=Tipo, C=Mensaje
             if (configData[i][0] === hoyStr) { 
                 estado = { tipo: configData[i][1], mensaje: configData[i][2] }; 
                 break; 
@@ -264,7 +283,7 @@
         const banner = document.getElementById('status-banner');
         if (estado) {
             banner.style.display = 'block';
-            banner.className = 'status-banner'; // reset clases
+            banner.className = 'status-banner'; 
             if (estado.tipo === 'FESTIVO') {
                 banner.classList.add('status-festivo');
                 banner.innerText = `🎉 DÍA FESTIVO / CERRADO (${estado.mensaje})`;
@@ -292,12 +311,10 @@
         });
     }
 
-    // Reloj digital simple
     setInterval(() => {
         document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES');
     }, 1000);
 
-    // Iniciar
     document.addEventListener('DOMContentLoaded', cargarTodo);
 </script>
 </body>
