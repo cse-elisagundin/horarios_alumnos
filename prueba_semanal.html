@@ -19,7 +19,7 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border: 1px solid #eee; padding: 4px; text-align: center; font-size: 11px; height: 42px; position: relative; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         th { background: var(--c-primary); color: white; text-transform: uppercase; font-size: 10px; }
-        .col-hora { width: 45px; font-weight: bold; background: #f9f9f9; }
+        .col-hora { width: 50px; font-weight: bold; background: #f9f9f9; color: var(--c-primary); }
 
         /* INTERACTIVIDAD */
         td.slot { cursor: pointer; transition: background 0.1s; }
@@ -37,7 +37,7 @@
         .ed-input { width: 100%; margin-bottom: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
 
         /* =========================================================================
-           🖨️ IMPRESIÓN MAESTRA RIGUROSA (Horizontal - image_96e1f3.png)
+           🖨️ IMPRESIÓN MAESTRA (Horizontal 2 Col - image_96e1f3.png)
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; }
@@ -49,7 +49,7 @@
                 display: grid !important; 
                 grid-template-columns: 58% 38% !important; 
                 column-gap: 4% !important; 
-                border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; padding: 0 !important;
+                border: none !important; box-shadow: none !important; width: 100% !important; max-width: none !important; padding: 0 !important; margin: 0 !important;
             }
 
             .planning-container { display: none !important; }
@@ -110,7 +110,7 @@
     const GID_HISTORIAL = "2008155671"; 
     const GIDS = { "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517", "Jueves": "314818236", "Viernes": "1396865785" };
 
-    let historialCompleto = [];
+    let historialHoy = [];
     let celdaActiva = null;
 
     async function cargarTodo() {
@@ -118,8 +118,8 @@
         try {
             const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
             const csvH = await resH.text();
-            // Guardamos todo el historial filtrado por fecha
-            historialCompleto = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
+            // Guardamos el historial de hoy
+            historialHoy = Papa.parse(csvH).data.filter(f => f[0] === hoyFecha);
 
             const dias = Object.keys(GIDS);
             document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
@@ -138,8 +138,10 @@
                 
                 let htmlIng = "";
                 for (let i = 1; i < dataM.length; i++) {
-                    const r = dataM[i]; if(!r[0] && !r[7]) continue;
+                    const r = dataM[i]; 
+                    if(!r[0] && !r[7]) continue;
                     
+                    // TABLA APOYO
                     html += `<tr><td class="col-hora">${r[0]||''}</td>`;
                     for(let col=1; col<=6; col++) {
                         let full = buscarEx(dia, r[0], col, r[col]);
@@ -148,11 +150,12 @@
                     }
                     html += `</tr>`;
 
+                    // TABLA INGLÉS
                     htmlIng += `<tr><td class="col-hora">${r[7]||''}</td>`;
                     for(let col=8; col<=13; col++) {
                         let full = buscarEx(dia, r[7], col, r[col]);
                         let pila = full ? full.trim().split(' ')[0].toUpperCase() : "";
-                        html += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
+                        htmlIng += `<td class="slot" onclick="abrirEditor(this, '${dia}', '${r[7]}', ${col}, '${full}')"><span class="name-tag">${pila}</span></td>`;
                     }
                     htmlIng += `</tr>`;
                 }
@@ -163,14 +166,14 @@
         } catch(e) { console.error(e); }
     }
 
-    // FUNCIÓN CORREGIDA: Busca desde el final del array para priorizar el último cambio
+    // BUSCA EL CAMBIO MÁS RECIENTE (Última fila del historial)
     function buscarEx(dia, hora, col, original) {
         if(!hora) return original || "";
-        // Buscamos de atrás hacia adelante (más reciente)
-        for (let i = historialCompleto.length - 1; i >= 0; i--) {
-            const ex = historialCompleto[i];
+        // Recorremos de atrás hacia adelante para encontrar el cambio más nuevo
+        for (let i = historialHoy.length - 1; i >= 0; i--) {
+            const ex = historialHoy[i];
             if (ex[1] === dia && ex[2] === hora && String(ex[3]) === String(col)) {
-                return ex[4]; // Devolvemos el valor encontrado (aunque sea vacío para borrar)
+                return ex[4]; // Devuelve el valor (o vacío si se borró)
             }
         }
         return (original || "");
