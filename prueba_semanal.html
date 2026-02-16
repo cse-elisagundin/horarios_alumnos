@@ -2,142 +2,144 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Horario TEST CSE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horario Inteligente CSE</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; }
+        /* (Tus estilos se mantienen igual que en la versión anterior) */
+        :root { --c-primary: #243c7a; --bg-body: #f4f6f9; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-body); margin: 0; padding: 15px; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
         .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
-        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; }
-        .btn-print { background: var(--c-primary); color: white; }
-        .btn-admin { background: #333; color: #ffeb3b; border: 2px solid #333; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-admin { background: #333; color: #ffeb3b; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-weight: bold; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
-        .status-banner { margin: 10px 0 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; display: none; }
-        .status-festivo { background: #ffebee; color: #c62828; border: 2px dashed #ef5350; }
-        .status-aviso { background: #fff3e0; color: #e65100; border: 2px solid #ffb74d; }
-        .status-cambio { background: #e3f2fd; color: #0d47a1; border: 2px solid #90caf9; white-space: pre-line; }
         .tables-wrapper { display: flex; gap: 20px; }
-        .table-block { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
+        .table-block { flex: 1; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; height: 40px; }
-        th { background: var(--c-primary); color: white; text-transform: uppercase; }
-        .col-hora { width: 50px; background: #fff; font-weight: bold; color: var(--c-primary); }
-        
-        /* CORRECCIÓN ESTÉTICA: ETIQUETAS */
+        th, td { border: 1px solid #eee; padding: 8px; text-align: center; font-size: 13px; height: 42px; }
+        th { background: var(--c-primary); color: white; }
         .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; }
         .name-tag:empty { display: none !important; }
-
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; padding-bottom: 5px; }
-        .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; }
+        .nav-btn { padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .nav-btn.active { background: var(--c-primary); color: white; }
         #admin-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .admin-content { background: white; width: 95%; max-width: 500px; height: 85vh; border-radius: 15px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
-        .admin-header { padding: 10px 15px; background: #333; color: white; display: flex; justify-content: space-between; align-items: center; }
-        .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: white; }
-        iframe { width: 100%; height: 100%; border: none; background: #f4f6f9; }
+        .admin-content { background: white; width: 400px; height: 600px; border-radius: 15px; overflow: hidden; display: flex; flex-direction: column; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="test-badge">⚠️ MODO PRUEBAS (Usando Hoja Copia) ⚠️</div>
+    <div class="test-badge">HORARIO FIJO CON CAPA DE CAMBIOS (MODO PRUEBA)</div>
     <header>
-        <div>
-            <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-            <button class="btn-action btn-admin" onclick="toggleAdmin()">⚙️ Panel Control (Test)</button>
-        </div>
-        <div id="digital-clock" class="digital-clock">00:00:00</div>
+        <button class="btn-admin" onclick="toggleAdmin()">⚙️ GESTIONAR CAMBIOS HOY</button>
+        <div id="clock" class="digital-clock">00:00:00</div>
     </header>
-    <div id="status-banner" class="status-banner"></div>
     <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" style="text-align:center; padding:20px; font-style:italic; color:#999;">Cargando...</div>
     <div id="schedule-container"></div>
 </div>
 
 <div id="admin-modal">
     <div class="admin-content">
-        <div class="admin-header">
-            <span style="color:#ffeb3b; font-weight:bold;">Panel de Control</span>
-            <button class="btn-close" onclick="toggleAdmin()">×</button>
+        <div style="background:#333; padding:10px; color:white; display:flex; justify-content:space-between;">
+            <span style="font-weight:bold;">Editor Historial</span>
+            <button onclick="toggleAdmin()" style="background:none; border:none; color:white; cursor:pointer;">✖</button>
         </div>
-        <iframe id="admin-frame" src=""></iframe>
+        <iframe id="admin-frame" style="width:100%; height:100%; border:none;"></iframe>
     </div>
 </div>
 
 <script>
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
-    const GIDS = { "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517", "Jueves": "314818236", "Viernes": "1396865785", "CONFIG": "2008155671" };
+    
+    // GIDS MAESTROS
+    const GIDS = { "Lunes": "0", "Martes": "1905233272", "Miércoles": "745373517", "Jueves": "314818236", "Viernes": "1396865785" };
+    
+    // !!! PON AQUÍ EL GID DE LA PESTAÑA HISTORIAL !!!
+    const GID_HISTORIAL = "2008155671"; 
+
+    let excepcionesHoy = [];
 
     function toggleAdmin() {
         const modal = document.getElementById('admin-modal');
-        const frame = document.getElementById('admin-frame');
         if (modal.style.display === 'flex') {
             modal.style.display = 'none';
-            frame.src = ""; 
-            if(confirm("¿Recargar para ver cambios?")) location.reload();
+            location.reload();
         } else {
-            frame.src = APP_SCRIPT_URL + "?v=admin";
+            document.getElementById('admin-frame').src = APP_SCRIPT_URL + "?v=admin";
             modal.style.display = 'flex';
         }
     }
 
-    /* FUNCIÓN CORREGIDA PARA CELDAS VACÍAS */
-    function crearBadge(nombre) {
-        if (!nombre || nombre.trim() === "" || nombre === "null" || nombre === undefined) return "";
-        let corto = nombre.trim().split(" ")[0].toUpperCase();
-        return `<span class="name-tag">${corto}</span>`;
-    }
-
     async function cargarTodo() {
-        try {
-            const config = await leerHoja(GIDS["CONFIG"]);
-            const hoy = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
-            const estado = config.find(r => r[0] === hoy);
-            if (estado) {
-                const banner = document.getElementById('status-banner');
-                banner.style.display = 'block';
-                banner.className = 'status-banner status-' + estado[1].toLowerCase();
-                banner.innerHTML = `<b>${estado[1]}:</b> ${estado[2]}`;
-            }
+        const hoyFecha = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
+        
+        // 1. Leer el Historial de cambios
+        const resH = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GID_HISTORIAL}&t=${Date.now()}`);
+        const csvH = await resH.text();
+        const dataH = Papa.parse(csvH).data;
+        
+        // Filtrar cambios que sean para hoy
+        excepcionesHoy = dataH.filter(fila => fila[0] === hoyFecha);
+
+        // 2. Cargar los horarios maestros
+        const dias = Object.keys(GIDS);
+        document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" id="btn-${d}" onclick="cambiarDia('${d}')">${d}</button>`).join('');
+
+        for (const dia of dias) {
+            const res = await fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${GIDS[dia]}&t=${Date.now()}`);
+            const csv = await res.text();
+            const dataMaster = Papa.parse(csv).data;
+
+            let html = `<div id="view-${dia}" class="planning-container" style="display:none">
+                <div class="tables-wrapper">
+                    <div class="table-block"><table><thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
             
-            const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-            for (const dia of dias) {
-                const data = await leerHoja(GIDS[dia]);
-                if (!data.length) continue;
-                let html = `<div id="view-${dia}" class="planning-container" style="display:none">
-                    <h2 style="text-align:center">${dia.toUpperCase()}</h2>
-                    <div class="tables-wrapper">
-                        <div class="table-block"><table><thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
-                let htmlIng = "";
-                for (let i = 1; i < data.length; i++) {
-                    const r = data[i]; if (!r[0] && !r[7]) continue;
-                    html += `<tr><td class="col-hora">${r[0]||""}</td>${[1,2,3,4,5,6].map(k=>`<td>${crearBadge(r[k])}</td>`).join('')}</tr>`;
-                    htmlIng += `<tr><td class="col-hora">${r[7]||""}</td>${[8,9,10,11,12,13].map(k=>`<td>${crearBadge(r[k])}</td>`).join('')}</tr>`;
-                }
-                html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
-                document.getElementById('schedule-container').innerHTML += html;
+            let htmlIng = "";
+            for (let i = 1; i < dataMaster.length; i++) {
+                const r = dataMaster[i]; if(!r[0]) continue;
+                
+                // Procesar Fila Apoyo
+                let celdasApoyo = [1,2,3,4,5,6].map(col => {
+                    let valor = buscarExcepcion(dia, r[0], col, r[col]);
+                    return `<td><span class="name-tag">${valor.toUpperCase()}</span></td>`;
+                }).join('');
+
+                // Procesar Fila Inglés
+                let celdasIng = [8,9,10,11,12,13].map(col => {
+                    let valor = buscarExcepcion(dia, r[7], col, r[col]);
+                    return `<td><span class="name-tag">${valor.toUpperCase()}</span></td>`;
+                }).join('');
+
+                html += `<tr><td>${r[0]}</td>${celdasApoyo}</tr>`;
+                htmlIng += `<tr><td>${r[7]||''}</td>${celdasIng}</tr>`;
             }
-            document.getElementById('days-buttons').innerHTML = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('') + `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-            document.getElementById('loading').style.display = 'none';
-            cambiarDia(["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()] || "Lunes");
-        } catch(e) { console.error(e); }
+            html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
+            document.getElementById('schedule-container').innerHTML += html;
+        }
+        cambiarDia(dias[new Date().getDay()-1] || "Lunes");
     }
 
-    function leerHoja(gid) {
-        return new Promise(resolve => {
-            Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}&t=${Date.now()}`, { download: true, complete: res => resolve(res.data) });
-        });
+    // FUNCIÓN CLAVE: Busca si hay un "post-it" en el historial para esta celda
+    function buscarExcepcion(dia, hora, col, valorOriginal) {
+        // excepcionesHoy columnas: 0:FECHA, 1:PESTAÑA, 2:HORA, 3:COLUMNA, 4:VALOR
+        const cambio = excepcionesHoy.find(ex => ex[1] === dia && ex[2] === hora && parseInt(ex[3]) === col);
+        
+        if (cambio) {
+            return cambio[4]; // Si hay cambio, devolvemos el nuevo valor (puede ser vacío)
+        }
+        return valorOriginal; // Si no hay cambio, devolvemos el fijo
     }
 
     function cambiarDia(dia) {
-        document.querySelectorAll('.planning-container').forEach(v => v.style.display = (dia==='Todo' || v.id===`view-${dia}`) ? 'block' : 'none');
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.innerText===dia.toUpperCase() || (dia==='Todo' && b.innerText==='VER TODO')));
+        document.querySelectorAll('.planning-container').forEach(v => v.style.display = 'none');
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`view-${dia}`).style.display = 'block';
+        document.getElementById(`btn-${dia}`).classList.add('active');
     }
 
-    setInterval(() => { document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES'); }, 1000);
+    setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
     window.onload = cargarTodo;
 </script>
 </body>
