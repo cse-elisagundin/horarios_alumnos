@@ -9,14 +9,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS VISUALES --- */
         :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
         
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 4px solid #ff9800; }
         .test-badge { background: #ff9800; color: white; text-align: center; font-weight: bold; padding: 5px; border-radius: 5px; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* HEADER */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
         .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; text-transform: uppercase; border: none; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: transform 0.1s; }
         .btn-action:active { transform: scale(0.95); }
@@ -24,13 +22,11 @@
         .btn-admin { background: #333; color: #ffeb3b; border: 2px solid #333; }
         .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
 
-        /* AVISOS Y ESTADOS */
         .status-banner { margin: 10px 0 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: bold; display: none; }
         .status-festivo { background: #ffebee; color: #c62828; border: 2px dashed #ef5350; }
         .status-aviso { background: #fff3e0; color: #e65100; border: 2px solid #ffb74d; }
         .status-cambio { background: #e3f2fd; color: #0d47a1; border: 2px solid #90caf9; white-space: pre-line; }
 
-        /* TABLAS */
         .planning-container { display: none; }
         .planning-container.visible { display: block; animation: fadeIn 0.4s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -38,20 +34,19 @@
         .tables-wrapper { display: flex; gap: 20px; }
         .table-block { flex: 1; background: white; border: 1px solid #eee; border-radius: 10px; overflow: hidden; }
         
-        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 14px; border-bottom: 1px solid #eee; }
-        .mobile-section-title.ing { color: var(--c-accent); }
-
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        th { background: var(--c-primary); color: white; text-transform: uppercase; padding: 10px; }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; height: 40px; }
+        th { background: var(--c-primary); color: white; text-transform: uppercase; }
         .col-hora { width: 50px; background: #fff; font-weight: bold; color: var(--c-primary); }
-        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 2px 6px; border-radius: 4px; }
         
+        /* FIX ESTÉTICO: ETIQUETAS DE NOMBRE */
+        .name-tag { font-weight: bold; color: var(--c-primary); background: #f0f4f8; padding: 4px 8px; border-radius: 6px; display: inline-block; }
+        .name-tag:empty { display: none !important; }
+
         .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; padding-bottom: 5px; }
         .nav-btn { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; white-space: nowrap; }
         .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
 
-        /* 🔥 VENTANA MODAL (Panel de Control) 🔥 */
         #admin-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center;
@@ -60,36 +55,27 @@
         .admin-content {
             background: white; width: 95%; max-width: 500px; height: 85vh; border-radius: 15px;
             overflow: hidden; position: relative; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
-            display: flex; flex-direction: column; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex; flex-direction: column;
         }
-        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        
-        .admin-header {
-            padding: 10px 15px; background: #333; color: white; 
-            display: flex; justify-content: space-between; align-items: center;
-        }
+        .admin-header { padding: 10px 15px; background: #333; color: white; display: flex; justify-content: space-between; align-items: center; }
         .admin-title { font-weight: bold; font-size: 14px; color: #ffeb3b; }
-        .admin-tools { display: flex; align-items: center; gap: 15px; }
-        .btn-fallback { color: #00d4ff; font-size: 11px; cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; }
-        .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: white; line-height: 1; }
+        .btn-fallback { color: #00d4ff; font-size: 11px; cursor: pointer; text-decoration: underline; background: none; border: none; }
+        .btn-close { background: none; border: none; font-size: 24px; cursor: pointer; color: white; }
         iframe { width: 100%; height: 100%; border: none; background: #f4f6f9; }
 
         @media (max-width: 900px) {
             .tables-wrapper { flex-direction: column; }
-            .mobile-section-title { display: block; }
             table thead { display: none; }
             table tbody tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #eee; height: auto; }
             table tbody td.col-hora { grid-row: 1 / 3; display: flex; align-items: center; justify-content: center; background: #f9f9f9; }
             table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; }
         }
-        .spinner { text-align: center; margin: 20px; font-style: italic; color: #999; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="test-badge">⚠️ MODO PRUEBAS (Usando Hoja Copia) ⚠️</div>
-
     <header>
         <div>
             <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
@@ -97,10 +83,9 @@
         </div>
         <div id="digital-clock" class="digital-clock">00:00:00</div>
     </header>
-
     <div id="status-banner" class="status-banner"></div>
     <div class="days-nav" id="days-buttons"></div>
-    <div id="loading" class="spinner">Cargando datos...</div>
+    <div id="loading" style="text-align:center; padding:20px; font-style:italic; color:#999;">Cargando...</div>
     <div id="schedule-container"></div>
 </div>
 
@@ -108,8 +93,8 @@
     <div class="admin-content">
         <div class="admin-header">
             <span class="admin-title">Panel de Control</span>
-            <div class="admin-tools">
-                <button class="btn-fallback" onclick="abrirPestanaNueva()">¿Pantalla blanca? Abrir aquí</button>
+            <div>
+                <button class="btn-fallback" onclick="window.open(APP_SCRIPT_URL+'?v=admin', '_blank')">Abrir en grande</button>
                 <button class="btn-close" onclick="toggleAdmin()">×</button>
             </div>
         </div>
@@ -118,10 +103,6 @@
 </div>
 
 <script>
-    // ==========================================
-    // ⚙️ CONFIGURACIÓN DE TU ENTORNO DE PRUEBAS
-    // ==========================================
-    
     const APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwRRCZZZ7qfSApcoRxdVCH7pRrxYwi43pD8dv34TX8Edd22ZRZXkNIPZ-ytDEQreH8SOw/exec"; 
     const SHEET_ID = "1qx15eShPJdHaQt722I3sEUwWhL-0mcO56OMGVjm68bM"; 
     const GIDS = {
@@ -129,157 +110,83 @@
         "Jueves": "314818236", "Viernes": "1396865785", "CONFIG": "2008155671"
     };
 
-    // ==========================================
-    
-    function getUrl(gid) {
-        return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}`;
-    }
-
     function toggleAdmin() {
         const modal = document.getElementById('admin-modal');
         const frame = document.getElementById('admin-frame');
-        const urlAdmin = APP_SCRIPT_URL + "?v=admin";
-
         if (modal.style.display === 'flex') {
             modal.style.display = 'none';
             frame.src = ""; 
-            if(confirm("¿Quieres recargar la página para ver los cambios?")) location.reload();
+            if(confirm("¿Recargar para ver cambios?")) location.reload();
         } else {
-            frame.src = urlAdmin;
+            frame.src = APP_SCRIPT_URL + "?v=admin";
             modal.style.display = 'flex';
         }
     }
 
-    function abrirPestanaNueva() {
-        window.open(APP_SCRIPT_URL + "?v=admin", '_blank');
-    }
-
-    let configData = [];
-
-    function leerHoja(gid) {
-        return new Promise(resolve => {
-            Papa.parse(getUrl(gid) + "&t=" + Date.now(), { 
-                download: true, 
-                skipEmptyLines: true, 
-                complete: res => resolve(res.data), 
-                error: (err) => resolve([])
-            });
-        });
+    function crearBadge(nombre) {
+        if (!nombre || nombre.trim() === "" || nombre === "null" || nombre === undefined) return "";
+        let corto = nombre.trim().split(" ")[0].toUpperCase();
+        return `<span class="name-tag">${corto}</span>`;
     }
 
     async function cargarTodo() {
         try {
-            configData = await leerHoja(GIDS["CONFIG"]);
-            verificarEstadoDia(new Date());
+            const config = await leerHoja(GIDS["CONFIG"]);
+            verificarEstado(config);
             
-            const container = document.getElementById('schedule-container');
-            const btnContainer = document.getElementById('days-buttons');
             const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
-            
-            const promesas = dias.map(dia => leerHoja(GIDS[dia]));
-            const todosLosDatos = await Promise.all(promesas);
+            const container = document.getElementById('schedule-container');
+            const btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('') + `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+            document.getElementById('days-buttons').innerHTML = btns;
 
-            let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
-            btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-            btnContainer.innerHTML = btns;
-            container.innerHTML = ""; 
-
-            dias.forEach((dia, index) => {
-                const data = todosLosDatos[index]; 
-                if (!data || data.length === 0) return;
-
-                const headers = data[0] || [];
-                const h_apoyo = headers.slice(1, 7); 
-                const h_ingles = headers.slice(8, 14);
-
+            for (const dia of dias) {
+                const data = await leerHoja(GIDS[dia]);
+                if (!data.length) continue;
                 let html = `<div id="view-${dia}" class="planning-container">
-                    <div style="text-align:center; margin-bottom:10px;"><h2>${dia.toUpperCase()}</h2></div>
+                    <h2 style="text-align:center">${dia.toUpperCase()}</h2>
                     <div class="tables-wrapper">
-                        <div class="table-block">
-                            <div class="mobile-section-title">Apoyo</div>
-                            <table><thead><tr><th>H</th><th>${h_apoyo.join("</th><th>")}</th></tr></thead><tbody>`;
+                        <div class="table-block"><table><thead><tr><th>H</th><th colspan="6">APOYO</th></tr></thead><tbody>`;
                 
-                let htmlIngles = "";
-                for(let i = 1; i < data.length; i++) {
-                    const row = data[i]; if(!row || (!row[0] && !row[7])) continue;
-                    
-                    html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                    for(let k=1; k<=6; k++) html += `<td><span class="name-tag">${row[k].trim().split(" ")[0].toUpperCase()}</span></td>`;
-                    html += `</tr>`;
-
-                    htmlIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`;
-                    for(let k=8; k<=13; k++) htmlIngles += `<td><span class="name-tag">${row[k].trim().split(" ")[0].toUpperCase()}</span></td>`;
-                    htmlIngles += `</tr>`;
+                let htmlIng = "";
+                for (let i = 1; i < data.length; i++) {
+                    const r = data[i]; if (!r[0] && !r[7]) continue;
+                    html += `<tr><td class="col-hora">${r[0]||""}</td>${[1,2,3,4,5,6].map(k=>`<td>${crearBadge(r[k])}</td>`).join('')}</tr>`;
+                    htmlIng += `<tr><td class="col-hora">${r[7]||""}</td>${[8,9,10,11,12,13].map(k=>`<td>${crearBadge(r[k])}</td>`).join('')}</tr>`;
                 }
-                
-                html += `</tbody></table></div>
-                         <div class="table-block"><div class="mobile-section-title ing">Inglés</div>
-                         <table><thead><tr><th>H</th><th>${h_ingles.join("</th><th>")}</th></tr></thead><tbody>${htmlIngles}</tbody></table></div>
-                    </div></div>`;
+                html += `</tbody></table></div><div class="table-block"><table><thead><tr><th>H</th><th colspan="6">INGLÉS</th></tr></thead><tbody>${htmlIng}</tbody></table></div></div></div>`;
                 container.innerHTML += html;
-            });
-
+            }
             document.getElementById('loading').style.display = 'none';
-            const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-            let hoy = mapDay[new Date().getDay()];
-            cambiarDia(GIDS[hoy] ? hoy : "Lunes");
-
-        } catch (e) {
-            document.getElementById('loading').innerText = "Error cargando datos.";
-        }
+            cambiarDia(["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"][new Date().getDay()] || "Lunes");
+        } catch(e) { console.error(e); }
     }
 
-    function verificarEstadoDia(fechaObj) {
-        if (!configData || configData.length < 2) return null;
-        const dia = ("0" + fechaObj.getDate()).slice(-2);
-        const mes = ("0" + (fechaObj.getMonth() + 1)).slice(-2);
-        const anio = fechaObj.getFullYear();
-        const hoyStr = `${dia}/${mes}/${anio}`;
+    function leerHoja(gid) {
+        return new Promise(resolve => {
+            Papa.parse(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=${gid}&t=${Date.now()}`, {
+                download: true, complete: res => resolve(res.data)
+            });
+        });
+    }
 
-        let estado = null;
-        for (let i = 1; i < configData.length; i++) {
-            if (configData[i][0] === hoyStr) { 
-                estado = { tipo: configData[i][1], mensaje: configData[i][2] }; 
-                break; 
-            }
-        }
-
-        const banner = document.getElementById('status-banner');
+    function verificarEstado(config) {
+        const hoy = new Date().toLocaleDateString('es-ES', {day:'2-digit', month:'2-digit', year:'numeric'});
+        const estado = config.find(r => r[0] === hoy);
         if (estado) {
+            const banner = document.getElementById('status-banner');
             banner.style.display = 'block';
-            banner.className = 'status-banner'; 
-            if (estado.tipo === 'FESTIVO') {
-                banner.classList.add('status-festivo');
-                banner.innerText = `🎉 DÍA FESTIVO / CERRADO (${estado.mensaje})`;
-            } else if (estado.tipo === 'AVISO') {
-                banner.classList.add('status-aviso');
-                banner.innerText = `⚠️ AVISO: ${estado.mensaje}`;
-            } else if (estado.tipo === 'CAMBIO') {
-                banner.classList.add('status-cambio');
-                banner.innerHTML = `🔄 <b>HORARIO ESPECIAL HOY:</b><br>${estado.mensaje}`;
-            }
-        } else {
-            banner.style.display = 'none';
+            banner.className = 'status-banner status-' + estado[1].toLowerCase();
+            banner.innerHTML = `<b>${estado[1]}:</b> ${estado[2]}`;
         }
-        return estado;
     }
 
     function cambiarDia(dia) {
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else div.classList.toggle('visible', div.id === `view-${dia}`);
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            let esActivo = (btn.innerText.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && btn.innerText === 'VER TODO');
-            btn.classList.toggle('active', esActivo);
-        });
+        document.querySelectorAll('.planning-container').forEach(v => v.classList.toggle('visible', dia==='Todo' || v.id===`view-${dia}`));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b.innerText===dia.toUpperCase() || (dia==='Todo' && b.innerText==='VER TODO')));
     }
 
-    setInterval(() => {
-        document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES');
-    }, 1000);
-
-    document.addEventListener('DOMContentLoaded', cargarTodo);
+    setInterval(() => { document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('es-ES'); }, 1000);
+    window.onload = cargarTodo;
 </script>
 </body>
 </html>
