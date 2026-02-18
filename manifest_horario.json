@@ -1,7 +1,7 @@
 {
   "name": "Horarios CSE Elisa Gundín",
   "short_name": "Horarios CSE",
-  "start_url": "index.html",
+  "start_url": "horario.html",
   "display": "standalone",
   "background_color": "#f4f6f9",
   "theme_color": "#243c7a",
