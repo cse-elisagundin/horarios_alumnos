@@ -541,9 +541,12 @@
             box.innerHTML = "Selecciona un día de color para ver los detalles.";
             return;
         }
+        
+        let recText = (recuperable === "SÍ" || recuperable === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
+        
         box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
                          <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
-                            ESTADO: <strong>${estado}</strong> | RECUPERABLE: <strong>${recuperable}</strong>
+                            <strong>${estado}</strong> | <strong>${recText}</strong>
                          </span>`;
     };
 
@@ -621,6 +624,9 @@
             </div>
             <div class="cal-details-box" id="cal-details-text">
                 Selecciona un día de color para ver los detalles.
+            </div>
+            <div style="margin-top: 15px; font-size: 11px; font-style: italic; color: #8898aa; line-height: 1.4; text-align: center;">
+                Importante: Calendario informativo de festividades en CSE Elisa Gundín, días recuperables han de ser tratados personalmente con Elisa.
             </div>
         </div>`;
 
