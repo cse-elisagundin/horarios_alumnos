@@ -136,7 +136,7 @@
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 11px; /* Ajustado para que entren 5 botones */
+            font-size: 11px; 
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
@@ -191,7 +191,6 @@
             flex-shrink: 0; 
         }
 
-        /* Input arreglado para evitar iconos raros */
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
             border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
@@ -275,43 +274,58 @@
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
         }
 
-        .card-info { 
-            display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; 
-        }
-        
+        .card-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
         .card-day.is-tachado { text-decoration: line-through; opacity: 0.8; }
-
         .card-time-wrapper { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
-        
         .clock-icon { width: 16px; height: 16px; border: 2px solid var(--c-primary); border-radius: 50%; position: relative; flex-shrink: 0; }
         .clock-icon::after { content: ''; position: absolute; width: 5px; height: 2px; background: var(--c-primary); top: 50%; left: 50%; transform-origin: left; transform: rotate(-90deg); }
         .clock-icon.icon-falta { border-color: var(--c-falta); }
         .clock-icon.icon-falta::after { background: var(--c-falta); }
-        
-        .card-time { 
-            font-size: 20px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap;
-        }
-
-        .badge { 
-            padding: 8px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; 
-            color: white; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; 
-        }
-        
+        .card-time { font-size: 20px; color: var(--c-primary); font-weight: 800; letter-spacing: -0.5px; white-space: nowrap; }
+        .badge { padding: 8px 12px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: white; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; }
         .bg-apoyo { background: var(--c-secondary); }
         .bg-ingles { background: var(--c-accent); }
         .bg-examen { background: var(--c-primary); } 
         .bg-falta { background: var(--c-falta); }
-        
         .hours-big-display { font-size: 28px; font-weight: 900; color: var(--c-falta); line-height: 1; }
         .hours-big-display.is-tachado { color: var(--c-usada); text-decoration: line-through; }
-
         .hours-label { font-size: 10px; color: #999; text-transform: uppercase; font-weight: 700; text-align: right; display: block; margin-top: 2px;}
-
         .grade-display { font-size: 24px; font-weight: 900; padding: 5px 15px; border-radius: 10px; min-width: 60px; text-align: center; margin-left: auto; }
         .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
         .grade-fail { color: var(--grade-fail); border: 2px solid var(--grade-fail); background: rgba(220, 53, 69, 0.1); }
         .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; margin-left: auto; }
+
+        /* =========================================
+           🗓️ CALENDARIO INTERACTIVO
+           ========================================= */
+        .calendar-wrapper { background: #fff; border-radius: 15px; padding: 20px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; }
+        .calendar-past { filter: grayscale(1); opacity: 0.8; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .calendar-header button { background: var(--c-primary); color: white; border: none; width: 30px; height: 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .calendar-header button:hover { background: var(--c-secondary); transform: scale(1.05); }
+        .calendar-header h3 { margin: 0; color: var(--c-primary); font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
+        .calendar-day-name { font-size: 11px; font-weight: 800; color: #a1aab2; margin-bottom: 5px; }
+        .calendar-day { padding: 10px 0; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; background: #fafbfc; border: 1px solid #e1e9f0; color: #555; display: flex; align-items: center; justify-content: center; }
+        .calendar-day:hover { transform: scale(1.05); border-color: var(--c-secondary); }
+        .calendar-day.empty { background: transparent; border: none; cursor: default; }
+        .calendar-day.empty:hover { transform: none; }
+        
+        .calendar-day.has-event { color: white; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .cal-red { background: var(--c-falta); }
+        .cal-yellow { background: var(--soon-yellow); color: #444; }
+        .cal-green { background: var(--live-green); }
+        
+        .calendar-empty-msg { grid-column: 1 / -1; padding: 30px 10px; color: #999; font-style: italic; font-size: 14px; background: #fafbfc; border-radius: 10px; border: 1px dashed #ccc; margin-top: 10px;}
+        
+        .calendar-legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 25px; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
+        .legend-item { display: flex; align-items: center; gap: 6px; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        
+        .cal-details-box { margin-top: 20px; padding: 15px; background: #f0f4f8; border-radius: 12px; font-size: 14px; color: var(--c-primary); font-weight: 600; min-height: 25px; text-align: center; border: 1px solid #e1e9f0; transition: all 0.3s; }
+        /* ========================================= */
 
         #actions-panel { display: none; margin-top: 20px; }
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
@@ -336,14 +350,15 @@
         .footer-update { margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic; }
 
         /* =========================================
-           📱 OPTIMIZACIÓN MÓVIL (FULL WIDTH)
+           📱 OPTIMIZACIÓN MÓVIL
            ========================================= */
         @media (max-width: 480px) {
             body { padding: 0; background-color: white; }
             .container { padding: 15px 5px; width: 100%; border-radius: 0; box-shadow: none; max-width: 100%; }
             .tabs-nav { gap: 2px; padding: 0; background: transparent; margin-bottom: 15px; }
-            .tab-btn { font-size: 9px; padding: 10px 0; letter-spacing: 0; gap: 2px; } /* Más ajustado en móvil */
+            .tab-btn { font-size: 9px; padding: 10px 0; letter-spacing: 0; gap: 2px; } 
             .result-header-flex { font-size: 18px; margin-bottom: 15px; }
+            .calendar-day { font-size: 14px; padding: 8px 0; }
         }
         @media print {
             body { -webkit-print-color-adjust: exact !important; background: white; }
@@ -414,6 +429,8 @@
     };
 
     let memoriaCache = {}; 
+    window.globalFestivos = [];
+    window.calCurrentDate = new Date();
 
     function leerHoja(url) {
         if (!url) return Promise.resolve([]);
@@ -511,6 +528,106 @@
         currentTabIndex = tabs.indexOf(pId);
     };
 
+    // --- FUNCIONES DEL CALENDARIO ---
+    window.changeMonth = function(offset) {
+        window.calCurrentDate.setMonth(window.calCurrentDate.getMonth() + offset);
+        window.renderCalendar();
+    };
+
+    window.showDayDetails = function(motivo, estado, recuperable) {
+        const box = document.getElementById('cal-details-text');
+        if(!box) return;
+        if(!motivo) {
+            box.innerHTML = "Selecciona un día de color para ver los detalles.";
+            return;
+        }
+        box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
+                         <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
+                            ESTADO: <strong>${estado}</strong> | RECUPERABLE: <strong>${recuperable}</strong>
+                         </span>`;
+    };
+
+    window.renderCalendar = function() {
+        const container = document.getElementById('calendario-dinamico');
+        if(!container) return;
+
+        const year = window.calCurrentDate.getFullYear();
+        const month = window.calCurrentDate.getMonth();
+        const today = new Date();
+        
+        let isPast = false;
+        if (year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth())) {
+            isPast = true;
+        }
+
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const dayNames = ["L", "M", "X", "J", "V", "S", "D"];
+
+        let html = `<div class="calendar-wrapper ${isPast ? 'calendar-past' : ''}">
+            <div class="calendar-header">
+                <button onclick="changeMonth(-1)">&#10094;</button>
+                <h3>${monthNames[month]} ${year}</h3>
+                <button onclick="changeMonth(1)">&#10095;</button>
+            </div>
+            <div class="calendar-grid">`;
+
+        dayNames.forEach(d => { html += `<div class="calendar-day-name">${d}</div>`; });
+
+        const firstDay = new Date(year, month, 1).getDay();
+        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; 
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        for (let i = 0; i < adjustedFirstDay; i++) {
+            html += `<div class="calendar-day empty"></div>`;
+        }
+
+        let hasEventsThisMonth = false;
+        let daysHtml = "";
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr1 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year.toString().slice(-2)}`;
+            const dateStr2 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year}`;
+            
+            let event = window.globalFestivos.find(f => f.fecha === dateStr1 || f.fecha === dateStr2);
+            
+            if (event) {
+                hasEventsThisMonth = true;
+                let colorClass = "";
+                if (event.estado === "ABIERTO") colorClass = "cal-green";
+                else if (event.recuperable === "SÍ" || event.recuperable === "SI") colorClass = "cal-yellow";
+                else colorClass = "cal-red";
+
+                let mot = event.motivo.replace(/'/g, "\\'");
+                let est = event.estado.replace(/'/g, "\\'");
+                let rec = event.recuperable.replace(/'/g, "\\'");
+
+                daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
+            } else {
+                daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
+            }
+        }
+
+        if (!hasEventsThisMonth) {
+            html += `<div class="calendar-empty-msg">Aún no hay datos para este mes.</div>`;
+        } else {
+            html += daysHtml;
+        }
+
+        html += `</div>
+            <div class="calendar-legend">
+                <div class="legend-item"><div class="legend-dot cal-red"></div> Cerrado (No recup.)</div>
+                <div class="legend-item"><div class="legend-dot cal-yellow"></div> Cerrado (Recup.)</div>
+                <div class="legend-item"><div class="legend-dot cal-green"></div> Abierto</div>
+            </div>
+            <div class="cal-details-box" id="cal-details-text">
+                Selecciona un día de color para ver los detalles.
+            </div>
+        </div>`;
+
+        container.innerHTML = html;
+    };
+    // ------------------------------------
+
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
         if (data && data.length > 0 && data[1]) {
@@ -581,14 +698,13 @@
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         
-        // --- PROCESADO DEL CALENDARIO ---
-        let htmlCalendario = "";
+        // --- PROCESADO DE DATOS DEL CALENDARIO ---
+        window.globalFestivos = []; 
         if(dataCalendario && dataCalendario.length > 1) {
-            let festivosEncontrados = [];
             dataCalendario.forEach((row, index) => {
-                if(index === 0) return; // Saltamos la cabecera
+                if(index === 0) return; 
                 if(row[0]) {
-                    festivosEncontrados.push({
+                    window.globalFestivos.push({
                         fecha: formatearFechaCorta(row[0]),
                         motivo: row[1] || "Festivo",
                         estado: (row[2] || "CERRADO").toUpperCase().trim(),
@@ -596,30 +712,6 @@
                     });
                 }
             });
-            if(festivosEncontrados.length > 0) {
-                festivosEncontrados.forEach(fest => {
-                    let badgeEstado = fest.estado === "ABIERTO" ? `<span class="badge" style="background:#25D366;">ABIERTO</span>` : `<span class="badge" style="background:var(--c-falta);">CERRADO</span>`;
-                    let badgeRecuperable = (fest.recuperable === "SÍ" || fest.recuperable === "SI") ? `<span class="badge bg-apoyo">RECUPERABLE</span>` : `<span class="badge bg-examen">NO RECUPERABLE</span>`;
-
-                    htmlCalendario += `
-                    <div class="result-card" style="border-left: 6px solid var(--c-primary);">
-                        <div class="card-info">
-                            <span class="card-day">${fest.fecha}</span>
-                            <div style="font-size:16px; font-weight:800; color:var(--c-primary); margin-top:2px;">${fest.motivo}</div>
-                        </div>
-                        <div style="display:flex; flex-direction:column; gap:5px; align-items:flex-end;">
-                            ${badgeEstado}
-                            ${badgeRecuperable}
-                        </div>
-                    </div>`;
-                });
-            } else {
-                let mesActual = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(new Date());
-                htmlCalendario = `<div class="empty-state">Pendiente de saber (${mesActual})</div>`;
-            }
-        } else {
-            let mesActual = new Intl.DateTimeFormat('es-ES', { month: 'long' }).format(new Date());
-            htmlCalendario = `<div class="empty-state">Pendiente de saber (${mesActual})</div>`;
         }
 
         const nF = formatNameForDisplay(nombre);
@@ -627,7 +719,7 @@
         document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
         document.getElementById('loading-spinner').style.display = 'none';
         
-        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0 || htmlCalendario !== "") {
+        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0 || window.globalFestivos.length >= 0) {
             let htmlHorario = "";
             if(clasesRaw.length > 0) agruparClases(clasesRaw).forEach(item => {
                 const est = getEstadoClase(item.dia, item.startMins, item.endMins);
@@ -690,11 +782,16 @@
                     <div id="content-examenes" class="tab-content">${htmlExamenes}</div>
                     <div id="content-notas" class="tab-content">${htmlNotas}</div>
                     <div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div>
-                    <div id="content-calendario" class="tab-content">${htmlCalendario}</div>
+                    <div id="content-calendario" class="tab-content"><div id="calendario-dinamico"></div></div>
                 </div>
                 <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
             
             initSwipeGestures();
+            
+            // Renderizamos el calendario una vez insertado el HTML
+            window.calCurrentDate = new Date(); // Reinicia al mes actual en cada búsqueda
+            window.renderCalendar();
+
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
         } else {
             document.getElementById('error-msg').innerText = "Nombre no encontrado."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
