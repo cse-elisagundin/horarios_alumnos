@@ -24,7 +24,7 @@
            🎨 ESTILOS GENERALES
            ========================================= */
         *, *::before, *::after {
-            box-sizing: border-box; /* Esto soluciona los saltos de tamaño entre pestañas */
+            box-sizing: border-box; /* Soluciona saltos de anchura */
         }
 
         :root { 
@@ -55,9 +55,13 @@
         body { 
             font-family: 'Outfit', 'Segoe UI', sans-serif; 
             background-color: var(--bg-body); 
-            margin: 0; padding: 20px;
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; color: #333;
+            margin: 0; 
+            padding: 40px 20px 20px 20px; /* Margen superior fijo */
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; /* ANCLAJE SUPERIOR para evitar saltos de altura */
+            min-height: 100vh; 
+            color: #333;
             transition: padding-top 0.3s ease;
         }
 
@@ -124,7 +128,7 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- 🔘 BOTONERA --- */
+        /* --- 🔘 BOTONERA (Limpia) --- */
         .tabs-nav {
             display: flex; 
             background: #f0f4f8; 
@@ -143,7 +147,7 @@
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 10px; /* Tamaño limpio para que quepan todos */
+            font-size: 10px; /* Tamaño limpio base */
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
@@ -363,10 +367,29 @@
            📱 OPTIMIZACIÓN MÓVIL
            ========================================= */
         @media (max-width: 480px) {
-            body { padding: 0; background-color: white; }
-            .container { padding: 15px 5px; width: 100%; border-radius: 0; box-shadow: none; max-width: 100%; }
-            .tabs-nav { gap: 2px; padding: 0; background: transparent; margin-bottom: 15px; }
-            .tab-btn { font-size: 9px; padding: 10px 0; letter-spacing: 0; gap: 2px; } 
+            body { 
+                padding: 15px 0 0 0; /* Anclado arriba para que no haya saltos */
+                background-color: white; 
+                align-items: flex-start;
+            }
+            .container { 
+                padding: 10px 5px; 
+                width: 100%; 
+                border-radius: 0; 
+                box-shadow: none; 
+                max-width: 100%; 
+            }
+            .tabs-nav { 
+                gap: 1px; /* Letras y botones más juntitos para ganar espacio lateral */
+                padding: 0; 
+                background: transparent; 
+                margin-bottom: 15px; 
+            }
+            .tab-btn { 
+                font-size: 8.5px; /* Reducido para que quepa la palabra "CALENDARIO" */
+                padding: 10px 1px; 
+                letter-spacing: -0.3px; /* Aprieta un poco las letras */
+            } 
             .result-header-flex { font-size: 18px; margin-bottom: 15px; }
             .calendar-day { font-size: 14px; padding: 8px 0; }
         }
@@ -686,7 +709,7 @@
                 const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
                 document.getElementById('ticker-content').innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
                 ticker.style.display = "flex";
-                document.body.style.paddingTop = "40px";
+                document.body.style.paddingTop = "80px"; // Ajuste para que no tape al estar el cuerpo anclado
             }
         }
     }
@@ -785,11 +808,9 @@
             }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
 
             let htmlFaltas = "";
-            let tieneFaltasPendientes = false;
             
             if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => {
                 let esRecuperada = fa.estado.includes("RECUPERADA") || fa.estado.includes("PAGADA") || fa.estado.includes("OK");
-                if(!esRecuperada) tieneFaltasPendientes = true;
                 
                 let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
                 let badgeHtml = esRecuperada 
@@ -810,6 +831,7 @@
                 </div>`;
             }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
+            // Botonera limpia sin emojis y sin variables condicionales de notificaciones rojas
             document.getElementById('resultado').innerHTML = `<br>
                 <div class="result-header-flex">
                     <span class="label-span">Horario de</span>
