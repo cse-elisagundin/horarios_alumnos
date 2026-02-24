@@ -42,6 +42,10 @@
             --grade-pass: #25D366; 
             --grade-fail: #dc3545; 
             --grade-pending: #a1aab2; 
+            
+            /* Colores Calendario */
+            --cal-rosa-claro: #ffbadd;
+            --cal-azul-claro: #a6d8f2;
         }
         
         body { 
@@ -314,9 +318,12 @@
         .calendar-day.empty:hover { transform: none; }
         
         .calendar-day.has-event { color: white; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-        .cal-red { background: var(--c-falta); }
-        .cal-yellow { background: var(--soon-yellow); color: #444; }
-        .cal-green { background: var(--live-green); }
+        
+        /* NUEVOS COLORES CALENDARIO */
+        .cal-abierto-norecup { background: var(--c-secondary); } /* Azul */
+        .cal-cerrado-recup { background: var(--cal-rosa-claro); color: #444; } /* Rosa clarito */
+        .cal-cerrado-norecup { background: var(--c-accent); } /* Fucsia */
+        .cal-mananas { background: var(--cal-azul-claro); color: #444; } /* Azul clarito */
         
         .calendar-empty-msg { grid-column: 1 / -1; padding: 30px 10px; color: #999; font-style: italic; font-size: 14px; background: #fafbfc; border-radius: 10px; border: 1px dashed #ccc; margin-top: 10px;}
         
@@ -542,12 +549,20 @@
             return;
         }
         
-        let recText = (recuperable === "SÍ" || recuperable === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
+        let estUpper = estado.toUpperCase();
         
-        box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
-                         <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
-                            <strong>${estado}</strong> | <strong>${recText}</strong>
-                         </span>`;
+        if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
+            box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
+                             <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
+                                <strong>HORARIO DE MAÑANAS</strong>
+                             </span>`;
+        } else {
+            let recText = (recuperable.toUpperCase() === "SÍ" || recuperable.toUpperCase() === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
+            box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
+                             <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
+                                <strong>${estUpper}</strong> | <strong>${recText}</strong>
+                             </span>`;
+        }
     };
 
     window.renderCalendar = function() {
@@ -588,6 +603,10 @@
         let daysHtml = "";
 
         for (let d = 1; d <= daysInMonth; d++) {
+            const currentLoopDate = new Date(year, month, d);
+            const dayOfWeek = currentLoopDate.getDay();
+            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+            
             const dateStr1 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year.toString().slice(-2)}`;
             const dateStr2 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year}`;
             
@@ -596,15 +615,33 @@
             if (event) {
                 hasEventsThisMonth = true;
                 let colorClass = "";
-                if (event.estado === "ABIERTO") colorClass = "cal-green";
-                else if (event.recuperable === "SÍ" || event.recuperable === "SI") colorClass = "cal-yellow";
-                else colorClass = "cal-red";
+                let estUpper = event.estado.toUpperCase();
+                let recUpper = event.recuperable.toUpperCase();
+                
+                if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
+                    colorClass = "cal-mananas";
+                } else if (estUpper === "ABIERTO") {
+                    colorClass = "cal-abierto-norecup";
+                } else if (estUpper === "CERRADO") {
+                    if (recUpper === "SÍ" || recUpper === "SI") {
+                        colorClass = "cal-cerrado-recup";
+                    } else {
+                        colorClass = "cal-cerrado-norecup";
+                    }
+                } else {
+                    colorClass = "cal-cerrado-norecup"; // Fallback por defecto
+                }
 
                 let mot = event.motivo.replace(/'/g, "\\'");
                 let est = event.estado.replace(/'/g, "\\'");
                 let rec = event.recuperable.replace(/'/g, "\\'");
 
                 daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
+                
+            } else if (isWeekend) {
+                // Fines de semana en rojo automático
+                hasEventsThisMonth = true;
+                daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO')">${d}</div>`;
             } else {
                 daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
             }
@@ -618,9 +655,10 @@
 
         html += `</div>
             <div class="calendar-legend">
-                <div class="legend-item"><div class="legend-dot cal-red"></div> Cerrado (No recup.)</div>
-                <div class="legend-item"><div class="legend-dot cal-yellow"></div> Cerrado (Recup.)</div>
-                <div class="legend-item"><div class="legend-dot cal-green"></div> Abierto</div>
+                <div class="legend-item"><div class="legend-dot cal-abierto-norecup"></div> Abierto (No recup.)</div>
+                <div class="legend-item"><div class="legend-dot cal-cerrado-recup"></div> Cerrado (Recup.)</div>
+                <div class="legend-item"><div class="legend-dot cal-cerrado-norecup"></div> Cerrado (No recup.)</div>
+                <div class="legend-item"><div class="legend-dot cal-mananas"></div> Mañanas</div>
             </div>
             <div class="cal-details-box" id="cal-details-text">
                 Selecciona un día de color para ver los detalles.
@@ -781,7 +819,7 @@
                     <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button>
                     <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button>
                     <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button>
-                    <button id="btn-tab-calendario" class="tab-btn" onclick="cambiarPestana('calendario')">🏖️ FESTIVOS</button>
+                    <button id="btn-tab-calendario" class="tab-btn" onclick="cambiarPestana('calendario')">🗓️ CALENDARIO</button>
                 </div>
                 <div id="tabs-container-wrapper">
                     <div id="content-horario" class="tab-content active">${htmlHorario}</div>
