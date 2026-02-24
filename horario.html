@@ -557,7 +557,10 @@
                                 <strong>HORARIO DE MAÑANAS</strong>
                              </span>`;
         } else {
-            let recText = (recuperable.toUpperCase() === "SÍ" || recuperable.toUpperCase() === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
+            let recUpper = recuperable.toUpperCase();
+            // AJUSTE: Ahora entiende correctamente la palabra "RECUPERABLE" del excel
+            let recText = (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
+            
             box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
                              <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
                                 <strong>${estUpper}</strong> | <strong>${recText}</strong>
@@ -623,7 +626,8 @@
                 } else if (estUpper === "ABIERTO") {
                     colorClass = "cal-abierto-norecup";
                 } else if (estUpper === "CERRADO") {
-                    if (recUpper === "SÍ" || recUpper === "SI") {
+                    // AJUSTE: Aplicado también aquí para asignar el color rosa correctamente
+                    if (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") {
                         colorClass = "cal-cerrado-recup";
                     } else {
                         colorClass = "cal-cerrado-norecup";
@@ -641,7 +645,7 @@
             } else if (isWeekend) {
                 // Fines de semana en rojo automático
                 hasEventsThisMonth = true;
-                daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO')">${d}</div>`;
+                daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
             } else {
                 daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
             }
