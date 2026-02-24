@@ -23,6 +23,10 @@
         /* =========================================
            🎨 ESTILOS GENERALES
            ========================================= */
+        *, *::before, *::after {
+            box-sizing: border-box; /* Esto soluciona los saltos de tamaño entre pestañas */
+        }
+
         :root { 
             --c-primary: #243c7a;   
             --c-secondary: #2b94cc; 
@@ -129,7 +133,6 @@
             gap: 4px; 
             width: 100%;
             padding: 5px;
-            box-sizing: border-box; 
         }
 
         .tab-btn {
@@ -140,7 +143,7 @@
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 11px; 
+            font-size: 10px; /* Tamaño limpio para que quepan todos */
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
@@ -198,7 +201,7 @@
         input { 
             width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
             border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
-            box-sizing: border-box; text-align: center;
+            text-align: center;
             transition: all 0.3s ease; color: var(--c-primary);
             font-weight: 600; background-color: #fafbfc;
             -webkit-appearance: none;
@@ -558,7 +561,6 @@
                              </span>`;
         } else {
             let recUpper = recuperable.toUpperCase();
-            // AJUSTE: Ahora entiende correctamente la palabra "RECUPERABLE" del excel
             let recText = (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
             
             box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
@@ -626,14 +628,13 @@
                 } else if (estUpper === "ABIERTO") {
                     colorClass = "cal-abierto-norecup";
                 } else if (estUpper === "CERRADO") {
-                    // AJUSTE: Aplicado también aquí para asignar el color rosa correctamente
                     if (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") {
                         colorClass = "cal-cerrado-recup";
                     } else {
                         colorClass = "cal-cerrado-norecup";
                     }
                 } else {
-                    colorClass = "cal-cerrado-norecup"; // Fallback por defecto
+                    colorClass = "cal-cerrado-norecup";
                 }
 
                 let mot = event.motivo.replace(/'/g, "\\'");
@@ -643,7 +644,6 @@
                 daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
                 
             } else if (isWeekend) {
-                // Fines de semana en rojo automático
                 hasEventsThisMonth = true;
                 daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
             } else {
@@ -810,20 +810,17 @@
                 </div>`;
             }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
-            let bE = examenesFuturos.length > 0 ? `🔴` : ""; 
-            let bF = tieneFaltasPendientes ? `🔴` : "";
-            
             document.getElementById('resultado').innerHTML = `<br>
                 <div class="result-header-flex">
                     <span class="label-span">Horario de</span>
                     <span class="name-span">${nF}</span>
                 </div>
                 <div class="tabs-nav">
-                    <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">📅 HORARIO</button>
-                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">📝 EXÁMENES ${bE}</button>
-                    <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">📊 NOTAS</button>
-                    <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">⚠️ FALTAS ${bF}</button>
-                    <button id="btn-tab-calendario" class="tab-btn" onclick="cambiarPestana('calendario')">🗓️ CALENDARIO</button>
+                    <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">HORARIO</button>
+                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">EXÁMENES</button>
+                    <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">NOTAS</button>
+                    <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">FALTAS</button>
+                    <button id="btn-tab-calendario" class="tab-btn" onclick="cambiarPestana('calendario')">CALENDARIO</button>
                 </div>
                 <div id="tabs-container-wrapper">
                     <div id="content-horario" class="tab-content active">${htmlHorario}</div>
