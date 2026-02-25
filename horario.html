@@ -81,7 +81,7 @@
 
         .ticker-move {
             display: inline-block;
-            /* La duración base es 35s, pero el JS la sobrescribirá con el "Freno Inteligente" */
+            /* El JS aplicará el tiempo dinámico aquí */
             animation: ticker-scroll 35s linear infinite; 
         }
 
@@ -606,7 +606,6 @@
             isPast = true;
         }
 
-        // --- TRIPLE COMBO 1: TOPE INTELIGENTE (BÚSQUEDA DE ÚLTIMA FECHA) ---
         let maxYear = 0; 
         let maxMonth = -1;
         window.globalFestivos.forEach(f => {
@@ -624,7 +623,6 @@
         if (maxYear > 0 && (year > maxYear || (year === maxYear && month > maxMonth))) {
             isBeyondData = true;
         }
-        // -------------------------------------------------------------------
 
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const dayNames = ["L", "M", "X", "J", "V", "S", "D"];
@@ -650,14 +648,13 @@
         let hasEventsThisMonth = false;
         let daysHtml = "";
         
-        // --- TRIPLE COMBO 2: LÓGICA DE VACACIONES ---
         let enVacaciones = false;
         let motivoVacaciones = "Vacaciones";
 
         for (let d = 1; d <= daysInMonth; d++) {
             const currentLoopDate = new Date(year, month, d);
             const dayOfWeek = currentLoopDate.getDay();
-            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); // Sábados y domingos
+            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); 
             
             const dateStr1 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year.toString().slice(-2)}`;
             const dateStr2 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year}`;
@@ -702,7 +699,6 @@
                     daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
                     
                 } else if (isWeekend) {
-                    // --- TRIPLE COMBO 3: FINES DE SEMANA FIJOS ---
                     hasEventsThisMonth = true;
                     daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
                 } else {
@@ -737,16 +733,14 @@
 
         container.innerHTML = html;
     };
-    // ------------------------------------
 
-    // --- FUNCIONES EXTRA: PARSEAR FECHAS DE LOS AVISOS ---
     function parseAvisoDate(dateStr) {
         if (!dateStr || dateStr.trim() === "") return null;
         let parts = dateStr.trim().split(" ");
         if (parts.length < 1) return null;
         
         let dateParts = parts[0].split("/");
-        if (dateParts.length !== 3) return null; // Debe ser DD/MM/YYYY
+        if (dateParts.length !== 3) return null;
         
         let timeParts = parts[1] ? parts[1].split(":") : ["00", "00"];
         
@@ -759,7 +753,6 @@
             const mensaje = data[1][0]; 
             const estado = (data[1][1] || "").toUpperCase().trim();
             
-            // Leemos Columna C (Inicio) y D (Fin)
             const fechaInicioStr = data[1][2]; 
             const fechaFinStr = data[1][3];
 
@@ -770,7 +763,6 @@
                 const fechaInicio = parseAvisoDate(fechaInicioStr);
                 const fechaFin = parseAvisoDate(fechaFinStr);
 
-                // Comprobamos la programación
                 if (fechaInicio && ahora < fechaInicio) mostrar = false;
                 if (fechaFin && ahora > fechaFin) mostrar = false;
 
@@ -780,11 +772,18 @@
                     const content = document.getElementById('ticker-content');
                     
                     const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
+                    
+                    // IMPORTANTE: El mensaje se clona 10 veces para hacer la animación infinita
                     content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
                     
-                    // --- FRENO AUTOMÁTICO INTELIGENTE ---
-                    // Asignamos 15 segundos de base + 0.15 segundos extra por cada letra escrita
-                    let tiempoCalculado = 15 + (mensaje.length * 0.15);
+                    // --- NUEVO FRENO TOTALMENTE AJUSTADO ---
+                    // 1. Calculamos un tiempo de lectura ideal para UN SOLO mensaje (ej: 10 a 15 segs)
+                    let tiempoPorMensaje = 10 + (mensaje.length * 0.2); 
+                    
+                    // 2. Como el CSS mueve la banda un 50% (lo que equivale exactamente a 10 mensajes cruzando la pantalla),
+                    // multiplicamos ese tiempo de lectura x 10. ¡Por eso antes iba a cámara rápida!
+                    let tiempoCalculado = tiempoPorMensaje * 10;
+                    
                     content.style.animationDuration = `${tiempoCalculado}s`;
 
                     ticker.style.display = "flex";
@@ -849,7 +848,6 @@
         });
         faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
         
-        // --- PROCESADO DE DATOS DEL CALENDARIO ---
         window.globalFestivos = []; 
         if(dataCalendario && dataCalendario.length > 1) {
             dataCalendario.forEach((row, index) => {
@@ -911,7 +909,6 @@
                 </div>`;
             }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
-            // Botonera limpia sin emojis y sin variables condicionales de notificaciones rojas
             document.getElementById('resultado').innerHTML = `<br>
                 <div class="result-header-flex">
                     <span class="label-span">Horario de</span>
@@ -935,8 +932,7 @@
             
             initSwipeGestures();
             
-            // Renderizamos el calendario una vez insertado el HTML
-            window.calCurrentDate = new Date(); // Reinicia al mes actual en cada búsqueda
+            window.calCurrentDate = new Date(); 
             window.renderCalendar();
 
             if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
@@ -960,7 +956,6 @@
 
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
-    // --- GESTOS SWIPE ---
     let touchStartX = 0;
     let touchEndX = 0;
     let currentTabIndex = 0;
@@ -988,7 +983,6 @@
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
         
-        // --- 🔴 VERSIÓN CLÁSICA (SIN CONSERJE/ID) ---
         const p = new URLSearchParams(window.location.search).get('alumno'); 
         if(p) ejecutarBusqueda(p);
 
@@ -1010,14 +1004,12 @@
         };
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
         
-        // --- BOTÓN COPIAR CLÁSICO (INSTANTÁNEO) ---
         document.getElementById('btnCopiar').onclick = () => {
             const btn = document.getElementById('btnCopiar');
             const nombreAlumno = input.value.trim();
             
             if(!nombreAlumno) return;
 
-            // Enlace directo con nombre y %20 (automático al codificar)
             const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumno);
 
             navigator.clipboard.writeText(urlFinal).then(() => { 
