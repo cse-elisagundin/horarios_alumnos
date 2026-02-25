@@ -360,7 +360,6 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
-        .policy-note { margin-top: 25px; padding: 15px; background-color: #eef2f7; border-left: 4px solid var(--c-primary); border-radius: 8px; font-size: 13px; color: #555; text-align: left; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
         .footer-update { margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic; }
 
         /* =========================================
@@ -848,7 +847,7 @@
                     <div id="content-horario" class="tab-content active">${htmlHorario}</div>
                     <div id="content-examenes" class="tab-content">${htmlExamenes}</div>
                     <div id="content-notas" class="tab-content">${htmlNotas}</div>
-                    <div id="content-faltas" class="tab-content">${htmlFaltas}<div class="policy-note"><strong>ℹ️ NOTA:</strong> Faltas recuperables consultar con Elisa.</div></div>
+                    <div id="content-faltas" class="tab-content">${htmlFaltas}<div style="margin-top: 15px; font-size: 11px; font-style: italic; color: #8898aa; line-height: 1.4; text-align: center;">Importante: Para la gestión de días recuperables de estas faltas, por favor, póngase en contacto directamente con Elisa.</div></div>
                     <div id="content-calendario" class="tab-content"><div id="calendario-dinamico"></div></div>
                 </div>
                 <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
