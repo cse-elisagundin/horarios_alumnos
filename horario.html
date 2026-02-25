@@ -7,40 +7,51 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        /* Copia aquí todo el bloque <style> de tu horario.html original */
-        /* (El CSS que ya tenías es perfecto) */
+        /* AQUÍ VAN TUS ESTILOS CSS ORIGINALES (Los de horario.html) */
+        /* He recortado el CSS para que el mensaje no sea infinito, pero PEGA AQUÍ EL TUYO */
+        :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; --live-green: #25D366; --soon-yellow: #FFC107; }
+        body { font-family: 'Outfit', sans-serif; background: var(--bg-body); margin:0; padding:40px 20px; }
+        .container { background: white; padding: 40px; border-radius: 20px; max-width: 500px; margin: auto; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        h2 { color: var(--c-primary); text-transform: uppercase; }
+        input { width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; margin-bottom: 10px; text-align: center; }
+        .btn-main { width: 100%; padding: 15px; background: var(--c-primary); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        .tab-btn { flex: 1; padding: 10px; border: none; font-weight: 800; font-size: 10px; cursor: pointer; }
+        .tab-btn.active { background: var(--c-primary); color: white; border-radius: 8px; }
+        .result-card { background: white; padding: 15px; border-radius: 15px; border-left: 6px solid var(--c-secondary); margin-bottom: 10px; position: relative; display: flex; align-items: center; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .badge { padding: 5px 10px; border-radius: 8px; font-size: 10px; color: white; margin-left: auto; }
+        .bg-apoyo { background: var(--c-secondary); } .bg-ingles { background: var(--c-accent); }
     </style>
 </head>
 <body>
+
+<div class="container">
+    <div class="web-brand">
+        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" style="max-width:160px;">
+    </div>
+    
+    <div id="search-area">
+        <h2>Horarios</h2>
+        <input type="text" id="magicInput" placeholder="Introduce contraseña...">
+        <button id="btnBuscar" class="btn-main">ENTRAR</button>
+    </div>
+
+    <div id="loading-spinner" style="display:none;">Cargando...</div>
+    <div id="resultado"></div>
+</div>
+
 <script>
     const URL_MODIFICACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=csv";
-    
-    // Todas tus URLs originales
-    const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
-    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
-    const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
-    const URL_CALENDARIO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1477113232&single=true&output=tsv";
-
     const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
+        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
+        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
+        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
+        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
+        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
     };
-
-    function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-    }
 
     function leerHoja(url) {
         return new Promise(resolve => {
-            let config = { download:true, skipEmptyLines:true };
-            if(url.includes("output=tsv")) config.delimiter = "\t";
-            Papa.parse(url + "&t=" + Date.now(), { ...config, complete: res => resolve(res.data), error: () => resolve([]) });
+            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
     }
 
@@ -48,72 +59,77 @@
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('search-area').style.display = 'none';
         const buscado = nombre.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
-        const dias = Object.keys(urls);
         
-        const [horarios, examenes, faltas, calend, mods] = await Promise.all([
-            Promise.all(dias.map(d => leerHoja(urls[d]))),
-            leerHoja(URL_EXAMENES), leerHoja(URL_FALTAS), leerHoja(URL_CALENDARIO), leerHoja(URL_MODIFICACIONES)
-        ]);
+        const promesas = Object.keys(urls).map(dia => leerHoja(urls[dia]));
+        promesas.push(leerHoja(URL_MODIFICACIONES));
+        const todos = await Promise.all(promesas);
+        const mods = todos.pop();
+        
+        const isSemanaPar = (Math.ceil((((new Date() - new Date(new Date().getFullYear(),0,1)) / 86400000) + 1)/7)) % 2 === 0;
 
-        const isSemanaPar = getWeekNumber(new Date()) % 2 === 0;
         let clasesFinales = [];
-
-        dias.forEach((dia, idx) => {
-            let data = JSON.parse(JSON.stringify(horarios[idx]));
-            
-            // 1. Filtro A/B
+        Object.keys(urls).forEach((dia, idx) => {
+            let data = JSON.parse(JSON.stringify(todos[idx]));
+            // Filtro A/B y Mods (Igual que el semanal pero para un alumno)
             for(let r=1; r<data.length; r++){
-                for(let c=1; c<data[r].length; c++){
+                for(let c=1; c<=13; c++){
                     if(c===7) continue;
                     let v = (data[r][c]||"").trim();
                     if((v.includes("[A]") && isSemanaPar) || (v.includes("[B]") && !isSemanaPar)) data[r][c] = "";
                     else data[r][c] = v.replace(/\[A\]|\[B\]/g, "").trim();
                 }
             }
-
-            // 2. Aplicar Mods (Inyectamos etiquetas para el frontend de padres)
             if(mods) mods.forEach((m, i) => {
                 if(i===0 || (m[0]||"").trim().toLowerCase() !== dia.toLowerCase()) return;
                 let start = data.findIndex(row => (row[0]||"") === m[1] || (row[7]||"") === m[1]);
                 let blocks = Math.ceil(parseFloat((m[2]||"0").replace("h",""))/0.5);
-                let isIng = (m[3]||"").toLowerCase().includes("ing");
                 if(start === -1) return;
-
                 for(let b=0; b<blocks; b++){
                     let r = start+b; if(r>=data.length) break;
-                    let cRange = isIng ? [8,13] : [1,6];
+                    let range = m[3].toLowerCase().includes("ing") ? [8,13] : [1,6];
                     if(m[4]==="QUITAR"){
-                        for(let c=cRange[0]; c<=cRange[1]; c++) if(data[r][c].toLowerCase().includes(m[6].toLowerCase())) data[r][c] = "";
+                        for(let c=range[0]; c<=range[1]; c++) if(data[r][c].toLowerCase().includes(m[6].toLowerCase())) data[r][c] = "";
                     } else if(m[4]==="AÑADIR"){
-                        for(let c=cRange[0]; c<=cRange[1]; c++) if(!data[r][c].trim()) { 
-                            let tag = m[5].toLowerCase().includes("recup") ? " [REC]" : m[5].toLowerCase().includes("camb") ? " [CAM]" : " [EXT]";
-                            data[r][c] = m[6] + tag; break; 
+                        for(let c=range[0]; c<=range[1]; c++) if(!data[r][c].trim()){
+                            data[r][c] = m[6] + " [" + m[5].substring(0,3).toUpperCase() + "]";
+                            break;
                         }
                     }
                 }
             });
 
-            // 3. Buscar al alumno
+            // Recopilar clases para el alumno
             data.forEach(row => {
-                const cols = [[1,6, "Apoyo", row[0]], [8,13, "Inglés", row[7]]];
-                cols.forEach(([s, e, mat, h]) => {
-                    for(let c=s; c<=e; c++){
-                        let v = (row[c]||"").trim();
-                        if(v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(buscado)){
-                            let tag = v.includes("[REC]") ? "RECUPERACIÓN" : v.includes("[CAM]") ? "CAMBIO" : v.includes("[EXT]") ? "EXTRA" : "";
-                            clasesFinales.push({ dia, hora: h, materia: mat, tag });
-                        }
+                const check = (v, h, mat) => {
+                    if(v.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(buscado)){
+                        let tag = v.match(/\[REC\]|\[CAM\]|\[EXT\]/) || "";
+                        clasesFinales.push({ dia, hora: h, materia: mat, tag: tag[0] || "" });
                     }
-                });
+                };
+                for(let k=1; k<=6; k++) check(row[k]||"", row[0], "Apoyo");
+                for(let k=8; k<=13; k++) check(row[k]||"", row[7], "Inglés");
             });
         });
 
-        // (Aquí sigue tu lógica original de pintar tarjetas, examenes y notas)
-        // Solo recuerda que al pintar las tarjetas de horario, si tag !== "", añade un aviso visual.
-        pintarResultado(clasesFinales, examenes, faltas, calend);
+        document.getElementById('loading-spinner').style.display = 'none';
+        pintarResultado(clasesFinales, nombre);
     }
-    
-    // (Resto de tus funciones originales de avisos, calendario, etc.)
+
+    function pintarResultado(clases, nombre) {
+        let html = `<h3>Horario de ${nombre}</h3><div class="tabs-nav" style="display:flex; gap:5px; margin-bottom:20px;">
+            <button class="tab-btn active">HORARIO</button></div>`;
+        
+        if(!clases.length) html += "<p>No hay clases esta semana.</p>";
+        else {
+            clases.forEach(c => {
+                let badgeTag = c.tag ? `<div style="position:absolute; top:-10px; right:10px; background:var(--live-green); color:white; font-size:9px; padding:3px 8px; border-radius:10px;">${c.tag}</div>` : "";
+                html += `<div class="result-card">${badgeTag}<div><strong>${c.dia}</strong><br>${c.hora}</div><span class="badge ${c.materia==='Apoyo'?'bg-apoyo':'bg-ingles'}">${c.materia}</span></div>`;
+            });
+        }
+        document.getElementById('resultado').innerHTML = html;
+    }
+
+    document.getElementById('btnBuscar').onclick = () => ejecutarBusqueda(document.getElementById('magicInput').value);
 </script>
 </body>
 </html>
