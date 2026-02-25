@@ -104,7 +104,7 @@
         }
 
         /* =========================================================================
-            🖨️ IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
+            IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; } 
@@ -301,8 +301,9 @@
                         let isA = full.toUpperCase().includes("[A]");
                         let isB = full.toUpperCase().includes("[B]");
                         
-                        // Si no es su semana, no lo contamos para los duplicados de nombre
-                        if ((isA && !esSemanaPar) || (isB && esSemanaPar)) return;
+                        // LÓGICA INVERTIDA: Si no es su semana, no lo contamos para los duplicados de nombre
+                        // A = Impar, B = Par
+                        if ((isA && esSemanaPar) || (isB && !esSemanaPar)) return;
 
                         let clean = full.replace(/\[A\]|\[B\]/gi, '').trim();
                         let first = clean.split(" ")[0].toUpperCase(); 
@@ -317,8 +318,8 @@
                     let isA = full.toUpperCase().includes("[A]");
                     let isB = full.toUpperCase().includes("[B]");
 
-                    // LÓGICA DE SEMANAS A y B
-                    if ((isA && !esSemanaPar) || (isB && esSemanaPar)) {
+                    // LÓGICA INVERTIDA DE SEMANAS A y B (A = Impar, B = Par)
+                    if ((isA && esSemanaPar) || (isB && !esSemanaPar)) {
                          return `<td></td>`; // Celda vacía si no toca su semana
                     }
 
