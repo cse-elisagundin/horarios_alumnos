@@ -9,230 +9,98 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 
     <style>
-        /* --- ESTILOS GENERALES (WEB) --- */
         :root { 
             --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3;      
             --bg-body: #f4f6f9; --bg-container: #ffffff;
             --highlight-row: rgba(250, 101, 195, 0.12);
-            --dynamic-col-width: 70px;
         }
         
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; -webkit-tap-highlight-color: transparent; }
-
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: var(--bg-body); margin: 0; padding: 15px; color: #333; }
         .container { width: 95%; max-width: 1600px; margin: 0 auto; background: var(--bg-container); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(36, 60, 122, 0.08); }
-
-        /* BRANDING */
         .web-brand { text-align: center; margin-bottom: 20px; }
         .web-logo-img { height: 70px; object-fit: contain; }
         .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
 
-        /* HEADER Y PANELES DINÁMICOS */
         header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
-        
         .header-left { display: flex; gap: 10px; align-items: center; }
-        
-        /* Reloj y Próximos Cambios */
         .live-info-panel { text-align: right; display: flex; flex-direction: column; gap: 8px; min-width: 250px; }
-        .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); letter-spacing: 1px; }
+        .digital-clock { font-size: 24px; font-weight: 800; color: var(--c-primary); }
         
-        .next-changes-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        .next-changes-title { font-weight: 800; text-transform: uppercase; color: #888; font-size: 10px; margin-bottom: 5px; border-bottom: 1px solid #f5f5f5; padding-bottom: 3px; display: block; text-align: center; }
-        .change-item { display: flex; justify-content: space-between; margin-bottom: 2px; gap: 10px; }
-        .change-name { font-weight: 700; color: var(--c-primary); }
-        .change-time { color: #666; font-family: monospace; }
-        .label-in { color: #2e7d32; font-weight: 800; }
-        .label-out { color: #c62828; font-weight: 800; }
-
-        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; text-transform: uppercase; transition: transform 0.2s; }
-        .btn-action:active { transform: scale(0.95); }
-        .btn-print { background-color: var(--c-primary); color: white; border: 2px solid var(--c-primary); }
+        .next-changes-box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; font-size: 12px; }
+        .next-changes-title { font-weight: 800; text-transform: uppercase; color: #888; font-size: 10px; margin-bottom: 5px; border-bottom: 1px solid #f5f5f5; display: block; text-align: center; }
+        .change-item { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        
+        .btn-action { padding: 10px 20px; border-radius: 50px; cursor: pointer; font-weight: 700; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; text-transform: uppercase; }
+        .btn-print { background-color: var(--c-primary); color: white; border: none; }
         .btn-edit { background-color: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); }
 
-        /* TÍTULOS Y NAVEGACIÓN */
         .day-header { text-align: center; margin-bottom: 15px; }
-        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; letter-spacing: -1px; }
-        .day-subtitle { color: var(--c-secondary); font-size: 14px; font-weight: 700; text-transform: uppercase; margin-top: 2px; }
+        .day-title { color: var(--c-primary); font-size: 32px; font-weight: 900; text-transform: uppercase; margin: 0; }
+        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; justify-content: center; overflow-x: auto; }
+        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; border-radius: 10px; cursor: pointer; font-weight: 600; }
+        .nav-btn.active { background: var(--c-primary); color: white; }
 
-        .days-nav { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; justify-content: center; }
-        .nav-btn { padding: 8px 14px; border: 1px solid #eee; background: white; color: #666; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
-        .nav-btn.active { background: var(--c-primary); color: white; border-color: var(--c-primary); }
-
-        /* ESTRUCTURA TABLAS */
-        .planning-container { display: none; animation: fadeIn 0.4s ease; }
+        .planning-container { display: none; }
         .planning-container.visible { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .tables-wrapper { display: flex; gap: 20px; align-items: flex-start; }
-        .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; box-shadow: 0 0 0 1px #dce1e6; }
-
-        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; border-bottom: 1px solid #dce1e6; }
-        .mobile-section-title.ing { color: var(--c-accent); }
+        .tables-wrapper { display: flex; gap: 20px; }
+        .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; }
+        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        tbody tr { height: 42px; }
-        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 4px; text-align: center; vertical-align: middle; font-size: 11.5px; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        th { background: var(--c-primary); color: white; font-weight: 700; text-transform: uppercase; padding: 10px 2px; border: none; border-right: 1px solid rgba(255,255,255,0.1); }
-        th.col-hora { background: white !important; color: var(--c-primary) !important; border-bottom: 2px solid var(--c-primary) !important; }
-        .col-hora { width: 45px; background: white !important; font-weight: 800; color: var(--c-primary) !important; border-right: 1px solid #ddd; }
+        th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 6px; text-align: center; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        th { background: var(--c-primary); color: white; }
+        .col-hora { width: 45px; font-weight: 800; color: var(--c-primary); background: #fff !important; }
+        .name-tag { display: inline-block; padding: 4px 8px; border-radius: 10px; font-weight: 900; text-transform: uppercase; }
 
-        .student-cell { font-weight: normal; transition: all 0.5s ease; cursor: help; }
+        .spinner { border: none; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); animation: bar-pulse 1.5s infinite ease-in-out; }
+        @keyframes bar-pulse { 0%, 100% { width: 60px; } 50% { width: 140px; } }
 
-        /* ETIQUETAS PÓSITS */
-        .name-tag { display: inline-block; padding: 4px 10px; border-radius: 12px; font-weight: 900; text-transform: uppercase; color: var(--c-primary); border: 1px solid transparent; }
-        .status-entry .name-tag { background-color: #d1e7dd; color: #0f5132; border-color: #badbcc; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transform: scale(1.05); }
-        .status-active .name-tag { background-color: rgba(43, 148, 204, 0.15); color: var(--c-primary); border-color: rgba(43, 148, 204, 0.5); }
-        .status-exit .name-tag { background-color: #f8d7da; color: #842029; border-color: #f5c2c7; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-
-        /* LOADER BARRA CORPORATIVA */
-        .spinner { border: none; border-radius: 10px; height: 6px; width: 60px; margin: 40px auto; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); animation: bar-pulse 1.5s infinite ease-in-out; }
-        @keyframes bar-pulse { 0% { width: 60px; opacity: 0.6; } 50% { width: 160px; opacity: 1; } 100% { width: 60px; opacity: 0.6; } }
-
-        .print-only-notes { display: none; }
-
-        /* MÓVIL */
         @media (max-width: 900px) {
-            header { flex-direction: column; align-items: center; }
-            .live-info-panel { text-align: center; width: 100%; }
-            .container { padding: 10px; width: 100%; box-sizing: border-box; }
-            .tables-wrapper { flex-direction: column; gap: 30px; }
-            .table-block { width: 100%; }
+            .tables-wrapper { flex-direction: column; }
             .mobile-section-title { display: block; }
-            table thead { display: none; }
-            tbody tr { height: auto; display: grid; grid-template-columns: 50px 1fr 1fr 1fr; border-bottom: 2px solid #e0e0e0; }
-            table tbody td.col-hora { grid-row: 1 / 3; grid-column: 1; display: flex; align-items: center; justify-content: center; font-size: 14px; background: white !important; color: var(--c-primary) !important; border-right: 1px solid #eee; }
-            table tbody td:not(.col-hora) { height: 45px; display: flex; align-items: center; justify-content: center; font-size: 13px; border-bottom: 1px solid #f0f0f0; border-right: 1px solid #f0f0f0; white-space: normal; line-height: 1.1; }
+            thead { display: none; }
+            tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; }
         }
 
-        /* =========================================================================
-            🖨️ IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
-           ========================================================================= */
         @media print {
-            @page { size: A4 landscape; margin: 5mm; } 
-            
-            body { 
-                background: white !important; 
-                margin: 0; padding: 0; 
-                display: grid !important; 
-                /* MODIFICADO: Damos más espacio a la izquierda (58%) y menos a notas (40%) */
-                grid-template-columns: 58% 40% !important; 
-                column-gap: 15px; 
-                height: 100vh; width: 100%; 
-                overflow: hidden; 
-                zoom: 65%;
-            }
-            
-            .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
-                display: none !important; 
-            }
-
-            /* --- COLUMNA IZQUIERDA: HORARIOS --- */
-            .container { 
-                grid-column: 1; 
-                width: 100% !important; 
-                margin: 0 !important; 
-                padding: 0 !important; 
-                border: none !important; 
-                box-shadow: none !important; 
-                display: block !important;
-            }
-
+            body { background: white; zoom: 70%; }
+            .no-print-dynamic, header, .days-nav, .web-brand { display: none !important; }
+            .container { box-shadow: none; padding: 0; width: 100%; }
+            .tables-wrapper { display: flex !important; flex-direction: column !important; }
             .planning-container.visible { display: block !important; }
-
-            .tables-wrapper { 
-                display: flex !important; 
-                flex-direction: column !important; 
-                gap: 5px !important; 
-            }
-
-            .table-block { 
-                width: 100% !important; 
-                border: 1px solid #000 !important; 
-                border-radius: 0 !important; 
-                margin: 0 !important;
-            }
-
-            /* --- COLUMNA DERECHA: NOTAS --- */
-            .print-only-notes { 
-                grid-column: 2; 
-                display: block !important; 
-                width: 100% !important; 
-                height: 98%; 
-                border: none !important; 
-                padding: 15px; 
-                box-sizing: border-box;
-                background: white !important;
-            }
-
-            table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
-            
-            /* Altura auto para acomodar letras grandes */
-            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
-            
-            /* Fuente base más grande */
-            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
-            
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
-            
-            /* MODIFICADO: Columna de hora ampliada a 50px para que se vea bien */
-            .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
-            
-            /* Nombres de alumnos MUCHO más grandes */
-            .name-tag { 
-                background: transparent !important; color: black !important; border: none !important; 
-                padding: 0 !important; margin: 0 !important; font-weight: 900 !important; 
-                font-size: 15px !important; 
-            }
-
-            .notes-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
-            .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
-            .notes-logo { height: 40px; filter: grayscale(100%); }
-            
-            .day-header { margin-bottom: 5px !important; text-align: left; }
-            .day-title { font-size: 20px !important; color: black !important; margin: 0; line-height: 1; }
-            .day-subtitle { display: block !important; color: black !important; font-size: 10px !important; margin-top: 2px; font-weight: bold; }
+            td, th { border: 1px solid #000 !important; color: black !important; }
+            .name-tag { color: black !important; padding: 0; }
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="web-brand">
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
-        <div class="brand-line"></div>
-    </div>
-
+    <div class="web-brand"><img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" class="web-logo-img"></div>
     <header>
         <div class="header-left">
             <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
             <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar</a>
         </div>
-        
         <div class="live-info-panel no-print-dynamic">
             <div id="digital-clock" class="digital-clock">00:00:00</div>
             <div id="next-changes" class="next-changes-box">
-                <span class="next-changes-title">Próximos Cambios (10m)</span>
-                <div id="next-changes-list">
-                    <div style="color:#999; font-style:italic">Cargando...</div>
-                </div>
+                <span class="next-changes-title">Cambios Próximos</span>
+                <div id="next-changes-list"></div>
             </div>
         </div>
     </header>
-
     <div class="days-nav" id="days-buttons"></div>
     <div id="loading" class="spinner"></div>
     <div id="schedule-container"></div>
 </div>
 
-<div class="print-only-notes">
-    <div class="notes-header">
-        <h2 class="notes-title">NOTAS</h2>
-        <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo" class="notes-logo">
-    </div>
-</div>
-
 <script>
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
+
+    // 👇 CAMBIA ESTO POR TU ENLACE CSV DE LA PESTAÑA MODIFICACIONES 👇
+    const URL_MODIFICACIONES = "AQUI_TU_ENLACE_CSV";
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
@@ -243,160 +111,96 @@
     };
 
     let diaActualCargado = "";
-
     function leerHoja(url) {
+        if (!url || url.includes("AQUI_TU_ENLACE")) return Promise.resolve([]);
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
     }
 
-    function parseTimeStr(timeStr) {
-        if (!timeStr || !timeStr.includes(':')) return null;
-        const [h, m] = timeStr.split(':').map(Number);
-        return h * 60 + m;
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
     }
 
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
-        
         const promesas = dias.map(dia => leerHoja(urls[dia]));
+        promesas.push(leerHoja(URL_MODIFICACIONES));
         const todosLosDatos = await Promise.all(promesas);
+        const mods = todosLosDatos.pop();
+        const isSemanaPar = getWeekNumber(new Date()) % 2 === 0;
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-        btnContainer.innerHTML = btns;
-        container.innerHTML = ""; 
+        btnContainer.innerHTML = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('') + `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+        container.innerHTML = "";
 
-        dias.forEach((dia, index) => {
-            const data = todosLosDatos[index]; 
-            const headers = data[0] || [];
-            const h_apoyo_hora = headers[0] || "H";
-            const h_apoyo_alum = headers.slice(1, 7);
-            const h_ing_hora = headers[7] || "H";
-            const h_ing_alum = headers.slice(8, 14);
+        dias.forEach((dia, idx) => {
+            let data = JSON.parse(JSON.stringify(todosLosDatos[idx]));
+            if(!data.length) return;
 
-            let html = `<div id="view-${dia}" class="planning-container">
-                <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
-                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">📚 Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
-
-            let filasIngles = "";
-            for(let i = 1; i < data.length; i++) {
-                const row = data[i];
-                if(!row || (!row[0] && !row[7])) continue;
-
-                let nombresPilaMap = {};
-                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
-                    let full = (row[idx] || "").trim();
-                    if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
-                });
-
-                const generarCelda = (full, colIdx, timeColIndex) => {
-                    if(!full) return `<td></td>`;
-                    full = full.trim();
-                    let first = full.split(" ")[0].toUpperCase();
-                    let display = first;
-                    if(nombresPilaMap[first] > 1) { let partes = full.split(" "); if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; }
-                    
-                    let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
-                    let startTimeStr = data[startRow][timeColIndex];
-                    let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
-                    let lastBlockTimeStr = data[endRow][timeColIndex];
-                    
-                    // 🔥 ATRIBUTO TITLE AÑADIDO PARA HOVER WEB 🔥
-                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
-                };
-
-                html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
-                html += `</tr>`;
-
-                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; 
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
-                filasIngles += `</tr>`;
+            // Filtro A/B
+            for(let r=1; r<data.length; r++){
+                for(let c=1; c<data[r].length; c++){
+                    if(c===7) continue;
+                    let v = (data[r][c]||"").trim();
+                    if((v.includes("[A]") && isSemanaPar) || (v.includes("[B]") && !isSemanaPar)) data[r][c] = "";
+                    else data[r][c] = v.replace(/\[A\]|\[B\]/g, "").trim();
+                }
             }
-            html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">🇬🇧 Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
+
+            // Aplicar Mods
+            if(mods) mods.forEach((m, i) => {
+                if(i===0 || (m[0]||"").trim().toLowerCase() !== dia.toLowerCase()) return;
+                let start = data.findIndex(row => (row[0]||"") === m[1] || (row[7]||"") === m[1]);
+                let blocks = Math.ceil(parseFloat(m[2]||0)/0.5);
+                let isIng = (m[3]||"").toLowerCase().includes("ing");
+                if(start === -1) return;
+
+                for(let b=0; b<blocks; b++){
+                    let r = start+b; if(r>=data.length) break;
+                    let cRange = isIng ? [8,13] : [1,6];
+                    if(m[4]==="QUITAR"){
+                        for(let c=cRange[0]; c<=cRange[1]; c++) if(data[r][c].toLowerCase().includes(m[6].toLowerCase())) data[r][c] = "";
+                    } else {
+                        for(let c=cRange[0]; c<=cRange[1]; c++) if(!data[r][c]) { 
+                            let tag = m[5].toLowerCase().includes("recup") ? " [REC]" : m[5].toLowerCase().includes("camb") ? " [CAM]" : " [EXT]";
+                            data[r][c] = m[6] + tag; break; 
+                        }
+                    }
+                }
+            });
+
+            // Dibujar
+            let h = data[0];
+            let html = `<div id="view-${dia}" class="planning-container">
+                <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2></div>
+                <div class="tables-wrapper">
+                    <div class="table-block"><table><thead><tr><th class="col-hora">${h[0]}</th>${h.slice(1,7).map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>`;
+            let ing = "";
+            for(let i=1; i<data.length; i++){
+                const row = data[i]; if(!row[0] && !row[7]) continue;
+                html += `<tr><td class="col-hora">${row[0]}</td>${row.slice(1,7).map(c => `<td><span class="name-tag">${c}</span></td>`).join('')}</tr>`;
+                ing += `<tr><td class="col-hora">${row[7]}</td>${row.slice(8,14).map(c => `<td><span class="name-tag">${c}</span></td>`).join('')}</tr>`;
+            }
+            html += `</tbody></table></div><div class="table-block"><table><thead><tr><th class="col-hora">${h[7]}</th>${h.slice(8,14).map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${ing}</tbody></table></div></div></div>`;
             container.innerHTML += html;
         });
-
-        document.getElementById('loading').style.display = 'none';
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(diaActualCargado || (urls[hoy] ? hoy : "Lunes"));
-    }
-
-    function actualizarRelojYCambios() {
-        const now = new Date();
-        document.getElementById('digital-clock').innerText = now.toLocaleTimeString('es-ES', { hour12: false });
-
-        const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = diasSemana[now.getDay()];
-        
-        const contenedorHoy = document.getElementById(`view-${hoy}`);
-        const listContainer = document.getElementById('next-changes-list');
-
-        if (!contenedorHoy || !contenedorHoy.classList.contains('visible')) {
-            listContainer.innerHTML = '<div style="color:#999; font-style:italic">Hoy no es día lectivo</div>';
-            return;
-        }
-
-        let cambios = [];
-        let procesados = new Set();
-        const MARGIN = 10; 
-
-        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
-            const startStr = cell.getAttribute('data-start-time');
-            const endBlockStr = cell.getAttribute('data-end-block-time');
-            const fullName = cell.getAttribute('data-full-name');
-            const key = fullName + startStr + endBlockStr;
-
-            if(!startStr || procesados.has(key)) return;
-            procesados.add(key);
-
-            let first = fullName.split(" ")[0];
-            const startMin = parseTimeStr(startStr);
-            const endMin = parseTimeStr(endBlockStr) + 30;
-
-            if (startMin >= currentMinutes && startMin <= currentMinutes + MARGIN) {
-                cambios.push(`<div class="change-item"><span class="change-name">${first}</span> <span class="label-in">ENTRA</span> <span class="change-time">${startStr}</span></div>`);
-            } else if (endMin >= currentMinutes && endMin <= currentMinutes + MARGIN) {
-                cambios.push(`<div class="change-item"><span class="change-name">${first}</span> <span class="label-out">SALE</span> <span class="change-time">${(Math.floor(endMin/60)).toString().padStart(2,'0')}:${(endMin%60).toString().padStart(2,'0')}</span></div>`);
-            }
-        });
-
-        listContainer.innerHTML = cambios.length > 0 ? cambios.join('') : '<div style="color:#bbb">Sin cambios próximos</div>';
-        
-        contenedorHoy.querySelectorAll('.student-cell').forEach(cell => {
-            cell.classList.remove('status-entry', 'status-exit', 'status-active');
-            const startMin = parseTimeStr(cell.getAttribute('data-start-time'));
-            const endMin = parseTimeStr(cell.getAttribute('data-end-block-time')) + 30;
-            if(!startMin) return;
-            if (currentMinutes >= (startMin - 5) && currentMinutes <= (startMin + 5)) cell.classList.add('status-entry');
-            else if (currentMinutes >= (endMin - 5) && currentMinutes <= (endMin + 5)) cell.classList.add('status-exit');
-            else if (currentMinutes > (startMin + 5) && currentMinutes < (endMin - 5)) cell.classList.add('status-active');
-        });
+        document.getElementById('loading').style.display='none';
+        cambiarDia(diaActualCargado || "Lunes");
     }
 
     function cambiarDia(dia) {
         diaActualCargado = dia;
-        document.querySelectorAll('.planning-container').forEach(div => {
-            if(dia === 'Todo') div.classList.add('visible');
-            else div.classList.toggle('visible', div.id === `view-${dia}`);
-        });
-        document.querySelectorAll('.nav-btn').forEach(btn => {
-            let esActivo = (btn.innerText.toUpperCase() === dia.toUpperCase()) || (dia === 'Todo' && btn.innerText === 'VER TODO');
-            btn.classList.toggle('active', esActivo);
-        });
-        actualizarRelojYCambios();
+        document.querySelectorAll('.planning-container').forEach(div => div.classList.toggle('visible', dia === 'Todo' || div.id === `view-${dia}`));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.toUpperCase() === dia.toUpperCase() || (dia==='Todo' && btn.innerText==='VER TODO')));
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        cargarTodo();
-        setInterval(actualizarRelojYCambios, 1000);
-        setInterval(cargarTodo, 300000); 
-    });
+    setInterval(() => { document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    document.addEventListener('DOMContentLoaded', cargarTodo);
 </script>
 </body>
 </html>
