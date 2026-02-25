@@ -44,7 +44,6 @@
         .planning-container.visible { display: block; }
         .tables-wrapper { display: flex; gap: 20px; }
         .table-block { flex: 1; background: white; border-radius: 16px; overflow: hidden; border: 1px solid #dce1e6; }
-        .mobile-section-title { display: none; background: #f0f2f5; color: var(--c-primary); padding: 10px; text-align: center; font-weight: 800; }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th, td { border-bottom: 1px solid #eee; border-right: 1px solid #eee; padding: 6px; text-align: center; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -57,7 +56,6 @@
 
         @media (max-width: 900px) {
             .tables-wrapper { flex-direction: column; }
-            .mobile-section-title { display: block; }
             thead { display: none; }
             tr { display: grid; grid-template-columns: 50px 1fr 1fr 1fr; }
         }
@@ -97,10 +95,7 @@
 
 <script>
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
-    document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
-
-    // 👇 CAMBIA ESTO POR TU ENLACE CSV DE LA PESTAÑA MODIFICACIONES 👇
-    const URL_MODIFICACIONES = "AQUI_TU_ENLACE_CSV";
+    const URL_MODIFICACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=csv";
 
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
@@ -112,7 +107,6 @@
 
     let diaActualCargado = "";
     function leerHoja(url) {
-        if (!url || url.includes("AQUI_TU_ENLACE")) return Promise.resolve([]);
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
         });
@@ -156,7 +150,7 @@
             if(mods) mods.forEach((m, i) => {
                 if(i===0 || (m[0]||"").trim().toLowerCase() !== dia.toLowerCase()) return;
                 let start = data.findIndex(row => (row[0]||"") === m[1] || (row[7]||"") === m[1]);
-                let blocks = Math.ceil(parseFloat(m[2]||0)/0.5);
+                let blocks = Math.ceil(parseFloat((m[2]||"0").replace("h",""))/0.5);
                 let isIng = (m[3]||"").toLowerCase().includes("ing");
                 if(start === -1) return;
 
@@ -165,9 +159,9 @@
                     let cRange = isIng ? [8,13] : [1,6];
                     if(m[4]==="QUITAR"){
                         for(let c=cRange[0]; c<=cRange[1]; c++) if(data[r][c].toLowerCase().includes(m[6].toLowerCase())) data[r][c] = "";
-                    } else {
-                        for(let c=cRange[0]; c<=cRange[1]; c++) if(!data[r][c]) { 
-                            let tag = m[5].toLowerCase().includes("recup") ? " [REC]" : m[5].toLowerCase().includes("camb") ? " [CAM]" : " [EXT]";
+                    } else if(m[4]==="AÑADIR"){
+                        for(let c=cRange[0]; c<=cRange[1]; c++) if(!data[r][c].trim()) { 
+                            let tag = m[5].toLowerCase().includes("recup") ? " <small style='color:#2e7d32'>[REC]</small>" : m[5].toLowerCase().includes("camb") ? " <small style='color:#1565c0'>[CAM]</small>" : " <small style='color:#e65100'>[EXT]</small>";
                             data[r][c] = m[6] + tag; break; 
                         }
                     }
