@@ -105,7 +105,7 @@
 
         /* =========================================================================
             🖨️ IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
-            ========================================================================= */
+           ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; } 
             
@@ -113,6 +113,7 @@
                 background: white !important; 
                 margin: 0; padding: 0; 
                 display: grid !important; 
+                /* MODIFICADO: Damos más espacio a la izquierda (58%) y menos a notas (40%) */
                 grid-template-columns: 58% 40% !important; 
                 column-gap: 15px; 
                 height: 100vh; width: 100%; 
@@ -124,6 +125,7 @@
                 display: none !important; 
             }
 
+            /* --- COLUMNA IZQUIERDA: HORARIOS --- */
             .container { 
                 grid-column: 1; 
                 width: 100% !important; 
@@ -149,6 +151,7 @@
                 margin: 0 !important;
             }
 
+            /* --- COLUMNA DERECHA: NOTAS --- */
             .print-only-notes { 
                 grid-column: 2; 
                 display: block !important; 
@@ -161,10 +164,19 @@
             }
 
             table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
+            
+            /* Altura auto para acomodar letras grandes */
             tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
+            
+            /* Fuente base más grande */
             td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
+            
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
+            
+            /* MODIFICADO: Columna de hora ampliada a 50px para que se vea bien */
             .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
+            
+            /* Nombres de alumnos MUCHO más grandes */
             .name-tag { 
                 background: transparent !important; color: black !important; border: none !important; 
                 padding: 0 !important; margin: 0 !important; font-weight: 900 !important; 
@@ -222,9 +234,6 @@
     const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
     document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
 
-    // --- NUEVO: URL MODIFICACIONES ---
-    const URL_MODIFICACIONES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?output=csv";
-
     const urls = {
         "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
         "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
@@ -241,14 +250,6 @@
         });
     }
 
-    // --- NUEVO: FUNCIÓN SEMANA ---
-    function getWeekNumber(d) {
-        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-        var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
-    }
-
     function parseTimeStr(timeStr) {
         if (!timeStr || !timeStr.includes(':')) return null;
         const [h, m] = timeStr.split(':').map(Number);
@@ -260,13 +261,8 @@
         const btnContainer = document.getElementById('days-buttons');
         const dias = Object.keys(urls);
         
-        // --- MODIFICADO: CARGAR TAMBIÉN LA HOJA DE MODS ---
         const promesas = dias.map(dia => leerHoja(urls[dia]));
-        promesas.push(leerHoja(URL_MODIFICACIONES));
-        const todosLosDatosRaw = await Promise.all(promesas);
-        
-        const dataModificaciones = todosLosDatosRaw.pop(); // Último elemento es Mods
-        const isSemanaPar = getWeekNumber(new Date()) % 2 === 0;
+        const todosLosDatos = await Promise.all(promesas);
 
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
@@ -274,41 +270,7 @@
         container.innerHTML = ""; 
 
         dias.forEach((dia, index) => {
-            let data = JSON.parse(JSON.stringify(todosLosDatosRaw[index])); // Clonar datos
-            if(!data || data.length === 0) return;
-
-            // --- NUEVO: LÓGICA FILTRO A/B ---
-            for(let r=1; r<data.length; r++){
-                for(let c=1; c<=13; c++){
-                    if(c===7) continue;
-                    let val = (data[r][c] || "").trim();
-                    if((val.includes("[A]") && isSemanaPar) || (val.includes("[B]") && !isSemanaPar)) data[r][c] = "";
-                    data[r][c] = (data[r][c] || "").replace(/\[A\]|\[B\]/g, "").trim();
-                }
-            }
-
-            // --- NUEVO: APLICAR MODIFICACIONES ---
-            if(dataModificaciones) dataModificaciones.forEach((m, i) => {
-                if(i === 0 || (m[0]||"").trim().toLowerCase() !== dia.toLowerCase()) return;
-                let startRow = data.findIndex(row => (row[0]||"") === m[1] || (row[7]||"") === m[1]);
-                let blocks = Math.ceil(parseFloat((m[2]||"0").replace("h",""))/0.5);
-                if(startRow === -1) return;
-
-                for(let b=0; b<blocks; b++){
-                    let r = startRow + b; if(r >= data.length) break;
-                    let isIng = (m[3]||"").toLowerCase().includes("ing");
-                    let range = isIng ? [8, 13] : [1, 6];
-                    if(m[4] === "QUITAR"){
-                        for(let c=range[0]; c<=range[1]; c++) if((data[r][c]||"").toLowerCase().includes((m[6]||"").toLowerCase())) data[r][c] = "";
-                    } else if(m[4] === "AÑADIR"){
-                        for(let c=range[0]; c<=range[1]; c++) if(!(data[r][c]||"").trim()) {
-                            let tag = (m[5]||"").toLowerCase().includes("rec") ? " [REC]" : (m[5]||"").toLowerCase().includes("cam") ? " [CAM]" : " [EXT]";
-                            data[r][c] = m[6] + tag; break;
-                        }
-                    }
-                }
-            });
-
+            const data = todosLosDatos[index]; 
             const headers = data[0] || [];
             const h_apoyo_hora = headers[0] || "H";
             const h_apoyo_alum = headers.slice(1, 7);
@@ -327,36 +289,31 @@
                 let nombresPilaMap = {};
                 [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let full = (row[idx] || "").trim();
-                    if(full) { 
-                        let limpio = full.replace(/\[REC\]|\[CAM\]|\[EXT\]/g, "").trim();
-                        let first = limpio.split(" ")[0].toUpperCase(); 
-                        nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; 
-                    }
+                    if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
                 });
 
                 const generarCelda = (full, colIdx, timeColIndex) => {
                     if(!full) return `<td></td>`;
                     full = full.trim();
-                    let tag = full.match(/\[REC\]|\[CAM\]|\[EXT\]/) ? ` <small style="font-size:8px; opacity:0.7">${full.match(/\[REC\]|\[CAM\]|\[EXT\]/)[0]}</small>` : "";
-                    let limpio = full.replace(/\[REC\]|\[CAM\]|\[EXT\]/g, "").trim();
-                    let first = limpio.split(" ")[0].toUpperCase();
+                    let first = full.split(" ")[0].toUpperCase();
                     let display = first;
-                    if(nombresPilaMap[first] > 1) { let partes = limpio.split(" "); if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; }
+                    if(nombresPilaMap[first] > 1) { let partes = full.split(" "); if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; }
                     
                     let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
                     let startTimeStr = data[startRow][timeColIndex];
                     let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
                     let lastBlockTimeStr = data[endRow][timeColIndex];
                     
-                    return `<td class="student-cell" title="${limpio.toUpperCase()}" data-full-name="${limpio.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}${tag}</span></td>`;
+                    // 🔥 ATRIBUTO TITLE AÑADIDO PARA HOVER WEB 🔥
+                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
                 };
 
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
                 for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
                 html += `</tr>`;
 
-                filasIngles += `<tr><td class="col-hora">${row[7] || ""}</td>`; 
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 7);
+                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; 
+                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
                 filasIngles += `</tr>`;
             }
             html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">🇬🇧 Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
