@@ -605,6 +605,27 @@
             isPast = true;
         }
 
+        // --- TRIPLE COMBO 1: TOPE INTELIGENTE (BÚSQUEDA DE ÚLTIMA FECHA) ---
+        let maxYear = 0; 
+        let maxMonth = -1;
+        window.globalFestivos.forEach(f => {
+            let p = f.fecha.split('/');
+            if(p.length === 3) {
+                let m = parseInt(p[1], 10) - 1;
+                let y = p[2].length === 2 ? 2000 + parseInt(p[2], 10) : parseInt(p[2], 10);
+                if (y > maxYear || (y === maxYear && m > maxMonth)) { 
+                    maxYear = y; maxMonth = m; 
+                }
+            }
+        });
+        
+        let isBeyondData = false;
+        // Si hay fechas registradas y el mes actual es superior al máximo registrado, se activa el bloqueo
+        if (maxYear > 0 && (year > maxYear || (year === maxYear && month > maxMonth))) {
+            isBeyondData = true;
+        }
+        // -------------------------------------------------------------------
+
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const dayNames = ["L", "M", "X", "J", "V", "S", "D"];
 
@@ -628,47 +649,71 @@
 
         let hasEventsThisMonth = false;
         let daysHtml = "";
+        
+        // --- TRIPLE COMBO 2: LÓGICA DE VACACIONES ---
+        let enVacaciones = false;
+        let motivoVacaciones = "Vacaciones";
 
         for (let d = 1; d <= daysInMonth; d++) {
             const currentLoopDate = new Date(year, month, d);
             const dayOfWeek = currentLoopDate.getDay();
-            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);
+            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); // Sábados y domingos
             
             const dateStr1 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year.toString().slice(-2)}`;
             const dateStr2 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year}`;
             
             let event = window.globalFestivos.find(f => f.fecha === dateStr1 || f.fecha === dateStr2);
             
-            if (event) {
-                hasEventsThisMonth = true;
-                let colorClass = "";
-                let estUpper = event.estado.toUpperCase();
-                let recUpper = event.recuperable.toUpperCase();
+            // Si el mes no está bloqueado por el "Tope Inteligente", procesamos los días
+            if (!isBeyondData) {
                 
-                if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
-                    colorClass = "cal-mananas";
-                } else if (estUpper === "ABIERTO") {
-                    colorClass = "cal-abierto-norecup";
-                } else if (estUpper === "CERRADO") {
-                    if (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") {
-                        colorClass = "cal-cerrado-recup";
+                // Si encontramos la palabra VACACIONES (en estado o en motivo), activamos el modo cascada
+                if (event && (event.estado.toUpperCase().includes("VACACION") || event.motivo.toUpperCase().includes("VACACION"))) {
+                    enVacaciones = true;
+                    motivoVacaciones = (event.motivo !== "Festivo" && event.motivo.trim() !== "") ? event.motivo : "Vacaciones";
+                }
+
+                if (enVacaciones) {
+                    hasEventsThisMonth = true;
+                    let mot = motivoVacaciones.replace(/'/g, "\\'");
+                    daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('${mot}', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
+                
+                } else if (event) {
+                    hasEventsThisMonth = true;
+                    let colorClass = "";
+                    let estUpper = event.estado.toUpperCase();
+                    let recUpper = event.recuperable.toUpperCase();
+                    
+                    if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
+                        colorClass = "cal-mananas";
+                    } else if (estUpper === "ABIERTO") {
+                        colorClass = "cal-abierto-norecup";
+                    } else if (estUpper === "CERRADO") {
+                        if (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") {
+                            colorClass = "cal-cerrado-recup";
+                        } else {
+                            colorClass = "cal-cerrado-norecup";
+                        }
                     } else {
                         colorClass = "cal-cerrado-norecup";
                     }
+
+                    let mot = event.motivo.replace(/'/g, "\\'");
+                    let est = event.estado.replace(/'/g, "\\'");
+                    let rec = event.recuperable.replace(/'/g, "\\'");
+
+                    daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
+                    
+                } else if (isWeekend) {
+                    // --- TRIPLE COMBO 3: FINES DE SEMANA FIJOS ---
+                    hasEventsThisMonth = true;
+                    daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
                 } else {
-                    colorClass = "cal-cerrado-norecup";
+                    daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
                 }
 
-                let mot = event.motivo.replace(/'/g, "\\'");
-                let est = event.estado.replace(/'/g, "\\'");
-                let rec = event.recuperable.replace(/'/g, "\\'");
-
-                daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
-                
-            } else if (isWeekend) {
-                hasEventsThisMonth = true;
-                daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
             } else {
+                // Si estamos más allá del "Tope Inteligente", los días se imprimen en blanco, sin estilos
                 daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
             }
         }
