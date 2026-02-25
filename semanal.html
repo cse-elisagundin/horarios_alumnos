@@ -113,7 +113,6 @@
                 background: white !important; 
                 margin: 0; padding: 0; 
                 display: grid !important; 
-                /* MODIFICADO: Damos más espacio a la izquierda (58%) y menos a notas (40%) */
                 grid-template-columns: 58% 40% !important; 
                 column-gap: 15px; 
                 height: 100vh; width: 100%; 
@@ -165,18 +164,14 @@
 
             table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
             
-            /* Altura auto para acomodar letras grandes */
             tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
             
-            /* Fuente base más grande */
             td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
             
             th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
             
-            /* MODIFICADO: Columna de hora ampliada a 50px para que se vea bien */
             .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
             
-            /* Nombres de alumnos MUCHO más grandes */
             .name-tag { 
                 background: transparent !important; color: black !important; border: none !important; 
                 padding: 0 !important; margin: 0 !important; font-weight: 900 !important; 
@@ -203,8 +198,8 @@
 
     <header>
         <div class="header-left">
-            <button class="btn-action btn-print" onclick="window.print()">🖨️ Imprimir</button>
-            <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">✏️ Editar</a>
+            <button class="btn-action btn-print" onclick="window.print()">Imprimir</button>
+            <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">Editar</a>
         </div>
         
         <div class="live-info-panel no-print-dynamic">
@@ -244,6 +239,15 @@
 
     let diaActualCargado = "";
 
+    // Función para obtener el número de semana (ISO 8601)
+    function obtenerNumeroSemana(fecha) {
+        const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+        const diaNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - diaNum);
+        const anioInicio = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        return Math.ceil((((d - anioInicio) / 86400000) + 1) / 7);
+    }
+
     function leerHoja(url) {
         return new Promise(resolve => {
             Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
@@ -264,6 +268,10 @@
         const promesas = dias.map(dia => leerHoja(urls[dia]));
         const todosLosDatos = await Promise.all(promesas);
 
+        // Comprobamos si la semana es par o impar
+        const fechaActual = new Date();
+        const esSemanaPar = obtenerNumeroSemana(fechaActual) % 2 === 0;
+
         let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
         btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
         btnContainer.innerHTML = btns;
@@ -279,7 +287,7 @@
 
             let html = `<div id="view-${dia}" class="planning-container">
                 <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
-                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">📚 Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
 
             let filasIngles = "";
             for(let i = 1; i < data.length; i++) {
@@ -289,23 +297,47 @@
                 let nombresPilaMap = {};
                 [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
                     let full = (row[idx] || "").trim();
-                    if(full) { let first = full.split(" ")[0].toUpperCase(); nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; }
+                    if(full) { 
+                        let isA = full.toUpperCase().includes("[A]");
+                        let isB = full.toUpperCase().includes("[B]");
+                        
+                        // Si no es su semana, no lo contamos para los duplicados de nombre
+                        if ((isA && !esSemanaPar) || (isB && esSemanaPar)) return;
+
+                        let clean = full.replace(/\[A\]|\[B\]/gi, '').trim();
+                        let first = clean.split(" ")[0].toUpperCase(); 
+                        nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; 
+                    }
                 });
 
                 const generarCelda = (full, colIdx, timeColIndex) => {
                     if(!full) return `<td></td>`;
                     full = full.trim();
-                    let first = full.split(" ")[0].toUpperCase();
+
+                    let isA = full.toUpperCase().includes("[A]");
+                    let isB = full.toUpperCase().includes("[B]");
+
+                    // LÓGICA DE SEMANAS A y B
+                    if ((isA && !esSemanaPar) || (isB && esSemanaPar)) {
+                         return `<td></td>`; // Celda vacía si no toca su semana
+                    }
+
+                    // Limpiamos el [A] y [B] para que quede bonito visualmente
+                    let cleanFullName = full.replace(/\[A\]|\[B\]/gi, '').trim();
+                    let first = cleanFullName.split(" ")[0].toUpperCase();
                     let display = first;
-                    if(nombresPilaMap[first] > 1) { let partes = full.split(" "); if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; }
+                    
+                    if(nombresPilaMap[first] > 1) { 
+                        let partes = cleanFullName.split(" "); 
+                        if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; 
+                    }
                     
                     let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
                     let startTimeStr = data[startRow][timeColIndex];
                     let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
                     let lastBlockTimeStr = data[endRow][timeColIndex];
                     
-                    // 🔥 ATRIBUTO TITLE AÑADIDO PARA HOVER WEB 🔥
-                    return `<td class="student-cell" title="${full.toUpperCase()}" data-full-name="${full.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
+                    return `<td class="student-cell" title="${cleanFullName.toUpperCase()}" data-full-name="${cleanFullName.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
                 };
 
                 html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
@@ -316,7 +348,7 @@
                 for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
                 filasIngles += `</tr>`;
             }
-            html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">🇬🇧 Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
+            html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
             container.innerHTML += html;
         });
 
