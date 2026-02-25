@@ -81,7 +81,8 @@
 
         .ticker-move {
             display: inline-block;
-            animation: ticker-scroll 35s linear infinite;
+            /* La duración base es 35s, pero el JS la sobrescribirá con el "Freno Inteligente" */
+            animation: ticker-scroll 35s linear infinite; 
         }
 
         .ticker-item {
@@ -620,7 +621,6 @@
         });
         
         let isBeyondData = false;
-        // Si hay fechas registradas y el mes actual es superior al máximo registrado, se activa el bloqueo
         if (maxYear > 0 && (year > maxYear || (year === maxYear && month > maxMonth))) {
             isBeyondData = true;
         }
@@ -664,10 +664,7 @@
             
             let event = window.globalFestivos.find(f => f.fecha === dateStr1 || f.fecha === dateStr2);
             
-            // Si el mes no está bloqueado por el "Tope Inteligente", procesamos los días
             if (!isBeyondData) {
-                
-                // Si encontramos la palabra VACACIONES (en estado o en motivo), activamos el modo cascada
                 if (event && (event.estado.toUpperCase().includes("VACACION") || event.motivo.toUpperCase().includes("VACACION"))) {
                     enVacaciones = true;
                     motivoVacaciones = (event.motivo !== "Festivo" && event.motivo.trim() !== "") ? event.motivo : "Vacaciones";
@@ -713,7 +710,6 @@
                 }
 
             } else {
-                // Si estamos más allá del "Tope Inteligente", los días se imprimen en blanco, sin estilos
                 daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
             }
         }
@@ -743,17 +739,57 @@
     };
     // ------------------------------------
 
+    // --- FUNCIONES EXTRA: PARSEAR FECHAS DE LOS AVISOS ---
+    function parseAvisoDate(dateStr) {
+        if (!dateStr || dateStr.trim() === "") return null;
+        let parts = dateStr.trim().split(" ");
+        if (parts.length < 1) return null;
+        
+        let dateParts = parts[0].split("/");
+        if (dateParts.length !== 3) return null; // Debe ser DD/MM/YYYY
+        
+        let timeParts = parts[1] ? parts[1].split(":") : ["00", "00"];
+        
+        return new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1]);
+    }
+
     async function cargarAvisos() {
         const data = await leerHoja(URL_AVISOS);
         if (data && data.length > 0 && data[1]) {
-            const mensaje = data[1][0]; const estado = (data[1][1] || "").toUpperCase().trim();
-            if(estado === "ON" && mensaje) {
-                globalAviso = mensaje;
-                const ticker = document.getElementById('global-ticker');
-                const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
-                document.getElementById('ticker-content').innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
-                ticker.style.display = "flex";
-                document.body.style.paddingTop = "80px"; // Ajuste para que no tape al estar el cuerpo anclado
+            const mensaje = data[1][0]; 
+            const estado = (data[1][1] || "").toUpperCase().trim();
+            
+            // Leemos Columna C (Inicio) y D (Fin)
+            const fechaInicioStr = data[1][2]; 
+            const fechaFinStr = data[1][3];
+
+            if (estado === "ON" && mensaje) {
+                let mostrar = true;
+                const ahora = new Date();
+                
+                const fechaInicio = parseAvisoDate(fechaInicioStr);
+                const fechaFin = parseAvisoDate(fechaFinStr);
+
+                // Comprobamos la programación
+                if (fechaInicio && ahora < fechaInicio) mostrar = false;
+                if (fechaFin && ahora > fechaFin) mostrar = false;
+
+                if (mostrar) {
+                    globalAviso = mensaje;
+                    const ticker = document.getElementById('global-ticker');
+                    const content = document.getElementById('ticker-content');
+                    
+                    const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
+                    content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
+                    
+                    // --- FRENO AUTOMÁTICO INTELIGENTE ---
+                    // Asignamos 15 segundos de base + 0.15 segundos extra por cada letra escrita
+                    let tiempoCalculado = 15 + (mensaje.length * 0.15);
+                    content.style.animationDuration = `${tiempoCalculado}s`;
+
+                    ticker.style.display = "flex";
+                    document.body.style.paddingTop = "80px"; 
+                }
             }
         }
     }
