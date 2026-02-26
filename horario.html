@@ -803,19 +803,50 @@
         const [resultadosHorario, dataExamenes, dataFaltas, dataCalendario] = await Promise.all([Promise.all(dias.map(dia => leerHoja(urls[dia]))), leerHoja(URL_EXAMENES), leerHoja(URL_FALTAS), leerHoja(URL_CALENDARIO)]);
         
         let clasesRaw = []; let examenesFuturos = []; let examenesPasados = []; let faltasEncontradas = []; 
+        
+        // --- MODIFICACIÓN: Buscamos ignorando los tags [A] y [B] y los rescatamos para la tarjeta ---
         dias.forEach((dia, idx) => {
             const data = resultadosHorario[idx]; if(!data) return;
             data.forEach(row => {
                 let hA = (row[0] || "").trim().substring(0,5);
-                if(hA && hA.includes(":")) for(let c=1; c<=6; c++) if(esNombreValido(row[c]) && limpiarTexto(row[c]).includes(nombreBuscado)) clasesRaw.push({ dia, h: hA, materia: "Apoyo", tipo: "apoyo", fullText: row[c] });
+                if(hA && hA.includes(":")) {
+                    for(let c=1; c<=6; c++) {
+                        if(esNombreValido(row[c])) {
+                            let celdaLimpia = limpiarTexto(row[c]);
+                            let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
+                            // Si la celda contiene el nombre limpio buscado
+                            if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
+                                let etiqueta = "";
+                                if(row[c].toUpperCase().includes("[A]")) etiqueta = " [A]";
+                                if(row[c].toUpperCase().includes("[B]")) etiqueta = " [B]";
+                                clasesRaw.push({ dia, h: hA, materia: "Apoyo" + etiqueta, tipo: "apoyo", fullText: row[c] });
+                            }
+                        }
+                    }
+                }
+                
                 let hI = (row[7] || "").trim().substring(0,5);
-                if(hI && hI.includes(":")) for(let c=8; c<=13; c++) if(esNombreValido(row[c]) && limpiarTexto(row[c]).includes(nombreBuscado)) clasesRaw.push({ dia, h: hI, materia: "Inglés", tipo: "ingles", fullText: row[c] });
+                if(hI && hI.includes(":")) {
+                    for(let c=8; c<=13; c++) {
+                        if(esNombreValido(row[c])) {
+                            let celdaLimpia = limpiarTexto(row[c]);
+                            let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
+                            // Si la celda contiene el nombre limpio buscado
+                            if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
+                                let etiqueta = "";
+                                if(row[c].toUpperCase().includes("[A]")) etiqueta = " [A]";
+                                if(row[c].toUpperCase().includes("[B]")) etiqueta = " [B]";
+                                clasesRaw.push({ dia, h: hI, materia: "Inglés" + etiqueta, tipo: "ingles", fullText: row[c] });
+                            }
+                        }
+                    }
+                }
             });
         });
 
         const hoy = new Date(); hoy.setHours(0,0,0,0);
         if(dataExamenes) dataExamenes.forEach(row => {
-            if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado)) {
+            if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim())) {
                 let fO = new Date(row[0]); if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } fO.setHours(0,0,0,0);
                 let fechaBonitaExamen = formatearFechaCorta(row[0]);
                 let item = { fecha: fechaBonitaExamen || "Fecha pte.", asignatura: row[1] || "Examen", nota: (row[3] || "").trim() };
@@ -824,7 +855,7 @@
         });
 
         if(dataFaltas) dataFaltas.forEach(row => {
-            if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado)) {
+            if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim())) {
                 let rawDateStr = row[1];
                 let dateObj = new Date(rawDateStr);
                 if (isNaN(dateObj.getTime())) {
@@ -863,7 +894,8 @@
             });
         }
 
-        const nF = formatNameForDisplay(nombre);
+        // --- MODIFICACIÓN: Nos aseguramos de que el nombre del titulo vaya limpio ---
+        const nF = formatNameForDisplay(nombre.replace(/\[a\]|\[b\]/gi, '').trim());
 
         document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
         document.getElementById('loading-spinner').style.display = 'none';
@@ -945,7 +977,15 @@
         const area = document.getElementById('directory-area'); area.innerHTML = "Cargando..."; area.style.display = 'block';
         const resultados = await Promise.all(Object.values(urls).map(u => leerHoja(u)));
         let alumnos = new Set();
-        resultados.forEach(data => data && data.forEach(row => { for(let c=1; c<=13; c++) if(c!==7 && esNombreValido(row[c])) alumnos.add(row[c].toLowerCase()); }));
+        // --- MODIFICACIÓN: Limpiamos los nombres al crear el directorio para que no salgan duplicados ---
+        resultados.forEach(data => data && data.forEach(row => { 
+            for(let c=1; c<=13; c++) {
+                if(c!==7 && esNombreValido(row[c])) {
+                    let nombreLimpioParaDirectorio = row[c].replace(/\[A\]|\[B\]/gi, '').trim().toLowerCase();
+                    alumnos.add(nombreLimpioParaDirectorio);
+                }
+            } 
+        }));
         area.innerHTML = Array.from(alumnos).sort().map(n => `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`).join('');
     }
 
@@ -1006,11 +1046,12 @@
         
         document.getElementById('btnCopiar').onclick = () => {
             const btn = document.getElementById('btnCopiar');
-            const nombreAlumno = input.value.trim();
+            // --- MODIFICACIÓN: Nos aseguramos de copiar el nombre limpio al portapapeles ---
+            const nombreAlumnoLimpio = input.value.replace(/\[A\]|\[B\]/gi, '').trim();
             
-            if(!nombreAlumno) return;
+            if(!nombreAlumnoLimpio) return;
 
-            const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumno);
+            const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumnoLimpio);
 
             navigator.clipboard.writeText(urlFinal).then(() => { 
                 const original = btn.innerText;
