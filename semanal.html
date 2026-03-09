@@ -191,11 +191,6 @@
 <body>
 
 <div class="container">
-    <div class="web-brand">
-        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" alt="Logo CSE" class="web-logo-img">
-        <div class="brand-line"></div>
-    </div>
-
     <header>
         <div class="header-left">
             <button class="btn-action btn-print" onclick="window.print()">Imprimir</button>
@@ -286,6 +281,10 @@
             const h_ing_alum = headers.slice(8, 14);
 
             let html = `<div id="view-${dia}" class="planning-container">
+                <div class="web-brand" style="margin-top: 10px;">
+                    <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" alt="Logo CSE" class="web-logo-img">
+                    <div class="brand-line"></div>
+                </div>
                 <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
                 <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
 
