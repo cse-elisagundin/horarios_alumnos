@@ -64,13 +64,14 @@
                     </div>
                     
                     <h2 class="text-2xl font-extrabold text-[#243c7a] mb-2 uppercase">Acceso Privado</h2>
-                    <p v-if="!deviceAuthorized" class="text-xs font-bold text-orange-500 mb-4 bg-orange-50 p-2 rounded border border-orange-200">🔒 Equipo no vinculado</p>
+                    <p v-if="!hasDeviceToken" class="text-xs font-bold text-orange-500 mb-4 bg-orange-50 p-2 rounded border border-orange-200">🔒 Equipo no vinculado</p>
                     
                     <input type="password" v-model="passwordInput" @keyup.enter="login" placeholder="Contraseña..." class="w-full p-4 rounded-xl input-corp text-center text-lg mb-4 bg-gray-50">
-                    <button @click="login" class="w-full py-4 text-white font-bold rounded-xl btn-corp uppercase shadow-lg">Entrar</button>
+                    <button @click="login" :disabled="loading" class="w-full py-4 text-white font-bold rounded-xl btn-corp uppercase shadow-lg disabled:opacity-50">
+                        {{ loading ? 'Verificando...' : 'Entrar' }}
+                    </button>
                     
                     <p v-if="loginError" class="mt-4 text-red-500 font-bold text-xs animate-pulse">{{ errorMsg }}</p>
-                    <p v-if="loading" class="mt-4 text-xs text-gray-400 animate-pulse">Sincronizando base de datos...</p>
                 </div>
             </div>
         </transition>
@@ -114,7 +115,7 @@
                 </div>
                 <div class="p-2 border-t bg-gray-50 text-center flex justify-between px-4">
                     <button @click="logout" class="text-xs font-bold text-gray-400 hover:text-red-500">CERRAR SESIÓN</button>
-                    <span class="text-xs font-bold text-green-500" title="Ordenador Autorizado"><i class="fas fa-shield-alt"></i> PC Local</span>
+                    <span class="text-xs font-bold text-green-500" title="Conexión Cifrada y Segura"><i class="fas fa-shield-alt"></i> API Segura</span>
                 </div>
             </div>
 
@@ -339,14 +340,13 @@
 
 <script>
     const { createApp } = Vue;
-    const PASS_HASH = "MDEwNTIz"; 
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
     createApp({
         data() {
             return {
-                authenticated: false, passwordInput: '', loginError: false, errorMsg: '',
-                deviceAuthorized: false, apiUrl: '', 
+                authenticated: false, passwordInput: '', sessionPass: '', loginError: false, errorMsg: '',
+                hasDeviceToken: false, apiUrl: '', 
                 list: [], fijosRaw: [], search: '', selected: null, isNew: false, 
                 loading: false, saving: false, savingPago: false,
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
@@ -429,45 +429,72 @@
                 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
                 return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false };
             },
-            login() {
-                // COMANDO SECRETO PARA AUTORIZAR EL PORTÁTIL
-                if (this.passwordInput === 'ACTIVAR-PC-2026') {
-                    localStorage.setItem('academia_device_token', 'autorizado');
-                    this.deviceAuthorized = true;
-                    this.passwordInput = '';
-                    this.loginError = false;
-                    alert('✅ Este ordenador ha sido vinculado permanentemente y autorizado para acceder a la base de datos.');
-                    return;
-                }
-
-                // BLOQUEO SI NO ESTÁ AUTORIZADO
-                if (!this.deviceAuthorized) {
-                    this.loginError = true;
-                    this.errorMsg = 'ACCESO DENEGADO. Este ordenador no está vinculado a la academia. Introduce el código maestro.';
-                    return;
-                }
-
-                // CONTRASEÑA NORMAL (010523)
-                if (btoa(this.passwordInput) === PASS_HASH) {
-                    this.authenticated = true; this.loginError = false;
-                } else { 
-                    this.loginError = true; this.errorMsg = '⚠️ Contraseña incorrecta'; this.passwordInput = ''; 
-                }
-            },
-            logout() { location.reload(); },
-            async loadData() {
+            
+            // EL NUEVO LOGIN SEGURO QUE PREGUNTA AL SERVIDOR
+            async login() {
+                if (!this.passwordInput) return;
                 this.loading = true;
+                this.loginError = false;
+                this.apiUrl = atob(ENCRYPTED_URL);
+
+                // 1. INTENTO DE ACTIVAR EL DISPOSITIVO
+                if (this.passwordInput.includes('ACTIVAR')) {
+                    try {
+                        const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ action: 'activate', code: this.passwordInput }) });
+                        const json = await res.json();
+                        if (json.status === 'success') {
+                            localStorage.setItem('academia_device_token', json.token);
+                            this.hasDeviceToken = true;
+                            this.passwordInput = '';
+                            alert('✅ Dispositivo VINCULADO de forma segura.');
+                        } else {
+                            this.loginError = true; this.errorMsg = 'Código de activación incorrecto o expirado.';
+                        }
+                    } catch (e) { this.loginError = true; this.errorMsg = 'Error conectando con el servidor.'; }
+                    this.loading = false;
+                    return;
+                }
+
+                // 2. INTENTO DE LOGIN NORMAL
+                const savedToken = localStorage.getItem('academia_device_token');
+                if (!savedToken) {
+                    this.loginError = true; this.errorMsg = 'ACCESO DENEGADO. Equipo no vinculado.';
+                    this.loading = false; return;
+                }
+
                 try {
-                    this.apiUrl = atob(ENCRYPTED_URL);
-                    const res = await fetch(this.apiUrl);
+                    // Solo el servidor sabe si la contraseña es correcta, así que se la mandamos a probar
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ action: 'fetch_data', pass: this.passwordInput, device_token: savedToken }) });
                     const json = await res.json();
+                    
                     if (json.status === 'success') {
+                        this.sessionPass = this.passwordInput; // Guardamos la contraseña en memoria volátil (se borra al cerrar la pestaña)
                         this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
                         this.fijosRaw = json.fijos || [];
+                        this.authenticated = true;
+                    } else {
+                        this.loginError = true; this.errorMsg = json.message;
+                        this.passwordInput = '';
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) { this.loginError = true; this.errorMsg = 'Error de conexión con la base de datos segura.'; }
                 this.loading = false;
             },
+
+            logout() { 
+                this.sessionPass = '';
+                location.reload(); 
+            },
+            
+            // CREAR PAQUETE SEGURO PARA LAS ACCIONES
+            getSecurePayload(action, extraData = {}) {
+                return {
+                    action: action,
+                    pass: this.sessionPass,
+                    device_token: localStorage.getItem('academia_device_token'),
+                    ...extraData
+                };
+            },
+
             createNew() {
                 this.isNew = true; this.activeTab = 'ficha';
                 this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false, usuario_aules:'', pass_aules:'' };
@@ -490,28 +517,42 @@
                     } catch(errDate) { this.form.nacimiento = ''; }
                 } catch(e) {}
             },
+
             async saveData() {
                 this.saving = true;
-                try {
-                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ ...this.form, action: this.isNew ? 'create' : 'update', id: this.selected.id }) });
-                    const json = await res.json();
-                    if (json.status === 'success') {
-                        this.showSuccess = true; this.successMessage = 'Ficha Guardada'; this.loadData();
-                        setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000);
-                    } else { alert("Error desde Google: " + json.message); this.saving = false; }
-                } catch (e) { alert('Error de red al guardar la ficha'); this.saving = false; }
-            },
-            async actualizarFijo(mesHeader, tipo, valor, objRef) {
-                if(tipo === 'cuota' && !valor) return alert("Introduce una cuota válida");
-                objRef.cargando = true;
-                const payload = { action: 'update_ingreso_fijo', alumno: this.form.nombre + ' ' + this.form.apellidos, mes_header: mesHeader, tipo: tipo, valor: valor };
+                const payload = this.getSecurePayload(this.isNew ? 'create' : 'update', { ...this.form, id: this.selected.id });
                 try {
                     const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
                     const json = await res.json();
-                    if (json.status === 'success') await this.loadData(); else alert("Aviso de Google: " + json.message);
+                    if (json.status === 'success') {
+                        this.showSuccess = true; this.successMessage = 'Ficha Guardada'; 
+                        
+                        // Recargar lista silenciosamente
+                        const res2 = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(this.getSecurePayload('fetch_data')) });
+                        const json2 = await res2.json();
+                        if(json2.status === 'success') this.list = json2.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
+                        
+                        setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000);
+                    } else { alert("Servidor rechazó la acción: " + json.message); this.saving = false; }
+                } catch (e) { alert('Error de red al guardar la ficha'); this.saving = false; }
+            },
+
+            async actualizarFijo(mesHeader, tipo, valor, objRef) {
+                if(tipo === 'cuota' && !valor) return alert("Introduce una cuota válida");
+                objRef.cargando = true;
+                const payload = this.getSecurePayload('update_ingreso_fijo', { alumno: this.form.nombre + ' ' + this.form.apellidos, mes_header: mesHeader, tipo: tipo, valor: valor });
+                try {
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                         const res2 = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(this.getSecurePayload('fetch_data')) });
+                         const json2 = await res2.json();
+                         if(json2.status === 'success') this.fijosRaw = json2.fijos || [];
+                    } else alert("Servidor rechazó la acción: " + json.message);
                 } catch (e) { alert('Error de red actualizando estado'); }
                 objRef.cargando = false;
             },
+
             async registrarPago() {
                 this.savingPago = true;
                 let tarifaFinal = "";
@@ -533,11 +574,11 @@
                     }
                 }
 
-                const payload = {
-                    action: 'create_pago', alumno: this.form.nombre + ' ' + this.form.apellidos,
+                const payload = this.getSecurePayload('create_pago', {
+                    alumno: this.form.nombre + ' ' + this.form.apellidos,
                     tarifa: tarifaFinal, fecha: this.nuevoPago.fecha, extras: extraFinal,
                     importe: this.importeCalculado, mes: this.nuevoPago.mes, metodo: this.nuevoPago.metodo, generarPDF: this.nuevoPago.generarPDF
-                };
+                });
 
                 try {
                     const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
@@ -546,9 +587,10 @@
                         this.showSuccess = true; this.successMessage = '¡Pago registrado correctamente!';
                         this.nuevoPago = this.pagoVacio(); 
                         setTimeout(() => { this.showSuccess = false; this.savingPago = false; }, 2500);
-                    } else { alert("Aviso de Google al registrar el pago:\n\n" + json.message); this.savingPago = false; }
+                    } else { alert("Servidor rechazó el pago:\n\n" + json.message); this.savingPago = false; }
                 } catch (e) { alert('Error de conexión enviando el pago'); this.savingPago = false; }
             },
+            
             imprimirTicketRapido() {
                 const numRecibo = `TEMP-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}).replace(':','')}`;
                 const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
@@ -588,9 +630,7 @@
             }
         },
         mounted() { 
-            // Comprobamos silenciosamente si este equipo está vinculado
-            this.deviceAuthorized = localStorage.getItem('academia_device_token') === 'autorizado';
-            this.loadData(); 
+            this.hasDeviceToken = !!localStorage.getItem('academia_device_token');
         }
     }).mount('#app');
 </script>
