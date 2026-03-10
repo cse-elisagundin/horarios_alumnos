@@ -26,11 +26,8 @@
         @keyframes loading-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
         .loading-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #e0e7ff; overflow: hidden; }
         .loading-progress { height: 100%; width: 40%; background: var(--c-accent); animation: loading-bar 1.2s infinite linear; }
-        
         .tab-btn { padding: 10px 24px; font-weight: 800; text-transform: uppercase; color: #888; border-bottom: 3px solid transparent; transition: all 0.3s; }
         .tab-btn.active { color: var(--c-primary); border-bottom-color: var(--c-accent); }
-
-        /* MODO IMPRESIÓN DEL RECIBO */
         @media print {
             body { background: white; margin: 0; padding: 0; }
             #app-main-content { display: none !important; }
@@ -166,10 +163,18 @@
                                 <input v-model="form.provincia" placeholder="Provincia" class="p-3 rounded-lg border bg-gray-50">
                             </section>
                             <section class="grid grid-cols-3 gap-6">
-                                <div class="col-span-3 font-bold text-[#243c7a] border-b pb-2">ACADÉMICO</div>
+                                <div class="col-span-3 font-bold text-[#243c7a] border-b pb-2">ACADÉMICO & PLATAFORMAS</div>
                                 <input v-model="form.colegio" placeholder="Colegio" class="p-3 rounded-lg border bg-gray-50">
                                 <input v-model="form.curso" placeholder="Curso" class="p-3 rounded-lg border bg-gray-50">
                                 <input v-model="form.tlf" placeholder="Teléfono Alumno" class="p-3 rounded-lg border bg-gray-50">
+                                <div class="relative">
+                                    <i class="fas fa-user-graduate absolute left-3 top-3.5 text-gray-400"></i>
+                                    <input v-model="form.aules_user" placeholder="Usuario Aules" class="w-full pl-9 p-3 rounded-lg border border-indigo-200 bg-indigo-50 outline-none focus:border-indigo-400">
+                                </div>
+                                <div class="relative col-span-2">
+                                    <i class="fas fa-key absolute left-3 top-3.5 text-gray-400"></i>
+                                    <input v-model="form.aules_pass" placeholder="Contraseña Aules" class="w-full pl-9 p-3 rounded-lg border border-indigo-200 bg-indigo-50 outline-none focus:border-indigo-400">
+                                </div>
                             </section>
                             <section class="grid grid-cols-2 gap-8">
                                 <div class="bg-green-50 p-6 rounded-2xl border border-green-200">
@@ -198,18 +203,14 @@
                         </form>
 
                         <div v-if="activeTab === 'pagos'" class="p-8 space-y-8 bg-gray-50 min-h-[500px]">
-                            
                             <div class="bg-white p-6 rounded-xl border border-[#2b94cc] shadow-sm">
                                 <h3 class="font-extrabold text-[#243c7a] mb-4 uppercase flex items-center gap-2 border-b pb-2">
                                     <i class="fas fa-calendar-check text-[#2b94cc]"></i> Control de Ingresos Fijos
                                 </h3>
-                                
                                 <div v-if="mesesFijos.length === 0" class="text-gray-500 italic text-sm">El alumno no existe en la base de Ingresos Fijos.</div>
-                                
                                 <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     <div v-for="(mes, idx) in mesesFijos" :key="idx" class="border rounded-xl p-4 flex flex-col items-center shadow-sm relative overflow-hidden transition-all duration-300" :class="[mes.bgClass, mes.cargando ? 'opacity-50 cursor-not-allowed' : '']">
                                         <div class="text-xs font-extrabold text-gray-500 uppercase mb-1">{{ mes.mesNombre }}</div>
-                                        
                                         <div v-if="!mes.cuota" class="flex flex-col items-center w-full mt-2">
                                             <span class="text-xs text-gray-400 font-bold mb-1">SIN CUOTA</span>
                                             <div class="flex gap-1 w-full">
@@ -217,14 +218,11 @@
                                                 <button @click="actualizarFijo(mes.mesNombre, 'cuota', mes.inputCuota, mes)" :disabled="mes.cargando" class="bg-[#2b94cc] text-white px-2 rounded hover:bg-[#207bb0] disabled:opacity-50"><i class="fas fa-save"></i></button>
                                             </div>
                                         </div>
-
                                         <div v-else class="flex flex-col items-center w-full">
                                             <div class="text-2xl font-black mb-2" :class="mes.pagado ? 'text-green-700' : 'text-gray-700'">{{ mes.cuota }}€</div>
-                                            
                                             <button v-if="mes.pagado" @click="actualizarFijo(mes.mesNombre, 'estado', false, mes)" :disabled="mes.cargando" class="w-full py-1.5 bg-green-500 text-white rounded-lg font-bold text-xs uppercase hover:bg-green-600 transition flex justify-center items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
                                                 <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else><i class="fas fa-check-circle"></i> PAGADO</template>
                                             </button>
-                                            
                                             <button v-else @click="actualizarFijo(mes.mesNombre, 'estado', true, mes)" :disabled="mes.cargando" class="w-full py-1.5 bg-red-100 text-red-600 border border-red-300 rounded-lg font-bold text-xs uppercase hover:bg-red-200 transition flex justify-center items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
                                                 <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else>PENDIENTE</template>
                                             </button>
@@ -240,98 +238,58 @@
                                         <i class="fas fa-print"></i> Imprimir Recibo Ahora
                                     </button>
                                 </div>
-                                
                                 <div class="grid grid-cols-3 gap-5 mb-4">
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Fecha</label>
-                                        <input type="date" v-model="nuevoPago.fecha" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
-                                    </div>
+                                    <div><label class="block text-xs font-bold text-gray-500 mb-1">Fecha</label><input type="date" v-model="nuevoPago.fecha" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]"></div>
                                     <div>
                                         <label class="block text-xs font-bold text-gray-500 mb-1">Mes</label>
                                         <select v-model="nuevoPago.mes" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white">
-                                            <option value="" disabled>Selecciona mes...</option>
-                                            <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+                                            <option value="" disabled>Selecciona mes...</option><option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
                                         <select v-model="nuevoPago.metodo" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white">
-                                            <option value="" disabled>Método...</option>
-                                            <option>Efectivo</option>
-                                            <option>Tarjeta</option>
-                                            <option>Transferencia</option>
-                                            <option>Bizum</option>
+                                            <option value="" disabled>Método...</option><option>Efectivo</option><option>Tarjeta</option><option>Transferencia</option><option>Bizum</option>
                                         </select>
                                     </div>
-                                    
                                     <div class="col-span-3">
                                         <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción <span class="text-red-500 font-normal ml-1">(Para un extra exclusivo, pon esto en "Sin Tarifa")</span></label>
                                         <select v-model="nuevoPago.tarifaSelect" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white text-[#243c7a] font-bold">
-                                            <option value="">-- Sin Tarifa Base (Solo Extra) --</option>
-                                            <option value="Opción 1 (40€)">Opción 1 (40€)</option>
-                                            <option value="Opción 2 (50€)">Opción 2 (50€)</option>
-                                            <option value="Opción 3 (80€)">Opción 3 (80€)</option>
-                                            <option value="Opción 4 (85€)">Opción 4 (85€)</option>
-                                            <option value="Opción 5 (110€)">Opción 5 (110€)</option>
-                                            <option value="Opción 6 (135€)">Opción 6 (135€)</option>
-                                            <option value="personalizada">✏️ Otra cantidad (Personalizada...)</option>
+                                            <option value="">-- Sin Tarifa Base (Solo Extra) --</option><option value="Opción 1 (40€)">Opción 1 (40€)</option><option value="Opción 2 (50€)">Opción 2 (50€)</option><option value="Opción 3 (80€)">Opción 3 (80€)</option><option value="Opción 4 (85€)">Opción 4 (85€)</option><option value="Opción 5 (110€)">Opción 5 (110€)</option><option value="Opción 6 (135€)">Opción 6 (135€)</option><option value="personalizada">✏️ Otra cantidad (Personalizada...)</option>
                                         </select>
                                     </div>
-                                    
-                                    <div v-if="!nuevoPago.tarifaSelect" class="col-span-3 bg-blue-50 p-3 rounded-lg border border-blue-200 text-blue-700 text-xs font-bold text-center">
-                                        ℹ️ Has marcado "Sin Tarifa Base". Este pago se registrará EXCLUSIVAMENTE en la columna de EXTRAS.
-                                    </div>
-
+                                    <div v-if="!nuevoPago.tarifaSelect" class="col-span-3 bg-blue-50 p-3 rounded-lg border border-blue-200 text-blue-700 text-xs font-bold text-center">ℹ️ Has marcado "Sin Tarifa Base". Este pago se registrará EXCLUSIVAMENTE en la columna de EXTRAS.</div>
                                     <div v-if="nuevoPago.tarifaSelect === 'personalizada'" class="col-span-3 grid grid-cols-3 gap-5 bg-orange-50 p-4 rounded-lg border border-orange-200">
-                                        <div class="col-span-2">
-                                            <label class="block text-xs font-bold text-orange-600 mb-1">Concepto Personalizado</label>
-                                            <input v-model="nuevoPago.tarifaPersConcepto" placeholder="Ej: Medio mes Abril..." class="w-full p-2 rounded border border-orange-300 outline-none">
-                                        </div>
-                                        <div>
-                                            <label class="block text-xs font-bold text-orange-600 mb-1">Importe Tarifa (€)</label>
-                                            <input type="number" step="0.01" v-model="nuevoPago.tarifaPersImporte" placeholder="0.00" class="w-full p-2 rounded border border-orange-300 outline-none font-bold">
-                                        </div>
+                                        <div class="col-span-2"><label class="block text-xs font-bold text-orange-600 mb-1">Concepto Personalizado</label><input v-model="nuevoPago.tarifaPersConcepto" placeholder="Ej: Medio mes Abril..." class="w-full p-2 rounded border border-orange-300 outline-none"></div>
+                                        <div><label class="block text-xs font-bold text-orange-600 mb-1">Importe Tarifa (€)</label><input type="number" step="0.01" v-model="nuevoPago.tarifaPersImporte" placeholder="0.00" class="w-full p-2 rounded border border-orange-300 outline-none font-bold"></div>
                                     </div>
-                                    
                                     <div class="col-span-1">
                                         <label class="block text-xs font-bold text-[#fa65c3] mb-1">Importe Extra (€)</label>
                                         <input type="number" step="0.01" v-model="nuevoPago.extraImporte" placeholder="0.00" class="w-full p-2.5 rounded-lg border border-[#fa65c3] outline-none focus:ring focus:ring-pink-200">
                                     </div>
-
                                     <div class="col-span-2">
                                         <label class="block text-xs font-bold text-[#fa65c3] mb-1">Concepto del Extra <span class="text-gray-400 font-normal ml-1">(Déjalo en blanco para guardar solo el número)</span></label>
                                         <input v-model="nuevoPago.extraConcepto" placeholder="Ej: Material escolar..." class="w-full p-2.5 rounded-lg border border-[#fa65c3] outline-none focus:ring focus:ring-pink-200">
                                     </div>
                                 </div>
-
                                 <div class="flex items-center justify-between border-t pt-5 mt-2 bg-gray-50 -mx-6 -mb-6 p-6 rounded-b-xl">
-                                    <div class="flex flex-col">
-                                        <span class="text-xs font-bold text-gray-400 uppercase">Importe Total Calculado</span>
-                                        <span class="text-3xl font-black text-[#243c7a]">{{ importeCalculado }} €</span>
-                                    </div>
-
+                                    <div class="flex flex-col"><span class="text-xs font-bold text-gray-400 uppercase">Importe Total Calculado</span><span class="text-3xl font-black text-[#243c7a]">{{ importeCalculado }} €</span></div>
                                     <div class="flex items-center gap-6">
                                         <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded-lg transition" :class="nuevoPago.generarPDF ? 'text-[#2b94cc]' : 'text-gray-400'">
                                             <input type="checkbox" v-model="nuevoPago.generarPDF" class="w-5 h-5 rounded accent-[#2b94cc]">
                                             <span class="font-extrabold text-xs uppercase select-none">Drive PDF</span>
                                         </label>
-                                        
                                         <button @click="registrarPago" :disabled="savingPago || (!nuevoPago.tarifaSelect && !nuevoPago.extraImporte)" class="bg-[#2b94cc] text-white px-8 py-3 rounded-xl hover:bg-[#207bb0] font-bold shadow-lg flex items-center gap-2 transition-transform transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                                            <i v-if="savingPago" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-paper-plane"></i>
-                                            {{ savingPago ? 'Guardando...' : 'GUARDAR PAGO' }}
+                                            <i v-if="savingPago" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-paper-plane"></i> {{ savingPago ? 'Guardando...' : 'GUARDAR PAGO' }}
                                         </button>
                                     </div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
-                
                 <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
-                    <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse">
-                        <i class="fas fa-folder-open text-6xl text-[#2b94cc] opacity-50"></i>
-                    </div>
+                    <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse"><i class="fas fa-folder-open text-6xl text-[#2b94cc] opacity-50"></i></div>
                     <h2 class="text-xl font-bold text-[#243c7a]">Selecciona un alumno</h2>
                 </div>
             </div>
@@ -345,38 +303,18 @@
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
     createApp({
-        data() {
-            return {
-                authenticated: false, passwordInput: '', loginError: false, apiUrl: '', 
-                list: [], fijosRaw: [], search: '', selected: null, isNew: false, 
-                loading: false, saving: false, savingPago: false,
-                showSuccess: false, successMessage: '', form: {}, showInactive: false,
-                activeTab: 'ficha', nuevoPago: this.pagoVacio()
-            }
-        },
+        data() { return { authenticated: false, passwordInput: '', loginError: false, apiUrl: '', list: [], fijosRaw: [], search: '', selected: null, isNew: false, loading: false, saving: false, savingPago: false, showSuccess: false, successMessage: '', form: {}, showInactive: false, activeTab: 'ficha', nuevoPago: this.pagoVacio() } },
         computed: {
-            filteredList() {
-                const t = this.normalizeName(this.search);
-                return this.list.filter(s => {
-                    if (!this.showInactive && s.baja) return false;
-                    const nombreCompleto = this.normalizeName(`${s.nombre || ""} ${s.apellidos || ""}`);
-                    return nombreCompleto.includes(t) || (s.dni || "").toLowerCase().includes(t);
-                });
-            },
+            filteredList() { const t = this.normalizeName(this.search); return this.list.filter(s => { if (!this.showInactive && s.baja) return false; const nombreCompleto = this.normalizeName(`${s.nombre || ""} ${s.apellidos || ""}`); return nombreCompleto.includes(t) || (s.dni || "").toLowerCase().includes(t); }); },
             mesesFijos() {
                 if(!this.form.nombre || this.fijosRaw.length === 0) return [];
-                const headers = this.fijosRaw[0];
-                const nombreCompleto = this.normalizeName(this.form.nombre + " " + this.form.apellidos);
-                
+                const headers = this.fijosRaw[0]; const nombreCompleto = this.normalizeName(this.form.nombre + " " + this.form.apellidos);
                 const filaAlumno = this.fijosRaw.find((row, idx) => idx > 0 && this.normalizeName(row[1]) === nombreCompleto);
                 if(!filaAlumno) return [];
-
                 let meses = [];
                 for(let i = 2; i < headers.length; i += 2) {
                     if(headers[i]) {
-                        const valCuota = filaAlumno[i] !== "" ? filaAlumno[i] : null;
-                        const estaPagado = String(filaAlumno[i+1]).toUpperCase() === 'TRUE' || filaAlumno[i+1] === true;
-                        
+                        const valCuota = filaAlumno[i] !== "" ? filaAlumno[i] : null; const estaPagado = String(filaAlumno[i+1]).toUpperCase() === 'TRUE' || filaAlumno[i+1] === true;
                         let bg = valCuota ? (estaPagado ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : 'bg-gray-100 border-dashed border-gray-300';
                         meses.push({ mesNombre: headers[i], cuota: valCuota, pagado: estaPagado, inputCuota: '', cargando: false, bgClass: bg });
                     }
@@ -386,105 +324,46 @@
             importeCalculado() {
                 let tarifa = 0;
                 if(this.nuevoPago.tarifaSelect === 'personalizada') tarifa = Number(this.nuevoPago.tarifaPersImporte) || 0;
-                else if(this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
-                    const match = this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/);
-                    if(match) tarifa = Number(match[1]);
-                }
-                const extra = Number(this.nuevoPago.extraImporte) || 0;
-                return parseFloat((tarifa + extra).toFixed(2));
+                else if(this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') { const match = this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/); if(match) tarifa = Number(match[1]); }
+                const extra = Number(this.nuevoPago.extraImporte) || 0; return parseFloat((tarifa + extra).toFixed(2));
             }
         },
         watch: {
-            'nuevoPago.fecha'(newFecha) {
-                if(newFecha) {
-                    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-                    const mIndex = new Date(newFecha).getMonth();
-                    this.nuevoPago.mes = meses[mIndex];
-                }
-            },
+            'nuevoPago.fecha'(newFecha) { if(newFecha) { const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]; this.nuevoPago.mes = meses[new Date(newFecha).getMonth()]; } },
             'nuevoPago.mes'(newMes) {
                 if(newMes && this.mesesFijos.length > 0) {
                     const mesEncontrado = this.mesesFijos.find(m => m.mesNombre.toLowerCase().includes(newMes.toLowerCase()));
                     if(mesEncontrado && mesEncontrado.cuota) {
                         const cuotaNum = Number(mesEncontrado.cuota);
-                        const opciones = {
-                            40: "Opción 1 (40€)",
-                            50: "Opción 2 (50€)",
-                            80: "Opción 3 (80€)",
-                            85: "Opción 4 (85€)",
-                            110: "Opción 5 (110€)",
-                            135: "Opción 6 (135€)"
-                        };
-                        
-                        if (opciones[cuotaNum]) {
-                            this.nuevoPago.tarifaSelect = opciones[cuotaNum];
-                        } else {
-                            this.nuevoPago.tarifaSelect = "personalizada";
-                            setTimeout(() => {
-                                this.nuevoPago.tarifaPersImporte = cuotaNum;
-                                this.nuevoPago.tarifaPersConcepto = ""; 
-                            }, 50);
-                        }
-                    } else { 
-                        this.nuevoPago.tarifaSelect = ""; 
-                    }
+                        const opciones = { 40: "Opción 1 (40€)", 50: "Opción 2 (50€)", 80: "Opción 3 (80€)", 85: "Opción 4 (85€)", 110: "Opción 5 (110€)", 135: "Opción 6 (135€)" };
+                        if (opciones[cuotaNum]) { this.nuevoPago.tarifaSelect = opciones[cuotaNum]; } else { this.nuevoPago.tarifaSelect = "personalizada"; setTimeout(() => { this.nuevoPago.tarifaPersImporte = cuotaNum; this.nuevoPago.tarifaPersConcepto = ""; }, 50); }
+                    } else { this.nuevoPago.tarifaSelect = ""; }
                 }
             },
-            'nuevoPago.metodo'(newMetodo) {
-                if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true;
-                if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false;
-            }
+            'nuevoPago.metodo'(newMetodo) { if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true; if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false; }
         },
         methods: {
-            normalizeName(str) {
-                if(!str) return "";
-                return String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ");
-            },
-            pagoVacio() {
-                const hoy = new Date().toISOString().split('T')[0];
-                const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-                return { 
-                    fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', 
-                    tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '',
-                    extraConcepto: '', extraImporte: '', generarPDF: false 
-                };
-            },
-            login() {
-                if (btoa(this.passwordInput) === PASS_HASH) {
-                    this.authenticated = true; this.loginError = false;
-                } else { this.loginError = true; this.passwordInput = ''; }
-            },
+            normalizeName(str) { if(!str) return ""; return String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " "); },
+            pagoVacio() { const hoy = new Date().toISOString().split('T')[0]; const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]; return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false }; },
+            login() { if (btoa(this.passwordInput) === PASS_HASH) { this.authenticated = true; this.loginError = false; } else { this.loginError = true; this.passwordInput = ''; } },
             logout() { location.reload(); },
-            
             async loadData() {
                 this.loading = true;
                 try {
-                    this.apiUrl = atob(ENCRYPTED_URL);
-                    const res = await fetch(this.apiUrl);
-                    const json = await res.json();
-                    if (json.status === 'success') {
-                        this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
-                        this.fijosRaw = json.fijos || [];
-                    }
+                    this.apiUrl = atob(ENCRYPTED_URL); const res = await fetch(this.apiUrl); const json = await res.json();
+                    if (json.status === 'success') { this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || "")); this.fijosRaw = json.fijos || []; }
                 } catch (e) { console.error(e); }
                 this.loading = false;
             },
-            
             createNew() {
                 this.isNew = true; this.activeTab = 'ficha';
-                this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false };
+                this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false, aules_user: '', aules_pass: '' };
                 this.selected = { id: 'TEMP' };
             },
-            
             selectStudent(s) {
                 try {
-                    this.form = JSON.parse(JSON.stringify(s));
-                    this.isNew = false; this.activeTab = 'ficha'; this.selected = s;
-                    this.nuevoPago = this.pagoVacio(); 
-                    
-                    const mesActual = this.nuevoPago.mes;
-                    this.nuevoPago.mes = ''; setTimeout(() => { this.nuevoPago.mes = mesActual; }, 50);
-
+                    this.form = JSON.parse(JSON.stringify(s)); this.isNew = false; this.activeTab = 'ficha'; this.selected = s; this.nuevoPago = this.pagoVacio(); 
+                    const mesActual = this.nuevoPago.mes; this.nuevoPago.mes = ''; setTimeout(() => { this.nuevoPago.mes = mesActual; }, 50);
                     this.form.fam1_tlf = String(this.form.fam1_tlf || ''); this.form.fam2_tlf = String(this.form.fam2_tlf || ''); this.form.tlf = String(this.form.tlf || '');
                     try {
                         let val = this.form.nacimiento;
@@ -495,198 +374,38 @@
                     } catch(errDate) { this.form.nacimiento = ''; }
                 } catch(e) {}
             },
-            
             async saveData() {
                 this.saving = true;
                 try {
                     const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ ...this.form, action: this.isNew ? 'create' : 'update', id: this.selected.id }) });
                     const json = await res.json();
-                    if (json.status === 'success') {
-                        this.showSuccess = true; this.successMessage = 'Ficha Guardada'; this.loadData();
-                        setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000);
-                    } else {
-                        alert("Error desde Google: " + json.message);
-                        this.saving = false;
-                    }
+                    if (json.status === 'success') { this.showSuccess = true; this.successMessage = 'Ficha Guardada'; this.loadData(); setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000); } 
+                    else { alert("Error desde Google: " + json.message); this.saving = false; }
                 } catch (e) { alert('Error de red al guardar la ficha'); this.saving = false; }
             },
-
             async actualizarFijo(mesHeader, tipo, valor, objRef) {
                 if(tipo === 'cuota' && !valor) return alert("Introduce una cuota válida");
                 objRef.cargando = true;
-                
-                const payload = {
-                    action: 'update_ingreso_fijo',
-                    alumno: this.form.nombre + ' ' + this.form.apellidos,
-                    mes_header: mesHeader, tipo: tipo, valor: valor
-                };
-
+                const payload = { action: 'update_ingreso_fijo', alumno: this.form.nombre + ' ' + this.form.apellidos, mes_header: mesHeader, tipo: tipo, valor: valor };
                 try {
-                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
-                    const json = await res.json();
-                    if (json.status === 'success') {
-                        await this.loadData(); 
-                    } else {
-                        alert("Aviso de Google: " + json.message);
-                    }
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json();
+                    if (json.status === 'success') { await this.loadData(); } else { alert("Aviso de Google: " + json.message); }
                 } catch (e) { alert('Error de red actualizando estado'); }
                 objRef.cargando = false;
             },
-
             async registrarPago() {
-                this.savingPago = true;
-                let tarifaFinal = "";
-                
+                this.savingPago = true; let tarifaFinal = "";
                 if (this.nuevoPago.tarifaSelect === 'personalizada') {
                     let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
-                    if (numTarifa && numTarifa !== 0) { 
-                        let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa";
-                        tarifaFinal = `${conceptoPers} (${numTarifa}€)`;
-                    } else {
-                        tarifaFinal = ""; 
-                    }
-                } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
-                    tarifaFinal = this.nuevoPago.tarifaSelect;
-                }
-                
+                    if (numTarifa && numTarifa !== 0) { let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa"; tarifaFinal = `${conceptoPers} (${numTarifa}€)`; } 
+                    else { tarifaFinal = ""; }
+                } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') { tarifaFinal = this.nuevoPago.tarifaSelect; }
                 let extraFinal = "";
                 if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
                     let numExtra = Number(this.nuevoPago.extraImporte);
-                    if (numExtra !== 0) {
-                        if (this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '') {
-                            extraFinal = `${this.nuevoPago.extraConcepto.trim()} (${numExtra}€)`;
-                        } else {
-                            extraFinal = numExtra; 
-                        }
-                    }
+                    if (numExtra !== 0) { if (this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '') { extraFinal = `${this.nuevoPago.extraConcepto.trim()} (${numExtra}€)`; } else { extraFinal = numExtra; } }
                 }
-
-                const payload = {
-                    action: 'create_pago',
-                    alumno: this.form.nombre + ' ' + this.form.apellidos,
-                    tarifa: tarifaFinal,
-                    fecha: this.nuevoPago.fecha,
-                    extras: extraFinal,
-                    importe: this.importeCalculado,
-                    mes: this.nuevoPago.mes,
-                    metodo: this.nuevoPago.metodo,
-                    generarPDF: this.nuevoPago.generarPDF
-                };
-
+                const payload = { action: 'create_pago', alumno: this.form.nombre + ' ' + this.form.apellidos, tarifa: tarifaFinal, fecha: this.nuevoPago.fecha, extras: extraFinal, importe: this.importeCalculado, mes: this.nuevoPago.mes, metodo: this.nuevoPago.metodo, generarPDF: this.nuevoPago.generarPDF };
                 try {
-                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
-                    const json = await res.json();
-                    
-                    if (json.status === 'success') {
-                        this.showSuccess = true; this.successMessage = '¡Pago registrado correctamente!';
-                        this.nuevoPago = this.pagoVacio(); 
-                        setTimeout(() => { this.showSuccess = false; this.savingPago = false; }, 2500);
-                    } else {
-                        alert("Aviso de Google al registrar el pago:\n\n" + json.message);
-                        this.savingPago = false;
-                    }
-                } catch (e) { alert('Error de conexión enviando el pago'); this.savingPago = false; }
-            },
-
-            imprimirTicketRapido() {
-                const numRecibo = `TEMP-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}).replace(':','')}`;
-                const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
-                const logoUrl = "https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png";
-                
-                let filasHTML = '';
-                const importeTotalStr = this.importeCalculado.toFixed(2).replace('.', ',') + " €";
-
-                // Lógica de visualización de Tarifa
-                if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
-                    let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
-                    if (this.nuevoPago.tarifaSelect === 'personalizada' && (!numTarifa || numTarifa === 0)) {
-                        // Ignorar si es personalizada a 0
-                    } else {
-                        let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? (this.nuevoPago.tarifaPersConcepto || 'Tarifa') : this.nuevoPago.tarifaSelect;
-                        let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? numTarifa.toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
-                        
-                        filasHTML += `
-                            <tr>
-                                <td style="padding:15px; border-bottom:1px solid #eee;">
-                                    <span style="font-weight:bold;font-size:14px">${desc}</span><br>
-                                    <i style="font-size:11px;color:#666">Curso académico vigente</i>
-                                </td>
-                                <td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${tarifaNum} €</td>
-                            </tr>`;
-                    }
-                }
-
-                // Lógica de visualización de Extras
-                if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
-                    let numExtra = Number(this.nuevoPago.extraImporte);
-                    if (numExtra !== 0) {
-                        let conceptoExtra = this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '' ? this.nuevoPago.extraConcepto : 'Extra / Descuento';
-                        filasHTML += `
-                            <tr>
-                                <td style="padding:15px; border-bottom:1px solid #eee;">
-                                    <span style="font-weight:bold;font-size:14px">${conceptoExtra}</span>
-                                </td>
-                                <td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${numExtra.toFixed(2).replace('.', ',')} €</td>
-                            </tr>`;
-                    }
-                }
-                
-                // PLANTILLA CLONADA DE DRIVE
-                document.getElementById('ticket-data').innerHTML = `
-                    <div style="font-family: 'Helvetica', sans-serif; margin: 0; padding: 30px; color: #000; min-height: 850px; display: flex; flex-direction: column; border: 2px solid #000; position: relative; background: #fff;">
-                        
-                        <img src="${logoUrl}" style="position: absolute; top: 300px; left: 50%; margin-left: -200px; width: 400px; opacity: 0.05; filter: grayscale(100%); z-index: -1;" />
-                        
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                            <tr>
-                                <td style="padding:15px; vertical-align: top;"><img src="${logoUrl}" style="width: 120px; filter: grayscale(100%);" /></td>
-                                <td style="text-align: right; font-size: 11px; padding:15px; vertical-align: top;"><strong>CSE ELISA GUNDÍN</strong><br>NIF: 20054671M<br>C/ Alicante 4, El Pinós (03650)</td>
-                            </tr>
-                        </table>
-                        
-                        <table style="width: 100%; border-collapse: collapse; border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 10px; text-transform: uppercase; padding:10px 0;">
-                            <tr>
-                                <td style="padding:10px; vertical-align: top;">Nº RECIBO<span style="display: block; font-size: 14px; margin-top: 4px;">${numRecibo}</span></td>
-                                <td style="text-align:center;padding:10px; vertical-align: top;">FECHA EMISIÓN<span style="display: block; font-size: 14px; margin-top: 4px;">${fechaE}</span></td>
-                                <td style="text-align:right;padding:10px; vertical-align: top;">FORMA DE PAGO<span style="display: block; font-size: 14px; margin-top: 4px;">${(this.nuevoPago.metodo || 'NO ESPECIFICADA').toUpperCase()}</span></td>
-                            </tr>
-                        </table>
-                        
-                        <div style="border-bottom: 2px solid #000; padding: 15px;">
-                            <p style="font-size:10px;margin:0">RECIBÍ DE:</p>
-                            <h3 style="margin:5px 0;text-transform:uppercase">${this.form.nombre} ${this.form.apellidos}</h3>
-                        </div>
-                        
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <tr>
-                                <th style="text-align:left;border-bottom:1px solid #000;padding:15px;">CONCEPTO</th>
-                                <th style="text-align:right;border-bottom:1px solid #000;padding:15px;">IMPORTE</th>
-                            </tr>
-                            ${filasHTML}
-                            <tr style="height: 250px;"><td colspan="2"></td></tr>
-                            <tr>
-                                <td style="border-top: 2px solid #000; border-bottom: 2px solid #000; background: #eee; font-weight: bold; font-size: 12px; padding: 15px;">TOTAL EUROS</td>
-                                <td style="border-top: 2px solid #000; border-bottom: 2px solid #000; background: #eee; font-weight: bold; font-size: 20px; text-align: right; padding: 15px;">${importeTotalStr}</td>
-                            </tr>
-                        </table>
-                        
-                        <table style="margin-top: 30px; margin-bottom: 20px; width: 100%; border-collapse: collapse;">
-                            <tr>
-                                <td style="font-size:10px;font-weight:bold;width:60%;padding:15px; vertical-align: top;">NOTA: Formación exenta de IVA (Art. 20.Uno.9º Ley 37/1992).</td>
-                                <td style="text-align:center;position:relative;padding:15px; vertical-align: top;">
-                                    <div style="border-top:1px dashed #000;margin-top:40px;font-size:10px;display:inline-block;padding-top:10px;width: 150px;">FDO. CSE ELISA GUNDÍN</div>
-                                </td>
-                            </tr>
-                        </table>
-                        
-                        <div style="font-size: 8px; text-align: justify; padding-top: 15px; margin-top: auto; border-top: 2px solid #000; line-height: 1.2; width: 100%; box-sizing: border-box;">PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDÍN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4, El Pinós (03650).</div>
-                    </div>
-                `;
-                window.print();
-            }
-        },
-        mounted() { this.loadData(); }
-    }).mount('#app');
-</script>
-</body>
-</html>
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json();
+                    if (json.status === 'success') { this.showSuccess = true; this.successMessage = '¡Pago registrado correctamente
