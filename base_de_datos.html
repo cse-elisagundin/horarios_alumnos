@@ -30,7 +30,7 @@
         .tab-btn { padding: 10px 24px; font-weight: 800; text-transform: uppercase; color: #888; border-bottom: 3px solid transparent; transition: all 0.3s; }
         .tab-btn.active { color: var(--c-primary); border-bottom-color: var(--c-accent); }
 
-        /* IMPRESIÓN DEL RECIBO */
+        /* MODO IMPRESIÓN DEL RECIBO */
         @media print {
             body { background: white; margin: 0; padding: 0; }
             #app-main-content { display: none !important; }
@@ -40,7 +40,7 @@
 </head>
 <body class="h-screen overflow-hidden text-sm">
 
-<div id="zona-impresion" class="hidden bg-white p-10 font-sans">
+<div id="zona-impresion" class="hidden bg-white font-sans">
     <div id="ticket-data"></div>
 </div>
 
@@ -338,7 +338,6 @@
 
 <script>
     const { createApp } = Vue;
-    // CONFIGURACIÓN (Intacta)
     const PASS_HASH = "MDEwNTIz"; 
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
@@ -349,27 +348,24 @@
                 list: [], fijosRaw: [], search: '', selected: null, isNew: false, 
                 loading: false, saving: false, savingPago: false,
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
-                activeTab: 'ficha', 
-                cuotaSugerida: null,
-                nuevoPago: this.pagoVacio()
+                activeTab: 'ficha', cuotaSugerida: null, nuevoPago: this.pagoVacio()
             }
         },
         computed: {
             filteredList() {
-                const t = this.search.toLowerCase();
+                const t = this.normalizeName(this.search);
                 return this.list.filter(s => {
                     if (!this.showInactive && s.baja) return false;
-                    const nombreCompleto = `${s.nombre || ""} ${s.apellidos || ""}`.toLowerCase();
+                    const nombreCompleto = this.normalizeName(`${s.nombre || ""} ${s.apellidos || ""}`);
                     return nombreCompleto.includes(t) || (s.dni || "").toLowerCase().includes(t);
                 });
             },
             mesesFijos() {
-                // Parsea el Excel de Fijos para sacar las tarjetas del alumno seleccionado
                 if(!this.form.nombre || this.fijosRaw.length === 0) return [];
                 const headers = this.fijosRaw[0];
-                const nombreCompleto = (this.form.nombre + " " + this.form.apellidos).toLowerCase().trim();
+                const nombreCompleto = this.normalizeName(this.form.nombre + " " + this.form.apellidos);
                 
-                const filaAlumno = this.fijosRaw.find((row, idx) => idx > 0 && String(row[1]).toLowerCase().trim() === nombreCompleto);
+                const filaAlumno = this.fijosRaw.find((row, idx) => idx > 0 && this.normalizeName(row[1]) === nombreCompleto);
                 if(!filaAlumno) return [];
 
                 let meses = [];
@@ -396,7 +392,6 @@
             }
         },
         watch: {
-            // Auto-seleccionar mes al poner fecha
             'nuevoPago.fecha'(newFecha) {
                 if(newFecha) {
                     const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -404,7 +399,6 @@
                     this.nuevoPago.mes = meses[mIndex];
                 }
             },
-            // Auto-rellenar tarifa sugerida si cambia el mes
             'nuevoPago.mes'(newMes) {
                 this.cuotaSugerida = null;
                 if(newMes && this.mesesFijos.length > 0) {
@@ -412,18 +406,19 @@
                     if(mesEncontrado && mesEncontrado.cuota) {
                         this.cuotaSugerida = mesEncontrado.cuota;
                         this.nuevoPago.tarifaSelect = `Cuota Fija (${this.cuotaSugerida}€)`;
-                    } else {
-                        this.nuevoPago.tarifaSelect = ""; // Se vacía para que elija opciones
-                    }
+                    } else { this.nuevoPago.tarifaSelect = ""; }
                 }
             },
-            // Cerebro del PDF automático
             'nuevoPago.metodo'(newMetodo) {
                 if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true;
                 if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false;
             }
         },
         methods: {
+            normalizeName(str) {
+                if(!str) return "";
+                return String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().replace(/\s+/g, " ");
+            },
             pagoVacio() {
                 const hoy = new Date().toISOString().split('T')[0];
                 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -466,7 +461,6 @@
                     this.isNew = false; this.activeTab = 'ficha'; this.selected = s;
                     this.nuevoPago = this.pagoVacio(); 
                     
-                    // Forzar trigger del Watcher para cargar la cuota sugerida inicial
                     const mesActual = this.nuevoPago.mes;
                     this.nuevoPago.mes = ''; setTimeout(() => { this.nuevoPago.mes = mesActual; }, 50);
 
@@ -502,20 +496,17 @@
 
                 try {
                     await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
-                    await this.loadData(); // Refrescar los datos de fondo
+                    await this.loadData(); 
                 } catch (e) { alert('Error actualizando estado'); }
                 objRef.cargando = false;
             },
 
             async registrarPago() {
                 this.savingPago = true;
-                
-                // Formatear textos finales para la hoja REGISTRO
                 let tarifaFinal = this.nuevoPago.tarifaSelect;
                 if(this.nuevoPago.tarifaSelect === 'personalizada') {
                     tarifaFinal = `${this.nuevoPago.tarifaPersConcepto} (${this.nuevoPago.tarifaPersImporte}€)`;
                 }
-                
                 let extraFinal = this.nuevoPago.extraImporte > 0 ? `${this.nuevoPago.extraConcepto || 'Extra'} (${this.nuevoPago.extraImporte}€)` : '';
 
                 const payload = {
@@ -539,34 +530,79 @@
             },
 
             imprimirTicketRapido() {
-                // Monta el HTML del ticket para imprimir sin guardar
+                // CLON EXACTO DE LA FACTURA EN PDF
+                const numRecibo = `TEMP-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}).replace(':','')}`;
                 const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
-                let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : this.nuevoPago.tarifaSelect;
-                let extrasHtml = this.nuevoPago.extraImporte > 0 ? `<div style="display:flex; justify-content:space-between; margin-top:5px; font-size:14px;"><span>+ Extra: ${this.nuevoPago.extraConcepto}</span><span>${this.nuevoPago.extraImporte}€</span></div>` : '';
+                
+                let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : `Mensualidad ${this.nuevoPago.mes}`;
+                let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : (this.nuevoPago.tarifaSelect ? this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/)[1].replace('.', ',') : '0,00');
+
+                let extrasRow = this.nuevoPago.extraImporte > 0 ? `
+                    <tr>
+                        <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
+                            <div>${this.nuevoPago.extraConcepto || 'Extra'}</div>
+                        </td>
+                        <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${Number(this.nuevoPago.extraImporte).toFixed(2).replace('.', ',')} €</td>
+                    </tr>` : '';
                 
                 document.getElementById('ticket-data').innerHTML = `
-                    <div style="max-width: 400px; margin: 0 auto; border: 1px dashed #ccc; padding: 30px; border-radius: 10px; color: #333;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" style="height: 60px; margin-bottom:10px;">
-                            <h2 style="margin: 0; font-size: 18px; color: #243c7a;">CSE ELISA GUNDÍN</h2>
-                            <p style="margin: 0; font-size: 12px; color: #888;">Recibo de Pago</p>
+                    <div style="max-width: 800px; margin: 0 auto; padding: 40px; color: #333; font-family: sans-serif;">
+                        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #243c7a; padding-bottom: 20px; margin-bottom: 20px;">
+                            <div>
+                                <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" style="height: 70px; margin-bottom:10px;">
+                                <div style="font-weight: bold; font-size: 16px; color: #243c7a;">CSE ELISA GUNDÍN</div>
+                                <div style="font-size: 12px;">NIF: 20054671M</div>
+                                <div style="font-size: 12px;">C/ Alicante 4, El Pinós (03650)</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-weight: bold; font-size: 24px; color: #243c7a; margin-bottom: 10px; letter-spacing: 1px;">RECIBO</div>
+                                <div style="font-size: 12px; margin-bottom: 3px;"><strong>Nº RECIBO:</strong> ${numRecibo}</div>
+                                <div style="font-size: 12px; margin-bottom: 3px;"><strong>FECHA EMISIÓN:</strong> ${fechaE}</div>
+                                <div style="font-size: 12px;"><strong>FORMA DE PAGO:</strong> ${this.nuevoPago.metodo.toUpperCase() || 'NO ESPECIFICADA'}</div>
+                            </div>
                         </div>
-                        <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 15px;">
-                            <p style="margin: 3px 0; font-size: 14px;"><strong>Alumno:</strong> ${this.form.nombre} ${this.form.apellidos}</p>
-                            <p style="margin: 3px 0; font-size: 14px;"><strong>Fecha:</strong> ${fechaE}</p>
-                            <p style="margin: 3px 0; font-size: 14px;"><strong>Mes Afectado:</strong> ${this.nuevoPago.mes}</p>
-                            <p style="margin: 3px 0; font-size: 14px;"><strong>Método:</strong> ${this.nuevoPago.metodo || 'No especificado'}</p>
+                        
+                        <div style="background-color: #f4f6f9; padding: 15px; margin-bottom: 30px; border-left: 4px solid #243c7a;">
+                            <div style="font-size: 12px; color: #666; margin-bottom: 5px; font-weight: bold;">RECIBÍ DE:</div>
+                            <div style="font-weight: bold; font-size: 18px; text-transform: uppercase; color: #333;">${this.form.nombre} ${this.form.apellidos}</div>
                         </div>
-                        <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;">
-                            <span>${desc || 'Sin especificar'}</span>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                            <thead>
+                                <tr style="background-color: #243c7a; color: white; text-align: left;">
+                                    <th style="padding: 10px; font-size: 14px;">CONCEPTO</th>
+                                    <th style="padding: 10px; font-size: 14px; text-align: right;">IMPORTE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
+                                        <div>${desc}</div>
+                                        <div style="font-size: 11px; color: #666; margin-top: 5px;">Curso académico vigente</div>
+                                    </td>
+                                    <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${tarifaNum} €</td>
+                                </tr>
+                                ${extrasRow}
+                            </tbody>
+                        </table>
+
+                        <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
+                            <div style="width: 50%; border-top: 2px solid #243c7a; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; color: #243c7a;">
+                                <span>TOTAL EUROS</span>
+                                <span>${this.importeCalculado.toFixed(2).replace('.', ',')} €</span>
+                            </div>
                         </div>
-                        ${extrasHtml}
-                        <div style="display:flex; justify-content:space-between; margin-top: 20px; padding-top: 15px; border-top: 2px solid #333; font-size: 20px; font-weight: 900; color: #243c7a;">
-                            <span>TOTAL:</span>
-                            <span>${this.importeCalculado} €</span>
+
+                        <div style="font-size: 10px; margin-bottom: 40px; font-weight: bold;">
+                            NOTA: Formación exenta de IVA (Art. 20.Uno.9° Ley 37/1992).
                         </div>
-                        <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #aaa;">
-                            Documento informativo sin validez fiscal.<br>Gracias por confiar en nosotros.
+                        
+                        <div style="margin-bottom: 50px; font-weight: bold; color: #243c7a;">
+                            FDO CSE ELISA GUNDÍN
+                        </div>
+
+                        <div style="font-size: 9px; color: #666; border-top: 1px solid #ccc; padding-top: 10px; text-align: justify; line-height: 1.4;">
+                            PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDIN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4. El Pinós (03650).
                         </div>
                     </div>
                 `;
