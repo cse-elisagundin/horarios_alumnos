@@ -294,8 +294,8 @@
                                         </div>
                                     </div>
                                     
-                                    <div v-if="nuevoPago.extraImporte > 0" class="col-span-3">
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Concepto del Extra</label>
+                                    <div v-if="nuevoPago.extraImporte !== '' && nuevoPago.extraImporte !== null" class="col-span-3">
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Concepto del Extra <span class="text-gray-300 font-normal ml-1">(Déjalo en blanco para guardar solo el número)</span></label>
                                         <input v-model="nuevoPago.extraConcepto" placeholder="Ej: Material escolar..." class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
                                     </div>
                                 </div>
@@ -312,7 +312,7 @@
                                             <span class="font-extrabold text-xs uppercase select-none">Drive PDF</span>
                                         </label>
                                         
-                                        <button @click="registrarPago" :disabled="savingPago || importeCalculado <= 0" class="bg-[#2b94cc] text-white px-8 py-3 rounded-xl hover:bg-[#207bb0] font-bold shadow-lg flex items-center gap-2 transition-transform transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <button @click="registrarPago" :disabled="savingPago || (!nuevoPago.tarifaSelect && !nuevoPago.extraImporte)" class="bg-[#2b94cc] text-white px-8 py-3 rounded-xl hover:bg-[#207bb0] font-bold shadow-lg flex items-center gap-2 transition-transform transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                                             <i v-if="savingPago" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-paper-plane"></i>
                                             {{ savingPago ? 'Guardando...' : 'GUARDAR PAGO' }}
                                         </button>
@@ -383,7 +383,7 @@
                 let tarifa = 0;
                 if(this.nuevoPago.tarifaSelect === 'personalizada') tarifa = Number(this.nuevoPago.tarifaPersImporte) || 0;
                 else if(this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
-                    const match = this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/);
+                    const match = this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/);
                     if(match) tarifa = Number(match[1]);
                 }
                 const extra = Number(this.nuevoPago.extraImporte) || 0;
@@ -534,12 +534,24 @@
                 let tarifaFinal = "";
                 
                 if (this.nuevoPago.tarifaSelect === 'personalizada') {
-                    tarifaFinal = `${this.nuevoPago.tarifaPersConcepto} (${this.nuevoPago.tarifaPersImporte}€)`;
+                    let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa";
+                    tarifaFinal = `${conceptoPers} (${this.nuevoPago.tarifaPersImporte}€)`;
                 } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
                     tarifaFinal = this.nuevoPago.tarifaSelect;
                 }
                 
-                let extraFinal = this.nuevoPago.extraImporte > 0 ? `${this.nuevoPago.extraConcepto || 'Extra'} (${this.nuevoPago.extraImporte}€)` : '';
+                // Extra procesado: Si hay texto lo formatea como "Concepto (50€)". Si está en blanco, pasa solo el número "50"
+                let extraFinal = "";
+                if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
+                    let numExtra = Number(this.nuevoPago.extraImporte);
+                    if (numExtra !== 0) {
+                        if (this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '') {
+                            extraFinal = `${this.nuevoPago.extraConcepto.trim()} (${numExtra}€)`;
+                        } else {
+                            extraFinal = numExtra; // Pasa el número limpio a Google Sheets
+                        }
+                    }
+                }
 
                 const payload = {
                     action: 'create_pago',
@@ -574,8 +586,8 @@
                 
                 let baseRow = '';
                 if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
-                    let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : this.nuevoPago.tarifaSelect;
-                    let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
+                    let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? (this.nuevoPago.tarifaPersConcepto || 'Tarifa') : this.nuevoPago.tarifaSelect;
+                    let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
                     
                     baseRow = `
                         <tr>
@@ -588,13 +600,20 @@
                     `;
                 }
 
-                let extrasRow = this.nuevoPago.extraImporte > 0 ? `
-                    <tr>
-                        <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
-                            <div>${this.nuevoPago.extraConcepto || 'Extra'}</div>
-                        </td>
-                        <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${Number(this.nuevoPago.extraImporte).toFixed(2).replace('.', ',')} €</td>
-                    </tr>` : '';
+                let extrasRow = '';
+                if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
+                    let numExtra = Number(this.nuevoPago.extraImporte);
+                    if (numExtra !== 0) {
+                        let conceptoExtra = this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '' ? this.nuevoPago.extraConcepto : 'Extra / Descuento';
+                        extrasRow = `
+                        <tr>
+                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
+                                <div>${conceptoExtra}</div>
+                            </td>
+                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${numExtra.toFixed(2).replace('.', ',')} €</td>
+                        </tr>`;
+                    }
+                }
                 
                 document.getElementById('ticket-data').innerHTML = `
                     <div style="max-width: 800px; margin: 0 auto; padding: 40px; color: #333; font-family: sans-serif;">
