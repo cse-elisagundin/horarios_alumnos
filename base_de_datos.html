@@ -267,7 +267,7 @@
                                     <div class="col-span-2">
                                         <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción</label>
                                         <select v-model="nuevoPago.tarifaSelect" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white text-[#243c7a] font-bold">
-                                            <option value="" disabled>Selecciona Tarifa...</option>
+                                            <option value="">-- Sin Tarifa Base (Solo Extra) --</option>
                                             <option value="Opción 1 (40€)">Opción 1 (40€)</option>
                                             <option value="Opción 2 (50€)">Opción 2 (50€)</option>
                                             <option value="Opción 3 (80€)">Opción 3 (80€)</option>
@@ -382,7 +382,7 @@
             importeCalculado() {
                 let tarifa = 0;
                 if(this.nuevoPago.tarifaSelect === 'personalizada') tarifa = Number(this.nuevoPago.tarifaPersImporte) || 0;
-                else if(this.nuevoPago.tarifaSelect) {
+                else if(this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
                     const match = this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/);
                     if(match) tarifa = Number(match[1]);
                 }
@@ -418,7 +418,7 @@
                             this.nuevoPago.tarifaSelect = "personalizada";
                             setTimeout(() => {
                                 this.nuevoPago.tarifaPersImporte = cuotaNum;
-                                this.nuevoPago.tarifaPersConcepto = `Cuota Mensual`;
+                                this.nuevoPago.tarifaPersConcepto = ""; 
                             }, 50);
                         }
                     } else { 
@@ -531,10 +531,14 @@
 
             async registrarPago() {
                 this.savingPago = true;
-                let tarifaFinal = this.nuevoPago.tarifaSelect;
-                if(this.nuevoPago.tarifaSelect === 'personalizada') {
+                let tarifaFinal = "";
+                
+                if (this.nuevoPago.tarifaSelect === 'personalizada') {
                     tarifaFinal = `${this.nuevoPago.tarifaPersConcepto} (${this.nuevoPago.tarifaPersImporte}€)`;
+                } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
+                    tarifaFinal = this.nuevoPago.tarifaSelect;
                 }
+                
                 let extraFinal = this.nuevoPago.extraImporte > 0 ? `${this.nuevoPago.extraConcepto || 'Extra'} (${this.nuevoPago.extraImporte}€)` : '';
 
                 const payload = {
@@ -568,9 +572,21 @@
                 const numRecibo = `TEMP-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}).replace(':','')}`;
                 const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
                 
-                // Aquí el cambio: usamos la opción real en lugar de "Mensualidad"
-                let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : this.nuevoPago.tarifaSelect;
-                let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : (this.nuevoPago.tarifaSelect ? this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/)[1].replace('.', ',') : '0,00');
+                let baseRow = '';
+                if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
+                    let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : this.nuevoPago.tarifaSelect;
+                    let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
+                    
+                    baseRow = `
+                        <tr>
+                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
+                                <div>${desc}</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Curso académico vigente</div>
+                            </td>
+                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${tarifaNum} €</td>
+                        </tr>
+                    `;
+                }
 
                 let extrasRow = this.nuevoPago.extraImporte > 0 ? `
                     <tr>
@@ -610,13 +626,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
-                                        <div>${desc}</div>
-                                        <div style="font-size: 11px; color: #666; margin-top: 5px;">Curso académico vigente</div>
-                                    </td>
-                                    <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${tarifaNum} €</td>
-                                </tr>
+                                ${baseRow}
                                 ${extrasRow}
                             </tbody>
                         </table>
