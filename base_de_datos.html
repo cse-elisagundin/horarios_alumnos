@@ -268,7 +268,6 @@
                                         <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción</label>
                                         <select v-model="nuevoPago.tarifaSelect" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white text-[#243c7a] font-bold">
                                             <option value="" disabled>Selecciona Tarifa...</option>
-                                            <option v-if="cuotaSugerida" :value="'Cuota Fija (' + cuotaSugerida + '€)'">🌟 Cuota Fija ({{ cuotaSugerida }}€)</option>
                                             <option value="Opción 1 (40€)">Opción 1 (40€)</option>
                                             <option value="Opción 2 (50€)">Opción 2 (50€)</option>
                                             <option value="Opción 3 (80€)">Opción 3 (80€)</option>
@@ -348,7 +347,7 @@
                 list: [], fijosRaw: [], search: '', selected: null, isNew: false, 
                 loading: false, saving: false, savingPago: false,
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
-                activeTab: 'ficha', cuotaSugerida: null, nuevoPago: this.pagoVacio()
+                activeTab: 'ficha', nuevoPago: this.pagoVacio()
             }
         },
         computed: {
@@ -400,13 +399,31 @@
                 }
             },
             'nuevoPago.mes'(newMes) {
-                this.cuotaSugerida = null;
                 if(newMes && this.mesesFijos.length > 0) {
                     const mesEncontrado = this.mesesFijos.find(m => m.mesNombre.toLowerCase().includes(newMes.toLowerCase()));
                     if(mesEncontrado && mesEncontrado.cuota) {
-                        this.cuotaSugerida = mesEncontrado.cuota;
-                        this.nuevoPago.tarifaSelect = `Cuota Fija (${this.cuotaSugerida}€)`;
-                    } else { this.nuevoPago.tarifaSelect = ""; }
+                        const cuotaNum = Number(mesEncontrado.cuota);
+                        const opciones = {
+                            40: "Opción 1 (40€)",
+                            50: "Opción 2 (50€)",
+                            80: "Opción 3 (80€)",
+                            85: "Opción 4 (85€)",
+                            110: "Opción 5 (110€)",
+                            135: "Opción 6 (135€)"
+                        };
+                        
+                        if (opciones[cuotaNum]) {
+                            this.nuevoPago.tarifaSelect = opciones[cuotaNum];
+                        } else {
+                            this.nuevoPago.tarifaSelect = "personalizada";
+                            setTimeout(() => {
+                                this.nuevoPago.tarifaPersImporte = cuotaNum;
+                                this.nuevoPago.tarifaPersConcepto = `Cuota Mensual`;
+                            }, 50);
+                        }
+                    } else { 
+                        this.nuevoPago.tarifaSelect = ""; 
+                    }
                 }
             },
             'nuevoPago.metodo'(newMetodo) {
@@ -541,7 +558,7 @@
                         this.nuevoPago = this.pagoVacio(); 
                         setTimeout(() => { this.showSuccess = false; this.savingPago = false; }, 2500);
                     } else {
-                        alert("Aviso de Google al registrar el pago: " + json.message);
+                        alert("Aviso de Google al registrar el pago:\n\n" + json.message);
                         this.savingPago = false;
                     }
                 } catch (e) { alert('Error de conexión enviando el pago'); this.savingPago = false; }
@@ -611,7 +628,7 @@
                         </div>
 
                         <div style="font-size: 10px; margin-bottom: 40px; font-weight: bold;">
-                            NOTA: Formación exenta de IVA (Art. 20.Uno.9° Ley 37/1992).
+                            NOTA: Formación exenta de IVA (Art. 20.Uno.9º Ley 37/1992).
                         </div>
                         
                         <div style="margin-bottom: 50px; font-weight: bold; color: #243c7a;">
@@ -619,7 +636,7 @@
                         </div>
 
                         <div style="font-size: 9px; color: #666; border-top: 1px solid #ccc; padding-top: 10px; text-align: justify; line-height: 1.4;">
-                            PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDIN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4. El Pinós (03650).
+                            PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDÍN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4, El Pinós (03650).
                         </div>
                     </div>
                 `;
