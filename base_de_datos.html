@@ -537,20 +537,18 @@
                 this.savingPago = true;
                 let tarifaFinal = "";
                 
-                // BLOQUEO EXTREMO DE TARIFA
                 if (this.nuevoPago.tarifaSelect === 'personalizada') {
                     let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
-                    if (numTarifa && numTarifa !== 0) { // Si el importe existe y no es cero, se guarda.
+                    if (numTarifa && numTarifa !== 0) { 
                         let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa";
                         tarifaFinal = `${conceptoPers} (${numTarifa}€)`;
                     } else {
-                        tarifaFinal = ""; // Si lo vaciaste, se anula la tarifa.
+                        tarifaFinal = ""; 
                     }
                 } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
                     tarifaFinal = this.nuevoPago.tarifaSelect;
                 }
                 
-                // LÓGICA DE EXTRA
                 let extraFinal = "";
                 if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
                     let numExtra = Number(this.nuevoPago.extraImporte);
@@ -558,7 +556,7 @@
                         if (this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '') {
                             extraFinal = `${this.nuevoPago.extraConcepto.trim()} (${numExtra}€)`;
                         } else {
-                            extraFinal = numExtra; // Pasa el número limpio a Google Sheets
+                            extraFinal = numExtra; 
                         }
                     }
                 }
@@ -593,96 +591,95 @@
             imprimirTicketRapido() {
                 const numRecibo = `TEMP-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}).replace(':','')}`;
                 const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
+                const logoUrl = "https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png";
                 
-                let baseRow = '';
+                let filasHTML = '';
+                const importeTotalStr = this.importeCalculado.toFixed(2).replace('.', ',') + " €";
+
+                // Lógica de visualización de Tarifa
                 if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
                     let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
                     if (this.nuevoPago.tarifaSelect === 'personalizada' && (!numTarifa || numTarifa === 0)) {
-                        // Ignorar
+                        // Ignorar si es personalizada a 0
                     } else {
                         let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? (this.nuevoPago.tarifaPersConcepto || 'Tarifa') : this.nuevoPago.tarifaSelect;
                         let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? numTarifa.toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
                         
-                        baseRow = `
+                        filasHTML += `
                             <tr>
-                                <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
-                                    <div>${desc}</div>
-                                    <div style="font-size: 11px; color: #666; margin-top: 5px;">Curso académico vigente</div>
+                                <td style="padding:15px; border-bottom:1px solid #eee;">
+                                    <span style="font-weight:bold;font-size:14px">${desc}</span><br>
+                                    <i style="font-size:11px;color:#666">Curso académico vigente</i>
                                 </td>
-                                <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${tarifaNum} €</td>
-                            </tr>
-                        `;
+                                <td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${tarifaNum} €</td>
+                            </tr>`;
                     }
                 }
 
-                let extrasRow = '';
+                // Lógica de visualización de Extras
                 if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
                     let numExtra = Number(this.nuevoPago.extraImporte);
                     if (numExtra !== 0) {
                         let conceptoExtra = this.nuevoPago.extraConcepto && this.nuevoPago.extraConcepto.trim() !== '' ? this.nuevoPago.extraConcepto : 'Extra / Descuento';
-                        extrasRow = `
-                        <tr>
-                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
-                                <div>${conceptoExtra}</div>
-                            </td>
-                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${numExtra.toFixed(2).replace('.', ',')} €</td>
-                        </tr>`;
+                        filasHTML += `
+                            <tr>
+                                <td style="padding:15px; border-bottom:1px solid #eee;">
+                                    <span style="font-weight:bold;font-size:14px">${conceptoExtra}</span>
+                                </td>
+                                <td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${numExtra.toFixed(2).replace('.', ',')} €</td>
+                            </tr>`;
                     }
                 }
                 
+                // PLANTILLA CLONADA DE DRIVE
                 document.getElementById('ticket-data').innerHTML = `
-                    <div style="max-width: 800px; margin: 0 auto; padding: 40px; color: #333; font-family: sans-serif;">
-                        <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #243c7a; padding-bottom: 20px; margin-bottom: 20px;">
-                            <div>
-                                <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" style="height: 70px; margin-bottom:10px;">
-                                <div style="font-weight: bold; font-size: 16px; color: #243c7a;">CSE ELISA GUNDÍN</div>
-                                <div style="font-size: 12px;">NIF: 20054671M</div>
-                                <div style="font-size: 12px;">C/ Alicante 4, El Pinós (03650)</div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="font-weight: bold; font-size: 24px; color: #243c7a; margin-bottom: 10px; letter-spacing: 1px;">RECIBO</div>
-                                <div style="font-size: 12px; margin-bottom: 3px;"><strong>Nº RECIBO:</strong> ${numRecibo}</div>
-                                <div style="font-size: 12px; margin-bottom: 3px;"><strong>FECHA EMISIÓN:</strong> ${fechaE}</div>
-                                <div style="font-size: 12px;"><strong>FORMA DE PAGO:</strong> ${this.nuevoPago.metodo.toUpperCase() || 'NO ESPECIFICADA'}</div>
-                            </div>
-                        </div>
+                    <div style="font-family: 'Helvetica', sans-serif; margin: 0; padding: 30px; color: #000; min-height: 850px; display: flex; flex-direction: column; border: 2px solid #000; position: relative; background: #fff;">
                         
-                        <div style="background-color: #f4f6f9; padding: 15px; margin-bottom: 30px; border-left: 4px solid #243c7a;">
-                            <div style="font-size: 12px; color: #666; margin-bottom: 5px; font-weight: bold;">RECIBÍ DE:</div>
-                            <div style="font-weight: bold; font-size: 18px; text-transform: uppercase; color: #333;">${this.form.nombre} ${this.form.apellidos}</div>
-                        </div>
-
+                        <img src="${logoUrl}" style="position: absolute; top: 300px; left: 50%; margin-left: -200px; width: 400px; opacity: 0.05; filter: grayscale(100%); z-index: -1;" />
+                        
                         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                            <thead>
-                                <tr style="background-color: #243c7a; color: white; text-align: left;">
-                                    <th style="padding: 10px; font-size: 14px;">CONCEPTO</th>
-                                    <th style="padding: 10px; font-size: 14px; text-align: right;">IMPORTE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${baseRow}
-                                ${extrasRow}
-                            </tbody>
+                            <tr>
+                                <td style="padding:15px; vertical-align: top;"><img src="${logoUrl}" style="width: 120px; filter: grayscale(100%);" /></td>
+                                <td style="text-align: right; font-size: 11px; padding:15px; vertical-align: top;"><strong>CSE ELISA GUNDÍN</strong><br>NIF: 20054671M<br>C/ Alicante 4, El Pinós (03650)</td>
+                            </tr>
                         </table>
-
-                        <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
-                            <div style="width: 50%; border-top: 2px solid #243c7a; padding-top: 10px; display: flex; justify-content: space-between; font-weight: bold; font-size: 18px; color: #243c7a;">
-                                <span>TOTAL EUROS</span>
-                                <span>${this.importeCalculado.toFixed(2).replace('.', ',')} €</span>
-                            </div>
-                        </div>
-
-                        <div style="font-size: 10px; margin-bottom: 40px; font-weight: bold;">
-                            NOTA: Formación exenta de IVA (Art. 20.Uno.9º Ley 37/1992).
+                        
+                        <table style="width: 100%; border-collapse: collapse; border-top: 2px solid #000; border-bottom: 2px solid #000; font-weight: bold; font-size: 10px; text-transform: uppercase; padding:10px 0;">
+                            <tr>
+                                <td style="padding:10px; vertical-align: top;">Nº RECIBO<span style="display: block; font-size: 14px; margin-top: 4px;">${numRecibo}</span></td>
+                                <td style="text-align:center;padding:10px; vertical-align: top;">FECHA EMISIÓN<span style="display: block; font-size: 14px; margin-top: 4px;">${fechaE}</span></td>
+                                <td style="text-align:right;padding:10px; vertical-align: top;">FORMA DE PAGO<span style="display: block; font-size: 14px; margin-top: 4px;">${(this.nuevoPago.metodo || 'NO ESPECIFICADA').toUpperCase()}</span></td>
+                            </tr>
+                        </table>
+                        
+                        <div style="border-bottom: 2px solid #000; padding: 15px;">
+                            <p style="font-size:10px;margin:0">RECIBÍ DE:</p>
+                            <h3 style="margin:5px 0;text-transform:uppercase">${this.form.nombre} ${this.form.apellidos}</h3>
                         </div>
                         
-                        <div style="margin-bottom: 50px; font-weight: bold; color: #243c7a;">
-                            FDO CSE ELISA GUNDÍN
-                        </div>
-
-                        <div style="font-size: 9px; color: #666; border-top: 1px solid #ccc; padding-top: 10px; text-align: justify; line-height: 1.4;">
-                            PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDÍN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4, El Pinós (03650).
-                        </div>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <th style="text-align:left;border-bottom:1px solid #000;padding:15px;">CONCEPTO</th>
+                                <th style="text-align:right;border-bottom:1px solid #000;padding:15px;">IMPORTE</th>
+                            </tr>
+                            ${filasHTML}
+                            <tr style="height: 250px;"><td colspan="2"></td></tr>
+                            <tr>
+                                <td style="border-top: 2px solid #000; border-bottom: 2px solid #000; background: #eee; font-weight: bold; font-size: 12px; padding: 15px;">TOTAL EUROS</td>
+                                <td style="border-top: 2px solid #000; border-bottom: 2px solid #000; background: #eee; font-weight: bold; font-size: 20px; text-align: right; padding: 15px;">${importeTotalStr}</td>
+                            </tr>
+                        </table>
+                        
+                        <table style="margin-top: 30px; margin-bottom: 20px; width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="font-size:10px;font-weight:bold;width:60%;padding:15px; vertical-align: top;">NOTA: Formación exenta de IVA (Art. 20.Uno.9º Ley 37/1992).</td>
+                                <td style="text-align:center;position:relative;padding:15px; vertical-align: top;">
+                                    <div style="border-top:1px dashed #000;margin-top:40px;font-size:10px;display:inline-block;padding-top:10px;width: 150px;">FDO. CSE ELISA GUNDÍN</div>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div style="font-size: 8px; text-align: justify; padding-top: 15px; margin-top: auto; border-top: 2px solid #000; line-height: 1.2; width: 100%; box-sizing: border-box;">PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDÍN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4, El Pinós (03650).</div>
                     </div>
                 `;
                 window.print();
