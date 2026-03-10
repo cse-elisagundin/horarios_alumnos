@@ -568,7 +568,8 @@
                 const numRecibo = `TEMP-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${new Date().toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}).replace(':','')}`;
                 const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
                 
-                let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : `Mensualidad ${this.nuevoPago.mes}`;
+                // Aquí el cambio: usamos la opción real en lugar de "Mensualidad"
+                let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : this.nuevoPago.tarifaSelect;
                 let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : (this.nuevoPago.tarifaSelect ? this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/)[1].replace('.', ',') : '0,00');
 
                 let extrasRow = this.nuevoPago.extraImporte > 0 ? `
