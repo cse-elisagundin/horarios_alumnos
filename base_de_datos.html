@@ -264,8 +264,8 @@
                                         </select>
                                     </div>
                                     
-                                    <div class="col-span-2">
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción</label>
+                                    <div class="col-span-3">
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción <span class="text-red-500 font-normal ml-1">(Para un extra exclusivo, pon esto en "Sin Tarifa")</span></label>
                                         <select v-model="nuevoPago.tarifaSelect" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white text-[#243c7a] font-bold">
                                             <option value="">-- Sin Tarifa Base (Solo Extra) --</option>
                                             <option value="Opción 1 (40€)">Opción 1 (40€)</option>
@@ -277,10 +277,9 @@
                                             <option value="personalizada">✏️ Otra cantidad (Personalizada...)</option>
                                         </select>
                                     </div>
-
-                                    <div>
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Importe Extra (€) <span class="text-gray-300 font-normal ml-1">Opcional</span></label>
-                                        <input type="number" step="0.01" v-model="nuevoPago.extraImporte" placeholder="0.00" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
+                                    
+                                    <div v-if="!nuevoPago.tarifaSelect" class="col-span-3 bg-blue-50 p-3 rounded-lg border border-blue-200 text-blue-700 text-xs font-bold text-center">
+                                        ℹ️ Has marcado "Sin Tarifa Base". Este pago se registrará EXCLUSIVAMENTE en la columna de EXTRAS.
                                     </div>
 
                                     <div v-if="nuevoPago.tarifaSelect === 'personalizada'" class="col-span-3 grid grid-cols-3 gap-5 bg-orange-50 p-4 rounded-lg border border-orange-200">
@@ -294,9 +293,14 @@
                                         </div>
                                     </div>
                                     
-                                    <div v-if="nuevoPago.extraImporte !== '' && nuevoPago.extraImporte !== null" class="col-span-3">
-                                        <label class="block text-xs font-bold text-gray-500 mb-1">Concepto del Extra <span class="text-gray-300 font-normal ml-1">(Déjalo en blanco para guardar solo el número)</span></label>
-                                        <input v-model="nuevoPago.extraConcepto" placeholder="Ej: Material escolar..." class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
+                                    <div class="col-span-1">
+                                        <label class="block text-xs font-bold text-[#fa65c3] mb-1">Importe Extra (€)</label>
+                                        <input type="number" step="0.01" v-model="nuevoPago.extraImporte" placeholder="0.00" class="w-full p-2.5 rounded-lg border border-[#fa65c3] outline-none focus:ring focus:ring-pink-200">
+                                    </div>
+
+                                    <div class="col-span-2">
+                                        <label class="block text-xs font-bold text-[#fa65c3] mb-1">Concepto del Extra <span class="text-gray-400 font-normal ml-1">(Déjalo en blanco para guardar solo el número)</span></label>
+                                        <input v-model="nuevoPago.extraConcepto" placeholder="Ej: Material escolar..." class="w-full p-2.5 rounded-lg border border-[#fa65c3] outline-none focus:ring focus:ring-pink-200">
                                     </div>
                                 </div>
 
@@ -533,14 +537,20 @@
                 this.savingPago = true;
                 let tarifaFinal = "";
                 
+                // BLOQUEO EXTREMO DE TARIFA
                 if (this.nuevoPago.tarifaSelect === 'personalizada') {
-                    let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa";
-                    tarifaFinal = `${conceptoPers} (${this.nuevoPago.tarifaPersImporte}€)`;
+                    let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
+                    if (numTarifa && numTarifa !== 0) { // Si el importe existe y no es cero, se guarda.
+                        let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa";
+                        tarifaFinal = `${conceptoPers} (${numTarifa}€)`;
+                    } else {
+                        tarifaFinal = ""; // Si lo vaciaste, se anula la tarifa.
+                    }
                 } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
                     tarifaFinal = this.nuevoPago.tarifaSelect;
                 }
                 
-                // Extra procesado: Si hay texto lo formatea como "Concepto (50€)". Si está en blanco, pasa solo el número "50"
+                // LÓGICA DE EXTRA
                 let extraFinal = "";
                 if (this.nuevoPago.extraImporte !== "" && this.nuevoPago.extraImporte !== null) {
                     let numExtra = Number(this.nuevoPago.extraImporte);
@@ -586,18 +596,23 @@
                 
                 let baseRow = '';
                 if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
-                    let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? (this.nuevoPago.tarifaPersConcepto || 'Tarifa') : this.nuevoPago.tarifaSelect;
-                    let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? Number(this.nuevoPago.tarifaPersImporte).toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
-                    
-                    baseRow = `
-                        <tr>
-                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
-                                <div>${desc}</div>
-                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Curso académico vigente</div>
-                            </td>
-                            <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${tarifaNum} €</td>
-                        </tr>
-                    `;
+                    let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
+                    if (this.nuevoPago.tarifaSelect === 'personalizada' && (!numTarifa || numTarifa === 0)) {
+                        // Ignorar
+                    } else {
+                        let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? (this.nuevoPago.tarifaPersConcepto || 'Tarifa') : this.nuevoPago.tarifaSelect;
+                        let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? numTarifa.toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
+                        
+                        baseRow = `
+                            <tr>
+                                <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px;">
+                                    <div>${desc}</div>
+                                    <div style="font-size: 11px; color: #666; margin-top: 5px;">Curso académico vigente</div>
+                                </td>
+                                <td style="padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; text-align: right;">${tarifaNum} €</td>
+                            </tr>
+                        `;
+                    }
                 }
 
                 let extrasRow = '';
