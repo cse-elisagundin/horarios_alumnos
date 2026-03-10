@@ -27,248 +27,310 @@
         .loading-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #e0e7ff; overflow: hidden; }
         .loading-progress { height: 100%; width: 40%; background: var(--c-accent); animation: loading-bar 1.2s infinite linear; }
         
-        /* ESTILOS PESTAÑAS */
         .tab-btn { padding: 10px 24px; font-weight: 800; text-transform: uppercase; color: #888; border-bottom: 3px solid transparent; transition: all 0.3s; }
         .tab-btn.active { color: var(--c-primary); border-bottom-color: var(--c-accent); }
+
+        /* IMPRESIÓN DEL RECIBO */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            #app-main-content { display: none !important; }
+            #zona-impresion { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
     </style>
 </head>
 <body class="h-screen overflow-hidden text-sm">
 
+<div id="zona-impresion" class="hidden bg-white p-10 font-sans">
+    <div id="ticket-data"></div>
+</div>
+
 <div id="app" class="h-full flex flex-col relative">
+    <div id="app-main-content" class="h-full flex flex-col relative w-full">
 
-    <transition name="pop">
-        <div v-if="showSuccess" class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
-            <div class="bg-white px-8 py-6 rounded-2xl shadow-2xl border-l-8 border-[#25D366] flex flex-col items-center gap-3 min-w-[300px]">
-                <div class="bg-green-100 p-3 rounded-full text-[#25D366]"><i class="fas fa-check text-3xl"></i></div>
-                <h3 class="text-xl font-extrabold text-[#243c7a] uppercase">¡Guardado!</h3>
-                <p class="text-gray-500 font-semibold">{{ successMessage }}</p>
-            </div>
-        </div>
-    </transition>
-
-    <transition name="fade">
-        <div v-if="!authenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4f6f9] p-4">
-            <div class="login-container p-10 w-full max-w-md text-center relative overflow-hidden">
-                <div v-if="loading" class="loading-line"><div class="loading-progress"></div></div>
-                <div class="mb-6 mt-2">
-                    <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="h-20 mx-auto mb-2 object-contain">
-                    <div class="h-1 w-20 mx-auto mt-4 bg-gradient-to-r from-[#243c7a] via-[#2b94cc] to-[#fa65c3] rounded-full"></div>
+        <transition name="pop">
+            <div v-if="showSuccess" class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
+                <div class="bg-white px-8 py-6 rounded-2xl shadow-2xl border-l-8 border-[#25D366] flex flex-col items-center gap-3 min-w-[300px]">
+                    <div class="bg-green-100 p-3 rounded-full text-[#25D366]"><i class="fas fa-check text-3xl"></i></div>
+                    <h3 class="text-xl font-extrabold text-[#243c7a] uppercase">¡Guardado!</h3>
+                    <p class="text-gray-500 font-semibold">{{ successMessage }}</p>
                 </div>
-                <h2 class="text-2xl font-extrabold text-[#243c7a] mb-2 uppercase">Acceso Privado</h2>
-                <input type="password" v-model="passwordInput" @keyup.enter="login" placeholder="Contraseña..." class="w-full p-4 rounded-xl input-corp text-center text-lg mb-4 bg-gray-50">
-                <button @click="login" class="w-full py-4 text-white font-bold rounded-xl btn-corp uppercase shadow-lg">Entrar</button>
-                <p v-if="loginError" class="mt-4 text-red-500 font-bold text-xs animate-pulse">⚠️ Contraseña incorrecta</p>
-                <p v-if="loading" class="mt-4 text-xs text-gray-400 animate-pulse">Sincronizando base de datos...</p>
             </div>
-        </div>
-    </transition>
+        </transition>
 
-    <div v-if="authenticated" class="flex h-full animate-opacity duration-700">
-        <div class="w-1/4 bg-white border-r flex flex-col shadow-xl z-20">
-            <div class="p-5 bg-[#243c7a] text-white">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white p-1 rounded-lg shadow-sm">
-                        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="h-8 w-auto object-contain">
+        <transition name="fade">
+            <div v-if="!authenticated" class="fixed inset-0 z-50 flex items-center justify-center bg-[#f4f6f9] p-4">
+                <div class="login-container p-10 w-full max-w-md text-center relative overflow-hidden">
+                    <div v-if="loading" class="loading-line"><div class="loading-progress"></div></div>
+                    <div class="mb-6 mt-2">
+                        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="h-20 mx-auto mb-2 object-contain">
+                        <div class="h-1 w-20 mx-auto mt-4 bg-gradient-to-r from-[#243c7a] via-[#2b94cc] to-[#fa65c3] rounded-full"></div>
                     </div>
-                    <h1 class="font-bold text-lg leading-tight">Gestión<br><span class="text-[#fa65c3]">Alumnos</span></h1>
+                    <h2 class="text-2xl font-extrabold text-[#243c7a] mb-2 uppercase">Acceso Privado</h2>
+                    <input type="password" v-model="passwordInput" @keyup.enter="login" placeholder="Contraseña..." class="w-full p-4 rounded-xl input-corp text-center text-lg mb-4 bg-gray-50">
+                    <button @click="login" class="w-full py-4 text-white font-bold rounded-xl btn-corp uppercase shadow-lg">Entrar</button>
+                    <p v-if="loginError" class="mt-4 text-red-500 font-bold text-xs animate-pulse">⚠️ Contraseña incorrecta</p>
+                    <p v-if="loading" class="mt-4 text-xs text-gray-400 animate-pulse">Sincronizando base de datos...</p>
                 </div>
             </div>
-            <div class="p-4 bg-gray-50 border-b space-y-3">
-                <div class="relative">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                    <input v-model="search" type="text" placeholder="Buscar..." class="w-full pl-9 pr-8 p-2.5 rounded-lg border focus:border-[#2b94cc] outline-none shadow-sm">
-                    <button v-if="search" @click="search = ''" class="absolute right-3 top-3 text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
-                </div>
-                <div class="flex items-center gap-2 text-xs text-gray-500 px-1 select-none">
-                    <input type="checkbox" v-model="showInactive" id="showInactive" class="rounded text-[#fa65c3] focus:ring-[#fa65c3] cursor-pointer">
-                    <label for="showInactive" class="cursor-pointer hover:text-[#243c7a]">Ver alumnos de baja</label>
-                </div>
-                <button @click="createNew" class="w-full bg-[#2b94cc] text-white py-2.5 rounded-lg hover:bg-[#207bb0] font-bold flex justify-center gap-2 shadow">
-                    <i class="fas fa-plus"></i> Nueva Ficha
-                </button>
-            </div>
-            <div class="flex-1 overflow-y-auto">
-                <div v-for="s in filteredList" :key="s.id" @click="selectStudent(s)"
-                     class="p-4 border-b hover:bg-blue-50 cursor-pointer transition relative"
-                     :class="[selected && selected.id === s.id ? 'bg-blue-50 border-l-4 border-l-[#fa65c3]' : '', s.baja ? 'opacity-60 bg-gray-50' : '']">
-                    <div class="flex justify-between items-start">
-                        <div class="font-bold text-base" :class="s.baja ? 'text-gray-500 line-through' : 'text-[#243c7a]'">{{ s.apellidos }}, {{ s.nombre }}</div>
-                        <span v-if="s.baja" class="bg-gray-200 text-gray-500 text-[9px] px-1.5 py-0.5 rounded font-bold">BAJA</span>
-                    </div>
-                    <div class="text-xs text-gray-500 mt-1 flex justify-between uppercase">
-                        <span>{{ s.curso }}</span><span>{{ s.dni }}</span>
-                    </div>
-                </div>
-            </div>
-            <div class="p-2 border-t bg-gray-50 text-center">
-                <button @click="logout" class="text-xs font-bold text-gray-400 hover:text-red-500">CERRAR SESIÓN</button>
-            </div>
-        </div>
+        </transition>
 
-        <div class="w-3/4 bg-[#f4f6f9] h-full flex flex-col relative">
-            <div v-if="selected" class="flex-1 overflow-y-auto p-8 pb-24">
-                <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden">
-                    
-                    <div class="p-6 border-b flex justify-between items-center sticky top-0 z-30 bg-white/95 backdrop-blur">
-                        <div class="flex flex-col gap-1">
-                            <div class="flex items-center gap-4">
-                                <h2 class="text-2xl font-extrabold" :class="form.baja ? 'text-gray-400' : 'text-[#243c7a]'">
-                                    {{ isNew ? 'Nuevo Alumno' : form.nombre + ' ' + form.apellidos }}
-                                </h2>
-                                <span v-if="form.baja" class="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-bold">INACTIVO</span>
-                            </div>
-                            
-                            <div v-if="!isNew" class="flex gap-2 mt-2">
-                                <button @click="activeTab = 'ficha'" class="tab-btn" :class="{ 'active': activeTab === 'ficha' }"><i class="fas fa-id-card mr-1"></i> Ficha</button>
-                                <button @click="activeTab = 'pagos'" class="tab-btn" :class="{ 'active': activeTab === 'pagos' }"><i class="fas fa-euro-sign mr-1"></i> Pagos</button>
-                            </div>
+        <div v-if="authenticated" class="flex h-full animate-opacity duration-700">
+            <div class="w-1/4 bg-white border-r flex flex-col shadow-xl z-20">
+                <div class="p-5 bg-[#243c7a] text-white">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-white p-1 rounded-lg shadow-sm">
+                            <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="h-8 w-auto object-contain">
                         </div>
-
-                        <div class="flex items-center gap-3">
-                            <div v-if="activeTab === 'ficha'" class="flex items-center gap-2 mr-4 bg-gray-100 p-1.5 rounded-lg select-none">
-                                <span class="text-[10px] font-bold uppercase" :class="!form.baja ? 'text-green-600' : 'text-gray-400'">Alta</span>
-                                <button @click="form.baja = !form.baja" class="relative w-10 h-5 rounded-full transition-colors focus:outline-none" :class="form.baja ? 'bg-gray-400' : 'bg-[#25D366]'">
-                                    <div class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full shadow transition-transform" :class="form.baja ? 'translate-x-5' : 'translate-x-0'"></div>
-                                </button>
-                                <span class="text-[10px] font-bold uppercase" :class="form.baja ? 'text-red-500' : 'text-gray-400'">Baja</span>
-                            </div>
-                            <button @click="selected = null" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-semibold">Cerrar</button>
-                            
-                            <button v-if="activeTab === 'ficha'" @click="saveData" :disabled="saving" class="bg-[#25D366] text-white px-6 py-2 rounded-lg hover:bg-[#1faa50] font-bold shadow-lg flex items-center gap-2">
-                                <i v-if="saving" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-save"></i>
-                                {{ saving ? 'Guardando...' : 'Guardar Ficha' }}
-                            </button>
+                        <h1 class="font-bold text-lg leading-tight">Gestión<br><span class="text-[#fa65c3]">Alumnos</span></h1>
+                    </div>
+                </div>
+                <div class="p-4 bg-gray-50 border-b space-y-3">
+                    <div class="relative">
+                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                        <input v-model="search" type="text" placeholder="Buscar..." class="w-full pl-9 pr-8 p-2.5 rounded-lg border focus:border-[#2b94cc] outline-none shadow-sm">
+                        <button v-if="search" @click="search = ''" class="absolute right-3 top-3 text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-gray-500 px-1 select-none">
+                        <input type="checkbox" v-model="showInactive" id="showInactive" class="rounded text-[#fa65c3] focus:ring-[#fa65c3] cursor-pointer">
+                        <label for="showInactive" class="cursor-pointer hover:text-[#243c7a]">Ver alumnos de baja</label>
+                    </div>
+                    <button @click="createNew" class="w-full bg-[#2b94cc] text-white py-2.5 rounded-lg hover:bg-[#207bb0] font-bold flex justify-center gap-2 shadow">
+                        <i class="fas fa-plus"></i> Nueva Ficha
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto">
+                    <div v-for="s in filteredList" :key="s.id" @click="selectStudent(s)"
+                        class="p-4 border-b hover:bg-blue-50 cursor-pointer transition relative"
+                        :class="[selected && selected.id === s.id ? 'bg-blue-50 border-l-4 border-l-[#fa65c3]' : '', s.baja ? 'opacity-60 bg-gray-50' : '']">
+                        <div class="flex justify-between items-start">
+                            <div class="font-bold text-base" :class="s.baja ? 'text-gray-500 line-through' : 'text-[#243c7a]'">{{ s.apellidos }}, {{ s.nombre }}</div>
+                            <span v-if="s.baja" class="bg-gray-200 text-gray-500 text-[9px] px-1.5 py-0.5 rounded font-bold">BAJA</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 flex justify-between uppercase">
+                            <span>{{ s.curso }}</span><span>{{ s.dni }}</span>
                         </div>
                     </div>
+                </div>
+                <div class="p-2 border-t bg-gray-50 text-center">
+                    <button @click="logout" class="text-xs font-bold text-gray-400 hover:text-red-500">CERRAR SESIÓN</button>
+                </div>
+            </div>
 
-                    <form v-if="activeTab === 'ficha'" class="p-8 space-y-8" :class="form.baja ? 'opacity-70 grayscale-[0.5]' : ''">
-                        <section class="grid grid-cols-4 gap-6">
-                            <div class="col-span-4 font-bold text-[#243c7a] border-b pb-2">DATOS PERSONALES</div>
-                            <input v-model="form.nombre" placeholder="Nombre" class="p-3 rounded-lg border bg-gray-50 focus:bg-white outline-none">
-                            <input v-model="form.apellidos" placeholder="Apellidos" class="p-3 rounded-lg border bg-gray-50 focus:bg-white outline-none">
-                            <input v-model="form.dni" placeholder="DNI/NIE" class="p-3 rounded-lg border bg-gray-50 focus:bg-white outline-none">
-                            <input type="date" v-model="form.nacimiento" class="p-3 rounded-lg border bg-gray-50 focus:bg-white outline-none">
-                        </section>
-                        <section class="grid grid-cols-6 gap-6">
-                            <div class="col-span-6 font-bold text-[#243c7a] border-b pb-2">DIRECCIÓN</div>
-                            <input v-model="form.direccion" placeholder="Domicilio" class="col-span-3 p-3 rounded-lg border bg-gray-50 outline-none">
-                            <input v-model="form.cp" placeholder="CP" class="p-3 rounded-lg border bg-gray-50 outline-none">
-                            <input v-model="form.poblacion" placeholder="Población" class="p-3 rounded-lg border bg-gray-50 outline-none">
-                            <input v-model="form.provincia" placeholder="Provincia" class="p-3 rounded-lg border bg-gray-50 outline-none">
-                        </section>
-                        <section class="grid grid-cols-3 gap-6">
-                            <div class="col-span-3 font-bold text-[#243c7a] border-b pb-2">ACADÉMICO</div>
-                            <input v-model="form.colegio" placeholder="Colegio" class="p-3 rounded-lg border bg-gray-50 outline-none">
-                            <input v-model="form.curso" placeholder="Curso" class="p-3 rounded-lg border bg-gray-50 outline-none">
-                            <input v-model="form.tlf" placeholder="Teléfono Alumno" class="p-3 rounded-lg border bg-gray-50 outline-none">
-                        </section>
-                        <section class="grid grid-cols-2 gap-8">
-                            <div class="bg-green-50 p-6 rounded-2xl border border-green-200">
-                                <div class="font-bold text-green-800 mb-4">FAMILIAR 1</div>
-                                <div class="space-y-3">
-                                    <input v-model="form.fam1_nombre" placeholder="Nombre Completo" class="w-full p-2 border rounded bg-white">
-                                    <select v-model="form.fam1_relacion" class="w-full p-2 border rounded bg-white"><option value="" disabled>Relación...</option><option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option></select>
-                                    <div class="flex gap-2">
-                                        <input v-model="form.fam1_tlf" placeholder="Teléfono" class="w-full p-2 border rounded">
-                                        <a v-if="form.fam1_tlf" :href="'https://wa.me/34'+String(form.fam1_tlf).replace(/\s/g,'')" target="_blank" class="bg-[#25D366] text-white px-3 rounded flex items-center hover:bg-green-600"><i class="fab fa-whatsapp"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-gray-100 p-6 rounded-2xl border border-gray-200">
-                                <div class="font-bold text-gray-600 mb-4">FAMILIAR 2</div>
-                                <div class="space-y-3">
-                                    <input v-model="form.fam2_nombre" placeholder="Nombre Completo" class="w-full p-2 border rounded bg-white">
-                                    <select v-model="form.fam2_relacion" class="w-full p-2 border rounded bg-white"><option value="" disabled>Relación...</option><option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option></select>
-                                    <div class="flex gap-2">
-                                        <input v-model="form.fam2_tlf" placeholder="Teléfono" class="w-full p-2 border rounded">
-                                        <a v-if="form.fam2_tlf" :href="'https://wa.me/34'+String(form.fam2_tlf).replace(/\s/g,'')" target="_blank" class="bg-gray-400 text-white px-3 rounded flex items-center hover:bg-gray-500"><i class="fab fa-whatsapp"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    </form>
-
-                    <div v-if="activeTab === 'pagos'" class="p-8 space-y-8 bg-gray-50 min-h-[500px]">
+            <div class="w-3/4 bg-[#f4f6f9] h-full flex flex-col relative">
+                <div v-if="selected" class="flex-1 overflow-y-auto p-8 pb-24">
+                    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden">
                         
-                        <div v-if="datosFijosAlumno" class="bg-white p-6 rounded-xl border border-[#2b94cc] shadow-sm">
-                            <h3 class="font-extrabold text-[#243c7a] mb-2 uppercase flex items-center gap-2">
-                                <i class="fas fa-chart-line text-[#2b94cc]"></i> Estado en Ingresos Fijos
-                            </h3>
-                            <p class="text-sm text-gray-600 italic mb-4">Fila encontrada en la BD de pagos para este alumno:</p>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-sm whitespace-nowrap">
-                                    <tbody>
-                                        <tr>
-                                            <td v-for="(dato, i) in datosFijosAlumno.estado" :key="i" class="p-2 border bg-gray-50 font-semibold text-gray-700">
-                                                {{ dato }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <div class="bg-white p-6 rounded-xl border shadow-sm">
-                            <h3 class="font-extrabold text-[#fa65c3] mb-4 uppercase border-b pb-2"><i class="fas fa-cash-register mr-2"></i> Registrar Nuevo Pago</h3>
-                            
-                            <div class="grid grid-cols-3 gap-5 mb-6">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción</label>
-                                    <input v-model="nuevoPago.tarifa" placeholder="Ej: Fijo mensual" class="w-full p-3 rounded-lg border outline-none focus:border-[#fa65c3]">
+                        <div class="p-6 border-b flex justify-between items-center sticky top-0 z-30 bg-white/95 backdrop-blur">
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-4">
+                                    <h2 class="text-2xl font-extrabold" :class="form.baja ? 'text-gray-400' : 'text-[#243c7a]'">
+                                        {{ isNew ? 'Nuevo Alumno' : form.nombre + ' ' + form.apellidos }}
+                                    </h2>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">Fecha de pago</label>
-                                    <input type="date" v-model="nuevoPago.fecha" class="w-full p-3 rounded-lg border outline-none focus:border-[#fa65c3]">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">Extras</label>
-                                    <input v-model="nuevoPago.extras" placeholder="Conceptos extra" class="w-full p-3 rounded-lg border outline-none focus:border-[#fa65c3]">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">Importe Total (€)</label>
-                                    <input type="number" step="0.01" v-model="nuevoPago.importe" placeholder="0.00" class="w-full p-3 rounded-lg border outline-none focus:border-[#fa65c3] font-bold text-[#243c7a]">
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">Mes</label>
-                                    <select v-model="nuevoPago.mes" class="w-full p-3 rounded-lg border outline-none focus:border-[#fa65c3] bg-white">
-                                        <option value="" disabled>Selecciona mes...</option>
-                                        <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
-                                    <select v-model="nuevoPago.metodo" class="w-full p-3 rounded-lg border outline-none focus:border-[#fa65c3] bg-white">
-                                        <option value="" disabled>Método...</option>
-                                        <option>Efectivo</option>
-                                        <option>Tarjeta</option>
-                                        <option>Transferencia</option>
-                                        <option>Bizum</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="flex items-center justify-between border-t pt-5">
-                                <label class="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition">
-                                    <input type="checkbox" v-model="nuevoPago.generarPDF" class="w-6 h-6 rounded text-[#2b94cc] focus:ring-[#2b94cc]">
-                                    <span class="font-extrabold text-[#243c7a] select-none">📄 GENERAR FACTURA (PDF AUTOMÁTICO)</span>
-                                </label>
                                 
-                                <button @click="registrarPago" :disabled="savingPago" class="bg-[#2b94cc] text-white px-8 py-3 rounded-xl hover:bg-[#207bb0] font-bold shadow-lg flex items-center gap-2 transition-transform transform active:scale-95">
-                                    <i v-if="savingPago" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-paper-plane"></i>
-                                    {{ savingPago ? 'Enviando...' : 'Registrar Pago' }}
+                                <div v-if="!isNew" class="flex gap-2 mt-2">
+                                    <button @click="activeTab = 'ficha'" class="tab-btn" :class="{ 'active': activeTab === 'ficha' }"><i class="fas fa-id-card mr-1"></i> Ficha</button>
+                                    <button @click="activeTab = 'pagos'" class="tab-btn" :class="{ 'active': activeTab === 'pagos' }"><i class="fas fa-euro-sign mr-1"></i> Pagos</button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <div v-if="activeTab === 'ficha'" class="flex items-center gap-2 mr-4 bg-gray-100 p-1.5 rounded-lg select-none">
+                                    <span class="text-[10px] font-bold uppercase" :class="!form.baja ? 'text-green-600' : 'text-gray-400'">Alta</span>
+                                    <button @click="form.baja = !form.baja" class="relative w-10 h-5 rounded-full transition-colors focus:outline-none" :class="form.baja ? 'bg-gray-400' : 'bg-[#25D366]'">
+                                        <div class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full shadow transition-transform" :class="form.baja ? 'translate-x-5' : 'translate-x-0'"></div>
+                                    </button>
+                                </div>
+                                <button @click="selected = null" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-semibold">Cerrar</button>
+                                
+                                <button v-if="activeTab === 'ficha'" @click="saveData" :disabled="saving" class="bg-[#25D366] text-white px-6 py-2 rounded-lg hover:bg-[#1faa50] font-bold shadow-lg flex items-center gap-2">
+                                    <i v-if="saving" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-save"></i>
+                                    {{ saving ? 'Guardando...' : 'Guardar Ficha' }}
                                 </button>
                             </div>
                         </div>
 
+                        <form v-if="activeTab === 'ficha'" class="p-8 space-y-8" :class="form.baja ? 'opacity-70 grayscale-[0.5]' : ''">
+                            <section class="grid grid-cols-4 gap-6">
+                                <div class="col-span-4 font-bold text-[#243c7a] border-b pb-2">DATOS PERSONALES</div>
+                                <input v-model="form.nombre" placeholder="Nombre" class="p-3 rounded-lg border bg-gray-50 outline-none">
+                                <input v-model="form.apellidos" placeholder="Apellidos" class="p-3 rounded-lg border bg-gray-50 outline-none">
+                                <input v-model="form.dni" placeholder="DNI/NIE" class="p-3 rounded-lg border bg-gray-50 outline-none">
+                                <input type="date" v-model="form.nacimiento" class="p-3 rounded-lg border bg-gray-50 outline-none">
+                            </section>
+                            <section class="grid grid-cols-6 gap-6">
+                                <div class="col-span-6 font-bold text-[#243c7a] border-b pb-2">DIRECCIÓN</div>
+                                <input v-model="form.direccion" placeholder="Domicilio" class="col-span-3 p-3 rounded-lg border bg-gray-50">
+                                <input v-model="form.cp" placeholder="CP" class="p-3 rounded-lg border bg-gray-50">
+                                <input v-model="form.poblacion" placeholder="Población" class="p-3 rounded-lg border bg-gray-50">
+                                <input v-model="form.provincia" placeholder="Provincia" class="p-3 rounded-lg border bg-gray-50">
+                            </section>
+                            <section class="grid grid-cols-3 gap-6">
+                                <div class="col-span-3 font-bold text-[#243c7a] border-b pb-2">ACADÉMICO</div>
+                                <input v-model="form.colegio" placeholder="Colegio" class="p-3 rounded-lg border bg-gray-50">
+                                <input v-model="form.curso" placeholder="Curso" class="p-3 rounded-lg border bg-gray-50">
+                                <input v-model="form.tlf" placeholder="Teléfono Alumno" class="p-3 rounded-lg border bg-gray-50">
+                            </section>
+                            <section class="grid grid-cols-2 gap-8">
+                                <div class="bg-green-50 p-6 rounded-2xl border border-green-200">
+                                    <div class="font-bold text-green-800 mb-4">FAMILIAR 1</div>
+                                    <div class="space-y-3">
+                                        <input v-model="form.fam1_nombre" placeholder="Nombre Completo" class="w-full p-2 border rounded bg-white">
+                                        <select v-model="form.fam1_relacion" class="w-full p-2 border rounded bg-white"><option value="" disabled>Relación...</option><option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option></select>
+                                        <div class="flex gap-2">
+                                            <input v-model="form.fam1_tlf" placeholder="Teléfono" class="w-full p-2 border rounded">
+                                            <a v-if="form.fam1_tlf" :href="'https://wa.me/34'+String(form.fam1_tlf).replace(/\s/g,'')" target="_blank" class="bg-[#25D366] text-white px-3 rounded flex items-center hover:bg-green-600"><i class="fab fa-whatsapp"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-100 p-6 rounded-2xl border border-gray-200">
+                                    <div class="font-bold text-gray-600 mb-4">FAMILIAR 2</div>
+                                    <div class="space-y-3">
+                                        <input v-model="form.fam2_nombre" placeholder="Nombre Completo" class="w-full p-2 border rounded bg-white">
+                                        <select v-model="form.fam2_relacion" class="w-full p-2 border rounded bg-white"><option value="" disabled>Relación...</option><option>Mamá</option><option>Papá</option><option>Tutor</option><option>Otro</option></select>
+                                        <div class="flex gap-2">
+                                            <input v-model="form.fam2_tlf" placeholder="Teléfono" class="w-full p-2 border rounded">
+                                            <a v-if="form.fam2_tlf" :href="'https://wa.me/34'+String(form.fam2_tlf).replace(/\s/g,'')" target="_blank" class="bg-gray-400 text-white px-3 rounded flex items-center hover:bg-gray-500"><i class="fab fa-whatsapp"></i></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </form>
+
+                        <div v-if="activeTab === 'pagos'" class="p-8 space-y-8 bg-gray-50 min-h-[500px]">
+                            
+                            <div class="bg-white p-6 rounded-xl border border-[#2b94cc] shadow-sm">
+                                <h3 class="font-extrabold text-[#243c7a] mb-4 uppercase flex items-center gap-2 border-b pb-2">
+                                    <i class="fas fa-calendar-check text-[#2b94cc]"></i> Control de Ingresos Fijos
+                                </h3>
+                                
+                                <div v-if="mesesFijos.length === 0" class="text-gray-500 italic text-sm">El alumno no existe en la base de Ingresos Fijos.</div>
+                                
+                                <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div v-for="(mes, idx) in mesesFijos" :key="idx" class="border rounded-xl p-4 flex flex-col items-center shadow-sm relative overflow-hidden" :class="mes.bgClass">
+                                        <div class="text-xs font-extrabold text-gray-500 uppercase mb-1">{{ mes.mesNombre }}</div>
+                                        
+                                        <div v-if="!mes.cuota" class="flex flex-col items-center w-full mt-2">
+                                            <span class="text-xs text-gray-400 font-bold mb-1">SIN CUOTA</span>
+                                            <div class="flex gap-1 w-full">
+                                                <input type="number" v-model="mes.inputCuota" placeholder="€" class="w-full p-1 text-center border rounded font-bold text-[#243c7a] text-sm">
+                                                <button @click="actualizarFijo(mes.mesNombre, 'cuota', mes.inputCuota, mes)" class="bg-[#2b94cc] text-white px-2 rounded hover:bg-[#207bb0]"><i class="fas fa-save"></i></button>
+                                            </div>
+                                        </div>
+
+                                        <div v-else class="flex flex-col items-center w-full">
+                                            <div class="text-2xl font-black mb-2" :class="mes.pagado ? 'text-green-700' : 'text-gray-700'">{{ mes.cuota }}€</div>
+                                            
+                                            <button v-if="mes.pagado" @click="actualizarFijo(mes.mesNombre, 'estado', false, mes)" class="w-full py-1.5 bg-green-500 text-white rounded-lg font-bold text-xs uppercase hover:bg-green-600 transition flex justify-center items-center gap-1">
+                                                <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else><i class="fas fa-check-circle"></i> PAGADO</template>
+                                            </button>
+                                            
+                                            <button v-else @click="actualizarFijo(mes.mesNombre, 'estado', true, mes)" class="w-full py-1.5 bg-red-100 text-red-600 border border-red-300 rounded-lg font-bold text-xs uppercase hover:bg-red-200 transition flex justify-center items-center gap-1">
+                                                <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else>PENDIENTE</template>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-xl border shadow-sm relative">
+                                <div class="flex justify-between items-center border-b pb-3 mb-5">
+                                    <h3 class="font-extrabold text-[#fa65c3] uppercase"><i class="fas fa-cash-register mr-2"></i> Registrar Pago</h3>
+                                    <button @click="imprimirTicketRapido" class="bg-gray-200 text-gray-700 px-4 py-1.5 rounded-lg hover:bg-gray-300 font-bold text-xs flex items-center gap-2">
+                                        <i class="fas fa-print"></i> Imprimir Recibo Ahora
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-5 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Fecha</label>
+                                        <input type="date" v-model="nuevoPago.fecha" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Mes</label>
+                                        <select v-model="nuevoPago.mes" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white">
+                                            <option value="" disabled>Selecciona mes...</option>
+                                            <option>Enero</option><option>Febrero</option><option>Marzo</option><option>Abril</option><option>Mayo</option><option>Junio</option><option>Julio</option><option>Agosto</option><option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
+                                        <select v-model="nuevoPago.metodo" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white">
+                                            <option value="" disabled>Método...</option>
+                                            <option>Efectivo</option>
+                                            <option>Tarjeta</option>
+                                            <option>Transferencia</option>
+                                            <option>Bizum</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="col-span-2">
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción</label>
+                                        <select v-model="nuevoPago.tarifaSelect" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white text-[#243c7a] font-bold">
+                                            <option value="" disabled>Selecciona Tarifa...</option>
+                                            <option v-if="cuotaSugerida" :value="'Cuota Fija (' + cuotaSugerida + '€)'">🌟 Cuota Fija ({{ cuotaSugerida }}€)</option>
+                                            <option value="Opción 1 (40€)">Opción 1 (40€)</option>
+                                            <option value="Opción 2 (50€)">Opción 2 (50€)</option>
+                                            <option value="Opción 3 (80€)">Opción 3 (80€)</option>
+                                            <option value="Opción 4 (85€)">Opción 4 (85€)</option>
+                                            <option value="Opción 5 (110€)">Opción 5 (110€)</option>
+                                            <option value="Opción 6 (135€)">Opción 6 (135€)</option>
+                                            <option value="personalizada">✏️ Otra cantidad (Personalizada...)</option>
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Importe Extra (€) <span class="text-gray-300 font-normal ml-1">Opcional</span></label>
+                                        <input type="number" step="0.01" v-model="nuevoPago.extraImporte" placeholder="0.00" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
+                                    </div>
+
+                                    <div v-if="nuevoPago.tarifaSelect === 'personalizada'" class="col-span-3 grid grid-cols-3 gap-5 bg-orange-50 p-4 rounded-lg border border-orange-200">
+                                        <div class="col-span-2">
+                                            <label class="block text-xs font-bold text-orange-600 mb-1">Concepto Personalizado</label>
+                                            <input v-model="nuevoPago.tarifaPersConcepto" placeholder="Ej: Medio mes Abril..." class="w-full p-2 rounded border border-orange-300 outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-orange-600 mb-1">Importe Tarifa (€)</label>
+                                            <input type="number" step="0.01" v-model="nuevoPago.tarifaPersImporte" placeholder="0.00" class="w-full p-2 rounded border border-orange-300 outline-none font-bold">
+                                        </div>
+                                    </div>
+                                    
+                                    <div v-if="nuevoPago.extraImporte > 0" class="col-span-3">
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Concepto del Extra</label>
+                                        <input v-model="nuevoPago.extraConcepto" placeholder="Ej: Material escolar..." class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3]">
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between border-t pt-5 mt-2 bg-gray-50 -mx-6 -mb-6 p-6 rounded-b-xl">
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-gray-400 uppercase">Importe Total Calculado</span>
+                                        <span class="text-3xl font-black text-[#243c7a]">{{ importeCalculado }} €</span>
+                                    </div>
+
+                                    <div class="flex items-center gap-6">
+                                        <label class="flex items-center gap-2 cursor-pointer p-2 hover:bg-white rounded-lg transition" :class="nuevoPago.generarPDF ? 'text-[#2b94cc]' : 'text-gray-400'">
+                                            <input type="checkbox" v-model="nuevoPago.generarPDF" class="w-5 h-5 rounded accent-[#2b94cc]">
+                                            <span class="font-extrabold text-xs uppercase select-none">Drive PDF</span>
+                                        </label>
+                                        
+                                        <button @click="registrarPago" :disabled="savingPago || importeCalculado <= 0" class="bg-[#2b94cc] text-white px-8 py-3 rounded-xl hover:bg-[#207bb0] font-bold shadow-lg flex items-center gap-2 transition-transform transform active:scale-95 disabled:opacity-50">
+                                            <i v-if="savingPago" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-paper-plane"></i>
+                                            {{ savingPago ? 'Guardando...' : 'GUARDAR PAGO' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
-            </div>
-            
-            <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
-                <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse">
-                    <i class="fas fa-folder-open text-6xl text-[#2b94cc] opacity-50"></i>
+                
+                <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
+                    <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse">
+                        <i class="fas fa-folder-open text-6xl text-[#2b94cc] opacity-50"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-[#243c7a]">Selecciona un alumno</h2>
                 </div>
-                <h2 class="text-xl font-bold text-[#243c7a]">Selecciona un alumno</h2>
             </div>
         </div>
     </div>
@@ -276,7 +338,7 @@
 
 <script>
     const { createApp } = Vue;
-    // CONFIGURACIÓN (Tu URL actual intacta)
+    // CONFIGURACIÓN (Intacta)
     const PASS_HASH = "MDEwNTIz"; 
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
 
@@ -284,10 +346,11 @@
         data() {
             return {
                 authenticated: false, passwordInput: '', loginError: false, apiUrl: '', 
-                list: [], fijos: [], search: '', selected: null, isNew: false, 
+                list: [], fijosRaw: [], search: '', selected: null, isNew: false, 
                 loading: false, saving: false, savingPago: false,
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
                 activeTab: 'ficha', 
+                cuotaSugerida: null,
                 nuevoPago: this.pagoVacio()
             }
         },
@@ -296,24 +359,79 @@
                 const t = this.search.toLowerCase();
                 return this.list.filter(s => {
                     if (!this.showInactive && s.baja) return false;
-                    const nombre = (s.nombre || "").toLowerCase();
-                    const apellidos = (s.apellidos || "").toLowerCase();
-                    const dni = (s.dni || "").toLowerCase();
-                    const nombreCompleto = `${nombre} ${apellidos}`;
-                    return nombre.includes(t) || apellidos.includes(t) || dni.includes(t) || nombreCompleto.includes(t);
+                    const nombreCompleto = `${s.nombre || ""} ${s.apellidos || ""}`.toLowerCase();
+                    return nombreCompleto.includes(t) || (s.dni || "").toLowerCase().includes(t);
                 });
             },
-            datosFijosAlumno() {
-                // Busca en el array de Ingresos Fijos alguien cuyo nombre coincida con el nombre de la ficha
-                if(!this.form.nombre) return null;
-                const nombreBuscado = this.form.nombre.toLowerCase();
-                return this.fijos.find(f => f.alumno && f.alumno.toLowerCase().includes(nombreBuscado));
+            mesesFijos() {
+                // Parsea el Excel de Fijos para sacar las tarjetas del alumno seleccionado
+                if(!this.form.nombre || this.fijosRaw.length === 0) return [];
+                const headers = this.fijosRaw[0];
+                const nombreCompleto = (this.form.nombre + " " + this.form.apellidos).toLowerCase().trim();
+                
+                const filaAlumno = this.fijosRaw.find((row, idx) => idx > 0 && String(row[1]).toLowerCase().trim() === nombreCompleto);
+                if(!filaAlumno) return [];
+
+                let meses = [];
+                for(let i = 2; i < headers.length; i += 2) {
+                    if(headers[i]) {
+                        const valCuota = filaAlumno[i] !== "" ? filaAlumno[i] : null;
+                        const estaPagado = String(filaAlumno[i+1]).toUpperCase() === 'TRUE' || filaAlumno[i+1] === true;
+                        
+                        let bg = valCuota ? (estaPagado ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : 'bg-gray-100 border-dashed border-gray-300';
+                        meses.push({ mesNombre: headers[i], cuota: valCuota, pagado: estaPagado, inputCuota: '', cargando: false, bgClass: bg });
+                    }
+                }
+                return meses;
+            },
+            importeCalculado() {
+                let tarifa = 0;
+                if(this.nuevoPago.tarifaSelect === 'personalizada') tarifa = Number(this.nuevoPago.tarifaPersImporte) || 0;
+                else if(this.nuevoPago.tarifaSelect) {
+                    const match = this.nuevoPago.tarifaSelect.match(/\((\d+(?:\.\d+)?)€\)/);
+                    if(match) tarifa = Number(match[1]);
+                }
+                const extra = Number(this.nuevoPago.extraImporte) || 0;
+                return parseFloat((tarifa + extra).toFixed(2));
+            }
+        },
+        watch: {
+            // Auto-seleccionar mes al poner fecha
+            'nuevoPago.fecha'(newFecha) {
+                if(newFecha) {
+                    const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                    const mIndex = new Date(newFecha).getMonth();
+                    this.nuevoPago.mes = meses[mIndex];
+                }
+            },
+            // Auto-rellenar tarifa sugerida si cambia el mes
+            'nuevoPago.mes'(newMes) {
+                this.cuotaSugerida = null;
+                if(newMes && this.mesesFijos.length > 0) {
+                    const mesEncontrado = this.mesesFijos.find(m => m.mesNombre.toLowerCase().includes(newMes.toLowerCase()));
+                    if(mesEncontrado && mesEncontrado.cuota) {
+                        this.cuotaSugerida = mesEncontrado.cuota;
+                        this.nuevoPago.tarifaSelect = `Cuota Fija (${this.cuotaSugerida}€)`;
+                    } else {
+                        this.nuevoPago.tarifaSelect = ""; // Se vacía para que elija opciones
+                    }
+                }
+            },
+            // Cerebro del PDF automático
+            'nuevoPago.metodo'(newMetodo) {
+                if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true;
+                if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false;
             }
         },
         methods: {
             pagoVacio() {
                 const hoy = new Date().toISOString().split('T')[0];
-                return { tarifa: '', fecha: hoy, extras: '', importe: '', mes: '', metodo: '', generarPDF: true };
+                const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                return { 
+                    fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', 
+                    tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '',
+                    extraConcepto: '', extraImporte: '', generarPDF: false 
+                };
             },
             login() {
                 if (btoa(this.passwordInput) === PASS_HASH) {
@@ -330,74 +448,83 @@
                     const json = await res.json();
                     if (json.status === 'success') {
                         this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
-                        this.fijos = json.fijos || [];
+                        this.fijosRaw = json.fijos || [];
                     }
                 } catch (e) { console.error(e); }
                 this.loading = false;
             },
             
             createNew() {
-                this.isNew = true;
-                this.activeTab = 'ficha';
+                this.isNew = true; this.activeTab = 'ficha';
                 this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false };
                 this.selected = { id: 'TEMP' };
             },
             
             selectStudent(s) {
                 try {
-                    let tempForm = JSON.parse(JSON.stringify(s));
-                    this.form = tempForm;
-                    this.isNew = false;
-                    this.activeTab = 'ficha';
-                    this.selected = s;
-                    this.nuevoPago = this.pagoVacio(); // Reseteamos formulario de pagos
+                    this.form = JSON.parse(JSON.stringify(s));
+                    this.isNew = false; this.activeTab = 'ficha'; this.selected = s;
+                    this.nuevoPago = this.pagoVacio(); 
+                    
+                    // Forzar trigger del Watcher para cargar la cuota sugerida inicial
+                    const mesActual = this.nuevoPago.mes;
+                    this.nuevoPago.mes = ''; setTimeout(() => { this.nuevoPago.mes = mesActual; }, 50);
 
-                    this.form.fam1_tlf = String(this.form.fam1_tlf || '');
-                    this.form.fam2_tlf = String(this.form.fam2_tlf || '');
-                    this.form.tlf = String(this.form.tlf || '');
-
+                    this.form.fam1_tlf = String(this.form.fam1_tlf || ''); this.form.fam2_tlf = String(this.form.fam2_tlf || ''); this.form.tlf = String(this.form.tlf || '');
                     try {
-                        let val = tempForm.nacimiento;
-                        let cleanDate = '';
+                        let val = this.form.nacimiento;
                         if (val && typeof val === 'string') {
-                            val = val.trim();
-                            if (val.includes('/')) {
-                                const p = val.split('/');
-                                if (p.length === 3) cleanDate = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
-                            } else if (val.includes('T')) cleanDate = val.split('T')[0];
-                            else if (val.includes('-')) cleanDate = val;
+                            if (val.includes('/')) { const p = val.trim().split('/'); if (p.length === 3) this.form.nacimiento = `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`; } 
+                            else if (val.includes('T')) this.form.nacimiento = val.split('T')[0];
                         }
-                        this.form.nacimiento = cleanDate;
                     } catch(errDate) { this.form.nacimiento = ''; }
-
-                } catch(e) { console.error("Error abriendo ficha", e); }
+                } catch(e) {}
             },
             
             async saveData() {
                 this.saving = true;
                 try {
                     await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ ...this.form, action: this.isNew ? 'create' : 'update', id: this.selected.id }) });
-                    this.showSuccess = true;
-                    this.successMessage = this.isNew ? 'Ficha Creada' : 'Ficha Actualizada';
-                    this.loadData();
+                    this.showSuccess = true; this.successMessage = 'Ficha Guardada'; this.loadData();
                     setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000);
                 } catch (e) { alert('Error de conexión'); this.saving = false; }
             },
 
+            async actualizarFijo(mesHeader, tipo, valor, objRef) {
+                if(tipo === 'cuota' && !valor) return alert("Introduce una cuota válida");
+                objRef.cargando = true;
+                
+                const payload = {
+                    action: 'update_ingreso_fijo',
+                    alumno: this.form.nombre + ' ' + this.form.apellidos,
+                    mes_header: mesHeader, tipo: tipo, valor: valor
+                };
+
+                try {
+                    await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    await this.loadData(); // Refrescar los datos de fondo
+                } catch (e) { alert('Error actualizando estado'); }
+                objRef.cargando = false;
+            },
+
             async registrarPago() {
-                if(!this.nuevoPago.importe || !this.nuevoPago.tarifa) {
-                    alert("Por favor, rellena al menos la tarifa y el importe.");
-                    return;
+                this.savingPago = true;
+                
+                // Formatear textos finales para la hoja REGISTRO
+                let tarifaFinal = this.nuevoPago.tarifaSelect;
+                if(this.nuevoPago.tarifaSelect === 'personalizada') {
+                    tarifaFinal = `${this.nuevoPago.tarifaPersConcepto} (${this.nuevoPago.tarifaPersImporte}€)`;
                 }
                 
-                this.savingPago = true;
+                let extraFinal = this.nuevoPago.extraImporte > 0 ? `${this.nuevoPago.extraConcepto || 'Extra'} (${this.nuevoPago.extraImporte}€)` : '';
+
                 const payload = {
                     action: 'create_pago',
                     alumno: this.form.nombre + ' ' + this.form.apellidos,
-                    tarifa: this.nuevoPago.tarifa,
+                    tarifa: tarifaFinal,
                     fecha: this.nuevoPago.fecha,
-                    extras: this.nuevoPago.extras,
-                    importe: this.nuevoPago.importe,
+                    extras: extraFinal,
+                    importe: this.importeCalculado,
                     mes: this.nuevoPago.mes,
                     metodo: this.nuevoPago.metodo,
                     generarPDF: this.nuevoPago.generarPDF
@@ -405,14 +532,45 @@
 
                 try {
                     await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
-                    this.showSuccess = true;
-                    this.successMessage = '¡Pago registrado correctamente!';
-                    this.nuevoPago = this.pagoVacio(); // Limpiar formulario
+                    this.showSuccess = true; this.successMessage = '¡Pago registrado correctamente!';
+                    this.nuevoPago = this.pagoVacio(); 
                     setTimeout(() => { this.showSuccess = false; this.savingPago = false; }, 2500);
-                } catch (e) {
-                    alert('Error enviando el pago');
-                    this.savingPago = false;
-                }
+                } catch (e) { alert('Error enviando el pago'); this.savingPago = false; }
+            },
+
+            imprimirTicketRapido() {
+                // Monta el HTML del ticket para imprimir sin guardar
+                const fechaE = new Date(this.nuevoPago.fecha).toLocaleDateString('es-ES');
+                let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? this.nuevoPago.tarifaPersConcepto : this.nuevoPago.tarifaSelect;
+                let extrasHtml = this.nuevoPago.extraImporte > 0 ? `<div style="display:flex; justify-content:space-between; margin-top:5px; font-size:14px;"><span>+ Extra: ${this.nuevoPago.extraConcepto}</span><span>${this.nuevoPago.extraImporte}€</span></div>` : '';
+                
+                document.getElementById('ticket-data').innerHTML = `
+                    <div style="max-width: 400px; margin: 0 auto; border: 1px dashed #ccc; padding: 30px; border-radius: 10px; color: #333;">
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" style="height: 60px; margin-bottom:10px;">
+                            <h2 style="margin: 0; font-size: 18px; color: #243c7a;">CSE ELISA GUNDÍN</h2>
+                            <p style="margin: 0; font-size: 12px; color: #888;">Recibo de Pago</p>
+                        </div>
+                        <div style="border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 15px 0; margin-bottom: 15px;">
+                            <p style="margin: 3px 0; font-size: 14px;"><strong>Alumno:</strong> ${this.form.nombre} ${this.form.apellidos}</p>
+                            <p style="margin: 3px 0; font-size: 14px;"><strong>Fecha:</strong> ${fechaE}</p>
+                            <p style="margin: 3px 0; font-size: 14px;"><strong>Mes Afectado:</strong> ${this.nuevoPago.mes}</p>
+                            <p style="margin: 3px 0; font-size: 14px;"><strong>Método:</strong> ${this.nuevoPago.metodo || 'No especificado'}</p>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;">
+                            <span>${desc || 'Sin especificar'}</span>
+                        </div>
+                        ${extrasHtml}
+                        <div style="display:flex; justify-content:space-between; margin-top: 20px; padding-top: 15px; border-top: 2px solid #333; font-size: 20px; font-weight: 900; color: #243c7a;">
+                            <span>TOTAL:</span>
+                            <span>${this.importeCalculado} €</span>
+                        </div>
+                        <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #aaa;">
+                            Documento informativo sin validez fiscal.<br>Gracias por confiar en nosotros.
+                        </div>
+                    </div>
+                `;
+                window.print();
             }
         },
         mounted() { this.loadData(); }
