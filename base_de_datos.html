@@ -256,17 +256,47 @@
                                     </div>
                                 </div>
 
-                                <div class="col-span-2 bg-blue-50 p-5 rounded-xl border border-blue-200 flex justify-between items-center mb-5 shadow-inner">
+                                <div v-if="cuotaDetectada > 0" class="col-span-2 bg-blue-50 p-5 rounded-xl border border-blue-200 flex justify-between items-center mb-5 shadow-inner">
                                     <div>
                                         <span class="block text-xs font-bold text-blue-800 mb-1 uppercase tracking-wide">Cuota Automática Detectada ({{ nuevoPago.mes }})</span>
-                                        <div v-if="cuotaDetectada > 0" class="text-3xl font-black text-[#243c7a]">{{ cuotaDetectada }} €</div>
-                                        <div v-else class="text-sm font-bold text-red-500 mt-1"><i class="fas fa-exclamation-triangle"></i> No hay cuota fijada para este mes en Ingresos Fijos.</div>
+                                        <div class="text-3xl font-black text-[#243c7a]">{{ cuotaDetectada }} €</div>
                                     </div>
-                                    <div v-if="cuotaDetectada > 0" class="text-right bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
+                                    <div class="text-right bg-white p-3 rounded-lg border border-blue-100 shadow-sm">
                                         <span class="text-[10px] font-bold text-gray-400 uppercase">Clasificación en Google Sheets</span><br>
                                         <span class="text-sm font-bold" :class="tarifaClasificada.esOficial ? 'text-green-600' : 'text-orange-500'">
                                             <i class="fas" :class="tarifaClasificada.esOficial ? 'fa-check-circle' : 'fa-code-branch'"></i> {{ tarifaClasificada.texto }}
                                         </span>
+                                    </div>
+                                </div>
+
+                                <div v-if="cuotaDetectada === 0" class="mb-5 animate-fade">
+                                    <div class="bg-red-50 text-red-600 border border-red-200 p-3 rounded-lg text-xs font-bold mb-4 flex items-center gap-2">
+                                        <i class="fas fa-exclamation-triangle"></i> No hay cuota fijada para este mes. Puedes editarla en Ingresos Fijos, o registrar el cobro manualmente aquí:
+                                    </div>
+                                    
+                                    <div class="col-span-3 mb-4">
+                                        <label class="block text-xs font-bold text-gray-500 mb-1">Tarifa / Opción Manual <span class="text-red-500 font-normal ml-1">(Para un extra exclusivo, pon "Sin Tarifa")</span></label>
+                                        <select v-model="nuevoPago.tarifaSelect" class="w-full p-2.5 rounded-lg border outline-none focus:border-[#fa65c3] bg-white text-[#243c7a] font-bold">
+                                            <option value="">-- Sin Tarifa Base (Solo Extra) --</option>
+                                            <option value="Opción 1 (40€)">Opción 1 (40€)</option>
+                                            <option value="Opción 2 (50€)">Opción 2 (50€)</option>
+                                            <option value="Opción 3 (80€)">Opción 3 (80€)</option>
+                                            <option value="Opción 4 (85€)">Opción 4 (85€)</option>
+                                            <option value="Opción 5 (110€)">Opción 5 (110€)</option>
+                                            <option value="Opción 6 (135€)">Opción 6 (135€)</option>
+                                            <option value="personalizada">✏️ Otra cantidad (Personalizada...)</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div v-if="nuevoPago.tarifaSelect === 'personalizada'" class="col-span-3 grid grid-cols-3 gap-5 bg-orange-50 p-4 rounded-lg border border-orange-200">
+                                        <div class="col-span-2">
+                                            <label class="block text-xs font-bold text-orange-600 mb-1">Concepto Personalizado</label>
+                                            <input v-model="nuevoPago.tarifaPersConcepto" placeholder="Ej: Medio mes Abril..." class="w-full p-2 rounded border border-orange-300 outline-none">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-bold text-orange-600 mb-1">Importe Tarifa (€)</label>
+                                            <input type="number" step="0.01" v-model="nuevoPago.tarifaPersImporte" placeholder="0.00" class="w-full p-2 rounded border border-orange-300 outline-none font-bold">
+                                        </div>
                                     </div>
                                 </div>
 
@@ -313,9 +343,9 @@
                                 <h3 class="font-extrabold text-[#243c7a] mb-4 uppercase flex items-center gap-2 border-b pb-2">
                                     <i class="fas fa-calendar-check text-[#2b94cc]"></i> Historial de Ingresos Fijos
                                 </h3>
-                                <div v-if="mesesFijos.length === 0" class="text-gray-500 italic text-sm">El alumno no existe en la base de Ingresos Fijos.</div>
+                                <div v-if="mesesFijosData.length === 0" class="text-gray-500 italic text-sm">El alumno no existe en la base de Ingresos Fijos.</div>
                                 <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div v-for="(mes, idx) in mesesFijos" :key="idx" class="border rounded-xl p-4 flex flex-col items-center shadow-sm relative overflow-hidden transition-all duration-300" :class="[mes.bgClass, mes.cargando ? 'opacity-50 cursor-not-allowed' : '']">
+                                    <div v-for="(mes, idx) in mesesFijosData" :key="idx" class="border rounded-xl p-4 flex flex-col items-center shadow-sm relative overflow-hidden transition-all duration-300" :class="[mes.bgClass, mes.cargando ? 'opacity-50 cursor-not-allowed' : '']">
                                         <div class="text-xs font-extrabold text-gray-500 uppercase mb-1">{{ mes.mesNombre }}</div>
                                         
                                         <div v-if="!mes.cuota" class="flex flex-col items-center w-full mt-2">
@@ -333,7 +363,7 @@
                                             </div>
                                             <div v-else class="flex gap-1 w-full mb-2 animate-pop">
                                                 <input type="number" v-model="mes.inputCuota" :placeholder="mes.cuota" class="w-full p-1 text-center border-2 border-orange-300 rounded font-bold text-orange-600 outline-none">
-                                                <button @click="actualizarFijo(mes.mesNombre, 'cuota', mes.inputCuota || mes.cuota, mes); mes.unlocked = false" class="bg-orange-500 text-white px-2 rounded hover:bg-orange-600"><i class="fas fa-save"></i></button>
+                                                <button @click="actualizarFijo(mes.mesNombre, 'cuota', mes.inputCuota || mes.cuota, mes)" class="bg-orange-500 text-white px-2 rounded hover:bg-orange-600"><i class="fas fa-save"></i></button>
                                                 <button @click="mes.unlocked = false" class="bg-gray-300 text-gray-700 px-2 rounded hover:bg-gray-400"><i class="fas fa-times"></i></button>
                                             </div>
 
@@ -376,7 +406,8 @@
                 loading: false, saving: false, savingPago: false,
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
                 activeTab: 'menu', 
-                nuevoPago: this.pagoVacio()
+                nuevoPago: this.pagoVacio(),
+                mesesFijosData: [] // VARIABLE SEGURA PARA LOS CANDADOS
             }
         },
         computed: {
@@ -388,34 +419,15 @@
                     return nombreCompleto.includes(t) || (s.dni || "").toLowerCase().includes(t);
                 });
             },
-            mesesFijos() {
-                if(!this.form.nombre || this.fijosRaw.length === 0) return [];
-                const headers = this.fijosRaw[0];
-                const nombreCompleto = this.normalizeName(this.form.nombre + " " + this.form.apellidos);
-                
-                const filaAlumno = this.fijosRaw.find((row, idx) => idx > 0 && this.normalizeName(row[1]) === nombreCompleto);
-                if(!filaAlumno) return [];
-
-                let meses = [];
-                for(let i = 2; i < headers.length; i += 2) {
-                    if(headers[i]) {
-                        const valCuota = filaAlumno[i] !== "" ? filaAlumno[i] : null;
-                        const estaPagado = String(filaAlumno[i+1]).toUpperCase() === 'TRUE' || filaAlumno[i+1] === true;
-                        let bg = valCuota ? (estaPagado ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : 'bg-gray-100 border-dashed border-gray-300';
-                        meses.push({ mesNombre: headers[i], cuota: valCuota, pagado: estaPagado, inputCuota: '', cargando: false, bgClass: bg, unlocked: false });
-                    }
-                }
-                return meses;
-            },
             
-            // EL RADAR INTELIGENTE: Lee la cuota fijada arriba según el mes seleccionado
+            // EL RADAR INTELIGENTE
             cuotaDetectada() {
-                if(!this.nuevoPago.mes || this.mesesFijos.length === 0) return 0;
-                const m = this.mesesFijos.find(x => x.mesNombre.toLowerCase().includes(this.nuevoPago.mes.toLowerCase()));
+                if(!this.nuevoPago.mes || this.mesesFijosData.length === 0) return 0;
+                const m = this.mesesFijosData.find(x => x.mesNombre.toLowerCase().includes(this.nuevoPago.mes.toLowerCase()));
                 return m && m.cuota ? Number(m.cuota) : 0;
             },
             
-            // EL CLASIFICADOR: Decide qué texto se enviará a Sheets y avisa por pantalla
+            // EL CLASIFICADOR
             tarifaClasificada() {
                 const mapTarifas = { 40: "Opción 1", 50: "Opción 2", 80: "Opción 3", 85: "Opción 4", 110: "Opción 5", 135: "Opción 6" };
                 if(this.cuotaDetectada === 0) return { texto: "---", esOficial: false };
@@ -423,10 +435,24 @@
                 return { texto: "Clasificará como Extra", esOficial: false };
             },
 
-            // Suma la cuota automática detectada + lo que pongas en la cajita de extra
+            // SUMA TOTAL ADAPTATIVA
             importeCalculado() {
+                let tarifaBase = 0;
+                
+                if (this.cuotaDetectada > 0) {
+                    tarifaBase = this.cuotaDetectada; // Modo Automático
+                } else {
+                    // Modo Emergencia Manual
+                    if (this.nuevoPago.tarifaSelect === 'personalizada') {
+                        tarifaBase = Number(this.nuevoPago.tarifaPersImporte) || 0;
+                    } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
+                        const match = this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/);
+                        if(match) tarifaBase = Number(match[1]);
+                    }
+                }
+                
                 const extra = Number(this.nuevoPago.extraImporte) || 0;
-                return parseFloat((this.cuotaDetectada + extra).toFixed(2));
+                return parseFloat((tarifaBase + extra).toFixed(2));
             }
         },
         watch: {
@@ -440,6 +466,11 @@
             'nuevoPago.metodo'(newMetodo) {
                 if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true;
                 if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false;
+            },
+            // VIGILAMOS SI EL SERVIDOR ACTUALIZA LOS DATOS PARA REPINTAR LOS MESES SIN ROMPER EL CANDADO
+            fijosRaw: {
+                handler() { this.buildMesesFijos(); },
+                deep: true
             }
         },
         methods: {
@@ -447,9 +478,31 @@
             pagoVacio() {
                 const hoy = new Date().toISOString().split('T')[0];
                 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-                return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', extraConcepto: '', extraImporte: '', generarPDF: false };
+                return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false };
             },
             
+            // CONSTRUIR EL ARRAY DE MESES SEGURO (Previene el bug del candado)
+            buildMesesFijos() {
+                this.mesesFijosData = [];
+                if(!this.form.nombre || this.fijosRaw.length === 0) return;
+                const headers = this.fijosRaw[0];
+                const nombreCompleto = this.normalizeName(this.form.nombre + " " + this.form.apellidos);
+                
+                const filaAlumno = this.fijosRaw.find((row, idx) => idx > 0 && this.normalizeName(row[1]) === nombreCompleto);
+                if(!filaAlumno) return;
+
+                let meses = [];
+                for(let i = 2; i < headers.length; i += 2) {
+                    if(headers[i]) {
+                        const valCuota = filaAlumno[i] !== "" ? filaAlumno[i] : null;
+                        const estaPagado = String(filaAlumno[i+1]).toUpperCase() === 'TRUE' || filaAlumno[i+1] === true;
+                        let bg = valCuota ? (estaPagado ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200') : 'bg-gray-100 border-dashed border-gray-300';
+                        meses.push({ mesNombre: headers[i], cuota: valCuota, pagado: estaPagado, inputCuota: '', cargando: false, bgClass: bg, unlocked: false });
+                    }
+                }
+                this.mesesFijosData = meses;
+            },
+
             async login() {
                 if (!this.passwordInput) return;
                 this.loading = true;
@@ -515,6 +568,7 @@
                 this.activeTab = 'ficha';
                 this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false, usuario_aules:'', pass_aules:'' };
                 this.selected = { id: 'TEMP' };
+                this.buildMesesFijos(); // Refrescar los candados
             },
             
             selectStudent(s) {
@@ -523,6 +577,8 @@
                     this.isNew = false; 
                     this.activeTab = 'menu'; 
                     this.selected = s;
+                    
+                    this.buildMesesFijos(); // Inicializa los candados correctamente
                     
                     this.nuevoPago = this.pagoVacio(); 
                     const mesActual = this.nuevoPago.mes;
@@ -568,13 +624,15 @@
                     if (json.status === 'success') {
                          const res2 = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(this.getSecurePayload('fetch_data')) });
                          const json2 = await res2.json();
+                         // El watcher "fijosRaw" ejecutará buildMesesFijos() y refrescará la vista
                          if(json2.status === 'success') this.fijosRaw = json2.fijos || [];
                     } else alert("Servidor rechazó la acción: " + json.message);
                 } catch (e) { alert('Error de red actualizando estado'); }
                 objRef.cargando = false;
+                objRef.unlocked = false; // Asegurar que el candado se cierra después de guardar
             },
 
-            // EL ÁRBITRO DE LA LÓGICA
+            // EL ÁRBITRO DE LA LÓGICA DE REGISTRO
             async registrarPago() {
                 this.savingPago = true;
                 
@@ -582,25 +640,35 @@
                 let partesExtra = [];
                 const mapTarifas = { 40: "Opción 1", 50: "Opción 2", 80: "Opción 3", 85: "Opción 4", 110: "Opción 5", 135: "Opción 6" };
 
-                // 1. Clasificar la cuota fija
+                // 1. Clasificar la cuota fija Automática
                 if (this.cuotaDetectada > 0) {
                     if (mapTarifas[this.cuotaDetectada]) {
-                        // Si es opción oficial, a la columna Tarifa (incluyendo el formato para el regex del PDF)
                         tarifaFinal = `${mapTarifas[this.cuotaDetectada]} (${this.cuotaDetectada}€)`;
                     } else {
-                        // Si es una cantidad rara, se va vacía la Tarifa y se suma a Extras
                         partesExtra.push(`Cuota mensual (${this.cuotaDetectada}€)`);
+                    }
+                } 
+                // 2. O procesar el Modo Manual de Emergencia
+                else {
+                    if (this.nuevoPago.tarifaSelect === 'personalizada') {
+                        let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
+                        if (numTarifa && numTarifa !== 0) { 
+                            let conceptoPers = this.nuevoPago.tarifaPersConcepto ? this.nuevoPago.tarifaPersConcepto.trim() : "Tarifa";
+                            tarifaFinal = `${conceptoPers} (${numTarifa}€)`;
+                        }
+                    } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') { 
+                        tarifaFinal = this.nuevoPago.tarifaSelect; 
                     }
                 }
 
-                // 2. Clasificar lo que se haya escrito en el campo "Extras"
+                // 3. Clasificar lo que se haya escrito en el campo "Extras"
                 let numExtraManual = Number(this.nuevoPago.extraImporte) || 0;
                 if (numExtraManual > 0) {
                     let concepto = (this.nuevoPago.extraConcepto || 'Extra').trim();
                     partesExtra.push(`${concepto} (${numExtraManual}€)`);
                 }
 
-                // 3. Unir los textos de los extras si hay varios
+                // Unir los textos de los extras si hay varios
                 let extraFinal = partesExtra.join(" + ");
 
                 const payload = this.getSecurePayload('create_pago', {
@@ -638,22 +706,28 @@
                 let partesExtra = [];
                 const mapTarifas = { 40: "Opción 1", 50: "Opción 2", 80: "Opción 3", 85: "Opción 4", 110: "Opción 5", 135: "Opción 6" };
 
+                // Construcción de Tarifas (Modo Automático vs Manual)
                 if (this.cuotaDetectada > 0) {
                     if (mapTarifas[this.cuotaDetectada]) {
                         tarifaFinal = `${mapTarifas[this.cuotaDetectada]} (${this.cuotaDetectada}€)`;
+                        filasHTML += `<tr><td style="padding:15px; border-bottom:1px solid #eee;"><span style="font-weight:bold;font-size:14px">${mapTarifas[this.cuotaDetectada]}</span><br><i style="font-size:11px;color:#666">Curso académico vigente</i></td><td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${this.cuotaDetectada.toFixed(2).replace('.',',')} €</td></tr>`;
                     } else {
                         partesExtra.push({concepto: "Cuota mensual", importe: this.cuotaDetectada});
+                    }
+                } else {
+                    if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
+                        let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
+                        if (!(this.nuevoPago.tarifaSelect === 'personalizada' && (!numTarifa || numTarifa === 0))) {
+                            let desc = this.nuevoPago.tarifaSelect === 'personalizada' ? (this.nuevoPago.tarifaPersConcepto || 'Tarifa') : this.nuevoPago.tarifaSelect;
+                            let tarifaNum = this.nuevoPago.tarifaSelect === 'personalizada' ? numTarifa.toFixed(2).replace('.', ',') : this.nuevoPago.tarifaSelect.match(/\((-?\d+(?:\.\d+)?)€\)/)[1].replace('.', ',');
+                            filasHTML += `<tr><td style="padding:15px; border-bottom:1px solid #eee;"><span style="font-weight:bold;font-size:14px">${desc}</span><br><i style="font-size:11px;color:#666">Curso académico vigente</i></td><td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${tarifaNum} €</td></tr>`;
+                        }
                     }
                 }
 
                 let numExtraManual = Number(this.nuevoPago.extraImporte) || 0;
                 if (numExtraManual > 0) {
                     partesExtra.push({concepto: (this.nuevoPago.extraConcepto || 'Extra').trim(), importe: numExtraManual});
-                }
-
-                // Generar fila HTML para la Tarifa Oficial
-                if (tarifaFinal !== "") {
-                    filasHTML += `<tr><td style="padding:15px; border-bottom:1px solid #eee;"><span style="font-weight:bold;font-size:14px">${mapTarifas[this.cuotaDetectada]}</span><br><i style="font-size:11px;color:#666">Curso académico vigente</i></td><td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${this.cuotaDetectada.toFixed(2).replace('.',',')} €</td></tr>`;
                 }
 
                 // Generar filas HTML para los Extras o Cuotas Raras
