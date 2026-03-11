@@ -26,8 +26,6 @@
         @keyframes loading-bar { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
         .loading-line { position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: #e0e7ff; overflow: hidden; }
         .loading-progress { height: 100%; width: 40%; background: var(--c-accent); animation: loading-bar 1.2s infinite linear; }
-        .tab-btn { padding: 10px 24px; font-weight: 800; text-transform: uppercase; color: #888; border-bottom: 3px solid transparent; transition: all 0.3s; }
-        .tab-btn.active { color: var(--c-primary); border-bottom-color: var(--c-accent); }
         @media print {
             body { background: white; margin: 0; padding: 0; }
             #app-main-content { display: none !important; }
@@ -121,19 +119,19 @@
 
             <div class="w-3/4 bg-[#f4f6f9] h-full flex flex-col relative">
                 <div v-if="selected" class="flex-1 overflow-y-auto p-8 pb-24">
-                    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden">
+                    <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden min-h-[700px] flex flex-col">
                         
                         <div class="p-6 border-b flex justify-between items-center sticky top-0 z-30 bg-white/95 backdrop-blur">
-                            <div class="flex flex-col gap-1">
-                                <div class="flex items-center gap-4">
-                                    <h2 class="text-2xl font-extrabold" :class="form.baja ? 'text-gray-400' : 'text-[#243c7a]'">
-                                        {{ isNew ? 'Nuevo Alumno' : form.nombre + ' ' + form.apellidos }}
-                                    </h2>
-                                </div>
-                                <div v-if="!isNew" class="flex gap-2 mt-2">
-                                    <button @click="activeTab = 'ficha'" class="tab-btn" :class="{ 'active': activeTab === 'ficha' }"><i class="fas fa-id-card mr-1"></i> Ficha</button>
-                                    <button @click="activeTab = 'pagos'" class="tab-btn" :class="{ 'active': activeTab === 'pagos' }"><i class="fas fa-euro-sign mr-1"></i> Pagos</button>
-                                </div>
+                            <div class="flex items-center gap-4">
+                                <button v-if="activeTab !== 'menu' && !isNew" @click="activeTab = 'menu'" class="bg-blue-50 text-[#2b94cc] p-2 px-4 rounded-lg hover:bg-blue-100 transition font-bold flex items-center gap-2">
+                                    <i class="fas fa-arrow-left"></i> Volver al menú
+                                </button>
+                                
+                                <h2 class="text-2xl font-extrabold" :class="form.baja ? 'text-gray-400' : 'text-[#243c7a]'">
+                                    {{ isNew ? 'Nuevo Alumno' : form.nombre + ' ' + form.apellidos }}
+                                </h2>
+                                <span v-if="activeTab === 'ficha' && !isNew" class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">Ficha Académica</span>
+                                <span v-if="activeTab === 'pagos' && !isNew" class="text-xs font-bold text-[#fa65c3] uppercase bg-pink-50 px-2 py-1 rounded">Pagos</span>
                             </div>
 
                             <div class="flex items-center gap-3">
@@ -151,7 +149,30 @@
                             </div>
                         </div>
 
-                        <form v-if="activeTab === 'ficha'" class="p-8 space-y-8" :class="form.baja ? 'opacity-70 grayscale-[0.5]' : ''">
+                        <div v-if="activeTab === 'menu'" class="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50">
+                            <h3 class="text-3xl font-black text-[#243c7a] mb-2">Panel del Alumno</h3>
+                            <p class="text-gray-500 mb-10 font-medium">¿Qué deseas gestionar para {{ form.nombre }}?</p>
+                            
+                            <div class="grid grid-cols-2 gap-8 w-full max-w-3xl">
+                                <button @click="activeTab = 'ficha'" class="bg-white p-10 rounded-3xl shadow-sm border-2 border-transparent hover:border-[#2b94cc] hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
+                                    <div class="bg-blue-50 p-6 rounded-full text-[#2b94cc] group-hover:bg-[#2b94cc] group-hover:text-white transition-colors duration-300">
+                                        <i class="fas fa-id-card text-5xl"></i>
+                                    </div>
+                                    <span class="text-2xl font-extrabold text-[#243c7a]">Ficha Académica</span>
+                                    <span class="text-sm text-gray-500 text-center px-4">Modificar datos personales, contacto de familiares, dirección y credenciales de Aules.</span>
+                                </button>
+
+                                <button @click="activeTab = 'pagos'" class="bg-white p-10 rounded-3xl shadow-sm border-2 border-transparent hover:border-[#fa65c3] hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
+                                    <div class="bg-pink-50 p-6 rounded-full text-[#fa65c3] group-hover:bg-[#fa65c3] group-hover:text-white transition-colors duration-300">
+                                        <i class="fas fa-euro-sign text-5xl px-3"></i>
+                                    </div>
+                                    <span class="text-2xl font-extrabold text-[#243c7a]">Gestión de Pagos</span>
+                                    <span class="text-sm text-gray-500 text-center px-4">Registrar nuevos cobros, generar recibos e imprimir y consultar el historial de ingresos fijos.</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <form v-if="activeTab === 'ficha'" class="p-8 space-y-8 flex-1" :class="form.baja ? 'opacity-70 grayscale-[0.5]' : ''">
                             <section class="grid grid-cols-4 gap-6">
                                 <div class="col-span-4 font-bold text-[#243c7a] border-b pb-2">DATOS PERSONALES</div>
                                 <input v-model="form.nombre" placeholder="Nombre" class="p-3 rounded-lg border bg-gray-50 outline-none">
@@ -211,35 +232,8 @@
                             </section>
                         </form>
 
-                        <div v-if="activeTab === 'pagos'" class="p-8 space-y-8 bg-gray-50 min-h-[500px]">
-                            <div class="bg-white p-6 rounded-xl border border-[#2b94cc] shadow-sm">
-                                <h3 class="font-extrabold text-[#243c7a] mb-4 uppercase flex items-center gap-2 border-b pb-2">
-                                    <i class="fas fa-calendar-check text-[#2b94cc]"></i> Control de Ingresos Fijos
-                                </h3>
-                                <div v-if="mesesFijos.length === 0" class="text-gray-500 italic text-sm">El alumno no existe en la base de Ingresos Fijos.</div>
-                                <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div v-for="(mes, idx) in mesesFijos" :key="idx" class="border rounded-xl p-4 flex flex-col items-center shadow-sm relative overflow-hidden transition-all duration-300" :class="[mes.bgClass, mes.cargando ? 'opacity-50 cursor-not-allowed' : '']">
-                                        <div class="text-xs font-extrabold text-gray-500 uppercase mb-1">{{ mes.mesNombre }}</div>
-                                        <div v-if="!mes.cuota" class="flex flex-col items-center w-full mt-2">
-                                            <span class="text-xs text-gray-400 font-bold mb-1">SIN CUOTA</span>
-                                            <div class="flex gap-1 w-full">
-                                                <input type="number" v-model="mes.inputCuota" placeholder="€" :disabled="mes.cargando" class="w-full p-1 text-center border rounded font-bold text-[#243c7a] text-sm disabled:opacity-50">
-                                                <button @click="actualizarFijo(mes.mesNombre, 'cuota', mes.inputCuota, mes)" :disabled="mes.cargando" class="bg-[#2b94cc] text-white px-2 rounded hover:bg-[#207bb0] disabled:opacity-50"><i class="fas fa-save"></i></button>
-                                            </div>
-                                        </div>
-                                        <div v-else class="flex flex-col items-center w-full">
-                                            <div class="text-2xl font-black mb-2" :class="mes.pagado ? 'text-green-700' : 'text-gray-700'">{{ mes.cuota }}€</div>
-                                            <button v-if="mes.pagado" @click="actualizarFijo(mes.mesNombre, 'estado', false, mes)" :disabled="mes.cargando" class="w-full py-1.5 bg-green-500 text-white rounded-lg font-bold text-xs uppercase hover:bg-green-600 transition flex justify-center items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else><i class="fas fa-check-circle"></i> PAGADO</template>
-                                            </button>
-                                            <button v-else @click="actualizarFijo(mes.mesNombre, 'estado', true, mes)" :disabled="mes.cargando" class="w-full py-1.5 bg-red-100 text-red-600 border border-red-300 rounded-lg font-bold text-xs uppercase hover:bg-red-200 transition flex justify-center items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                                                <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else>PENDIENTE</template>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
+                        <div v-if="activeTab === 'pagos'" class="p-8 space-y-8 bg-gray-50 flex-1">
+                            
                             <div class="bg-white p-6 rounded-xl border shadow-sm relative">
                                 <div class="flex justify-between items-center border-b pb-3 mb-5">
                                     <h3 class="font-extrabold text-[#fa65c3] uppercase"><i class="fas fa-cash-register mr-2"></i> Registrar Pago</h3>
@@ -323,7 +317,36 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="bg-white p-6 rounded-xl border border-[#2b94cc] shadow-sm">
+                                <h3 class="font-extrabold text-[#243c7a] mb-4 uppercase flex items-center gap-2 border-b pb-2">
+                                    <i class="fas fa-calendar-check text-[#2b94cc]"></i> Historial de Ingresos Fijos
+                                </h3>
+                                <div v-if="mesesFijos.length === 0" class="text-gray-500 italic text-sm">El alumno no existe en la base de Ingresos Fijos.</div>
+                                <div v-else class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div v-for="(mes, idx) in mesesFijos" :key="idx" class="border rounded-xl p-4 flex flex-col items-center shadow-sm relative overflow-hidden transition-all duration-300" :class="[mes.bgClass, mes.cargando ? 'opacity-50 cursor-not-allowed' : '']">
+                                        <div class="text-xs font-extrabold text-gray-500 uppercase mb-1">{{ mes.mesNombre }}</div>
+                                        <div v-if="!mes.cuota" class="flex flex-col items-center w-full mt-2">
+                                            <span class="text-xs text-gray-400 font-bold mb-1">SIN CUOTA</span>
+                                            <div class="flex gap-1 w-full">
+                                                <input type="number" v-model="mes.inputCuota" placeholder="€" :disabled="mes.cargando" class="w-full p-1 text-center border rounded font-bold text-[#243c7a] text-sm disabled:opacity-50">
+                                                <button @click="actualizarFijo(mes.mesNombre, 'cuota', mes.inputCuota, mes)" :disabled="mes.cargando" class="bg-[#2b94cc] text-white px-2 rounded hover:bg-[#207bb0] disabled:opacity-50"><i class="fas fa-save"></i></button>
+                                            </div>
+                                        </div>
+                                        <div v-else class="flex flex-col items-center w-full">
+                                            <div class="text-2xl font-black mb-2" :class="mes.pagado ? 'text-green-700' : 'text-gray-700'">{{ mes.cuota }}€</div>
+                                            <button v-if="mes.pagado" @click="actualizarFijo(mes.mesNombre, 'estado', false, mes)" :disabled="mes.cargando" class="w-full py-1.5 bg-green-500 text-white rounded-lg font-bold text-xs uppercase hover:bg-green-600 transition flex justify-center items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else><i class="fas fa-check-circle"></i> PAGADO</template>
+                                            </button>
+                                            <button v-else @click="actualizarFijo(mes.mesNombre, 'estado', true, mes)" :disabled="mes.cargando" class="w-full py-1.5 bg-red-100 text-red-600 border border-red-300 rounded-lg font-bold text-xs uppercase hover:bg-red-200 transition flex justify-center items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
+                                                <i v-if="mes.cargando" class="fas fa-spinner fa-spin"></i><template v-else>PENDIENTE</template>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
                 
@@ -350,7 +373,7 @@
                 list: [], fijosRaw: [], search: '', selected: null, isNew: false, 
                 loading: false, saving: false, savingPago: false,
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
-                activeTab: 'ficha', nuevoPago: this.pagoVacio()
+                activeTab: 'menu', nuevoPago: this.pagoVacio()
             }
         },
         computed: {
@@ -416,10 +439,6 @@
                         this.nuevoPago.tarifaSelect = ""; 
                     }
                 }
-            },
-            'nuevoPago.metodo'(newMetodo) {
-                if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true;
-                if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false;
             }
         },
         methods: {
@@ -430,14 +449,12 @@
                 return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false };
             },
             
-            // EL NUEVO LOGIN SEGURO QUE PREGUNTA AL SERVIDOR
             async login() {
                 if (!this.passwordInput) return;
                 this.loading = true;
                 this.loginError = false;
                 this.apiUrl = atob(ENCRYPTED_URL);
 
-                // 1. INTENTO DE ACTIVAR EL DISPOSITIVO
                 if (this.passwordInput.includes('ACTIVAR')) {
                     try {
                         const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ action: 'activate', code: this.passwordInput }) });
@@ -455,7 +472,6 @@
                     return;
                 }
 
-                // 2. INTENTO DE LOGIN NORMAL
                 const savedToken = localStorage.getItem('academia_device_token');
                 if (!savedToken) {
                     this.loginError = true; this.errorMsg = 'ACCESO DENEGADO. Equipo no vinculado.';
@@ -463,12 +479,11 @@
                 }
 
                 try {
-                    // Solo el servidor sabe si la contraseña es correcta, así que se la mandamos a probar
                     const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify({ action: 'fetch_data', pass: this.passwordInput, device_token: savedToken }) });
                     const json = await res.json();
                     
                     if (json.status === 'success') {
-                        this.sessionPass = this.passwordInput; // Guardamos la contraseña en memoria volátil (se borra al cerrar la pestaña)
+                        this.sessionPass = this.passwordInput; 
                         this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
                         this.fijosRaw = json.fijos || [];
                         this.authenticated = true;
@@ -485,7 +500,6 @@
                 location.reload(); 
             },
             
-            // CREAR PAQUETE SEGURO PARA LAS ACCIONES
             getSecurePayload(action, extraData = {}) {
                 return {
                     action: action,
@@ -496,17 +510,28 @@
             },
 
             createNew() {
-                this.isNew = true; this.activeTab = 'ficha';
+                this.isNew = true; 
+                this.activeTab = 'ficha'; // Evita el menú intermedio
                 this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false, usuario_aules:'', pass_aules:'' };
                 this.selected = { id: 'TEMP' };
             },
+            
             selectStudent(s) {
                 try {
                     this.form = JSON.parse(JSON.stringify(s));
-                    this.isNew = false; this.activeTab = 'ficha'; this.selected = s;
+                    this.isNew = false; 
+                    this.activeTab = 'menu'; // Nueva función: Entra al panel principal primero
+                    this.selected = s;
+                    
                     this.nuevoPago = this.pagoVacio(); 
+                    
+                    // Mejora de estabilidad: nextTick en lugar de setTimeout
                     const mesActual = this.nuevoPago.mes;
-                    this.nuevoPago.mes = ''; setTimeout(() => { this.nuevoPago.mes = mesActual; }, 50);
+                    this.nuevoPago.mes = ''; 
+                    this.$nextTick(() => {
+                        this.nuevoPago.mes = mesActual;
+                    });
+                    
                     this.form.fam1_tlf = String(this.form.fam1_tlf || ''); this.form.fam2_tlf = String(this.form.fam2_tlf || ''); this.form.tlf = String(this.form.tlf || '');
                     try {
                         let val = this.form.nacimiento;
@@ -527,11 +552,11 @@
                     if (json.status === 'success') {
                         this.showSuccess = true; this.successMessage = 'Ficha Guardada'; 
                         
-                        // Recargar lista silenciosamente
                         const res2 = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(this.getSecurePayload('fetch_data')) });
                         const json2 = await res2.json();
                         if(json2.status === 'success') this.list = json2.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
                         
+                        // Una vez guardado un usuario nuevo, lo sacamos de la vista temporal y volvemos a la lista
                         setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000);
                     } else { alert("Servidor rechazó la acción: " + json.message); this.saving = false; }
                 } catch (e) { alert('Error de red al guardar la ficha'); this.saving = false; }
