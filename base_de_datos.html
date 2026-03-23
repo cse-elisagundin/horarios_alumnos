@@ -11,6 +11,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
     <style>
         :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
         body { font-family: 'Outfit', sans-serif; background-color: var(--bg-body); }
@@ -31,6 +33,19 @@
             #app-main-content { display: none !important; }
             #zona-impresion { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
         }
+
+        /* ESTILOS TIMELINE EXÁMENES (Replicado de calendario) */
+        .timeline-row { display: flex; border-bottom: 1px solid #f0f0f0; padding: 15px 0; transition: background 0.2s; }
+        .timeline-row:last-child { border-bottom: none; }
+        .timeline-row:hover { background-color: #fafbff; }
+        .date-col { width: 90px; flex-shrink: 0; text-align: center; border-right: 2px solid #f0f0f0; margin-right: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .date-col .day-num { font-size: 28px; font-weight: 900; color: var(--c-primary); line-height: 1; }
+        .date-col .day-name { font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase; margin-top: 4px; }
+        .exams-col { flex-grow: 1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+        .exam-pill { display: inline-flex; flex-direction: column; background: white; border: 1px solid #e0e0e0; border-left: 4px solid var(--c-primary); padding: 6px 12px; border-radius: 8px; min-width: 120px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .pill-subject { font-size: 11px; font-weight: 800; color: var(--c-accent); text-transform: uppercase; margin-bottom: 2px; }
+        .pill-grade { font-size: 14px; font-weight: 700; color: #333; }
+        .pill-pending { font-size: 12px; color: #999; font-style: italic; }
     </style>
 </head>
 <body class="h-screen overflow-hidden text-sm">
@@ -46,7 +61,7 @@
             <div v-if="showSuccess" class="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none">
                 <div class="bg-white px-8 py-6 rounded-2xl shadow-2xl border-l-8 border-[#25D366] flex flex-col items-center gap-3 min-w-[300px]">
                     <div class="bg-green-100 p-3 rounded-full text-[#25D366]"><i class="fas fa-check text-3xl"></i></div>
-                    <h3 class="text-xl font-extrabold text-[#243c7a] uppercase">¡Guardado!</h3>
+                    <h3 class="text-xl font-extrabold text-[#243c7a] uppercase">¡Éxito!</h3>
                     <p class="text-gray-500 font-semibold">{{ successMessage }}</p>
                 </div>
             </div>
@@ -97,6 +112,9 @@
                     <button @click="createNew" class="w-full bg-[#2b94cc] text-white py-2.5 rounded-lg hover:bg-[#207bb0] font-bold flex justify-center gap-2 shadow">
                         <i class="fas fa-plus"></i> Nueva Ficha
                     </button>
+                    <button @click="abrirGestorExamenes" class="w-full bg-indigo-50 text-indigo-700 border border-indigo-200 py-2.5 rounded-lg hover:bg-indigo-100 font-bold flex justify-center gap-2 shadow-sm transition">
+                        <i class="fas fa-calendar-alt"></i> Gestor de Exámenes
+                    </button>
                 </div>
                 <div class="flex-1 overflow-y-auto">
                     <div v-for="s in filteredList" :key="s.id" @click="selectStudent(s)"
@@ -118,6 +136,57 @@
             </div>
 
             <div class="w-3/4 bg-[#f4f6f9] h-full flex flex-col relative">
+                
+                <div v-if="activeTab === 'gestor_examenes' && !selected" class="flex-1 overflow-y-auto p-8 pb-24 animate-fade">
+                    <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col">
+                        <div class="p-6 border-b flex justify-between items-center sticky top-0 z-30 bg-white/95 backdrop-blur">
+                            <h2 class="text-2xl font-extrabold text-indigo-800 flex items-center gap-3">
+                                <div class="bg-indigo-100 p-2 rounded-lg text-indigo-600"><i class="fas fa-tasks"></i></div>
+                                Gestor Masivo de Exámenes
+                            </h2>
+                            <button @click="activeTab = 'menu'" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-semibold">Cerrar Gestor</button>
+                        </div>
+                        
+                        <div class="p-8 bg-indigo-50/50 border-b">
+                            <div class="grid grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-indigo-800 mb-1 uppercase">Fecha del Examen</label>
+                                    <input type="date" v-model="gestorExamenes.fecha" class="w-full p-3 rounded-xl border border-indigo-200 outline-none focus:border-indigo-500 bg-white shadow-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-indigo-800 mb-1 uppercase">Asignatura</label>
+                                    <input type="text" v-model="gestorExamenes.asignatura" placeholder="Ej: Matemáticas" class="w-full p-3 rounded-xl border border-indigo-200 outline-none focus:border-indigo-500 bg-white shadow-sm font-bold text-indigo-900">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-8">
+                            <div class="flex justify-between items-end mb-4">
+                                <h3 class="font-bold text-gray-700">Selecciona los alumnos:</h3>
+                                <div class="flex gap-2">
+                                    <button @click="seleccionarTodos(true)" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded">Marcar Todos</button>
+                                    <button @click="seleccionarTodos(false)" class="text-xs font-bold text-gray-500 hover:text-gray-700 bg-gray-100 px-3 py-1.5 rounded">Desmarcar Todos</button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-3 max-h-[400px] overflow-y-auto pr-2">
+                                <label v-for="a in list.filter(x => !x.baja)" :key="a.id" class="flex items-center gap-3 p-3 border rounded-xl cursor-pointer hover:bg-indigo-50 transition" :class="gestorExamenes.alumnosSeleccionados.includes(a.nombre + ' ' + a.apellidos) ? 'bg-indigo-50 border-indigo-300' : 'bg-white'">
+                                    <input type="checkbox" :value="a.nombre + ' ' + a.apellidos" v-model="gestorExamenes.alumnosSeleccionados" class="w-5 h-5 accent-indigo-600 rounded">
+                                    <span class="font-semibold text-sm text-gray-800">{{ a.nombre }} {{ a.apellidos }}</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6 border-t bg-gray-50 flex justify-end items-center">
+                            <span class="text-sm font-bold text-gray-500 mr-4">{{ gestorExamenes.alumnosSeleccionados.length }} alumnos seleccionados</span>
+                            <button @click="guardarExamenesMasivos" :disabled="savingExamenes || !gestorExamenes.fecha || !gestorExamenes.asignatura || gestorExamenes.alumnosSeleccionados.length === 0" class="bg-indigo-600 text-white px-8 py-3 rounded-xl hover:bg-indigo-700 font-bold shadow-lg flex items-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i v-if="savingExamenes" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-save"></i>
+                                {{ savingExamenes ? 'Creando...' : 'CREAR EXÁMENES' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div v-if="selected" class="flex-1 overflow-y-auto p-8 pb-24">
                     <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border overflow-hidden min-h-[700px] flex flex-col">
                         
@@ -132,6 +201,7 @@
                                 </h2>
                                 <span v-if="activeTab === 'ficha' && !isNew" class="text-xs font-bold text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">Ficha Académica</span>
                                 <span v-if="activeTab === 'pagos' && !isNew" class="text-xs font-bold text-[#fa65c3] uppercase bg-pink-50 px-2 py-1 rounded">Pagos</span>
+                                <span v-if="activeTab === 'examenes' && !isNew" class="text-xs font-bold text-indigo-600 uppercase bg-indigo-50 px-2 py-1 rounded">Exámenes</span>
                             </div>
 
                             <div class="flex items-center gap-3">
@@ -141,7 +211,7 @@
                                         <div class="absolute top-1 left-1 bg-white w-3 h-3 rounded-full shadow transition-transform" :class="form.baja ? 'translate-x-5' : 'translate-x-0'"></div>
                                     </button>
                                 </div>
-                                <button @click="selected = null" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-semibold">Cerrar</button>
+                                <button @click="cerrarFicha" class="px-4 py-2 text-gray-500 hover:bg-gray-100 rounded-lg font-semibold">Cerrar</button>
                                 <button v-if="activeTab === 'ficha'" @click="saveData" :disabled="saving" class="bg-[#25D366] text-white px-6 py-2 rounded-lg hover:bg-[#1faa50] font-bold shadow-lg flex items-center gap-2">
                                     <i v-if="saving" class="fas fa-spinner fa-spin"></i><i v-else class="fas fa-save"></i>
                                     {{ saving ? 'Guardando...' : 'Guardar Ficha' }}
@@ -153,21 +223,29 @@
                             <h3 class="text-3xl font-black text-[#243c7a] mb-2">Panel del Alumno</h3>
                             <p class="text-gray-500 mb-10 font-medium">¿Qué deseas gestionar para {{ form.nombre }}?</p>
                             
-                            <div class="grid grid-cols-2 gap-8 w-full max-w-3xl">
-                                <button @click="activeTab = 'ficha'" class="bg-white p-10 rounded-3xl shadow-sm border-2 border-transparent hover:border-[#2b94cc] hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
-                                    <div class="bg-blue-50 p-6 rounded-full text-[#2b94cc] group-hover:bg-[#2b94cc] group-hover:text-white transition-colors duration-300">
-                                        <i class="fas fa-id-card text-5xl"></i>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl">
+                                <button @click="activeTab = 'ficha'" class="bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-[#2b94cc] hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
+                                    <div class="bg-blue-50 p-5 rounded-full text-[#2b94cc] group-hover:bg-[#2b94cc] group-hover:text-white transition-colors duration-300">
+                                        <i class="fas fa-id-card text-4xl"></i>
                                     </div>
-                                    <span class="text-2xl font-extrabold text-[#243c7a]">Ficha Académica</span>
-                                    <span class="text-sm text-gray-500 text-center px-4">Modificar datos personales, contacto de familiares, dirección y credenciales de Aules.</span>
+                                    <span class="text-xl font-extrabold text-[#243c7a]">Ficha Académica</span>
+                                    <span class="text-xs text-gray-500 text-center px-2">Modificar datos, contactos y credenciales.</span>
                                 </button>
 
-                                <button @click="activeTab = 'pagos'" class="bg-white p-10 rounded-3xl shadow-sm border-2 border-transparent hover:border-[#fa65c3] hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
-                                    <div class="bg-pink-50 p-6 rounded-full text-[#fa65c3] group-hover:bg-[#fa65c3] group-hover:text-white transition-colors duration-300">
-                                        <i class="fas fa-euro-sign text-5xl px-3"></i>
+                                <button @click="activeTab = 'pagos'" class="bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-[#fa65c3] hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
+                                    <div class="bg-pink-50 p-5 rounded-full text-[#fa65c3] group-hover:bg-[#fa65c3] group-hover:text-white transition-colors duration-300">
+                                        <i class="fas fa-euro-sign text-4xl px-2"></i>
                                     </div>
-                                    <span class="text-2xl font-extrabold text-[#243c7a]">Gestión de Pagos</span>
-                                    <span class="text-sm text-gray-500 text-center px-4">Registrar nuevos cobros, generar recibos e imprimir y consultar el historial de ingresos fijos.</span>
+                                    <span class="text-xl font-extrabold text-[#243c7a]">Gestión de Pagos</span>
+                                    <span class="text-xs text-gray-500 text-center px-2">Registrar cobros, recibos e ingresos fijos.</span>
+                                </button>
+
+                                <button @click="activeTab = 'examenes'" class="bg-white p-8 rounded-3xl shadow-sm border-2 border-transparent hover:border-indigo-500 hover:shadow-xl transition-all transform hover:-translate-y-2 flex flex-col items-center gap-4 group">
+                                    <div class="bg-indigo-50 p-5 rounded-full text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                                        <i class="fas fa-graduation-cap text-4xl px-1"></i>
+                                    </div>
+                                    <span class="text-xl font-extrabold text-[#243c7a]">Exámenes</span>
+                                    <span class="text-xs text-gray-500 text-center px-2">Consultar calendario de pruebas y notas.</span>
                                 </button>
                             </div>
                         </div>
@@ -379,10 +457,43 @@
                             </div>
                         </div>
 
+                        <div v-if="activeTab === 'examenes'" class="p-8 flex-1 bg-white">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="font-extrabold text-indigo-800 uppercase text-lg"><i class="fas fa-calendar-alt mr-2"></i> Próximos Exámenes y Notas</h3>
+                                <button @click="cargarExamenesCSV" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                    <i class="fas fa-sync-alt" :class="{'fa-spin': loadingExamenes}"></i> Actualizar
+                                </button>
+                            </div>
+
+                            <div v-if="loadingExamenes" class="text-center py-10 text-gray-400 font-semibold animate-pulse">
+                                Obteniendo datos de Google Sheets...
+                            </div>
+                            
+                            <div v-else-if="examenesAlumno.length === 0" class="text-center py-10 text-gray-400 font-semibold">
+                                No se encontraron exámenes para este alumno.
+                            </div>
+
+                            <div v-else class="flex flex-col">
+                                <div v-for="(grupo, fecha) in examenesAgrupados" :key="fecha" class="timeline-row">
+                                    <div class="date-col">
+                                        <span class="day-num">{{ fecha.split('-')[2] }}</span>
+                                        <span class="day-name">{{ obtenerNombreMesCorto(fecha) }}</span>
+                                    </div>
+                                    <div class="exams-col">
+                                        <div v-for="(ex, index) in grupo" :key="index" class="exam-pill">
+                                            <span class="pill-subject">{{ ex.asignatura }}</span>
+                                            <span v-if="ex.nota" class="pill-grade" :class="Number(ex.nota.replace(',','.')) >= 5 ? 'text-green-600' : 'text-red-600'">Nota: {{ ex.nota }}</span>
+                                            <span v-else class="pill-pending">Pendiente de nota</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 
-                <div v-else class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
+                <div v-else-if="activeTab !== 'gestor_examenes'" class="h-full flex flex-col items-center justify-center text-gray-400 select-none">
                     <div class="bg-white p-10 rounded-full shadow-lg mb-6 animate-pulse">
                         <i class="fas fa-folder-open text-6xl text-[#2b94cc] opacity-50"></i>
                     </div>
@@ -396,6 +507,7 @@
 <script>
     const { createApp } = Vue;
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
+    const CSV_EXAMENES_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv";
 
     createApp({
         data() {
@@ -407,7 +519,17 @@
                 showSuccess: false, successMessage: '', form: {}, showInactive: false,
                 activeTab: 'menu', 
                 nuevoPago: this.pagoVacio(),
-                mesesFijosData: [] // VARIABLE SEGURA PARA LOS CANDADOS
+                mesesFijosData: [],
+                
+                // AÑADIDO: Variables Exámenes
+                examenesList: [],
+                loadingExamenes: false,
+                savingExamenes: false,
+                gestorExamenes: {
+                    fecha: '',
+                    asignatura: '',
+                    alumnosSeleccionados: []
+                }
             }
         },
         computed: {
@@ -420,14 +542,12 @@
                 });
             },
             
-            // EL RADAR INTELIGENTE
             cuotaDetectada() {
                 if(!this.nuevoPago.mes || this.mesesFijosData.length === 0) return 0;
                 const m = this.mesesFijosData.find(x => x.mesNombre.toLowerCase().includes(this.nuevoPago.mes.toLowerCase()));
                 return m && m.cuota ? Number(m.cuota) : 0;
             },
             
-            // EL CLASIFICADOR
             tarifaClasificada() {
                 const mapTarifas = { 40: "Opción 1", 50: "Opción 2", 80: "Opción 3", 85: "Opción 4", 110: "Opción 5", 135: "Opción 6" };
                 if(this.cuotaDetectada === 0) return { texto: "---", esOficial: false };
@@ -435,14 +555,11 @@
                 return { texto: "Clasificará como Extra", esOficial: false };
             },
 
-            // SUMA TOTAL ADAPTATIVA
             importeCalculado() {
                 let tarifaBase = 0;
-                
                 if (this.cuotaDetectada > 0) {
-                    tarifaBase = this.cuotaDetectada; // Modo Automático
+                    tarifaBase = this.cuotaDetectada;
                 } else {
-                    // Modo Emergencia Manual
                     if (this.nuevoPago.tarifaSelect === 'personalizada') {
                         tarifaBase = Number(this.nuevoPago.tarifaPersImporte) || 0;
                     } else if (this.nuevoPago.tarifaSelect && this.nuevoPago.tarifaSelect !== '') {
@@ -450,9 +567,31 @@
                         if(match) tarifaBase = Number(match[1]);
                     }
                 }
-                
                 const extra = Number(this.nuevoPago.extraImporte) || 0;
                 return parseFloat((tarifaBase + extra).toFixed(2));
+            },
+
+            // AÑADIDO: Lógica de pintado de exámenes del alumno
+            examenesAlumno() {
+                if (!this.selected) return [];
+                const nombreLimpio = this.normalizeName(this.selected.nombre + " " + this.selected.apellidos);
+                return this.examenesList.filter(ex => this.normalizeName(ex.alumno) === nombreLimpio);
+            },
+
+            examenesAgrupados() {
+                // Agrupar los exámenes del alumno por fecha
+                const grupos = {};
+                this.examenesAlumno.forEach(ex => {
+                    // Normalizar fecha para agrupación (asume YYYY-MM-DD o YYYY/MM/DD)
+                    let fechaOrd = ex.fecha.replace(/\//g, '-');
+                    if (!grupos[fechaOrd]) grupos[fechaOrd] = [];
+                    grupos[fechaOrd].push(ex);
+                });
+                // Ordenar por fecha descendente o ascendente
+                return Object.keys(grupos).sort((a,b) => new Date(b) - new Date(a)).reduce((obj, key) => {
+                    obj[key] = grupos[key];
+                    return obj;
+                }, {});
             }
         },
         watch: {
@@ -467,7 +606,6 @@
                 if(newMetodo === 'Bizum') this.nuevoPago.generarPDF = true;
                 if(newMetodo === 'Efectivo') this.nuevoPago.generarPDF = false;
             },
-            // VIGILAMOS SI EL SERVIDOR ACTUALIZA LOS DATOS PARA REPINTAR LOS MESES SIN ROMPER EL CANDADO
             fijosRaw: {
                 handler() { this.buildMesesFijos(); },
                 deep: true
@@ -481,7 +619,6 @@
                 return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false };
             },
             
-            // CONSTRUIR EL ARRAY DE MESES SEGURO (Previene el bug del candado)
             buildMesesFijos() {
                 this.mesesFijosData = [];
                 if(!this.form.nombre || this.fijosRaw.length === 0) return;
@@ -541,6 +678,8 @@
                         this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
                         this.fijosRaw = json.fijos || [];
                         this.authenticated = true;
+                        // Cargamos los exámenes en segundo plano
+                        this.cargarExamenesCSV();
                     } else {
                         this.loginError = true; this.errorMsg = json.message;
                         this.passwordInput = '';
@@ -563,12 +702,33 @@
                 };
             },
 
+            // AÑADIDO: Control Gestor Global
+            abrirGestorExamenes() {
+                this.selected = null;
+                this.activeTab = 'gestor_examenes';
+                // Poner la fecha de hoy por defecto
+                this.gestorExamenes.fecha = new Date().toISOString().split('T')[0];
+            },
+
+            seleccionarTodos(marcar) {
+                if(marcar) {
+                    this.gestorExamenes.alumnosSeleccionados = this.list.filter(x => !x.baja).map(a => a.nombre + ' ' + a.apellidos);
+                } else {
+                    this.gestorExamenes.alumnosSeleccionados = [];
+                }
+            },
+
+            cerrarFicha() {
+                this.selected = null;
+                this.activeTab = 'menu';
+            },
+
             createNew() {
                 this.isNew = true; 
                 this.activeTab = 'ficha';
                 this.form = { nombre:'', apellidos:'', dni:'', nacimiento:'', direccion:'', cp:'', poblacion:'', provincia:'', colegio:'', curso:'', tlf:'', fam1_nombre:'', fam1_relacion:'', fam1_tlf:'', fam2_nombre:'', fam2_relacion:'', fam2_tlf:'', baja: false, usuario_aules:'', pass_aules:'' };
                 this.selected = { id: 'TEMP' };
-                this.buildMesesFijos(); // Refrescar los candados
+                this.buildMesesFijos(); 
             },
             
             selectStudent(s) {
@@ -578,7 +738,7 @@
                     this.activeTab = 'menu'; 
                     this.selected = s;
                     
-                    this.buildMesesFijos(); // Inicializa los candados correctamente
+                    this.buildMesesFijos(); 
                     
                     this.nuevoPago = this.pagoVacio(); 
                     const mesActual = this.nuevoPago.mes;
@@ -624,15 +784,13 @@
                     if (json.status === 'success') {
                          const res2 = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(this.getSecurePayload('fetch_data')) });
                          const json2 = await res2.json();
-                         // El watcher "fijosRaw" ejecutará buildMesesFijos() y refrescará la vista
                          if(json2.status === 'success') this.fijosRaw = json2.fijos || [];
                     } else alert("Servidor rechazó la acción: " + json.message);
                 } catch (e) { alert('Error de red actualizando estado'); }
                 objRef.cargando = false;
-                objRef.unlocked = false; // Asegurar que el candado se cierra después de guardar
+                objRef.unlocked = false; 
             },
 
-            // EL ÁRBITRO DE LA LÓGICA DE REGISTRO
             async registrarPago() {
                 this.savingPago = true;
                 
@@ -640,7 +798,6 @@
                 let partesExtra = [];
                 const mapTarifas = { 40: "Opción 1", 50: "Opción 2", 80: "Opción 3", 85: "Opción 4", 110: "Opción 5", 135: "Opción 6" };
 
-                // 1. Clasificar la cuota fija Automática
                 if (this.cuotaDetectada > 0) {
                     if (mapTarifas[this.cuotaDetectada]) {
                         tarifaFinal = `${mapTarifas[this.cuotaDetectada]} (${this.cuotaDetectada}€)`;
@@ -648,7 +805,6 @@
                         partesExtra.push(`Cuota mensual (${this.cuotaDetectada}€)`);
                     }
                 } 
-                // 2. O procesar el Modo Manual de Emergencia
                 else {
                     if (this.nuevoPago.tarifaSelect === 'personalizada') {
                         let numTarifa = Number(this.nuevoPago.tarifaPersImporte);
@@ -661,14 +817,12 @@
                     }
                 }
 
-                // 3. Clasificar lo que se haya escrito en el campo "Extras"
                 let numExtraManual = Number(this.nuevoPago.extraImporte) || 0;
                 if (numExtraManual > 0) {
                     let concepto = (this.nuevoPago.extraConcepto || 'Extra').trim();
                     partesExtra.push(`${concepto} (${numExtraManual}€)`);
                 }
 
-                // Unir los textos de los extras si hay varios
                 let extraFinal = partesExtra.join(" + ");
 
                 const payload = this.getSecurePayload('create_pago', {
@@ -701,12 +855,10 @@
                 let filasHTML = '';
                 const importeTotalStr = this.importeCalculado.toFixed(2).replace('.', ',') + " €";
                 
-                // Mismos cálculos que el envío para que el PDF de previsualización sea igual
                 let tarifaFinal = "";
                 let partesExtra = [];
                 const mapTarifas = { 40: "Opción 1", 50: "Opción 2", 80: "Opción 3", 85: "Opción 4", 110: "Opción 5", 135: "Opción 6" };
 
-                // Construcción de Tarifas (Modo Automático vs Manual)
                 if (this.cuotaDetectada > 0) {
                     if (mapTarifas[this.cuotaDetectada]) {
                         tarifaFinal = `${mapTarifas[this.cuotaDetectada]} (${this.cuotaDetectada}€)`;
@@ -730,7 +882,6 @@
                     partesExtra.push({concepto: (this.nuevoPago.extraConcepto || 'Extra').trim(), importe: numExtraManual});
                 }
 
-                // Generar filas HTML para los Extras o Cuotas Raras
                 partesExtra.forEach(ext => {
                     filasHTML += `<tr><td style="padding:15px; border-bottom:1px solid #eee;"><span style="font-weight:bold;font-size:14px">${ext.concepto}</span></td><td style="text-align:right;font-weight:bold;padding:15px; border-bottom:1px solid #eee;">${ext.importe.toFixed(2).replace('.', ',')} €</td></tr>`;
                 });
@@ -746,6 +897,72 @@
                         <div style="font-size: 8px; text-align: justify; padding-top: 15px; margin-top: auto; border-top: 2px solid #000; line-height: 1.2; width: 100%; box-sizing: border-box;">PROTECCIÓN DE DATOS: En cumplimiento del Reglamento (UE) 2016/679 (RGPD) y la LOPDGDD 3/2018, le informamos que sus datos personales serán tratados por CSE ELISA GUNDÍN con la finalidad de gestionar la facturación, contabilidad y la relación administrativa. Los datos se conservarán durante los plazos legales aplicables. Puede ejercer sus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad dirigiéndose por escrito a C/ Alicante 4, El Pinós (03650).</div>
                     </div>`;
                 window.print();
+            },
+
+            // AÑADIDO: Métodos para Exámenes
+            cargarExamenesCSV() {
+                this.loadingExamenes = true;
+                Papa.parse(CSV_EXAMENES_URL + "&cb=" + Date.now(), {
+                    download: true,
+                    header: false,
+                    complete: (res) => {
+                        this.examenesList = res.data.slice(1).map(row => {
+                            if(!row[0]) return null;
+                            return {
+                                fecha: row[0].trim(),
+                                asignatura: (row[1] || "").trim(),
+                                alumno: (row[2] || "").trim(),
+                                nota: (row[3] || "").trim()
+                            };
+                        }).filter(item => item !== null);
+                        this.loadingExamenes = false;
+                    },
+                    error: () => {
+                        this.loadingExamenes = false;
+                        console.error("Error al cargar el CSV de exámenes");
+                    }
+                });
+            },
+
+            async guardarExamenesMasivos() {
+                this.savingExamenes = true;
+                const payload = this.getSecurePayload('create_examenes_masivos', {
+                    fecha: this.gestorExamenes.fecha,
+                    asignatura: this.gestorExamenes.asignatura,
+                    alumnos: this.gestorExamenes.alumnosSeleccionados
+                });
+
+                try {
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    const json = await res.json();
+                    
+                    if (json.status === 'success') {
+                        this.showSuccess = true; 
+                        this.successMessage = `Se han creado ${this.gestorExamenes.alumnosSeleccionados.length} exámenes correctamente.`;
+                        
+                        // Limpiar campos y forzar recarga del CSV oculto
+                        this.gestorExamenes.asignatura = '';
+                        this.gestorExamenes.alumnosSeleccionados = [];
+                        this.cargarExamenesCSV();
+
+                        setTimeout(() => { this.showSuccess = false; this.savingExamenes = false; }, 3000);
+                    } else { 
+                        alert("Servidor rechazó la acción:\n" + json.message); 
+                        this.savingExamenes = false; 
+                    }
+                } catch (e) { 
+                    alert('Error de red creando exámenes masivos'); 
+                    this.savingExamenes = false; 
+                }
+            },
+
+            obtenerNombreMesCorto(fechaIso) {
+                try {
+                    const date = new Date(fechaIso);
+                    return date.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase();
+                } catch (e) {
+                    return "";
+                }
             }
         },
         mounted() { 
