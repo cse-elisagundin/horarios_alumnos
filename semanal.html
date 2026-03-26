@@ -6,8 +6,7 @@
     <title>Horario Semanal CSE</title>
     
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-
+    
     <style>
         /* --- ESTILOS GENERALES (WEB) --- */
         :root { 
@@ -26,7 +25,7 @@
         .web-logo-img { height: 70px; object-fit: contain; }
         .brand-line { height: 5px; width: 80px; margin: 10px auto 0; background: linear-gradient(90deg, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
 
-        /* HEADER Y PANELES DINÁMICOS (Modificado para alinear todo al centro) */
+        /* HEADER Y PANELES DINÁMICOS */
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap; }
         
         .header-left { display: flex; gap: 10px; align-items: center; }
@@ -104,7 +103,7 @@
         }
 
         /* =========================================================================
-            IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
+           IMPRESIÓN CORREGIDA: LETRAS GRANDES Y HORAS VISIBLES
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; } 
@@ -124,7 +123,6 @@
                 display: none !important; 
             }
 
-            /* --- COLUMNA IZQUIERDA: HORARIOS --- */
             .container { 
                 grid-column: 1; 
                 width: 100% !important; 
@@ -150,7 +148,6 @@
                 margin: 0 !important;
             }
 
-            /* --- COLUMNA DERECHA: NOTAS --- */
             .print-only-notes { 
                 grid-column: 2; 
                 display: block !important; 
@@ -194,7 +191,7 @@
     <header>
         <div class="header-left">
             <button class="btn-action btn-print" onclick="window.print()">Imprimir</button>
-            <a id="btn-edit-sheet" href="#" target="_blank" class="btn-action btn-edit">Editar</a>
+            <a href="https://sheets.google.com" target="_blank" class="btn-action btn-edit">Editar Excel</a>
         </div>
         
         <div class="days-nav" id="days-buttons"></div>
@@ -222,16 +219,8 @@
 </div>
 
 <script>
-    const LINK_HOJA_EDITAR = "https://docs.google.com/spreadsheets/d/1Sq1LoyrXUrglspq2-SW_YPZqFCchGNZeBiff8rHJPOo/edit?gid=0#gid=0"; 
-    document.getElementById('btn-edit-sheet').href = LINK_HOJA_EDITAR;
-
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=csv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=csv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=csv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=csv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=csv"
-    };
+    // --- NUESTRA ÚNICA LLAVE MAESTRA ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbwQoSY2ESLhQjLB5lnFs0UFyRr2_RgnkttvtPWLPhobriDanlKEl_VnPCnkUtqFAYDK/exec";
 
     let diaActualCargado = "";
 
@@ -244,119 +233,131 @@
         return Math.ceil((((d - anioInicio) / 86400000) + 1) / 7);
     }
 
-    function leerHoja(url) {
-        return new Promise(resolve => {
-            Papa.parse(url + "&t=" + Date.now(), { download: true, skipEmptyLines: true, complete: res => resolve(res.data), error: () => resolve([]) });
-        });
-    }
-
     function parseTimeStr(timeStr) {
-        if (!timeStr || !timeStr.includes(':')) return null;
-        const [h, m] = timeStr.split(':').map(Number);
+        if (!timeStr || !String(timeStr).includes(':')) return null;
+        const [h, m] = String(timeStr).split(':').map(Number);
         return h * 60 + m;
     }
 
     async function cargarTodo() {
         const container = document.getElementById('schedule-container');
         const btnContainer = document.getElementById('days-buttons');
-        const dias = Object.keys(urls);
         
-        const promesas = dias.map(dia => leerHoja(urls[dia]));
-        const todosLosDatos = await Promise.all(promesas);
+        try {
+            // Llamamos al servidor pidiendo la acción "semanal"
+            const res = await fetch(API_URL + "?action=semanal");
+            const todosLosDatos = await res.json();
 
-        // Comprobamos si la semana es par o impar
-        const fechaActual = new Date();
-        const esSemanaPar = obtenerNumeroSemana(fechaActual) % 2 === 0;
+            // Comprobamos si la semana es par o impar
+            const fechaActual = new Date();
+            const esSemanaPar = obtenerNumeroSemana(fechaActual) % 2 === 0;
 
-        let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d.toUpperCase()}</button>`).join('');
-        btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
-        btnContainer.innerHTML = btns;
-        container.innerHTML = ""; 
+            const dias = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES'];
+            
+            let btns = dias.map(d => `<button class="nav-btn" onclick="cambiarDia('${d}')">${d}</button>`).join('');
+            btns += `<button class="nav-btn" onclick="cambiarDia('Todo')">VER TODO</button>`;
+            btnContainer.innerHTML = btns;
+            container.innerHTML = ""; 
 
-        dias.forEach((dia, index) => {
-            const data = todosLosDatos[index]; 
-            const headers = data[0] || [];
-            const h_apoyo_hora = headers[0] || "H";
-            const h_apoyo_alum = headers.slice(1, 7);
-            const h_ing_hora = headers[7] || "H";
-            const h_ing_alum = headers.slice(8, 14);
+            dias.forEach(dia => {
+                const data = todosLosDatos[dia]; 
+                if (!data || data.length === 0) return; // Si falla algo o no hay datos, saltamos
+                
+                const headers = data[0] || [];
+                const h_apoyo_hora = headers[0] || "H";
+                const h_apoyo_alum = headers.slice(1, 7);
+                const h_ing_hora = headers[7] || "H";
+                const h_ing_alum = headers.slice(8, 14);
 
-            let html = `<div id="view-${dia}" class="planning-container">
-                <div class="web-brand" style="margin-top: 10px;">
-                    <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" alt="Logo CSE" class="web-logo-img">
-                    <div class="brand-line"></div>
-                </div>
-                <div class="day-header"><h2 class="day-title">${dia.toUpperCase()}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
-                <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
+                let html = `<div id="view-${dia}" class="planning-container">
+                    <div class="web-brand" style="margin-top: 10px;">
+                        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" alt="Logo CSE" class="web-logo-img">
+                        <div class="brand-line"></div>
+                    </div>
+                    <div class="day-header"><h2 class="day-title">${dia}</h2><div class="day-subtitle">CSE Elisa Gundín</div></div>
+                    <div class="tables-wrapper"><div class="table-block"><div class="mobile-section-title">Apoyo</div><table><thead><tr><th class="col-hora">${h_apoyo_hora}</th>${h_apoyo_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>`;
 
-            let filasIngles = "";
-            for(let i = 1; i < data.length; i++) {
-                const row = data[i];
-                if(!row || (!row[0] && !row[7])) continue;
+                let filasIngles = "";
+                for(let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    if(!row || (!row[0] && !row[7])) continue;
 
-                let nombresPilaMap = {};
-                [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
-                    let full = (row[idx] || "").trim();
-                    if(full) { 
+                    let nombresPilaMap = {};
+                    [1,2,3,4,5,6, 8,9,10,11,12,13].forEach(idx => {
+                        let full = (row[idx] || "").trim();
+                        if(full) { 
+                            let isA = full.toUpperCase().includes("[A]");
+                            let isB = full.toUpperCase().includes("[B]");
+                            
+                            // LÓGICA INVERTIDA: Si no es su semana, no lo contamos para los duplicados de nombre
+                            // A = Impar, B = Par
+                            if ((isA && esSemanaPar) || (isB && !esSemanaPar)) return;
+
+                            let clean = full.replace(/\[A\]|\[B\]/gi, '').trim();
+                            let first = clean.split(" ")[0].toUpperCase(); 
+                            nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; 
+                        }
+                    });
+
+                    const generarCelda = (full, colIdx, timeColIndex) => {
+                        if(!full) return `<td></td>`;
+                        full = String(full).trim();
+
                         let isA = full.toUpperCase().includes("[A]");
                         let isB = full.toUpperCase().includes("[B]");
+
+                        // LÓGICA INVERTIDA DE SEMANAS A y B (A = Impar, B = Par)
+                        if ((isA && esSemanaPar) || (isB && !esSemanaPar)) {
+                             return `<td></td>`; // Celda vacía si no toca su semana
+                        }
+
+                        // Limpiamos el [A] y [B] para que quede bonito visualmente
+                        let cleanFullName = full.replace(/\[A\]|\[B\]/gi, '').trim();
+                        let first = cleanFullName.split(" ")[0].toUpperCase();
+                        let display = first;
                         
-                        // LÓGICA INVERTIDA: Si no es su semana, no lo contamos para los duplicados de nombre
-                        // A = Impar, B = Par
-                        if ((isA && esSemanaPar) || (isB && !esSemanaPar)) return;
+                        if(nombresPilaMap[first] > 1) { 
+                            let partes = cleanFullName.split(" "); 
+                            if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; 
+                        }
+                        
+                        let startRow = i; while (startRow > 1) { if ((String(data[startRow - 1][colIdx]) || "").trim() !== full) break; startRow--; }
+                        let startTimeStr = String(data[startRow][timeColIndex]);
+                        let endRow = i; while (endRow < data.length - 1) { if ((String(data[endRow + 1][colIdx]) || "").trim() !== full) break; endRow++; }
+                        let lastBlockTimeStr = String(data[endRow][timeColIndex]);
+                        
+                        return `<td class="student-cell" title="${cleanFullName.toUpperCase()}" data-full-name="${cleanFullName.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
+                    };
 
-                        let clean = full.replace(/\[A\]|\[B\]/gi, '').trim();
-                        let first = clean.split(" ")[0].toUpperCase(); 
-                        nombresPilaMap[first] = (nombresPilaMap[first] || 0) + 1; 
-                    }
-                });
+                    html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
+                    for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
+                    html += `</tr>`;
 
-                const generarCelda = (full, colIdx, timeColIndex) => {
-                    if(!full) return `<td></td>`;
-                    full = full.trim();
+                    filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; 
+                    for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
+                    filasIngles += `</tr>`;
+                }
+                html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
+                container.innerHTML += html;
+            });
 
-                    let isA = full.toUpperCase().includes("[A]");
-                    let isB = full.toUpperCase().includes("[B]");
-
-                    // LÓGICA INVERTIDA DE SEMANAS A y B (A = Impar, B = Par)
-                    if ((isA && esSemanaPar) || (isB && !esSemanaPar)) {
-                         return `<td></td>`; // Celda vacía si no toca su semana
-                    }
-
-                    // Limpiamos el [A] y [B] para que quede bonito visualmente
-                    let cleanFullName = full.replace(/\[A\]|\[B\]/gi, '').trim();
-                    let first = cleanFullName.split(" ")[0].toUpperCase();
-                    let display = first;
-                    
-                    if(nombresPilaMap[first] > 1) { 
-                        let partes = cleanFullName.split(" "); 
-                        if(partes.length > 1) display += " " + partes[1].charAt(0).toUpperCase() + "."; 
-                    }
-                    
-                    let startRow = i; while (startRow > 1) { if ((data[startRow - 1][colIdx] || "").trim() !== full) break; startRow--; }
-                    let startTimeStr = data[startRow][timeColIndex];
-                    let endRow = i; while (endRow < data.length - 1) { if ((data[endRow + 1][colIdx] || "").trim() !== full) break; endRow++; }
-                    let lastBlockTimeStr = data[endRow][timeColIndex];
-                    
-                    return `<td class="student-cell" title="${cleanFullName.toUpperCase()}" data-full-name="${cleanFullName.toUpperCase()}" data-start-time="${startTimeStr}" data-end-block-time="${lastBlockTimeStr}"><span class="name-tag">${display}</span></td>`;
-                };
-
-                html += `<tr><td class="col-hora">${row[0] || ""}</td>`;
-                for(let k=1; k<=6; k++) html += generarCelda(row[k], k, 0);
-                html += `</tr>`;
-
-                filasIngles += `<tr><td class="col-hora">${row[0] || ""}</td>`; 
-                for(let k=8; k<=13; k++) filasIngles += generarCelda(row[k], k, 0);
-                filasIngles += `</tr>`;
+            document.getElementById('loading').style.display = 'none';
+            
+            const mapDay = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
+            let hoy = mapDay[new Date().getDay()];
+            
+            let diaASeleccionar = diaActualCargado;
+            if (!diaASeleccionar) {
+                if (dias.includes(hoy)) diaASeleccionar = hoy;
+                else diaASeleccionar = 'LUNES';
             }
-            html += `</tbody></table></div><div class="table-block"><div class="mobile-section-title ing">Inglés</div><table><thead><tr><th class="col-hora">${h_ing_hora}</th>${h_ing_alum.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filasIngles}</tbody></table></div></div></div>`;
-            container.innerHTML += html;
-        });
+            cambiarDia(diaASeleccionar);
 
-        document.getElementById('loading').style.display = 'none';
-        const mapDay = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-        let hoy = mapDay[new Date().getDay()];
-        cambiarDia(diaActualCargado || (urls[hoy] ? hoy : "Lunes"));
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = "<div style='text-align:center; color:red; font-weight:bold;'>Error conectando al servidor. Revisa tu conexión.</div>";
+            document.getElementById('loading').style.display = 'none';
+        }
     }
 
     function actualizarRelojYCambios() {
@@ -364,7 +365,7 @@
         document.getElementById('digital-clock').innerText = now.toLocaleTimeString('es-ES', { hour12: false });
 
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
-        const diasSemana = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+        const diasSemana = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
         let hoy = diasSemana[now.getDay()];
         
         const contenedorHoy = document.getElementById(`view-${hoy}`);
