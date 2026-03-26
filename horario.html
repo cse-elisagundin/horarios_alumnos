@@ -13,18 +13,16 @@
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
         /* =========================================
-           🎨 ESTILOS GENERALES
+           🎨 ESTILOS GENERALES (INTACTOS)
            ========================================= */
         *, *::before, *::after {
-            box-sizing: border-box; /* Soluciona saltos de anchura */
+            box-sizing: border-box;
         }
 
         :root { 
@@ -56,10 +54,10 @@
             font-family: 'Outfit', 'Segoe UI', sans-serif; 
             background-color: var(--bg-body); 
             margin: 0; 
-            padding: 40px 20px 20px 20px; /* Margen superior fijo */
+            padding: 40px 20px 20px 20px;
             display: flex; 
             justify-content: center; 
-            align-items: flex-start; /* ANCLAJE SUPERIOR para evitar saltos de altura */
+            align-items: flex-start;
             min-height: 100vh; 
             color: #333;
             transition: padding-top 0.3s ease;
@@ -81,7 +79,6 @@
 
         .ticker-move {
             display: inline-block;
-            /* El JS aplicará el tiempo dinámico aquí */
             animation: ticker-scroll 35s linear infinite; 
         }
 
@@ -129,7 +126,7 @@
             text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
         }
 
-        /* --- 🔘 BOTONERA (Limpia) --- */
+        /* --- 🔘 BOTONERA --- */
         .tabs-nav {
             display: flex; 
             background: #f0f4f8; 
@@ -148,7 +145,7 @@
             color: #8898aa; 
             font-weight: 800; 
             font-family: 'Outfit', sans-serif; 
-            font-size: 10px; /* Tamaño limpio base */
+            font-size: 10px;
             border-radius: 10px; 
             cursor: pointer; 
             transition: all 0.3s; 
@@ -327,11 +324,10 @@
         
         .calendar-day.has-event { color: white; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
         
-        /* NUEVOS COLORES CALENDARIO */
-        .cal-abierto-norecup { background: var(--c-secondary); } /* Azul */
-        .cal-cerrado-recup { background: var(--cal-rosa-claro); color: #444; } /* Rosa clarito */
-        .cal-cerrado-norecup { background: var(--c-accent); } /* Fucsia */
-        .cal-mananas { background: var(--cal-azul-claro); color: #444; } /* Azul clarito */
+        .cal-abierto-norecup { background: var(--c-secondary); } 
+        .cal-cerrado-recup { background: var(--cal-rosa-claro); color: #444; } 
+        .cal-cerrado-norecup { background: var(--c-accent); } 
+        .cal-mananas { background: var(--cal-azul-claro); color: #444; } 
         
         .calendar-empty-msg { grid-column: 1 / -1; padding: 30px 10px; color: #999; font-style: italic; font-size: 14px; background: #fafbfc; border-radius: 10px; border: 1px dashed #ccc; margin-top: 10px;}
         
@@ -368,7 +364,7 @@
            ========================================= */
         @media (max-width: 480px) {
             body { 
-                padding: 15px 0 0 0; /* Anclado arriba para que no haya saltos */
+                padding: 15px 0 0 0; 
                 background-color: white; 
                 align-items: flex-start;
             }
@@ -380,15 +376,15 @@
                 max-width: 100%; 
             }
             .tabs-nav { 
-                gap: 1px; /* Letras y botones más juntitos para ganar espacio lateral */
+                gap: 1px; 
                 padding: 0; 
                 background: transparent; 
                 margin-bottom: 15px; 
             }
             .tab-btn { 
-                font-size: 8.5px; /* Reducido para que quepa la palabra "CALENDARIO" */
+                font-size: 8.5px; 
                 padding: 10px 1px; 
-                letter-spacing: -0.3px; /* Aprieta un poco las letras */
+                letter-spacing: -0.3px; 
             } 
             .result-header-flex { font-size: 18px; margin-bottom: 15px; }
             .calendar-day { font-size: 14px; padding: 8px 0; }
@@ -444,49 +440,28 @@
         });
     }
 
-    const _0x8F = "MDEwNTIz"; 
+    // --- AQUÍ ESTÁ TU NUEVA API SEGURA ---
+    const API_URL = "https://script.google.com/macros/s/AKfycbwQoSY2ESLhQjLB5lnFs0UFyRr2_RgnkttvtPWLPhobriDanlKEl_VnPCnkUtqFAYDK/exec";
+    
     let SISTEMA_DESBLOQUEADO = false; 
     let globalAviso = null; 
     
-    const URL_EXAMENES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv"; 
-    const URL_FALTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1356052707&single=true&output=tsv";
-    const URL_AVISOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1694124280&single=true&output=tsv";
-    const URL_CALENDARIO = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1477113232&single=true&output=tsv";
-
-    const urls = {
-        "Lunes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=0&single=true&output=tsv",
-        "Martes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1905233272&single=true&output=tsv",
-        "Miércoles": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=745373517&single=true&output=tsv",
-        "Jueves": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=314818236&single=true&output=tsv",
-        "Viernes": "https://docs.google.com/spreadsheets/d/e/2PACX-1vTa_AjdQ-TzUs68ciZCnbgsUzqRF78m8e-oMrmbrorAsXjaFckYe6JQAzyKFlY6jcvWTMVZ3UDcqxMx/pub?gid=1396865785&single=true&output=tsv"
-    };
-
-    let memoriaCache = {}; 
     window.globalFestivos = [];
     window.calCurrentDate = new Date();
 
-    function leerHoja(url) {
-        if (!url) return Promise.resolve([]);
-        if (memoriaCache[url]) return Promise.resolve(memoriaCache[url]);
-        return new Promise(resolve => {
-            let parseConfig = { download:true, skipEmptyLines:true };
-            if(url.includes("output=tsv")) parseConfig.delimiter = "\t";
-            Papa.parse(url + "&t=" + Date.now(), { 
-                ...parseConfig,
-                complete: res => { memoriaCache[url] = res.data; resolve(res.data); }, 
-                error: () => resolve([]) 
-            });
-        });
-    }
-
-    function timeToMins(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
+    function timeToMins(t) { if(!t) return 0; const [h, m] = String(t).split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
-    function limpiarTexto(t) { return t.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
-    function formatName(n) { return n.toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
+    function limpiarTexto(t) { return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim(); }
+    function formatName(n) { return String(n).toLowerCase().replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); }); }
 
     function formatearFechaCorta(textoFecha) {
         if (!textoFecha) return "??/??/??";
-        let t = textoFecha.trim();
+        let t = String(textoFecha).trim();
+        // Las fechas de la API llegan en formato ISO (ej: 2023-10-05T22:00:00.000Z)
+        if (t.includes('T') && t.endsWith('Z')) {
+            let d = new Date(t);
+            return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear().toString().slice(-2)}`;
+        }
         if (t.match(/^\d{4}-\d{2}-\d{2}$/)) { let parts = t.split('-'); return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`; }
         if (t.match(/^\d{4}\/\d{2}\/\d{2}$/)) { let parts = t.split('/'); return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`; }
         if (t.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) { let parts = t.split('/'); return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2].slice(-2)}`; }
@@ -496,7 +471,7 @@
     function formatNameForDisplay(originalName) {
         let smartName = formatNameSmart(originalName);
         if (window.innerWidth < 480 && smartName.length > 15) { 
-             let parts = originalName.trim().toLowerCase().split(/\s+/);
+             let parts = String(originalName).trim().toLowerCase().split(/\s+/);
              let first = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
              let initials = parts.slice(1).map(p => p.charAt(0).toUpperCase() + ".").join(" ");
              return first + " " + initials;
@@ -505,7 +480,7 @@
     }
 
     function formatNameSmart(nombre) {
-        let n = nombre.trim().toLowerCase();
+        let n = String(nombre).trim().toLowerCase();
         let parts = n.split(/\s+/);
         let formattedParts = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1));
         if (formattedParts.length >= 4) return `${formattedParts[0]} ${formattedParts[1][0]}. ${formattedParts[2]} ${formattedParts[formattedParts.length-1][0]}.`;
@@ -514,8 +489,8 @@
     }
 
     function esNombreValido(texto) {
-        if (!texto || texto.length < 2) return false;
-        const t = texto.toUpperCase().trim();
+        if (!texto || String(texto).length < 2) return false;
+        const t = String(texto).toUpperCase().trim();
         const prohibidos = ["HORA", "ALUMNO", "APOYO", "INGLÉS", "INGLES", "CLASE", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "FECHA", "ASIGNATURA"];
         return !prohibidos.some(p => t.includes(p)) && !(/\d/.test(t) && t.includes(':'));
     }
@@ -575,7 +550,7 @@
             return;
         }
         
-        let estUpper = estado.toUpperCase();
+        let estUpper = String(estado).toUpperCase();
         
         if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
             box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
@@ -583,7 +558,7 @@
                                 <strong>HORARIO DE MAÑANAS</strong>
                              </span>`;
         } else {
-            let recUpper = recuperable.toUpperCase();
+            let recUpper = String(recuperable).toUpperCase();
             let recText = (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
             
             box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
@@ -609,7 +584,7 @@
         let maxYear = 0; 
         let maxMonth = -1;
         window.globalFestivos.forEach(f => {
-            let p = f.fecha.split('/');
+            let p = String(f.fecha).split('/');
             if(p.length === 3) {
                 let m = parseInt(p[1], 10) - 1;
                 let y = p[2].length === 2 ? 2000 + parseInt(p[2], 10) : parseInt(p[2], 10);
@@ -662,21 +637,21 @@
             let event = window.globalFestivos.find(f => f.fecha === dateStr1 || f.fecha === dateStr2);
             
             if (!isBeyondData) {
-                if (event && (event.estado.toUpperCase().includes("VACACION") || event.motivo.toUpperCase().includes("VACACION"))) {
+                if (event && (String(event.estado).toUpperCase().includes("VACACION") || String(event.motivo).toUpperCase().includes("VACACION"))) {
                     enVacaciones = true;
-                    motivoVacaciones = (event.motivo !== "Festivo" && event.motivo.trim() !== "") ? event.motivo : "Vacaciones";
+                    motivoVacaciones = (event.motivo !== "Festivo" && String(event.motivo).trim() !== "") ? event.motivo : "Vacaciones";
                 }
 
                 if (enVacaciones) {
                     hasEventsThisMonth = true;
-                    let mot = motivoVacaciones.replace(/'/g, "\\'");
+                    let mot = String(motivoVacaciones).replace(/'/g, "\\'");
                     daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('${mot}', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
                 
                 } else if (event) {
                     hasEventsThisMonth = true;
                     let colorClass = "";
-                    let estUpper = event.estado.toUpperCase();
-                    let recUpper = event.recuperable.toUpperCase();
+                    let estUpper = String(event.estado).toUpperCase();
+                    let recUpper = String(event.recuperable).toUpperCase();
                     
                     if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
                         colorClass = "cal-mananas";
@@ -692,9 +667,9 @@
                         colorClass = "cal-cerrado-norecup";
                     }
 
-                    let mot = event.motivo.replace(/'/g, "\\'");
-                    let est = event.estado.replace(/'/g, "\\'");
-                    let rec = event.recuperable.replace(/'/g, "\\'");
+                    let mot = String(event.motivo).replace(/'/g, "\\'");
+                    let est = String(event.estado).replace(/'/g, "\\'");
+                    let rec = String(event.recuperable).replace(/'/g, "\\'");
 
                     daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
                     
@@ -735,8 +710,11 @@
     };
 
     function parseAvisoDate(dateStr) {
-        if (!dateStr || dateStr.trim() === "") return null;
-        let parts = dateStr.trim().split(" ");
+        if (!dateStr || String(dateStr).trim() === "") return null;
+        // Para gestionar formato ISO si viene de Apps Script
+        if(String(dateStr).includes('T') && String(dateStr).endsWith('Z')) return new Date(dateStr);
+        
+        let parts = String(dateStr).trim().split(" ");
         if (parts.length < 1) return null;
         
         let dateParts = parts[0].split("/");
@@ -748,245 +726,243 @@
     }
 
     async function cargarAvisos() {
-        const data = await leerHoja(URL_AVISOS);
-        if (data && data.length > 0 && data[1]) {
-            const mensaje = data[1][0]; 
-            const estado = (data[1][1] || "").toUpperCase().trim();
+        try {
+            // Mandamos a buscar un alumno falso, la API devolverá siempre los avisos públicos.
+            const res = await fetch(API_URL + "?alumno=CARGAR_AVISOS_INICIALES");
+            const json = await res.json();
             
-            const fechaInicioStr = data[1][2]; 
-            const fechaFinStr = data[1][3];
+            if (json.avisos && json.avisos.length > 1) {
+                const data = json.avisos;
+                const mensaje = String(data[1][0] || ""); 
+                const estado = String(data[1][1] || "").toUpperCase().trim();
+                const fechaInicioStr = String(data[1][2] || ""); 
+                const fechaFinStr = String(data[1][3] || "");
 
-            if (estado === "ON" && mensaje) {
-                let mostrar = true;
-                const ahora = new Date();
-                
-                const fechaInicio = parseAvisoDate(fechaInicioStr);
-                const fechaFin = parseAvisoDate(fechaFinStr);
+                if (estado === "ON" && mensaje) {
+                    let mostrar = true;
+                    const ahora = new Date();
+                    
+                    const fechaInicio = parseAvisoDate(fechaInicioStr);
+                    const fechaFin = parseAvisoDate(fechaFinStr);
 
-                if (fechaInicio && ahora < fechaInicio) mostrar = false;
-                if (fechaFin && ahora > fechaFin) mostrar = false;
+                    if (fechaInicio && ahora < fechaInicio) mostrar = false;
+                    if (fechaFin && ahora > fechaFin) mostrar = false;
 
-                if (mostrar) {
-                    globalAviso = mensaje;
-                    const ticker = document.getElementById('global-ticker');
-                    const content = document.getElementById('ticker-content');
-                    
-                    const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
-                    
-                    // IMPORTANTE: El mensaje se clona 10 veces para hacer la animación infinita
-                    content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
-                    
-                    // --- NUEVO FRENO TOTALMENTE AJUSTADO ---
-                    // 1. Calculamos un tiempo de lectura ideal para UN SOLO mensaje (ej: 10 a 15 segs)
-                    let tiempoPorMensaje = 10 + (mensaje.length * 0.2); 
-                    
-                    // 2. Como el CSS mueve la banda un 50% (lo que equivale exactamente a 10 mensajes cruzando la pantalla),
-                    // multiplicamos ese tiempo de lectura x 10. ¡Por eso antes iba a cámara rápida!
-                    let tiempoCalculado = tiempoPorMensaje * 10;
-                    
-                    content.style.animationDuration = `${tiempoCalculado}s`;
+                    if (mostrar) {
+                        globalAviso = mensaje;
+                        const ticker = document.getElementById('global-ticker');
+                        const content = document.getElementById('ticker-content');
+                        
+                        const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
+                        content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
+                        
+                        let tiempoPorMensaje = 10 + (mensaje.length * 0.2); 
+                        let tiempoCalculado = tiempoPorMensaje * 10;
+                        
+                        content.style.animationDuration = `${tiempoCalculado}s`;
 
-                    ticker.style.display = "flex";
-                    document.body.style.paddingTop = "80px"; 
+                        ticker.style.display = "flex";
+                        document.body.style.paddingTop = "80px"; 
+                    }
                 }
             }
+        } catch (error) {
+            console.log("No se pudieron cargar los avisos:", error);
         }
     }
 
     async function ejecutarBusqueda(nombre) {
         document.getElementById('error-msg').style.display = 'none';
-        
         document.getElementById('search-area').style.display = 'none'; 
         document.getElementById('loading-spinner').style.display = 'block';
         document.getElementById('resultado').innerHTML = '';
-        const nombreBuscado = limpiarTexto(nombre); const dias = Object.keys(urls);
-        const [resultadosHorario, dataExamenes, dataFaltas, dataCalendario] = await Promise.all([Promise.all(dias.map(dia => leerHoja(urls[dia]))), leerHoja(URL_EXAMENES), leerHoja(URL_FALTAS), leerHoja(URL_CALENDARIO)]);
         
-        let clasesRaw = []; let examenesFuturos = []; let examenesPasados = []; let faltasEncontradas = []; 
+        const nombreBuscado = limpiarTexto(nombre);
         
-        // --- MODIFICACIÓN: Buscamos ignorando los tags [A] y [B] y los rescatamos para la tarjeta ---
-        dias.forEach((dia, idx) => {
-            const data = resultadosHorario[idx]; if(!data) return;
-            data.forEach(row => {
-                let hA = (row[0] || "").trim().substring(0,5);
-                if(hA && hA.includes(":")) {
-                    for(let c=1; c<=6; c++) {
-                        if(esNombreValido(row[c])) {
-                            let celdaLimpia = limpiarTexto(row[c]);
-                            let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
-                            // Si la celda contiene el nombre limpio buscado
-                            if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
-                                let etiqueta = "";
-                                if(row[c].toUpperCase().includes("[A]")) etiqueta = " [A]";
-                                if(row[c].toUpperCase().includes("[B]")) etiqueta = " [B]";
-                                clasesRaw.push({ dia, h: hA, materia: "Apoyo" + etiqueta, tipo: "apoyo", fullText: row[c] });
+        try {
+            const res = await fetch(API_URL + "?alumno=" + encodeURIComponent(nombreBuscado));
+            const json = await res.json();
+
+            let clasesRaw = []; let examenesFuturos = []; let examenesPasados = []; let faltasEncontradas = []; 
+            
+            // --- 1. HORARIOS ---
+            const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+            if (json.horarios) {
+                json.horarios.forEach((dataDelDia, idx) => {
+                    let dia = diasSemana[idx];
+                    if(!dataDelDia) return;
+                    dataDelDia.forEach(row => {
+                        let hA = String(row[0] || "").trim().substring(0,5);
+                        if(hA && hA.includes(":")) {
+                            for(let c=1; c<=6; c++) {
+                                if(esNombreValido(row[c])) {
+                                    let celdaLimpia = limpiarTexto(row[c]);
+                                    let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
+                                    if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
+                                        let etiqueta = "";
+                                        if(String(row[c]).toUpperCase().includes("[A]")) etiqueta = " [A]";
+                                        if(String(row[c]).toUpperCase().includes("[B]")) etiqueta = " [B]";
+                                        clasesRaw.push({ dia, h: hA, materia: "Apoyo" + etiqueta, tipo: "apoyo", fullText: String(row[c]) });
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-                
-                let hI = (row[7] || "").trim().substring(0,5);
-                if(hI && hI.includes(":")) {
-                    for(let c=8; c<=13; c++) {
-                        if(esNombreValido(row[c])) {
-                            let celdaLimpia = limpiarTexto(row[c]);
-                            let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
-                            // Si la celda contiene el nombre limpio buscado
-                            if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
-                                let etiqueta = "";
-                                if(row[c].toUpperCase().includes("[A]")) etiqueta = " [A]";
-                                if(row[c].toUpperCase().includes("[B]")) etiqueta = " [B]";
-                                clasesRaw.push({ dia, h: hI, materia: "Inglés" + etiqueta, tipo: "ingles", fullText: row[c] });
+                        
+                        let hI = String(row[7] || "").trim().substring(0,5);
+                        if(hI && hI.includes(":")) {
+                            for(let c=8; c<=13; c++) {
+                                if(esNombreValido(row[c])) {
+                                    let celdaLimpia = limpiarTexto(row[c]);
+                                    let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
+                                    if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
+                                        let etiqueta = "";
+                                        if(String(row[c]).toUpperCase().includes("[A]")) etiqueta = " [A]";
+                                        if(String(row[c]).toUpperCase().includes("[B]")) etiqueta = " [B]";
+                                        clasesRaw.push({ dia, h: hI, materia: "Inglés" + etiqueta, tipo: "ingles", fullText: String(row[c]) });
+                                    }
+                                }
                             }
                         }
-                    }
-                }
-            });
-        });
-
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        if(dataExamenes) dataExamenes.forEach(row => {
-            if(row[2] && limpiarTexto(row[2]).includes(nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim())) {
-                let fO = new Date(row[0]); if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } fO.setHours(0,0,0,0);
-                let fechaBonitaExamen = formatearFechaCorta(row[0]);
-                let item = { fecha: fechaBonitaExamen || "Fecha pte.", asignatura: row[1] || "Examen", nota: (row[3] || "").trim() };
-                if (item.nota !== "" || fO < hoy) examenesPasados.push(item); else examenesFuturos.push(item);
-            }
-        });
-
-        if(dataFaltas) dataFaltas.forEach(row => {
-            if(row[3] && limpiarTexto(row[3]).includes(nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim())) {
-                let rawDateStr = row[1];
-                let dateObj = new Date(rawDateStr);
-                if (isNaN(dateObj.getTime())) {
-                    let parts = rawDateStr.split('/');
-                    if (parts.length === 3) dateObj = new Date(parts[2], parts[1]-1, parts[0]);
-                }
-                
-                let fechaVisual = formatearFechaCorta(rawDateStr);
-                
-                let horas = row[4] ? row[4].replace(',', '.') : "0";
-                let estadoFalta = (row[5] || "PENDIENTE").toUpperCase().trim();
-                
-                faltasEncontradas.push({ 
-                    fecha: fechaVisual, 
-                    hora: row[2] || "", 
-                    horasPerdidas: horas,
-                    estado: estadoFalta, 
-                    rawDate: dateObj
+                    });
                 });
             }
-        });
-        faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
-        
-        window.globalFestivos = []; 
-        if(dataCalendario && dataCalendario.length > 1) {
-            dataCalendario.forEach((row, index) => {
-                if(index === 0) return; 
-                if(row[0]) {
-                    window.globalFestivos.push({
-                        fecha: formatearFechaCorta(row[0]),
-                        motivo: row[1] || "Festivo",
-                        estado: (row[2] || "CERRADO").toUpperCase().trim(),
-                        recuperable: (row[3] || "NO").toUpperCase().trim()
+
+            // --- 2. EXÁMENES ---
+            const hoy = new Date(); hoy.setHours(0,0,0,0);
+            if(json.examenes) {
+                json.examenes.forEach(row => {
+                    let rawDate = String(row[0] || "");
+                    let fO = new Date(rawDate); 
+                    if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } 
+                    fO.setHours(0,0,0,0);
+                    
+                    let fechaBonitaExamen = formatearFechaCorta(rawDate);
+                    let item = { fecha: fechaBonitaExamen || "Fecha pte.", asignatura: String(row[1] || "Examen"), nota: String(row[3] || "").trim() };
+                    if (item.nota !== "" || fO < hoy) examenesPasados.push(item); else examenesFuturos.push(item);
+                });
+            }
+
+            // --- 3. FALTAS ---
+            if(json.faltas) {
+                json.faltas.forEach(row => {
+                    let rawDateStr = String(row[1] || "");
+                    let dateObj = new Date(rawDateStr);
+                    if (isNaN(dateObj.getTime())) {
+                        let parts = rawDateStr.split('/');
+                        if (parts.length === 3) dateObj = new Date(parts[2], parts[1]-1, parts[0]);
+                    }
+                    
+                    let fechaVisual = formatearFechaCorta(rawDateStr);
+                    let horas = row[4] ? String(row[4]).replace(',', '.') : "0";
+                    let estadoFalta = String(row[5] || "PENDIENTE").toUpperCase().trim();
+                    
+                    faltasEncontradas.push({ 
+                        fecha: fechaVisual, 
+                        hora: String(row[2] || ""), 
+                        horasPerdidas: horas,
+                        estado: estadoFalta, 
+                        rawDate: dateObj
                     });
-                }
-            });
-        }
-
-        // --- MODIFICACIÓN: Nos aseguramos de que el nombre del titulo vaya limpio ---
-        const nF = formatNameForDisplay(nombre.replace(/\[a\]|\[b\]/gi, '').trim());
-
-        document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
-        document.getElementById('loading-spinner').style.display = 'none';
-        
-        if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0 || window.globalFestivos.length >= 0) {
-            let htmlHorario = "";
-            if(clasesRaw.length > 0) agruparClases(clasesRaw).forEach(item => {
-                const est = getEstadoClase(item.dia, item.startMins, item.endMins);
-                let bL = est === 'live' ? `<div class="live-badge">🔴 EN CLASE AHORA</div>` : est === 'soon' ? `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>` : "";
-                htmlHorario += `<div class="result-card type-${item.tipo} ${est === 'live' ? 'is-live' : est === 'soon' ? 'is-soon' : ''}">${bL}<div class="card-info"><span class="card-day">${item.dia}</span><div class="card-time-wrapper"><div class="clock-icon"></div><span class="card-time">${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}</span></div></div><span class="badge bg-${item.tipo}">${item.materia}</span></div>`;
-            }); else htmlHorario = `<div class="empty-state">No hay clases asignadas.</div>`;
-
-            let htmlExamenes = "";
-            if(examenesFuturos.length > 0) examenesFuturos.forEach(ex => htmlExamenes += `<div class="result-card type-examen"><div class="examen-badge-alert">📌 EXAMEN</div><div class="card-info" style="flex:1"><span class="card-day">${ex.fecha}</span><div style="font-size:20px; font-weight:800; color:var(--c-primary); margin-top:2px;">${ex.asignatura}</div></div><span class="badge bg-examen">PENDIENTE</span></div>`); else htmlExamenes = `<div class="empty-state">No hay exámenes próximos.</div>`;
-
-            let htmlNotas = "";
-            if(examenesPasados.length > 0) examenesPasados.reverse().forEach(ex => {
-                let vN = ex.nota ? `<span class="grade-display ${!isNaN(parseFloat(ex.nota.replace(',','.'))) && parseFloat(ex.nota.replace(',','.')) >= 5 ? 'grade-pass' : 'grade-fail'}">${ex.nota}</span>` : `<span class="grade-pending">Pendiente</span>`;
-                htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px;">${ex.asignatura}</div></div>${vN}</div>`;
-            }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
-
-            let htmlFaltas = "";
+                });
+                faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
+            }
             
-            if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => {
-                let esRecuperada = fa.estado.includes("RECUPERADA") || fa.estado.includes("PAGADA") || fa.estado.includes("OK");
+            // --- 4. CALENDARIO FESTIVOS ---
+            window.globalFestivos = []; 
+            if(json.calendario && json.calendario.length > 1) {
+                json.calendario.forEach((row, index) => {
+                    if(index === 0) return; 
+                    if(row[0]) {
+                        window.globalFestivos.push({
+                            fecha: formatearFechaCorta(row[0]),
+                            motivo: String(row[1] || "Festivo"),
+                            estado: String(row[2] || "CERRADO").toUpperCase().trim(),
+                            recuperable: String(row[3] || "NO").toUpperCase().trim()
+                        });
+                    }
+                });
+            }
+
+            const nF = formatNameForDisplay(nombre.replace(/\[a\]|\[b\]/gi, '').trim());
+
+            document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
+            document.getElementById('loading-spinner').style.display = 'none';
+            
+            if(clasesRaw.length > 0 || examenesFuturos.length > 0 || examenesPasados.length > 0 || faltasEncontradas.length > 0 || window.globalFestivos.length >= 0) {
+                let htmlHorario = "";
+                if(clasesRaw.length > 0) agruparClases(clasesRaw).forEach(item => {
+                    const est = getEstadoClase(item.dia, item.startMins, item.endMins);
+                    let bL = est === 'live' ? `<div class="live-badge">🔴 EN CLASE AHORA</div>` : est === 'soon' ? `<div class="soon-badge">🟡 EMPIEZA PRONTO</div>` : "";
+                    htmlHorario += `<div class="result-card type-${item.tipo} ${est === 'live' ? 'is-live' : est === 'soon' ? 'is-soon' : ''}">${bL}<div class="card-info"><span class="card-day">${item.dia}</span><div class="card-time-wrapper"><div class="clock-icon"></div><span class="card-time">${minsToTime(item.startMins)} - ${minsToTime(item.endMins)}</span></div></div><span class="badge bg-${item.tipo}">${item.materia}</span></div>`;
+                }); else htmlHorario = `<div class="empty-state">No hay clases asignadas.</div>`;
+
+                let htmlExamenes = "";
+                if(examenesFuturos.length > 0) examenesFuturos.forEach(ex => htmlExamenes += `<div class="result-card type-examen"><div class="examen-badge-alert">📌 EXAMEN</div><div class="card-info" style="flex:1"><span class="card-day">${ex.fecha}</span><div style="font-size:20px; font-weight:800; color:var(--c-primary); margin-top:2px;">${ex.asignatura}</div></div><span class="badge bg-examen">PENDIENTE</span></div>`); else htmlExamenes = `<div class="empty-state">No hay exámenes próximos.</div>`;
+
+                let htmlNotas = "";
+                if(examenesPasados.length > 0) examenesPasados.reverse().forEach(ex => {
+                    let vN = ex.nota ? `<span class="grade-display ${!isNaN(parseFloat(ex.nota.replace(',','.'))) && parseFloat(ex.nota.replace(',','.')) >= 5 ? 'grade-pass' : 'grade-fail'}">${ex.nota}</span>` : `<span class="grade-pending">Pendiente</span>`;
+                    htmlNotas += `<div class="result-card type-nota"><div class="card-info"><span class="card-day">${ex.fecha}</span><div style="font-weight:700; color:#555; font-size:16px;">${ex.asignatura}</div></div>${vN}</div>`;
+                }); else htmlNotas = `<div class="empty-state">No hay notas registradas.</div>`;
+
+                let htmlFaltas = "";
+                if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => {
+                    let esRecuperada = fa.estado.includes("RECUPERADA") || fa.estado.includes("PAGADA") || fa.estado.includes("OK");
+                    
+                    let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
+                    let badgeHtml = esRecuperada 
+                        ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
+                        : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
+                    let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `${fa.horasPerdidas}h` : "--";
+
+                    htmlFaltas += `
+                    <div class="result-card ${claseTipo}">
+                        ${badgeHtml}
+                        <div class="card-info">
+                            <span class="card-day ${esRecuperada ? 'is-tachado' : ''}">${fa.fecha}</span>
+                        </div>
+                        <div>
+                            <span class="hours-big-display ${esRecuperada ? 'is-tachado' : ''}">${displayHoras}</span>
+                            <span class="hours-label">ACUMULADAS</span>
+                        </div>
+                    </div>`;
+                }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
+
+                document.getElementById('resultado').innerHTML = `<br>
+                    <div class="result-header-flex">
+                        <span class="label-span">Horario de</span>
+                        <span class="name-span">${nF}</span>
+                    </div>
+                    <div class="tabs-nav">
+                        <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">HORARIO</button>
+                        <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">EXÁMENES</button>
+                        <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">NOTAS</button>
+                        <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">FALTAS</button>
+                        <button id="btn-tab-calendario" class="tab-btn" onclick="cambiarPestana('calendario')">CALENDARIO</button>
+                    </div>
+                    <div id="tabs-container-wrapper">
+                        <div id="content-horario" class="tab-content active">${htmlHorario}</div>
+                        <div id="content-examenes" class="tab-content">${htmlExamenes}</div>
+                        <div id="content-notas" class="tab-content">${htmlNotas}</div>
+                        <div id="content-faltas" class="tab-content">${htmlFaltas}<div style="margin-top: 15px; font-size: 11px; font-style: italic; color: #8898aa; line-height: 1.4; text-align: center;">Importante: Para la gestión de días recuperables de estas faltas, por favor, póngase en contacto directamente con Elisa.</div></div>
+                        <div id="content-calendario" class="tab-content"><div id="calendario-dinamico"></div></div>
+                    </div>
+                    <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
                 
-                let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
-                let badgeHtml = esRecuperada 
-                    ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
-                    : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
-                let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `${fa.horasPerdidas}h` : "--";
+                initSwipeGestures();
+                
+                window.calCurrentDate = new Date(); 
+                window.renderCalendar();
 
-                htmlFaltas += `
-                <div class="result-card ${claseTipo}">
-                    ${badgeHtml}
-                    <div class="card-info">
-                        <span class="card-day ${esRecuperada ? 'is-tachado' : ''}">${fa.fecha}</span>
-                    </div>
-                    <div>
-                        <span class="hours-big-display ${esRecuperada ? 'is-tachado' : ''}">${displayHoras}</span>
-                        <span class="hours-label">ACUMULADAS</span>
-                    </div>
-                </div>`;
-            }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
-
-            document.getElementById('resultado').innerHTML = `<br>
-                <div class="result-header-flex">
-                    <span class="label-span">Horario de</span>
-                    <span class="name-span">${nF}</span>
-                </div>
-                <div class="tabs-nav">
-                    <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">HORARIO</button>
-                    <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">EXÁMENES</button>
-                    <button id="btn-tab-notas" class="tab-btn" onclick="cambiarPestana('notas')">NOTAS</button>
-                    <button id="btn-tab-faltas" class="tab-btn" onclick="cambiarPestana('faltas')">FALTAS</button>
-                    <button id="btn-tab-calendario" class="tab-btn" onclick="cambiarPestana('calendario')">CALENDARIO</button>
-                </div>
-                <div id="tabs-container-wrapper">
-                    <div id="content-horario" class="tab-content active">${htmlHorario}</div>
-                    <div id="content-examenes" class="tab-content">${htmlExamenes}</div>
-                    <div id="content-notas" class="tab-content">${htmlNotas}</div>
-                    <div id="content-faltas" class="tab-content">${htmlFaltas}<div style="margin-top: 15px; font-size: 11px; font-style: italic; color: #8898aa; line-height: 1.4; text-align: center;">Importante: Para la gestión de días recuperables de estas faltas, por favor, póngase en contacto directamente con Elisa.</div></div>
-                    <div id="content-calendario" class="tab-content"><div id="calendario-dinamico"></div></div>
-                </div>
-                <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
-            
-            initSwipeGestures();
-            
-            window.calCurrentDate = new Date(); 
-            window.renderCalendar();
-
-            if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
-        } else {
-            document.getElementById('error-msg').innerText = "Nombre no encontrado."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
+                if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
+            } else {
+                document.getElementById('error-msg').innerText = "Nombre no encontrado."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('loading-spinner').style.display = 'none';
+            document.getElementById('error-msg').innerText = "Error de conexión con el servidor."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
         }
-    }
-
-    async function cargarDirectorio() {
-        const area = document.getElementById('directory-area'); area.innerHTML = "Cargando..."; area.style.display = 'block';
-        const resultados = await Promise.all(Object.values(urls).map(u => leerHoja(u)));
-        let alumnos = new Set();
-        // --- MODIFICACIÓN: Limpiamos los nombres al crear el directorio para que no salgan duplicados ---
-        resultados.forEach(data => data && data.forEach(row => { 
-            for(let c=1; c<=13; c++) {
-                if(c!==7 && esNombreValido(row[c])) {
-                    let nombreLimpioParaDirectorio = row[c].replace(/\[A\]|\[B\]/gi, '').trim().toLowerCase();
-                    alumnos.add(nombreLimpioParaDirectorio);
-                }
-            } 
-        }));
-        area.innerHTML = Array.from(alumnos).sort().map(n => `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`).join('');
     }
 
     window.filtrarDirectorioMain = () => {
@@ -1027,28 +1003,52 @@
         if(p) ejecutarBusqueda(p);
 
         const input = document.getElementById('magicInput'); const btn = document.getElementById('btnBuscar');
-        const login = () => {
+        const login = async () => {
             const val = input.value.trim(); if(!val) return;
             if(!SISTEMA_DESBLOQUEADO) {
-                if (btoa(val) === _0x8F) {
-                    SISTEMA_DESBLOQUEADO = true; 
-                    document.getElementById('error-msg').style.display = 'none';
-                    document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
-                    input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
-                    cargarDirectorio(); input.onkeyup = window.filtrarDirectorioMain;
-                } else {
-                    document.getElementById('error-msg').innerText = "Acceso Restringido. Contraseña incorrecta.";
+                document.getElementById('error-msg').style.display = 'none';
+                document.getElementById('search-area').style.display = 'none';
+                document.getElementById('loading-spinner').style.display = 'block';
+                
+                try {
+                    // Llamamos al servidor pasándole la contraseña ingresada
+                    const res = await fetch(API_URL + "?action=directorio&pass=" + encodeURIComponent(val));
+                    const json = await res.json();
+                    
+                    if (json.alumnos) {
+                        SISTEMA_DESBLOQUEADO = true; 
+                        document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
+                        input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
+                        
+                        const area = document.getElementById('directory-area');
+                        area.innerHTML = json.alumnos.sort().map(n => `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`).join('');
+                        area.style.display = 'block';
+                        input.onkeyup = window.filtrarDirectorioMain;
+                        
+                        document.getElementById('loading-spinner').style.display = 'none';
+                        document.getElementById('search-area').style.display = 'block';
+                    } else {
+                        document.getElementById('loading-spinner').style.display = 'none';
+                        document.getElementById('search-area').style.display = 'block';
+                        document.getElementById('error-msg').innerText = "Acceso Restringido. Contraseña incorrecta.";
+                        document.getElementById('error-msg').style.display = 'block';
+                    }
+                } catch (e) {
+                    document.getElementById('loading-spinner').style.display = 'none';
+                    document.getElementById('search-area').style.display = 'block';
+                    document.getElementById('error-msg').innerText = "Error validando credenciales.";
                     document.getElementById('error-msg').style.display = 'block';
                 }
-            } else ejecutarBusqueda(val);
+            } else {
+                ejecutarBusqueda(val);
+            }
         };
+        
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
         
         document.getElementById('btnCopiar').onclick = () => {
             const btn = document.getElementById('btnCopiar');
-            // --- MODIFICACIÓN: Nos aseguramos de copiar el nombre limpio al portapapeles ---
             const nombreAlumnoLimpio = input.value.replace(/\[A\]|\[B\]/gi, '').trim();
-            
             if(!nombreAlumnoLimpio) return;
 
             const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumnoLimpio);
