@@ -12,277 +12,58 @@
     
     <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
     <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png">
-
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Schoolbell&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 
     <style>
-        /* =========================================
-           🎨 ESTILOS GENERALES (INTACTOS)
-           ========================================= */
-        *, *::before, *::after {
-            box-sizing: border-box;
-        }
-
-        :root { 
-            --c-primary: #243c7a;   
-            --c-secondary: #2b94cc; 
-            --c-accent: #fa65c3;    
-            --bg-body: #f4f6f9;
-            --bg-container: #ffffff;
-            --whatsapp: #25D366; 
-            --error: #dc3545;
-            --live-green: #25D366;
-            --soon-yellow: #FFC107;
-            
-            --c-examen: #243c7a; 
-            --c-aviso: #dc3545;
-            --c-falta: #ff9800; 
-            --c-usada: #9e9e9e; 
-
-            --grade-pass: #25D366; 
-            --grade-fail: #dc3545; 
-            --grade-pending: #a1aab2; 
-            
-            /* Colores Calendario */
-            --cal-rosa-claro: #ffbadd;
-            --cal-azul-claro: #a6d8f2;
-        }
-        
-        body { 
-            font-family: 'Outfit', 'Segoe UI', sans-serif; 
-            background-color: var(--bg-body); 
-            margin: 0; 
-            padding: 40px 20px 20px 20px;
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start;
-            min-height: 100vh; 
-            color: #333;
-            transition: padding-top 0.3s ease;
-        }
-
-        /* --- BANNER SUPERIOR INFINITO --- */
-        .ticker-wrap {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 40px;
-            background-color: var(--c-primary);
-            border-bottom: 2px solid var(--c-accent);
-            overflow: hidden;
-            white-space: nowrap;
-            display: none; 
-            align-items: center;
-            z-index: 10000;
-        }
-
-        .ticker-move {
-            display: inline-block;
-            animation: ticker-scroll 35s linear infinite; 
-        }
-
-        .ticker-item {
-            display: inline-block;
-            padding: 0 50px;
-            color: white;
-            font-weight: 700;
-            font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        @keyframes ticker-scroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        .container { 
-            background-color: var(--bg-container); 
-            padding: 40px; border-radius: 20px; 
-            box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); 
-            width: 100%; max-width: 500px; text-align: center;
-            position: relative; z-index: 1;
-            overflow: hidden; 
-        }
-
+        *, *::before, *::after { box-sizing: border-box; }
+        :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; --bg-container: #ffffff; --whatsapp: #25D366; --error: #dc3545; --live-green: #25D366; --soon-yellow: #FFC107; --c-examen: #243c7a; --c-aviso: #dc3545; --c-falta: #ff9800; --c-usada: #9e9e9e; --grade-pass: #25D366; --grade-fail: #dc3545; --grade-pending: #a1aab2; --cal-rosa-claro: #ffbadd; --cal-azul-claro: #a6d8f2; }
+        body { font-family: 'Outfit', 'Segoe UI', sans-serif; background-color: var(--bg-body); margin: 0; padding: 40px 20px 20px 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; color: #333; transition: padding-top 0.3s ease; }
+        .ticker-wrap { position: fixed; top: 0; left: 0; width: 100%; height: 40px; background-color: var(--c-primary); border-bottom: 2px solid var(--c-accent); overflow: hidden; white-space: nowrap; display: none; align-items: center; z-index: 10000; }
+        .ticker-move { display: inline-block; animation: ticker-scroll 35s linear infinite; }
+        .ticker-item { display: inline-block; padding: 0 50px; color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        @keyframes ticker-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .container { background-color: var(--bg-container); padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(36, 60, 122, 0.12); width: 100%; max-width: 500px; text-align: center; position: relative; z-index: 1; overflow: hidden; }
         .web-brand { margin-bottom: 25px; }
         .logo-img { max-width: 160px; }
-
-        .brand-line {
-            height: 5px; width: 120px; margin: 15px auto 0;
-            background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent));
-            border-radius: 10px;
-        }
-
-        h2 { 
-            color: var(--c-primary); margin-bottom: 10px; 
-            font-size: 26px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: -0.5px;
-        }
-        
-        #status-indicator {
-            font-size: 11px; color: #8898aa; margin-bottom: 25px; 
-            text-transform: uppercase; letter-spacing: 2px; font-weight: 600;
-        }
-
-        /* --- 🔘 BOTONERA --- */
-        .tabs-nav {
-            display: flex; 
-            background: #f0f4f8; 
-            border-radius: 12px; 
-            margin-bottom: 25px; 
-            gap: 4px; 
-            width: 100%;
-            padding: 5px;
-        }
-
-        .tab-btn {
-            flex: 1; 
-            padding: 12px 2px;
-            border: none; 
-            background: transparent; 
-            color: #8898aa; 
-            font-weight: 800; 
-            font-family: 'Outfit', sans-serif; 
-            font-size: 10px;
-            border-radius: 10px; 
-            cursor: pointer; 
-            transition: all 0.3s; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            min-width: 0;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        .tab-btn.active { 
-            background: white; 
-            color: var(--c-primary); 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08); 
-            transform: translateY(-1px); 
-        }
-
-        /* --- CABECERA --- */
-        .result-header-flex {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: nowrap; 
-            justify-content: center;
-            align-items: baseline; 
-            gap: 6px;
-            margin-bottom: 20px;
-            color: var(--c-primary);
-            font-family: 'Outfit', sans-serif;
-            font-weight: 700;
-            font-size: 22px; 
-            line-height: 1.2;
-            width: 100%;
-        }
-
-        .name-span { 
-            font-family: 'Schoolbell', cursive; 
-            color: var(--c-accent); 
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.15); 
-            font-size: 1.1em;
-            white-space: nowrap; 
-            overflow: hidden;
-            text-overflow: ellipsis; 
-            flex-shrink: 1; 
-        }
-
-        .label-span {
-            white-space: nowrap;
-            flex-shrink: 0; 
-        }
-
-        input { 
-            width: 100%; padding: 18px; border: 2px solid #e1e9f0; 
-            border-radius: 12px; font-size: 16px; margin-bottom: 10px; 
-            text-align: center;
-            transition: all 0.3s ease; color: var(--c-primary);
-            font-weight: 600; background-color: #fafbfc;
-            -webkit-appearance: none;
-            appearance: none;
-        }
+        .brand-line { height: 5px; width: 120px; margin: 15px auto 0; background: linear-gradient(to right, var(--c-primary), var(--c-secondary), var(--c-accent)); border-radius: 10px; }
+        h2 { color: var(--c-primary); margin-bottom: 10px; font-size: 26px; font-weight: 800; text-transform: uppercase; letter-spacing: -0.5px; }
+        #status-indicator { font-size: 11px; color: #8898aa; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        .tabs-nav { display: flex; background: #f0f4f8; border-radius: 12px; margin-bottom: 25px; gap: 4px; width: 100%; padding: 5px; }
+        .tab-btn { flex: 1; padding: 12px 2px; border: none; background: transparent; color: #8898aa; font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 10px; border-radius: 10px; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; text-align: center; min-width: 0; white-space: nowrap; overflow: hidden; }
+        .tab-btn.active { background: white; color: var(--c-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.08); transform: translateY(-1px); }
+        .result-header-flex { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; align-items: baseline; gap: 6px; margin-bottom: 20px; color: var(--c-primary); font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.2; width: 100%; }
+        .name-span { font-family: 'Schoolbell', cursive; color: var(--c-accent); text-shadow: 1px 1px 2px rgba(0,0,0,0.15); font-size: 1.1em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-shrink: 1; }
+        .label-span { white-space: nowrap; flex-shrink: 0; }
+        input { width: 100%; padding: 18px; border: 2px solid #e1e9f0; border-radius: 12px; font-size: 16px; margin-bottom: 10px; text-align: center; transition: all 0.3s ease; color: var(--c-primary); font-weight: 600; background-color: #fafbfc; -webkit-appearance: none; appearance: none; }
         input:focus { border-color: var(--c-secondary); background-color: #fff; box-shadow: 0 0 0 5px rgba(43, 148, 204, 0.1); outline: none; }
-
-        .btn-main { 
-            width: 100%; padding: 16px; background-color: var(--c-primary); 
-            color: white; border: none; border-radius: 12px; 
-            font-size: 16px; font-weight: 700; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease;
-        }
+        .btn-main { width: 100%; padding: 16px; background-color: var(--c-primary); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
         .btn-main:hover { background-color: #1a2e5e; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(36, 60, 122, 0.2); }
-
-        #tabs-container-wrapper {
-            touch-action: pan-y; 
-            min-height: 200px; 
-        }
-
+        #tabs-container-wrapper { touch-action: pan-y; min-height: 200px; }
         .tab-content { display: none; animation: fadeInTab 0.3s ease-out; }
         .tab-content.active { display: block; }
-
         @keyframes fadeInTab { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
         #resultado { margin-top: 35px; text-align: left; }
-        
-        /* =========================================
-           🔥 TARJETAS DE RESULTADOS
-           ========================================= */
-        .result-card { 
-            background: linear-gradient(145deg, #ffffff, #fdfdfd); 
-            margin-bottom: 15px; 
-            padding: 15px; 
-            border-radius: 15px; 
-            border: 1px solid rgba(0,0,0,0.05); 
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            box-shadow: 4px 4px 15px rgba(0,0,0,0.03); 
-            position: relative; 
-            transition: all 0.3s ease;
-        }
-
+        .result-card { background: linear-gradient(145deg, #ffffff, #fdfdfd); margin-bottom: 15px; padding: 15px; border-radius: 15px; border: 1px solid rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; gap: 10px; box-shadow: 4px 4px 15px rgba(0,0,0,0.03); position: relative; transition: all 0.3s ease; }
         .result-card.type-apoyo { border-left: 6px solid var(--c-secondary); }
         .result-card.type-ingles { border-left: 6px solid var(--c-accent); }
         .result-card.type-examen { border-left: 6px solid var(--c-primary); background-color: #f7f9fc; }
         .result-card.type-nota { border-left: 6px solid #ccc; background-color: #fff; opacity: 0.9; }
         .result-card.type-falta { border-left: 6px solid var(--c-falta); background-color: #fffbf0; }
         .result-card.type-recuperada { border-left: 6px solid var(--c-usada); background-color: #f0f0f0; opacity: 0.7; }
-
-        .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert {
-            display: none; position: absolute; top: -10px; left: 20px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
+        .live-badge, .soon-badge, .examen-badge-alert, .falta-badge-alert { display: none; position: absolute; top: -10px; left: 20px; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .live-badge { background: var(--live-green); color: white; animation: pulse 1.5s infinite; }
         .soon-badge { background: var(--soon-yellow); color: #555; }
         .examen-badge-alert { display: block; left: auto; right: 20px; background: var(--c-primary); color: white; }
         .falta-badge-alert { display: block; left: auto; right: 20px; background: var(--c-falta); color: white; }
-        
-        .recuperada-badge-alert { 
-            display: block; position: absolute; top: -10px; right: 20px; 
-            background: var(--c-usada); color: white; 
-            font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; 
-            text-transform: uppercase; letter-spacing: 1px; box-shadow: none;
-        }
-
+        .recuperada-badge-alert { display: block; position: absolute; top: -10px; right: 20px; background: var(--c-usada); color: white; font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: none; }
         .result-card.is-live { border: 2px solid var(--live-green); background-color: #f0fff4; transform: scale(1.02); }
         .result-card.is-live .live-badge { display: block; }
         .result-card.is-soon { border: 2px solid var(--soon-yellow); background-color: #fffdf5; }
         .result-card.is-soon .soon-badge { display: block; }
-
-        @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
-            70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
-        }
-
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); } 70% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(37, 211, 102, 0); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); } }
         .card-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
         .card-day { font-weight: 800; color: #a1aab2; font-size: 12px; text-transform: uppercase; letter-spacing: 1.2px; }
         .card-day.is-tachado { text-decoration: line-through; opacity: 0.8; }
@@ -304,116 +85,57 @@
         .grade-pass { color: var(--grade-pass); border: 2px solid var(--grade-pass); background: rgba(37, 211, 102, 0.1); }
         .grade-fail { color: var(--grade-fail); border: 2px solid var(--grade-fail); background: rgba(220, 53, 69, 0.1); }
         .grade-pending { font-size: 11px; color: #999; border: 1px dashed #ccc; padding: 5px 10px; font-weight: 600; text-transform: uppercase; margin-left: auto; }
-
-        /* =========================================
-           🗓️ CALENDARIO INTERACTIVO
-           ========================================= */
         .calendar-wrapper { background: #fff; border-radius: 15px; padding: 20px 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid rgba(0,0,0,0.05); transition: all 0.3s ease; }
         .calendar-past { filter: grayscale(1); opacity: 0.8; }
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .calendar-header button { background: var(--c-primary); color: white; border: none; width: 30px; height: 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .calendar-header button:hover { background: var(--c-secondary); transform: scale(1.05); }
         .calendar-header h3 { margin: 0; color: var(--c-primary); font-size: 18px; text-transform: uppercase; letter-spacing: 1px; }
-        
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; }
         .calendar-day-name { font-size: 11px; font-weight: 800; color: #a1aab2; margin-bottom: 5px; }
         .calendar-day { padding: 10px 0; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; background: #fafbfc; border: 1px solid #e1e9f0; color: #555; display: flex; align-items: center; justify-content: center; }
         .calendar-day:hover { transform: scale(1.05); border-color: var(--c-secondary); }
         .calendar-day.empty { background: transparent; border: none; cursor: default; }
         .calendar-day.empty:hover { transform: none; }
-        
         .calendar-day.has-event { color: white; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-        
         .cal-abierto-norecup { background: var(--c-secondary); } 
         .cal-cerrado-recup { background: var(--cal-rosa-claro); color: #444; } 
         .cal-cerrado-norecup { background: var(--c-accent); } 
         .cal-mananas { background: var(--cal-azul-claro); color: #444; } 
-        
         .calendar-empty-msg { grid-column: 1 / -1; padding: 30px 10px; color: #999; font-style: italic; font-size: 14px; background: #fafbfc; border-radius: 10px; border: 1px dashed #ccc; margin-top: 10px;}
-        
         .calendar-legend { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 25px; font-size: 11px; font-weight: 700; color: #666; text-transform: uppercase; }
         .legend-item { display: flex; align-items: center; gap: 6px; }
         .legend-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        
         .cal-details-box { margin-top: 20px; padding: 15px; background: #f0f4f8; border-radius: 12px; font-size: 14px; color: var(--c-primary); font-weight: 600; min-height: 25px; text-align: center; border: 1px solid #e1e9f0; transition: all 0.3s; }
-        /* ========================================= */
-
         #actions-panel { display: none; margin-top: 20px; }
         .btn-share { width: 100%; padding: 12px; background: white; color: var(--c-secondary); border: 2px solid var(--c-secondary); border-radius: 10px; font-weight: 700; cursor: pointer; margin-bottom: 15px; text-transform: uppercase; transition: all 0.3s; margin-top: 20px;}
         .btn-share:hover { background: var(--c-accent); color: white; border-color: var(--c-accent); }
-
         #directory-area { display: none; margin-top: 15px; text-align: left; max-height: 300px; overflow-y: auto; border: 1px solid #e1e9f0; padding: 15px; border-radius: 12px; background: #fafbfc; box-shadow: inset 0 2px 5px rgba(0,0,0,0.02); }
         .student-chip { display: inline-block; background: white; border: 1px solid var(--c-secondary); color: var(--c-secondary); padding: 8px 14px; border-radius: 20px; margin: 4px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-transform: capitalize; }
         .student-chip:hover { background: var(--c-secondary); color: white; transform: scale(1.05); }
-
         .btn-reset { background: none; border: none; color: var(--c-primary); font-weight: 700; font-size: 14px; cursor: pointer; padding: 10px; opacity: 0.7; transition: 0.3s; width: 100%; }
         .btn-reset:hover { opacity: 1; color: var(--c-accent); }
-
         .whatsapp-float { position: fixed; bottom: 25px; right: 25px; background-color: #25D366; color: white; padding: 12px 24px; border-radius: 50px; text-decoration: none; display: flex; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4); z-index: 9999; font-weight: bold; font-size: 15px; transition: all 0.3s ease; }
         .whatsapp-float:hover { transform: scale(1.05) translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.6); }
         .whatsapp-icon { width: 22px; height: 22px; fill: white; }
-
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--c-accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
         .empty-state { text-align: center; color: #999; font-style: italic; padding: 20px; font-size: 14px; }
         .footer-update { margin-top: 30px; font-size: 11px; color: #aaa; font-style: italic; }
-
-        /* =========================================
-           📱 OPTIMIZACIÓN MÓVIL
-           ========================================= */
-        @media (max-width: 480px) {
-            body { 
-                padding: 15px 0 0 0; 
-                background-color: white; 
-                align-items: flex-start;
-            }
-            .container { 
-                padding: 10px 5px; 
-                width: 100%; 
-                border-radius: 0; 
-                box-shadow: none; 
-                max-width: 100%; 
-            }
-            .tabs-nav { 
-                gap: 1px; 
-                padding: 0; 
-                background: transparent; 
-                margin-bottom: 15px; 
-            }
-            .tab-btn { 
-                font-size: 8.5px; 
-                padding: 10px 1px; 
-                letter-spacing: -0.3px; 
-            } 
-            .result-header-flex { font-size: 18px; margin-bottom: 15px; }
-            .calendar-day { font-size: 14px; padding: 8px 0; }
-        }
-        @media print {
-            body { -webkit-print-color-adjust: exact !important; background: white; }
-            .container { box-shadow: none; border: none; padding: 0; width: 100%; }
-            #search-area, #actions-panel, .whatsapp-float, .btn-reset, .tabs-nav, .ticker-wrap { display: none !important; }
-        }
+        @media (max-width: 480px) { body { padding: 15px 0 0 0; background-color: white; align-items: flex-start; } .container { padding: 10px 5px; width: 100%; border-radius: 0; box-shadow: none; max-width: 100%; } .tabs-nav { gap: 1px; padding: 0; background: transparent; margin-bottom: 15px; } .tab-btn { font-size: 8.5px; padding: 10px 1px; letter-spacing: -0.3px; } .result-header-flex { font-size: 18px; margin-bottom: 15px; } .calendar-day { font-size: 14px; padding: 8px 0; } }
+        @media print { body { -webkit-print-color-adjust: exact !important; background: white; } .container { box-shadow: none; border: none; padding: 0; width: 100%; } #search-area, #actions-panel, .whatsapp-float, .btn-reset, .tabs-nav, .ticker-wrap { display: none !important; } }
     </style>
 </head>
 <body>
 
-<div id="global-ticker" class="ticker-wrap">
-    <div class="ticker-move" id="ticker-content"></div>
-</div>
+<div id="global-ticker" class="ticker-wrap"><div class="ticker-move" id="ticker-content"></div></div>
 
 <div class="container">
-    <div class="web-brand">
-        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="logo-img" alt="Logo">
-        <div class="brand-line"></div>
-    </div>
+    <div class="web-brand"><img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" class="logo-img" alt="Logo"><div class="brand-line"></div></div>
     
     <div id="search-area">
-        <h2>Horarios</h2>
-        <div id="status-indicator">Sistema Bloqueado</div>
-        
+        <h2>Horarios</h2><div id="status-indicator">Sistema Bloqueado</div>
         <input type="text" id="magicInput" placeholder="Introduce contraseña..." autocomplete="off" spellcheck="false" data-lpignore="true">
-        
         <button id="btnBuscar" class="btn-main">ENTRAR</button>
         <div id="directory-area"></div>
     </div>
@@ -434,20 +156,13 @@
 </a>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw_horario.js').catch(err => console.log('Error SW', err));
-        });
-    }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw_horario.js').catch(err => console.log('Error SW', err)); }); }
 
-    // --- AQUÍ ESTÁ TU NUEVA API SEGURA ---
+    // --- NUESTRA API SEGURA ---
     const API_URL = "https://script.google.com/macros/s/AKfycbwQoSY2ESLhQjLB5lnFs0UFyRr2_RgnkttvtPWLPhobriDanlKEl_VnPCnkUtqFAYDK/exec";
     
-    let SISTEMA_DESBLOQUEADO = false; 
-    let globalAviso = null; 
-    
-    window.globalFestivos = [];
-    window.calCurrentDate = new Date();
+    let SISTEMA_DESBLOQUEADO = false; let globalAviso = null; 
+    window.globalFestivos = []; window.calCurrentDate = new Date();
 
     function timeToMins(t) { if(!t) return 0; const [h, m] = String(t).split(':').map(Number); return h * 60 + m; }
     function minsToTime(m) { const hh = Math.floor(m / 60).toString().padStart(2,'0'); const mm = (m % 60).toString().padStart(2,'0'); return `${hh}:${mm}`; }
@@ -457,11 +172,7 @@
     function formatearFechaCorta(textoFecha) {
         if (!textoFecha) return "??/??/??";
         let t = String(textoFecha).trim();
-        // Las fechas de la API llegan en formato ISO (ej: 2023-10-05T22:00:00.000Z)
-        if (t.includes('T') && t.endsWith('Z')) {
-            let d = new Date(t);
-            return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear().toString().slice(-2)}`;
-        }
+        if (t.includes('T') && t.endsWith('Z')) { let d = new Date(t); return `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear().toString().slice(-2)}`; }
         if (t.match(/^\d{4}-\d{2}-\d{2}$/)) { let parts = t.split('-'); return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`; }
         if (t.match(/^\d{4}\/\d{2}\/\d{2}$/)) { let parts = t.split('/'); return `${parts[2]}/${parts[1]}/${parts[0].slice(-2)}`; }
         if (t.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) { let parts = t.split('/'); return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2].slice(-2)}`; }
@@ -480,8 +191,7 @@
     }
 
     function formatNameSmart(nombre) {
-        let n = String(nombre).trim().toLowerCase();
-        let parts = n.split(/\s+/);
+        let n = String(nombre).trim().toLowerCase(); let parts = n.split(/\s+/);
         let formattedParts = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1));
         if (formattedParts.length >= 4) return `${formattedParts[0]} ${formattedParts[1][0]}. ${formattedParts[2]} ${formattedParts[formattedParts.length-1][0]}.`;
         if (formattedParts.length === 3) return `${formattedParts[0]} ${formattedParts[1]} ${formattedParts[2][0]}.`;
@@ -506,8 +216,7 @@
         clases.forEach(clase => {
             const startMins = timeToMins(clase.h);
             if (actual && actual.dia === clase.dia && actual.tipo === clase.tipo && startMins === actual.endMins) {
-                actual.endMins += 30; 
-                if (!actual.fullText.includes(clase.fullText)) actual.fullText += " / " + clase.fullText;
+                actual.endMins += 30; if (!actual.fullText.includes(clase.fullText)) actual.fullText += " / " + clase.fullText;
             } else {
                 if (actual) grupos.push(actual);
                 actual = { dia: clase.dia, startMins: startMins, endMins: startMins + 30, materia: clase.materia, tipo: clase.tipo, fullText: clase.fullText };
@@ -531,293 +240,144 @@
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById('btn-tab-' + pId).classList.add('active');
         document.getElementById('content-' + pId).classList.add('active');
-        
         const tabs = ['horario', 'examenes', 'notas', 'faltas', 'calendario'];
         currentTabIndex = tabs.indexOf(pId);
     };
 
-    // --- FUNCIONES DEL CALENDARIO ---
-    window.changeMonth = function(offset) {
-        window.calCurrentDate.setMonth(window.calCurrentDate.getMonth() + offset);
-        window.renderCalendar();
-    };
+    window.changeMonth = function(offset) { window.calCurrentDate.setMonth(window.calCurrentDate.getMonth() + offset); window.renderCalendar(); };
 
     window.showDayDetails = function(motivo, estado, recuperable) {
         const box = document.getElementById('cal-details-text');
         if(!box) return;
-        if(!motivo) {
-            box.innerHTML = "Selecciona un día de color para ver los detalles.";
-            return;
-        }
-        
+        if(!motivo) { box.innerHTML = "Selecciona un día de color para ver los detalles."; return; }
         let estUpper = String(estado).toUpperCase();
-        
         if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
-            box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
-                             <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
-                                <strong>HORARIO DE MAÑANAS</strong>
-                             </span>`;
+            box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span><span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;"><strong>HORARIO DE MAÑANAS</strong></span>`;
         } else {
             let recUpper = String(recuperable).toUpperCase();
             let recText = (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") ? "RECUPERABLE" : "NO RECUPERABLE";
-            
-            box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span>
-                             <span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;">
-                                <strong>${estUpper}</strong> | <strong>${recText}</strong>
-                             </span>`;
+            box.innerHTML = `<span style="font-size:16px; font-weight:800; display:block; margin-bottom:4px;">${motivo}</span><span style="font-size:11px; color:#666; text-transform:uppercase; letter-spacing:1px;"><strong>${estUpper}</strong> | <strong>${recText}</strong></span>`;
         }
     };
 
     window.renderCalendar = function() {
         const container = document.getElementById('calendario-dinamico');
         if(!container) return;
-
-        const year = window.calCurrentDate.getFullYear();
-        const month = window.calCurrentDate.getMonth();
-        const today = new Date();
-        
-        let isPast = false;
-        if (year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth())) {
-            isPast = true;
-        }
-
-        let maxYear = 0; 
-        let maxMonth = -1;
+        const year = window.calCurrentDate.getFullYear(); const month = window.calCurrentDate.getMonth(); const today = new Date();
+        let isPast = false; if (year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth())) isPast = true;
+        let maxYear = 0; let maxMonth = -1;
         window.globalFestivos.forEach(f => {
             let p = String(f.fecha).split('/');
             if(p.length === 3) {
-                let m = parseInt(p[1], 10) - 1;
-                let y = p[2].length === 2 ? 2000 + parseInt(p[2], 10) : parseInt(p[2], 10);
-                if (y > maxYear || (y === maxYear && m > maxMonth)) { 
-                    maxYear = y; maxMonth = m; 
-                }
+                let m = parseInt(p[1], 10) - 1; let y = p[2].length === 2 ? 2000 + parseInt(p[2], 10) : parseInt(p[2], 10);
+                if (y > maxYear || (y === maxYear && m > maxMonth)) { maxYear = y; maxMonth = m; }
             }
         });
-        
-        let isBeyondData = false;
-        if (maxYear > 0 && (year > maxYear || (year === maxYear && month > maxMonth))) {
-            isBeyondData = true;
-        }
-
+        let isBeyondData = false; if (maxYear > 0 && (year > maxYear || (year === maxYear && month > maxMonth))) isBeyondData = true;
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const dayNames = ["L", "M", "X", "J", "V", "S", "D"];
-
-        let html = `<div class="calendar-wrapper ${isPast ? 'calendar-past' : ''}">
-            <div class="calendar-header">
-                <button onclick="changeMonth(-1)">&#10094;</button>
-                <h3>${monthNames[month]} ${year}</h3>
-                <button onclick="changeMonth(1)">&#10095;</button>
-            </div>
-            <div class="calendar-grid">`;
-
+        let html = `<div class="calendar-wrapper ${isPast ? 'calendar-past' : ''}"><div class="calendar-header"><button onclick="changeMonth(-1)">&#10094;</button><h3>${monthNames[month]} ${year}</h3><button onclick="changeMonth(1)">&#10095;</button></div><div class="calendar-grid">`;
         dayNames.forEach(d => { html += `<div class="calendar-day-name">${d}</div>`; });
-
-        const firstDay = new Date(year, month, 1).getDay();
-        const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; 
+        const firstDay = new Date(year, month, 1).getDay(); const adjustedFirstDay = firstDay === 0 ? 6 : firstDay - 1; 
         const daysInMonth = new Date(year, month + 1, 0).getDate();
-
-        for (let i = 0; i < adjustedFirstDay; i++) {
-            html += `<div class="calendar-day empty"></div>`;
-        }
-
-        let hasEventsThisMonth = false;
-        let daysHtml = "";
-        
-        let enVacaciones = false;
-        let motivoVacaciones = "Vacaciones";
-
+        for (let i = 0; i < adjustedFirstDay; i++) { html += `<div class="calendar-day empty"></div>`; }
+        let hasEventsThisMonth = false; let daysHtml = ""; let enVacaciones = false; let motivoVacaciones = "Vacaciones";
         for (let d = 1; d <= daysInMonth; d++) {
-            const currentLoopDate = new Date(year, month, d);
-            const dayOfWeek = currentLoopDate.getDay();
-            const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); 
-            
+            const currentLoopDate = new Date(year, month, d); const dayOfWeek = currentLoopDate.getDay(); const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6); 
             const dateStr1 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year.toString().slice(-2)}`;
             const dateStr2 = `${d.toString().padStart(2,'0')}/${(month+1).toString().padStart(2,'0')}/${year}`;
-            
             let event = window.globalFestivos.find(f => f.fecha === dateStr1 || f.fecha === dateStr2);
-            
             if (!isBeyondData) {
                 if (event && (String(event.estado).toUpperCase().includes("VACACION") || String(event.motivo).toUpperCase().includes("VACACION"))) {
-                    enVacaciones = true;
-                    motivoVacaciones = (event.motivo !== "Festivo" && String(event.motivo).trim() !== "") ? event.motivo : "Vacaciones";
+                    enVacaciones = true; motivoVacaciones = (event.motivo !== "Festivo" && String(event.motivo).trim() !== "") ? event.motivo : "Vacaciones";
                 }
-
                 if (enVacaciones) {
-                    hasEventsThisMonth = true;
-                    let mot = String(motivoVacaciones).replace(/'/g, "\\'");
+                    hasEventsThisMonth = true; let mot = String(motivoVacaciones).replace(/'/g, "\\'");
                     daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('${mot}', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
-                
                 } else if (event) {
-                    hasEventsThisMonth = true;
-                    let colorClass = "";
-                    let estUpper = String(event.estado).toUpperCase();
-                    let recUpper = String(event.recuperable).toUpperCase();
-                    
-                    if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") {
-                        colorClass = "cal-mananas";
-                    } else if (estUpper === "ABIERTO") {
-                        colorClass = "cal-abierto-norecup";
-                    } else if (estUpper === "CERRADO") {
-                        if (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") {
-                            colorClass = "cal-cerrado-recup";
-                        } else {
-                            colorClass = "cal-cerrado-norecup";
-                        }
-                    } else {
-                        colorClass = "cal-cerrado-norecup";
-                    }
-
-                    let mot = String(event.motivo).replace(/'/g, "\\'");
-                    let est = String(event.estado).replace(/'/g, "\\'");
-                    let rec = String(event.recuperable).replace(/'/g, "\\'");
-
+                    hasEventsThisMonth = true; let colorClass = ""; let estUpper = String(event.estado).toUpperCase(); let recUpper = String(event.recuperable).toUpperCase();
+                    if (estUpper === "MAÑANAS" || estUpper === "HORARIO DE MAÑANAS") colorClass = "cal-mananas";
+                    else if (estUpper === "ABIERTO") colorClass = "cal-abierto-norecup";
+                    else if (estUpper === "CERRADO") { if (recUpper === "RECUPERABLE" || recUpper === "SÍ" || recUpper === "SI") colorClass = "cal-cerrado-recup"; else colorClass = "cal-cerrado-norecup"; }
+                    else colorClass = "cal-cerrado-norecup";
+                    let mot = String(event.motivo).replace(/'/g, "\\'"); let est = String(event.estado).replace(/'/g, "\\'"); let rec = String(event.recuperable).replace(/'/g, "\\'");
                     daysHtml += `<div class="calendar-day has-event ${colorClass}" onclick="showDayDetails('${mot}', '${est}', '${rec}')">${d}</div>`;
-                    
                 } else if (isWeekend) {
-                    hasEventsThisMonth = true;
-                    daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
-                } else {
-                    daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
-                }
-
-            } else {
-                daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
-            }
+                    hasEventsThisMonth = true; daysHtml += `<div class="calendar-day has-event cal-cerrado-norecup" onclick="showDayDetails('Fin de semana', 'CERRADO', 'NO RECUPERABLE')">${d}</div>`;
+                } else daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
+            } else daysHtml += `<div class="calendar-day" onclick="showDayDetails('', '', '')">${d}</div>`;
         }
-
-        if (!hasEventsThisMonth) {
-            html += `<div class="calendar-empty-msg">Aún no hay datos para este mes.</div>`;
-        } else {
-            html += daysHtml;
-        }
-
-        html += `</div>
-            <div class="calendar-legend">
-                <div class="legend-item"><div class="legend-dot cal-abierto-norecup"></div> Abierto (No recup.)</div>
-                <div class="legend-item"><div class="legend-dot cal-cerrado-recup"></div> Cerrado (Recup.)</div>
-                <div class="legend-item"><div class="legend-dot cal-cerrado-norecup"></div> Cerrado (No recup.)</div>
-                <div class="legend-item"><div class="legend-dot cal-mananas"></div> Mañanas</div>
-            </div>
-            <div class="cal-details-box" id="cal-details-text">
-                Selecciona un día de color para ver los detalles.
-            </div>
-            <div style="margin-top: 15px; font-size: 11px; font-style: italic; color: #8898aa; line-height: 1.4; text-align: center;">
-                Importante: Calendario informativo de festividades en CSE Elisa Gundín, días recuperables han de ser tratados personalmente con Elisa.
-            </div>
-        </div>`;
-
+        if (!hasEventsThisMonth) html += `<div class="calendar-empty-msg">Aún no hay datos para este mes.</div>`; else html += daysHtml;
+        html += `</div><div class="calendar-legend"><div class="legend-item"><div class="legend-dot cal-abierto-norecup"></div> Abierto (No recup.)</div><div class="legend-item"><div class="legend-dot cal-cerrado-recup"></div> Cerrado (Recup.)</div><div class="legend-item"><div class="legend-dot cal-cerrado-norecup"></div> Cerrado (No recup.)</div><div class="legend-item"><div class="legend-dot cal-mananas"></div> Mañanas</div></div><div class="cal-details-box" id="cal-details-text">Selecciona un día de color para ver los detalles.</div><div style="margin-top: 15px; font-size: 11px; font-style: italic; color: #8898aa; line-height: 1.4; text-align: center;">Importante: Calendario informativo de festividades en CSE Elisa Gundín, días recuperables han de ser tratados personalmente con Elisa.</div></div>`;
         container.innerHTML = html;
     };
 
     function parseAvisoDate(dateStr) {
         if (!dateStr || String(dateStr).trim() === "") return null;
-        // Para gestionar formato ISO si viene de Apps Script
         if(String(dateStr).includes('T') && String(dateStr).endsWith('Z')) return new Date(dateStr);
-        
-        let parts = String(dateStr).trim().split(" ");
-        if (parts.length < 1) return null;
-        
-        let dateParts = parts[0].split("/");
-        if (dateParts.length !== 3) return null;
-        
+        let parts = String(dateStr).trim().split(" "); if (parts.length < 1) return null;
+        let dateParts = parts[0].split("/"); if (dateParts.length !== 3) return null;
         let timeParts = parts[1] ? parts[1].split(":") : ["00", "00"];
-        
         return new Date(dateParts[2], dateParts[1] - 1, dateParts[0], timeParts[0], timeParts[1]);
     }
 
     async function cargarAvisos() {
         try {
-            // Mandamos a buscar un alumno falso, la API devolverá siempre los avisos públicos.
             const res = await fetch(API_URL + "?alumno=CARGAR_AVISOS_INICIALES");
             const json = await res.json();
-            
             if (json.avisos && json.avisos.length > 1) {
-                const data = json.avisos;
-                const mensaje = String(data[1][0] || ""); 
-                const estado = String(data[1][1] || "").toUpperCase().trim();
-                const fechaInicioStr = String(data[1][2] || ""); 
-                const fechaFinStr = String(data[1][3] || "");
-
+                const data = json.avisos; const mensaje = String(data[1][0] || ""); const estado = String(data[1][1] || "").toUpperCase().trim();
+                const fechaInicioStr = String(data[1][2] || ""); const fechaFinStr = String(data[1][3] || "");
                 if (estado === "ON" && mensaje) {
-                    let mostrar = true;
-                    const ahora = new Date();
-                    
-                    const fechaInicio = parseAvisoDate(fechaInicioStr);
-                    const fechaFin = parseAvisoDate(fechaFinStr);
-
+                    let mostrar = true; const ahora = new Date(); const fechaInicio = parseAvisoDate(fechaInicioStr); const fechaFin = parseAvisoDate(fechaFinStr);
                     if (fechaInicio && ahora < fechaInicio) mostrar = false;
                     if (fechaFin && ahora > fechaFin) mostrar = false;
-
                     if (mostrar) {
-                        globalAviso = mensaje;
-                        const ticker = document.getElementById('global-ticker');
-                        const content = document.getElementById('ticker-content');
-                        
-                        const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`;
-                        content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
-                        
-                        let tiempoPorMensaje = 10 + (mensaje.length * 0.2); 
-                        let tiempoCalculado = tiempoPorMensaje * 10;
-                        
-                        content.style.animationDuration = `${tiempoCalculado}s`;
-
-                        ticker.style.display = "flex";
-                        document.body.style.paddingTop = "80px"; 
+                        globalAviso = mensaje; const ticker = document.getElementById('global-ticker'); const content = document.getElementById('ticker-content');
+                        const itemHtml = `<span class="ticker-item">📢 ${mensaje}</span>`; content.innerHTML = itemHtml.repeat(10) + itemHtml.repeat(10);
+                        let tiempoPorMensaje = 10 + (mensaje.length * 0.2); let tiempoCalculado = tiempoPorMensaje * 10; content.style.animationDuration = `${tiempoCalculado}s`;
+                        ticker.style.display = "flex"; document.body.style.paddingTop = "80px"; 
                     }
                 }
             }
-        } catch (error) {
-            console.log("No se pudieron cargar los avisos:", error);
-        }
+        } catch (error) { console.log("No se pudieron cargar los avisos:", error); }
     }
 
     async function ejecutarBusqueda(nombre) {
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('search-area').style.display = 'none'; 
-        document.getElementById('loading-spinner').style.display = 'block';
-        document.getElementById('resultado').innerHTML = '';
-        
+        document.getElementById('error-msg').style.display = 'none'; document.getElementById('search-area').style.display = 'none'; 
+        document.getElementById('loading-spinner').style.display = 'block'; document.getElementById('resultado').innerHTML = '';
         const nombreBuscado = limpiarTexto(nombre);
         
         try {
             const res = await fetch(API_URL + "?alumno=" + encodeURIComponent(nombreBuscado));
             const json = await res.json();
+            if(json.error) throw new Error(json.error);
 
             let clasesRaw = []; let examenesFuturos = []; let examenesPasados = []; let faltasEncontradas = []; 
-            
-            // --- 1. HORARIOS ---
             const diasSemana = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
             if (json.horarios) {
                 json.horarios.forEach((dataDelDia, idx) => {
-                    let dia = diasSemana[idx];
-                    if(!dataDelDia) return;
+                    let dia = diasSemana[idx]; if(!dataDelDia) return;
                     dataDelDia.forEach(row => {
                         let hA = String(row[0] || "").trim().substring(0,5);
                         if(hA && hA.includes(":")) {
                             for(let c=1; c<=6; c++) {
                                 if(esNombreValido(row[c])) {
-                                    let celdaLimpia = limpiarTexto(row[c]);
-                                    let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
+                                    let celdaLimpia = limpiarTexto(row[c]); let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
                                     if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
-                                        let etiqueta = "";
-                                        if(String(row[c]).toUpperCase().includes("[A]")) etiqueta = " [A]";
-                                        if(String(row[c]).toUpperCase().includes("[B]")) etiqueta = " [B]";
+                                        let etiqueta = ""; if(String(row[c]).toUpperCase().includes("[A]")) etiqueta = " [A]"; if(String(row[c]).toUpperCase().includes("[B]")) etiqueta = " [B]";
                                         clasesRaw.push({ dia, h: hA, materia: "Apoyo" + etiqueta, tipo: "apoyo", fullText: String(row[c]) });
                                     }
                                 }
                             }
                         }
-                        
                         let hI = String(row[7] || "").trim().substring(0,5);
                         if(hI && hI.includes(":")) {
                             for(let c=8; c<=13; c++) {
                                 if(esNombreValido(row[c])) {
-                                    let celdaLimpia = limpiarTexto(row[c]);
-                                    let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
+                                    let celdaLimpia = limpiarTexto(row[c]); let nombreBuscadoLimpio = nombreBuscado.replace(/\[a\]|\[b\]/g, '').trim();
                                     if (celdaLimpia.replace(/\[a\]|\[b\]/g, '').trim().includes(nombreBuscadoLimpio)) {
-                                        let etiqueta = "";
-                                        if(String(row[c]).toUpperCase().includes("[A]")) etiqueta = " [A]";
-                                        if(String(row[c]).toUpperCase().includes("[B]")) etiqueta = " [B]";
+                                        let etiqueta = ""; if(String(row[c]).toUpperCase().includes("[A]")) etiqueta = " [A]"; if(String(row[c]).toUpperCase().includes("[B]")) etiqueta = " [B]";
                                         clasesRaw.push({ dia, h: hI, materia: "Inglés" + etiqueta, tipo: "ingles", fullText: String(row[c]) });
                                     }
                                 }
@@ -827,64 +387,37 @@
                 });
             }
 
-            // --- 2. EXÁMENES ---
             const hoy = new Date(); hoy.setHours(0,0,0,0);
             if(json.examenes) {
                 json.examenes.forEach(row => {
-                    let rawDate = String(row[0] || "");
-                    let fO = new Date(rawDate); 
-                    if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } 
-                    fO.setHours(0,0,0,0);
-                    
+                    let rawDate = String(row[0] || ""); let fO = new Date(rawDate); 
+                    if(isNaN(fO.getTime())) { fO = new Date(); fO.setDate(fO.getDate() + 1); } fO.setHours(0,0,0,0);
                     let fechaBonitaExamen = formatearFechaCorta(rawDate);
                     let item = { fecha: fechaBonitaExamen || "Fecha pte.", asignatura: String(row[1] || "Examen"), nota: String(row[3] || "").trim() };
                     if (item.nota !== "" || fO < hoy) examenesPasados.push(item); else examenesFuturos.push(item);
                 });
             }
 
-            // --- 3. FALTAS ---
             if(json.faltas) {
                 json.faltas.forEach(row => {
-                    let rawDateStr = String(row[1] || "");
-                    let dateObj = new Date(rawDateStr);
-                    if (isNaN(dateObj.getTime())) {
-                        let parts = rawDateStr.split('/');
-                        if (parts.length === 3) dateObj = new Date(parts[2], parts[1]-1, parts[0]);
-                    }
-                    
-                    let fechaVisual = formatearFechaCorta(rawDateStr);
-                    let horas = row[4] ? String(row[4]).replace(',', '.') : "0";
+                    let rawDateStr = String(row[1] || ""); let dateObj = new Date(rawDateStr);
+                    if (isNaN(dateObj.getTime())) { let parts = rawDateStr.split('/'); if (parts.length === 3) dateObj = new Date(parts[2], parts[1]-1, parts[0]); }
+                    let fechaVisual = formatearFechaCorta(rawDateStr); let horas = row[4] ? String(row[4]).replace(',', '.') : "0";
                     let estadoFalta = String(row[5] || "PENDIENTE").toUpperCase().trim();
-                    
-                    faltasEncontradas.push({ 
-                        fecha: fechaVisual, 
-                        hora: String(row[2] || ""), 
-                        horasPerdidas: horas,
-                        estado: estadoFalta, 
-                        rawDate: dateObj
-                    });
+                    faltasEncontradas.push({ fecha: fechaVisual, hora: String(row[2] || ""), horasPerdidas: horas, estado: estadoFalta, rawDate: dateObj });
                 });
                 faltasEncontradas.sort((a,b) => b.rawDate - a.rawDate);
             }
             
-            // --- 4. CALENDARIO FESTIVOS ---
             window.globalFestivos = []; 
             if(json.calendario && json.calendario.length > 1) {
                 json.calendario.forEach((row, index) => {
                     if(index === 0) return; 
-                    if(row[0]) {
-                        window.globalFestivos.push({
-                            fecha: formatearFechaCorta(row[0]),
-                            motivo: String(row[1] || "Festivo"),
-                            estado: String(row[2] || "CERRADO").toUpperCase().trim(),
-                            recuperable: String(row[3] || "NO").toUpperCase().trim()
-                        });
-                    }
+                    if(row[0]) { window.globalFestivos.push({ fecha: formatearFechaCorta(row[0]), motivo: String(row[1] || "Festivo"), estado: String(row[2] || "CERRADO").toUpperCase().trim(), recuperable: String(row[3] || "NO").toUpperCase().trim() }); }
                 });
             }
 
             const nF = formatNameForDisplay(nombre.replace(/\[a\]|\[b\]/gi, '').trim());
-
             document.getElementById('whatsapp-link').href = `https://wa.me/34693067214?text=${encodeURIComponent(`Hola Elisa, soy el padre/madre de ${nF}. Te escribo porque...`)}`;
             document.getElementById('loading-spinner').style.display = 'none';
             
@@ -908,31 +441,14 @@
                 let htmlFaltas = "";
                 if(faltasEncontradas.length > 0) faltasEncontradas.forEach(fa => {
                     let esRecuperada = fa.estado.includes("RECUPERADA") || fa.estado.includes("PAGADA") || fa.estado.includes("OK");
-                    
                     let claseTipo = esRecuperada ? "type-recuperada" : "type-falta";
-                    let badgeHtml = esRecuperada 
-                        ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` 
-                        : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
+                    let badgeHtml = esRecuperada ? `<div class="recuperada-badge-alert">✅ RECUPERADA</div>` : `<div class="falta-badge-alert">⚠️ AUSENCIA</div>`;
                     let displayHoras = (fa.horasPerdidas && fa.horasPerdidas != "0") ? `${fa.horasPerdidas}h` : "--";
-
-                    htmlFaltas += `
-                    <div class="result-card ${claseTipo}">
-                        ${badgeHtml}
-                        <div class="card-info">
-                            <span class="card-day ${esRecuperada ? 'is-tachado' : ''}">${fa.fecha}</span>
-                        </div>
-                        <div>
-                            <span class="hours-big-display ${esRecuperada ? 'is-tachado' : ''}">${displayHoras}</span>
-                            <span class="hours-label">ACUMULADAS</span>
-                        </div>
-                    </div>`;
+                    htmlFaltas += `<div class="result-card ${claseTipo}">${badgeHtml}<div class="card-info"><span class="card-day ${esRecuperada ? 'is-tachado' : ''}">${fa.fecha}</span></div><div><span class="hours-big-display ${esRecuperada ? 'is-tachado' : ''}">${displayHoras}</span><span class="hours-label">ACUMULADAS</span></div></div>`;
                 }); else htmlFaltas = `<div class="empty-state">Sin faltas registradas.</div>`;
 
                 document.getElementById('resultado').innerHTML = `<br>
-                    <div class="result-header-flex">
-                        <span class="label-span">Horario de</span>
-                        <span class="name-span">${nF}</span>
-                    </div>
+                    <div class="result-header-flex"><span class="label-span">Horario de</span><span class="name-span">${nF}</span></div>
                     <div class="tabs-nav">
                         <button id="btn-tab-horario" class="tab-btn active" onclick="cambiarPestana('horario')">HORARIO</button>
                         <button id="btn-tab-examenes" class="tab-btn" onclick="cambiarPestana('examenes')">EXÁMENES</button>
@@ -949,11 +465,7 @@
                     </div>
                     <div class="footer-update">Datos actualizados a las ${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>`;
                 
-                initSwipeGestures();
-                
-                window.calCurrentDate = new Date(); 
-                window.renderCalendar();
-
+                initSwipeGestures(); window.calCurrentDate = new Date(); window.renderCalendar();
                 if(SISTEMA_DESBLOQUEADO) document.getElementById('actions-panel').style.display = 'block';
             } else {
                 document.getElementById('error-msg').innerText = "Nombre no encontrado."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
@@ -961,103 +473,47 @@
         } catch (error) {
             console.error(error);
             document.getElementById('loading-spinner').style.display = 'none';
-            document.getElementById('error-msg').innerText = "Error de conexión con el servidor."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
+            document.getElementById('error-msg').innerText = error.message || "Error de conexión."; document.getElementById('error-msg').style.display = 'block'; document.getElementById('search-area').style.display = 'block';
         }
     }
 
-    window.filtrarDirectorioMain = () => {
-        const f = limpiarTexto(document.getElementById('magicInput').value);
-        document.querySelectorAll('.student-chip').forEach(chip => chip.style.display = limpiarTexto(chip.textContent).includes(f) ? 'inline-block' : 'none');
-    };
-
+    window.filtrarDirectorioMain = () => { const f = limpiarTexto(document.getElementById('magicInput').value); document.querySelectorAll('.student-chip').forEach(chip => chip.style.display = limpiarTexto(chip.textContent).includes(f) ? 'inline-block' : 'none'); };
     window.seleccionarAlumno = n => { document.getElementById('magicInput').value = n; ejecutarBusqueda(n); };
 
-    let touchStartX = 0;
-    let touchEndX = 0;
-    let currentTabIndex = 0;
-    const tabOrder = ['horario', 'examenes', 'notas', 'faltas', 'calendario'];
+    let touchStartX = 0; let touchEndX = 0; let currentTabIndex = 0; const tabOrder = ['horario', 'examenes', 'notas', 'faltas', 'calendario'];
+    function initSwipeGestures() { const gestureZone = document.getElementById('tabs-container-wrapper'); if(!gestureZone) return; gestureZone.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true}); gestureZone.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleGesture(); }, {passive: true}); }
+    function handleGesture() { if (touchEndX < touchStartX - 50) { if (currentTabIndex < tabOrder.length - 1) { currentTabIndex++; cambiarPestana(tabOrder[currentTabIndex]); } } if (touchEndX > touchStartX + 50) { if (currentTabIndex > 0) { currentTabIndex--; cambiarPestana(tabOrder[currentTabIndex]); } } }
 
-    function initSwipeGestures() {
-        const gestureZone = document.getElementById('tabs-container-wrapper');
-        if(!gestureZone) return;
-
-        gestureZone.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
-        gestureZone.addEventListener('touchend', e => { touchEndX = e.changedTouches[0].screenX; handleGesture(); }, {passive: true});
-    }
-
-    function handleGesture() {
-        if (touchEndX < touchStartX - 50) { if (currentTabIndex < tabOrder.length - 1) { currentTabIndex++; cambiarPestana(tabOrder[currentTabIndex]); } }
-        if (touchEndX > touchStartX + 50) { if (currentTabIndex > 0) { currentTabIndex--; cambiarPestana(tabOrder[currentTabIndex]); } }
-    }
-
-    document.getElementById('btnReset').onclick = () => {
-        document.getElementById('error-msg').style.display = 'none';
-        document.getElementById('resultado').innerHTML = ''; document.getElementById('actions-panel').style.display = 'none'; document.getElementById('search-area').style.display = 'block';
-        document.getElementById('magicInput').value = '';
-    };
+    document.getElementById('btnReset').onclick = () => { document.getElementById('error-msg').style.display = 'none'; document.getElementById('resultado').innerHTML = ''; document.getElementById('actions-panel').style.display = 'none'; document.getElementById('search-area').style.display = 'block'; document.getElementById('magicInput').value = ''; };
 
     document.addEventListener('DOMContentLoaded', () => {
         cargarAvisos();
-        
-        const p = new URLSearchParams(window.location.search).get('alumno'); 
-        if(p) ejecutarBusqueda(p);
-
+        const p = new URLSearchParams(window.location.search).get('alumno'); if(p) ejecutarBusqueda(p);
         const input = document.getElementById('magicInput'); const btn = document.getElementById('btnBuscar');
         const login = async () => {
             const val = input.value.trim(); if(!val) return;
             if(!SISTEMA_DESBLOQUEADO) {
-                document.getElementById('error-msg').style.display = 'none';
-                document.getElementById('search-area').style.display = 'none';
-                document.getElementById('loading-spinner').style.display = 'block';
-                
+                document.getElementById('error-msg').style.display = 'none'; document.getElementById('search-area').style.display = 'none'; document.getElementById('loading-spinner').style.display = 'block';
                 try {
-                    // Llamamos al servidor pasándole la contraseña ingresada
                     const res = await fetch(API_URL + "?action=directorio&pass=" + encodeURIComponent(val));
                     const json = await res.json();
-                    
                     if (json.alumnos) {
-                        SISTEMA_DESBLOQUEADO = true; 
-                        document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA";
-                        input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
-                        
-                        const area = document.getElementById('directory-area');
-                        area.innerHTML = json.alumnos.sort().map(n => `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`).join('');
-                        area.style.display = 'block';
-                        input.onkeyup = window.filtrarDirectorioMain;
-                        
-                        document.getElementById('loading-spinner').style.display = 'none';
-                        document.getElementById('search-area').style.display = 'block';
+                        SISTEMA_DESBLOQUEADO = true; document.getElementById('status-indicator').innerText = "🔓 MODO ACADEMIA"; input.value = ""; input.placeholder = "Busca alumno..."; btn.innerText = "BUSCAR";
+                        const area = document.getElementById('directory-area'); area.innerHTML = json.alumnos.sort().map(n => `<span class="student-chip" onclick="seleccionarAlumno('${n}')">${n}</span>`).join(''); area.style.display = 'block'; input.onkeyup = window.filtrarDirectorioMain;
+                        document.getElementById('loading-spinner').style.display = 'none'; document.getElementById('search-area').style.display = 'block';
                     } else {
-                        document.getElementById('loading-spinner').style.display = 'none';
-                        document.getElementById('search-area').style.display = 'block';
-                        document.getElementById('error-msg').innerText = "Acceso Restringido. Contraseña incorrecta.";
-                        document.getElementById('error-msg').style.display = 'block';
+                        document.getElementById('loading-spinner').style.display = 'none'; document.getElementById('search-area').style.display = 'block'; document.getElementById('error-msg').innerText = "Contraseña incorrecta."; document.getElementById('error-msg').style.display = 'block';
                     }
                 } catch (e) {
-                    document.getElementById('loading-spinner').style.display = 'none';
-                    document.getElementById('search-area').style.display = 'block';
-                    document.getElementById('error-msg').innerText = "Error validando credenciales.";
-                    document.getElementById('error-msg').style.display = 'block';
+                    document.getElementById('loading-spinner').style.display = 'none'; document.getElementById('search-area').style.display = 'block'; document.getElementById('error-msg').innerText = "Error validando credenciales."; document.getElementById('error-msg').style.display = 'block';
                 }
-            } else {
-                ejecutarBusqueda(val);
-            }
+            } else { ejecutarBusqueda(val); }
         };
-        
         btn.onclick = login; input.onkeypress = e => { if(e.key === 'Enter') login(); };
-        
         document.getElementById('btnCopiar').onclick = () => {
-            const btn = document.getElementById('btnCopiar');
-            const nombreAlumnoLimpio = input.value.replace(/\[A\]|\[B\]/gi, '').trim();
-            if(!nombreAlumnoLimpio) return;
-
+            const btn = document.getElementById('btnCopiar'); const nombreAlumnoLimpio = input.value.replace(/\[A\]|\[B\]/gi, '').trim(); if(!nombreAlumnoLimpio) return;
             const urlFinal = window.location.href.split('?')[0] + "?alumno=" + encodeURIComponent(nombreAlumnoLimpio);
-
-            navigator.clipboard.writeText(urlFinal).then(() => { 
-                const original = btn.innerText;
-                btn.innerText = "✅ ENLACE COPIADO";
-                setTimeout(() => btn.innerText = original, 2000);
-            });
+            navigator.clipboard.writeText(urlFinal).then(() => { const original = btn.innerText; btn.innerText = "✅ ENLACE COPIADO"; setTimeout(() => btn.innerText = original, 2000); });
         };
     });
 </script>
