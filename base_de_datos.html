@@ -11,7 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     
     <style>
         :root { --c-primary: #243c7a; --c-secondary: #2b94cc; --c-accent: #fa65c3; --bg-body: #f4f6f9; }
@@ -467,13 +466,13 @@
                         <div v-if="activeTab === 'examenes'" class="p-8 flex-1 bg-white">
                             <div class="flex justify-between items-center mb-6">
                                 <h3 class="font-extrabold text-indigo-800 uppercase text-lg"><i class="fas fa-calendar-alt mr-2"></i> Próximos Exámenes y Notas</h3>
-                                <button @click="cargarExamenesCSV" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                                <button @click="actualizarExamenes" class="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg text-xs font-bold transition">
                                     <i class="fas fa-sync-alt" :class="{'fa-spin': loadingExamenes}"></i> Actualizar
                                 </button>
                             </div>
 
                             <div v-if="loadingExamenes" class="text-center py-10 text-gray-400 font-semibold animate-pulse">
-                                Obteniendo datos de Google Sheets...
+                                Obteniendo datos seguros...
                             </div>
                             
                             <div v-else-if="examenesAlumno.length === 0" class="text-center py-10 text-gray-400 font-semibold">
@@ -548,8 +547,7 @@
 <script>
     const { createApp } = Vue;
     const ENCRYPTED_URL = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6T3hlWmIzTVotY21WZG5GMjBERmtXN0Vrem9aeXVLNlp3bExpSmltbWdsYjVpTXJDV3NCQWdGYndXTXJGN25ja3kvZXhlYw==";
-    const CSV_EXAMENES_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRrK53aJ-n_g-6-yrsASWYrkCc47WpA3uKQGXvuixv0OZ5BkzbTRJrDI0Sat2qxKRvX7NdOsjlsFrpR/pub?output=csv";
-
+    
     createApp({
         data() {
             return {
@@ -666,15 +664,16 @@
                 return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false };
             },
             
-            // CONVERSOR ROBUSTO DE FECHAS
+            // CONVERSOR DE FECHAS
             parseDateToISO(dStr) {
                 if(!dStr) return "";
-                if(dStr.includes('/')) {
-                    let p = dStr.trim().split('/');
-                    if(p.length === 3 && p[2].length === 4) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                let cleanStr = String(dStr).trim().split(' ')[0]; 
+                if(cleanStr.match(/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/)) {
+                    let p = cleanStr.split(/[\/\-]/);
+                    return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
                 }
-                if(dStr.includes('T')) return dStr.split('T')[0];
-                return dStr;
+                if(cleanStr.includes('T')) return cleanStr.split('T')[0];
+                return cleanStr;
             },
             
             buildMesesFijos() {
@@ -735,8 +734,10 @@
                         this.sessionPass = this.passwordInput; 
                         this.list = json.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
                         this.fijosRaw = json.fijos || [];
+                        
+                        this.procesarExamenesSeguros(json.examenes || []);
+
                         this.authenticated = true;
-                        this.cargarExamenesCSV();
                     } else {
                         this.loginError = true; this.errorMsg = json.message;
                         this.passwordInput = '';
@@ -828,7 +829,10 @@
                         
                         const res2 = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(this.getSecurePayload('fetch_data')) });
                         const json2 = await res2.json();
-                        if(json2.status === 'success') this.list = json2.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
+                        if(json2.status === 'success') {
+                            this.list = json2.data.sort((a, b) => (a.apellidos || "").localeCompare(b.apellidos || ""));
+                            this.fijosRaw = json2.fijos || [];
+                        }
                         
                         setTimeout(() => { this.showSuccess = false; this.selected = null; this.saving = false; }, 2000);
                     } else { alert("Servidor rechazó la acción: " + json.message); this.saving = false; }
@@ -960,36 +964,39 @@
                 window.print();
             },
 
-            cargarExamenesCSV() {
+            procesarExamenesSeguros(examenesArray) {
+                this.examenesList = examenesArray.map(row => {
+                    let isoDate = this.parseDateToISO(row[0]);
+                    let asig = row[1];
+                    let notaEx = row[3];
+                    return {
+                        fecha: isoDate,
+                        asignatura: asig,
+                        alumno: row[2],
+                        nota: notaEx,
+                        isEditing: false, 
+                        editFecha: isoDate,
+                        editAsignatura: asig,
+                        editNota: notaEx,
+                        saving: false 
+                    };
+                }).filter(item => item.alumno !== "");
+            },
+
+            async actualizarExamenes() {
                 this.loadingExamenes = true;
-                Papa.parse(CSV_EXAMENES_URL + "&cb=" + Date.now(), {
-                    download: true,
-                    header: false,
-                    complete: (res) => {
-                        this.examenesList = res.data.slice(1).map(row => {
-                            if(!row[0]) return null;
-                            let isoDate = this.parseDateToISO((row[0] || "").trim());
-                            let asig = (row[1] || "").trim();
-                            let notaEx = (row[3] || "").trim();
-                            return {
-                                fecha: isoDate,
-                                asignatura: asig,
-                                alumno: (row[2] || "").trim(),
-                                nota: notaEx,
-                                isEditing: false, 
-                                editFecha: isoDate,
-                                editAsignatura: asig,
-                                editNota: notaEx,
-                                saving: false 
-                            };
-                        }).filter(item => item !== null);
-                        this.loadingExamenes = false;
-                    },
-                    error: () => {
-                        this.loadingExamenes = false;
-                        console.error("Error al cargar el CSV de exámenes");
+                try {
+                    const payload = this.getSecurePayload('fetch_data');
+                    const res = await fetch(this.apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                    const json = await res.json();
+                    
+                    if (json.status === 'success') {
+                        this.procesarExamenesSeguros(json.examenes || []);
                     }
-                });
+                } catch (e) {
+                    console.error("Error recargando exámenes de forma segura.");
+                }
+                this.loadingExamenes = false;
             },
 
             async guardarExamenesMasivos() {
@@ -1011,7 +1018,7 @@
                         this.gestorExamenes.asignatura = '';
                         this.gestorExamenes.alumnosSeleccionados = [];
                         this.searchGestor = ''; 
-                        this.cargarExamenesCSV();
+                        this.actualizarExamenes();
 
                         setTimeout(() => { this.showSuccess = false; this.savingExamenes = false; }, 3000);
                     } else { 
