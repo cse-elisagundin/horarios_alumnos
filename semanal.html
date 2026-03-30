@@ -102,7 +102,7 @@
         }
 
         /* =========================================================================
-           IMPRESIÓN REVISADA: ARREGLO DEL GRID A DOS COLUMNAS
+            IMPRESIÓN CORREGIDA ORIGINAL: RESTAURADA EXACTAMENTE COMO LA TENÍAS
            ========================================================================= */
         @media print {
             @page { size: A4 landscape; margin: 5mm; } 
@@ -110,15 +110,6 @@
             body { 
                 background: white !important; 
                 margin: 0; padding: 0; 
-            }
-
-            /* Ocultamos elementos que no van al papel */
-            #login-area, .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
-                display: none !important; 
-            }
-
-            /* Asignamos la cuadrícula al nuevo contenedor padre principal */
-            #main-app {
                 display: grid !important; 
                 grid-template-columns: 58% 40% !important; 
                 column-gap: 15px; 
@@ -126,8 +117,12 @@
                 overflow: hidden; 
                 zoom: 65%;
             }
+            
+            #login-area, .no-print-dynamic, .live-info-panel, .digital-clock, .next-changes-box, .web-brand, header, .days-nav, .spinner, .mobile-section-title { 
+                display: none !important; 
+            }
 
-            /* Columna 1: Horario */
+            /* --- COLUMNA IZQUIERDA: HORARIOS --- */
             .container { 
                 grid-column: 1; 
                 width: 100% !important; 
@@ -153,7 +148,7 @@
                 margin: 0 !important;
             }
 
-            /* Columna 2: Notas (Restaurada) */
+            /* --- COLUMNA DERECHA: NOTAS --- */
             .print-only-notes { 
                 grid-column: 2; 
                 display: block !important; 
@@ -166,12 +161,21 @@
             }
 
             table { display: table !important; width: 100% !important; border: 1px solid #000 !important; border-collapse: collapse; }
-            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
-            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
-            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
-            .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
-            .name-tag { background: transparent !important; color: black !important; border: none !important; padding: 0 !important; margin: 0 !important; font-weight: 900 !important; font-size: 15px !important; }
             
+            tbody tr { display: table-row !important; border-bottom: 1px solid #999; height: auto !important; }
+            
+            td, th { display: table-cell !important; border: 1px solid #999 !important; color: black !important; padding: 1px !important; font-size: 13px !important; }
+            
+            th { font-weight: bold; border-bottom: 2px solid #000 !important; text-transform: uppercase; background: #eee !important; height: 16px; }
+            
+            .col-hora { width: 50px !important; text-align: center !important; white-space: nowrap !important; }
+            
+            .name-tag { 
+                background: transparent !important; color: black !important; border: none !important; 
+                padding: 0 !important; margin: 0 !important; font-weight: 900 !important; 
+                font-size: 15px !important; 
+            }
+
             .notes-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
             .notes-title { font-size: 24px; font-weight: 900; text-transform: uppercase; color: black; margin: 0; }
             .notes-logo { height: 40px; filter: grayscale(100%); }
@@ -199,35 +203,33 @@
     <div id="login-error" class="error-msg">Contraseña incorrecta</div>
 </div>
 
-<div id="main-app" style="display: none;">
-    <div class="container">
-        <header>
-            <div class="header-left">
-                <button class="btn-action btn-print" onclick="window.print()">Imprimir</button>
-                <a href="https://sheets.google.com" target="_blank" class="btn-action btn-edit">Editar Excel</a>
-            </div>
-            
-            <div class="days-nav" id="days-buttons"></div>
-            
-            <div class="live-info-panel no-print-dynamic">
-                <div id="digital-clock" class="digital-clock">00:00:00</div>
-                <div id="next-changes" class="next-changes-box">
-                    <span class="next-changes-title">Próximos Cambios (10m)</span>
-                    <div id="next-changes-list">
-                        <div style="color:#999; font-style:italic">Cargando...</div>
-                    </div>
+<div class="container" id="main-container" style="display: none;">
+    <header>
+        <div class="header-left">
+            <button class="btn-action btn-print" onclick="window.print()">Imprimir</button>
+            <a href="https://sheets.google.com" target="_blank" class="btn-action btn-edit">Editar Excel</a>
+        </div>
+        
+        <div class="days-nav" id="days-buttons"></div>
+        
+        <div class="live-info-panel no-print-dynamic">
+            <div id="digital-clock" class="digital-clock">00:00:00</div>
+            <div id="next-changes" class="next-changes-box">
+                <span class="next-changes-title">Próximos Cambios (10m)</span>
+                <div id="next-changes-list">
+                    <div style="color:#999; font-style:italic">Cargando...</div>
                 </div>
             </div>
-        </header>
-
-        <div id="schedule-container"></div>
-    </div>
-
-    <div class="print-only-notes">
-        <div class="notes-header">
-            <h2 class="notes-title">NOTAS</h2>
-            <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" alt="Logo" class="notes-logo">
         </div>
+    </header>
+
+    <div id="schedule-container"></div>
+</div>
+
+<div class="print-only-notes">
+    <div class="notes-header">
+        <h2 class="notes-title">NOTAS</h2>
+        <img src="https://raw.githubusercontent.com/cse-elisagundin/horarios_alumnos/main/image.png" alt="Logo" class="notes-logo">
     </div>
 </div>
 
@@ -265,12 +267,11 @@
                 document.getElementById('login-error').style.display = 'block';
                 document.getElementById('login-error').innerText = json.error;
             } else {
-                // Login correcto
+                // Login correcto: ocultamos panel de login y mostramos el contenedor principal
                 document.getElementById('login-area').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
+                document.getElementById('main-container').style.display = 'block';
                 dibujarCuadrante(json);
                 
-                // Iniciamos relojes una vez cargada la interfaz
                 setInterval(actualizarRelojYCambios, 1000);
             }
         } catch (error) {
