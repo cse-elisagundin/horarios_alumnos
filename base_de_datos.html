@@ -495,23 +495,34 @@
                                                     Nota: {{ ex.nota }}
                                                 </span>
                                                 <span v-else class="pill-pending">Pendiente...</span>
-                                                
-                                                <button @click="ex.isEditing = true" class="text-gray-300 hover:text-indigo-500 transition opacity-0 group-hover:opacity-100" title="Editar nota">
+                                                <button @click="ex.isEditing = true" class="text-gray-300 hover:text-indigo-500 transition opacity-0 group-hover:opacity-100" title="Editar Examen">
                                                     <i class="fas fa-pencil-alt text-xs"></i>
                                                 </button>
                                             </div>
 
-                                            <div v-else class="flex items-center gap-1 mt-1 animate-fade">
-                                                <input type="text" v-model="ex.editNota" placeholder="Ej: 7.5" class="w-14 p-1 text-center border-2 border-indigo-300 rounded text-xs font-bold outline-none focus:border-indigo-500" @keyup.enter="guardarNotaExamen(ex)">
-                                                
-                                                <button @click="guardarNotaExamen(ex)" :disabled="ex.saving" class="bg-indigo-500 text-white w-6 h-6 rounded flex items-center justify-center hover:bg-indigo-600 disabled:opacity-50">
-                                                    <i v-if="ex.saving" class="fas fa-spinner fa-spin text-xs"></i>
-                                                    <i v-else class="fas fa-check text-xs"></i>
-                                                </button>
-                                                
-                                                <button @click="ex.isEditing = false; ex.editNota = ex.nota" :disabled="ex.saving" class="bg-gray-200 text-gray-600 w-6 h-6 rounded flex items-center justify-center hover:bg-gray-300 disabled:opacity-50">
-                                                    <i class="fas fa-times text-xs"></i>
-                                                </button>
+                                            <div v-else class="flex flex-col gap-2 mt-2 animate-fade bg-indigo-50 p-3 rounded-lg border border-indigo-100 min-w-[200px] shadow-inner">
+                                                <div class="grid grid-cols-1 gap-2">
+                                                    <div>
+                                                        <label class="block text-[9px] font-bold text-indigo-800 uppercase mb-0.5">Fecha</label>
+                                                        <input type="date" v-model="ex.editFecha" class="w-full p-1 border border-indigo-200 rounded text-xs outline-none bg-white">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-[9px] font-bold text-indigo-800 uppercase mb-0.5">Asignatura</label>
+                                                        <input type="text" v-model="ex.editAsignatura" class="w-full p-1 border border-indigo-200 rounded text-xs outline-none bg-white">
+                                                    </div>
+                                                    <div>
+                                                        <label class="block text-[9px] font-bold text-indigo-800 uppercase mb-0.5">Nota (Vacío = Pendiente)</label>
+                                                        <div class="flex gap-1">
+                                                            <input type="text" v-model="ex.editNota" placeholder="Ej: 7.5" class="w-full p-1 border border-indigo-200 rounded text-xs font-bold outline-none bg-white" @keyup.enter="guardarNotaExamen(ex)">
+                                                            <button @click="guardarNotaExamen(ex)" :disabled="ex.saving" class="bg-indigo-500 text-white w-8 rounded hover:bg-indigo-600 disabled:opacity-50">
+                                                                <i v-if="ex.saving" class="fas fa-spinner fa-spin text-xs"></i><i v-else class="fas fa-check text-xs"></i>
+                                                            </button>
+                                                            <button @click="cancelarEdicionExamen(ex)" :disabled="ex.saving" class="bg-gray-300 text-gray-700 w-8 rounded hover:bg-gray-400 disabled:opacity-50">
+                                                                <i class="fas fa-times text-xs"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                         </div>
@@ -653,6 +664,17 @@
                 const hoy = new Date().toISOString().split('T')[0];
                 const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
                 return { fecha: hoy, mes: meses[new Date().getMonth()], metodo: '', tarifaSelect: '', tarifaPersConcepto: '', tarifaPersImporte: '', extraConcepto: '', extraImporte: '', generarPDF: false };
+            },
+            
+            // CONVERSOR ROBUSTO DE FECHAS
+            parseDateToISO(dStr) {
+                if(!dStr) return "";
+                if(dStr.includes('/')) {
+                    let p = dStr.trim().split('/');
+                    if(p.length === 3 && p[2].length === 4) return `${p[2]}-${p[1].padStart(2,'0')}-${p[0].padStart(2,'0')}`;
+                }
+                if(dStr.includes('T')) return dStr.split('T')[0];
+                return dStr;
             },
             
             buildMesesFijos() {
@@ -946,14 +968,19 @@
                     complete: (res) => {
                         this.examenesList = res.data.slice(1).map(row => {
                             if(!row[0]) return null;
+                            let isoDate = this.parseDateToISO((row[0] || "").trim());
+                            let asig = (row[1] || "").trim();
+                            let notaEx = (row[3] || "").trim();
                             return {
-                                fecha: row[0].trim(),
-                                asignatura: (row[1] || "").trim(),
+                                fecha: isoDate,
+                                asignatura: asig,
                                 alumno: (row[2] || "").trim(),
-                                nota: (row[3] || "").trim(),
-                                isEditing: false, // Control para mostrar input
-                                editNota: (row[3] || "").trim(), // Almacena el texto temporal
-                                saving: false // Control de estado de carga
+                                nota: notaEx,
+                                isEditing: false, 
+                                editFecha: isoDate,
+                                editAsignatura: asig,
+                                editNota: notaEx,
+                                saving: false 
                             };
                         }).filter(item => item !== null);
                         this.loadingExamenes = false;
@@ -983,7 +1010,7 @@
                         
                         this.gestorExamenes.asignatura = '';
                         this.gestorExamenes.alumnosSeleccionados = [];
-                        this.searchGestor = ''; // Limpiar buscador
+                        this.searchGestor = ''; 
                         this.cargarExamenesCSV();
 
                         setTimeout(() => { this.showSuccess = false; this.savingExamenes = false; }, 3000);
@@ -997,13 +1024,14 @@
                 }
             },
 
-            // NUEVA FUNCIÓN: Guardar Nota Individual
             async guardarNotaExamen(ex) {
                 ex.saving = true;
                 const payload = this.getSecurePayload('update_nota_examen', {
                     alumno: ex.alumno,
-                    fecha: ex.fecha,
-                    asignatura: ex.asignatura,
+                    old_fecha: ex.fecha,             
+                    old_asignatura: ex.asignatura,   
+                    new_fecha: ex.editFecha,         
+                    new_asignatura: ex.editAsignatura, 
                     nota: ex.editNota
                 });
 
@@ -1012,15 +1040,24 @@
                     const json = await res.json();
                     
                     if (json.status === 'success') {
-                        ex.nota = ex.editNota; // Actualiza el número visible
-                        ex.isEditing = false;  // Cierra el editor
+                        ex.nota = ex.editNota; 
+                        ex.fecha = ex.editFecha;
+                        ex.asignatura = ex.editAsignatura;
+                        ex.isEditing = false;
                     } else {
                         alert("Error desde Google Sheets:\n" + json.message);
                     }
-                } catch (e) {
-                    alert("Error de conexión guardando la nota.");
+                } catch (e) { 
+                    alert("Error de conexión guardando la nota."); 
                 }
                 ex.saving = false;
+            },
+
+            cancelarEdicionExamen(ex) {
+                ex.isEditing = false; 
+                ex.editNota = ex.nota;
+                ex.editFecha = ex.fecha;
+                ex.editAsignatura = ex.asignatura;
             },
 
             obtenerNombreMesCorto(fechaIso) {
