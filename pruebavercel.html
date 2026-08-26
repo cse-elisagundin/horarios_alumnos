@@ -100,7 +100,7 @@
     </div>
 
     <script>
-        // --- TUS CREDENCIALES DE SUPABASE YA CONFIGURADAS ---
+        // --- TUS CREDENCIALES DE SUPABASE ---
         const SUPABASE_URL = 'https://wfdfykrkngsdwtkpamrz.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmZGZ5a3JrbmdzZHd0a3BhbXJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc3NDk0MDEsImV4cCI6MjEwMzMyNTQwMX0.ggAJv2kyU7t0UZDeuWzPzg-pwVSG33l3kMXHWBKkhok';
         
@@ -138,11 +138,16 @@
                 .eq('email', email)
                 .single();
 
-            if (error || !data) {
+            if (error) {
                 userName.textContent = email;
-                dataHorario.textContent = "No se encontraron datos de horario.";
-                dataNotas.textContent = "No se encontraron notas.";
-                dataPagos.textContent = "Sin registrar.";
+                dataHorario.textContent = "Error de Supabase: " + error.message;
+                dataNotas.textContent = "Revisa si la tabla 'alumnos' tiene RLS activado.";
+                dataPagos.textContent = "-";
+            } else if (!data) {
+                userName.textContent = email;
+                dataHorario.textContent = "No se encontró ningún registro con el email: " + email;
+                dataNotas.textContent = "Revisa que el correo en la tabla 'alumnos' coincida exactamente.";
+                dataPagos.textContent = "-";
             } else {
                 userName.textContent = data.nombre;
                 dataHorario.textContent = data.horario;
