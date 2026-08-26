@@ -2,101 +2,267 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSE Elisagundin - Prueba Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CSE Elisagundin - Portal del Alumno</title>
+    <link rel="icon" type="image/png" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <link rel="apple-touch-icon" href="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <!-- Librería oficial de Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: #f4f6f9;
+        :root { 
+            --c-primary: #fa65c3; 
+            --c-secondary: #243c7a; 
+            --bg-body: #f4f6f9; 
+            --bg-container: #ffffff; 
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #e1e9f0;
+            --safe-area-bottom: env(safe-area-inset-bottom); 
+        }
+
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background-color: var(--bg-body); 
+            margin: 0; 
+            padding: 20px 15px; 
+            padding-bottom: 90px; 
+            color: var(--text-main); 
+            -webkit-tap-highlight-color: transparent; 
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            margin: 0;
-        }
-        .card {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            width: 100%;
-            max-width: 420px;
             box-sizing: border-box;
         }
-        h2 { margin-top: 0; color: #111; font-size: 1.5rem; text-align: center; }
-        label { display: block; font-size: 0.85rem; color: #555; margin-bottom: 0.3rem; font-weight: 600; }
-        input {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1.2rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+
+        .container { 
+            width: 100%; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: var(--bg-container); 
+            padding: 30px 25px; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(250, 101, 195, 0.15); 
             box-sizing: border-box;
-            font-size: 1rem;
         }
-        button {
-            width: 100%;
-            padding: 0.75rem;
-            background: #000;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
+
+        .web-brand { text-align: center; margin-bottom: 15px; }
+        .web-logo-img { height: 65px; object-fit: contain; }
+        .brand-line { height: 5px; width: 80px; margin: 10px auto 20px; background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); border-radius: 10px; }
+        
+        .portal-title { text-align: center; color: var(--c-secondary); font-size: 1.5rem; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .portal-subtitle { text-align: center; color: var(--c-primary); font-size: 1rem; font-weight: 600; margin-bottom: 25px; }
+
+        /* Estilos de Formulario de Login */
+        .login-box { max-width: 400px; margin: 0 auto; text-align: center; }
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; text-align: left; }
+        
+        input.input-field { 
+            width: 100%; 
+            padding: 16px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 12px; 
+            font-size: 16px; 
+            margin-bottom: 15px; 
+            color: var(--c-secondary); 
+            font-weight: 600; 
+            background-color: #fafbfc; 
+            box-sizing: border-box; 
+            -webkit-appearance: none; 
+            appearance: none; 
+            transition: all 0.2s;
         }
-        button:hover { background: #333; }
-        .error { color: #d32f2f; font-size: 0.85rem; text-align: center; margin-top: 0.5rem; }
+        input.input-field:focus { 
+            border-color: var(--c-primary); 
+            outline: none; 
+            background: white; 
+            box-shadow: 0 0 0 4px rgba(250, 101, 195, 0.1); 
+        }
+
+        .btn-action { 
+            width: 100%; 
+            padding: 16px; 
+            background-color: var(--c-primary); 
+            color: white; 
+            border: none; 
+            border-radius: 12px; 
+            font-size: 16px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            transition: 0.3s; 
+        }
+        .btn-action:hover { 
+            background-color: #d845a3; 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(250, 101, 195, 0.2); 
+        }
+
+        .error-msg { color: #dc3545; font-weight: bold; font-size: 0.9rem; margin-top: 15px; }
         .hidden { display: none; }
-        .info-box {
-            background: #f8f9fa;
-            border-left: 4px solid #000;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            color: #333;
+
+        /* Cabecera del Panel Privado */
+        .welcome-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--c-secondary) 0%, #172852 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 14px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(36, 60, 122, 0.2);
+        }
+        .welcome-header h3 { margin: 0; font-size: 1.3rem; color: white; }
+        .welcome-header p { margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.85rem; }
+
+        /* Secciones de Datos y Tablas */
+        .data-section {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--c-secondary);
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        th {
+            background-color: #fafbfc;
+            color: var(--c-secondary);
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        tr:hover td { background-color: #f8fafc; }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+
+        .spinner { 
+            border: none; 
+            border-radius: 10px; 
+            height: 6px; 
+            width: 60px; 
+            margin: 20px auto; 
+            background: linear-gradient(90deg, var(--c-secondary), var(--c-primary)); 
+            animation: bar-pulse 1.5s infinite ease-in-out; 
+            display: none;
+        }
+        @keyframes bar-pulse { 
+            0% { width: 60px; opacity: 0.6; } 
+            50% { width: 160px; opacity: 1; } 
+            100% { width: 60px; opacity: 0.6; } 
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 20px 15px; border-radius: 15px; }
+            .welcome-header { flex-direction: column; align-items: flex-start; gap: 1rem; padding: 1.2rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Pantalla de Login -->
-    <div class="card" id="login-container">
-        <h2>CSE Elisagundin</h2>
-        <label for="email">Correo electrónico</label>
-        <input type="email" id="email" placeholder="alumno@correo.com">
+    <div class="container">
         
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="••••••••">
-        
-        <button id="login-btn">Iniciar Sesión</button>
-        <p id="error-msg" class="error"></p>
-    </div>
-
-    <!-- Panel Privado del Alumno -->
-    <div class="card hidden" id="dashboard-container" style="max-width: 600px;">
-        <h2>Panel Personal</h2>
-        <p>Bienvenido/a, <strong id="user-name">Cargando...</strong></p>
-        <hr style="border: 0; border-top: 1px solid #eee; margin: 1.2rem 0;">
-        
-        <div class="info-box">
-            <strong>📅 Tu Horario:</strong><br>
-            <span id="data-horario">Cargando...</span>
+        <!-- PANTALLA DE LOGIN -->
+        <div id="login-container" class="login-box">
+            <div class="web-brand">
+                <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
+                <div class="brand-line"></div>
+            </div>
+            <div class="portal-title">CSE Elisagundin</div>
+            <div class="portal-subtitle">Portal del Alumno</div>
+            
+            <div style="text-align: left;">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" class="input-field" placeholder="alumno@correo.com">
+                
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" class="input-field" placeholder="••••••••">
+            </div>
+            
+            <button id="login-btn" class="btn-action">Iniciar Sesión</button>
+            <div id="login-spinner" class="spinner"></div>
+            <p id="error-msg" class="error-msg"></p>
         </div>
 
-        <div class="info-box">
-            <strong>📝 Tus Notas:</strong><br>
-            <span id="data-notas">Cargando...</span>
+        <!-- PANEL PRIVADO DEL ALUMNO (Oculto inicialmente) -->
+        <div id="dashboard-container" class="hidden">
+            
+            <div class="web-brand" style="margin-bottom: 10px;">
+                <img src="https://github.com/cse-elisagundin/horarios_alumnos/blob/main/image.png?raw=true" alt="Logo CSE" class="web-logo-img">
+                <div class="brand-line" style="margin-bottom: 10px;"></div>
+            </div>
+
+            <!-- Cabecera de bienvenida -->
+            <div class="welcome-header">
+                <div>
+                    <h3>¡Hola, <span id="user-name">Cargando...</span>! 👋</h3>
+                    <p>Consulta tus horarios, calificaciones y estado de pagos</p>
+                </div>
+                <button id="logout-btn" class="btn-action" style="background: #ef4444; width: auto; padding: 0.5rem 1.2rem; font-size: 0.85rem;">Cerrar Sesión</button>
+            </div>
+
+            <!-- Sección Horario -->
+            <div class="data-section">
+                <div class="section-title">📅 Tu Horario</div>
+                <div id="table-horario-container">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Cargando horarios...</p>
+                </div>
+            </div>
+
+            <!-- Sección Notas -->
+            <div class="data-section">
+                <div class="section-title">📝 Tus Calificaciones</div>
+                <div id="table-notas-container">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Cargando notas...</p>
+                </div>
+            </div>
+
+            <!-- Sección Pagos -->
+            <div class="data-section">
+                <div class="section-title">💳 Estado de Pagos</div>
+                <div id="table-pagos-container">
+                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Cargando pagos...</p>
+                </div>
+            </div>
+
         </div>
 
-        <div class="info-box">
-            <strong>💳 Estado de Pagos:</strong><br>
-            <span id="data-pagos">Cargando...</span>
-        </div>
-
-        <button id="logout-btn" style="background: #e53935; margin-top: 1rem;">Cerrar Sesión</button>
     </div>
 
     <script>
@@ -113,13 +279,14 @@
         const loginBtn = document.getElementById('login-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const errorMsg = document.getElementById('error-msg');
+        const loginSpinner = document.getElementById('login-spinner');
         
         const userName = document.getElementById('user-name');
-        const dataHorario = document.getElementById('data-horario');
-        const dataNotas = document.getElementById('data-notas');
-        const dataPagos = document.getElementById('data-pagos');
+        const tableHorarioContainer = document.getElementById('table-horario-container');
+        const tableNotasContainer = document.getElementById('table-notas-container');
+        const tablePagosContainer = document.getElementById('table-pagos-container');
 
-        // Comprobar si ya hay sesión activa
+        // Comprobar si ya hay sesión activa al cargar la página
         async function checkSession() {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (session) {
@@ -127,37 +294,75 @@
             }
         }
 
-        // Cargar los datos personalizados del alumno desde la tabla
+        // Cargar datos relacionales desde las tablas de Supabase con el nuevo diseño
         async function loadStudentData(email) {
             loginContainer.classList.add('hidden');
             dashboardContainer.classList.remove('hidden');
 
-            const { data, error } = await supabaseClient
-                .from('alumnos')
-                .select('*')
+            // 1. Obtener nombre del alumno
+            const { data: alumnoData } = await supabaseClient
+                .from('Alumnos')
+                .select('nombre')
                 .eq('email', email)
                 .single();
 
-            if (error) {
-                userName.textContent = email;
-                dataHorario.textContent = "Error de Supabase: " + error.message;
-                dataNotas.textContent = "Revisa si la tabla 'alumnos' tiene RLS activado.";
-                dataPagos.textContent = "-";
-            } else if (!data) {
-                userName.textContent = email;
-                dataHorario.textContent = "No se encontró ningún registro con el email: " + email;
-                dataNotas.textContent = "Revisa que el correo en la tabla 'alumnos' coincida exactamente.";
-                dataPagos.textContent = "-";
+            userName.textContent = alumnoData ? alumnoData.nombre : email;
+
+            // 2. Obtener Horarios
+            const { data: horarios } = await supabaseClient
+                .from('Horarios')
+                .select('*')
+                .eq('email', email);
+
+            if (!horarios || horarios.length === 0) {
+                tableHorarioContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No hay horarios registrados.</p>';
             } else {
-                userName.textContent = data.nombre;
-                dataHorario.textContent = data.horario;
-                dataNotas.textContent = data.notas;
-                dataPagos.textContent = data.pagos;
+                let html = `<table><thead><tr><th>Día</th><th>Hora</th><th>Asignatura</th></tr></thead><tbody>`;
+                horarios.forEach(h => {
+                    html += `<tr><td><strong>${h.dia}</strong></td><td>${h.hora}</td><td>${h.asignatura}</td></tr>`;
+                });
+                html += `</tbody></table>`;
+                tableHorarioContainer.innerHTML = html;
+            }
+
+            // 3. Obtener Notas
+            const { data: notas } = await supabaseClient
+                .from('Notas')
+                .select('*')
+                .eq('email', email);
+
+            if (!notas || notas.length === 0) {
+                tableNotasContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No hay calificaciones registradas.</p>';
+            } else {
+                let html = `<table><thead><tr><th>Asignatura / Módulo</th><th>Calificación</th></tr></thead><tbody>`;
+                notas.forEach(n => {
+                    html += `<tr><td>${n.asignatura}</td><td><strong style="color: var(--c-primary);">${n.nota}</strong></td></tr>`;
+                });
+                html += `</tbody></table>`;
+                tableNotasContainer.innerHTML = html;
+            }
+
+            // 4. Obtener Pagos
+            const { data: pagos } = await supabaseClient
+                .from('Pagos')
+                .select('*')
+                .eq('email', email);
+
+            if (!pagos || pagos.length === 0) {
+                tablePagosContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No hay registros de pagos.</p>';
+            } else {
+                let html = `<table><thead><tr><th>Concepto</th><th>Estado</th></tr></thead><tbody>`;
+                pagos.forEach(p => {
+                    const badgeClass = p.estado.toLowerCase() === 'pagado' ? 'badge-success' : 'badge-warning';
+                    html += `<tr><td>${p.concepto}</td><td><span class="badge ${badgeClass}">${p.estado}</span></td></tr>`;
+                });
+                html += `</tbody></table>`;
+                tablePagosContainer.innerHTML = html;
             }
         }
 
         // Acción de Login
-        loginBtn.addEventListener('click', async () => {
+        async function realizarLogin() {
             errorMsg.textContent = '';
             const email = emailInput.value.trim();
             const password = passwordInput.value;
@@ -167,13 +372,22 @@
                 return;
             }
 
+            loginSpinner.style.display = 'block';
+
             const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
             
+            loginSpinner.style.display = 'none';
+
             if (error) {
                 errorMsg.textContent = 'Credenciales incorrectas.';
             } else {
                 loadStudentData(data.user.email);
             }
+        }
+
+        loginBtn.addEventListener('click', realizarLogin);
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') realizarLogin();
         });
 
         // Acción de Logout
