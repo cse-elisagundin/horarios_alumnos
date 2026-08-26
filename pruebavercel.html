@@ -121,7 +121,7 @@
         .welcome-header h3 { margin: 0; font-size: 1.3rem; color: white; }
         .welcome-header p { margin: 4px 0 0 0; color: #cbd5e1; font-size: 0.85rem; }
 
-        /* Secciones de Datos y Tablas */
+        /* Tarjetas de Información */
         .data-section {
             background: #fff;
             border: 1px solid var(--border-color);
@@ -141,35 +141,12 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95rem;
+        .data-content {
+            font-size: 1rem;
+            color: var(--text-main);
+            line-height: 1.6;
+            white-space: pre-line;
         }
-        th, td {
-            padding: 10px 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-        th {
-            background-color: #fafbfc;
-            color: var(--c-secondary);
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-        }
-        tr:hover td { background-color: #f8fafc; }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-        .badge-success { background: #dcfce7; color: #166534; }
-        .badge-warning { background: #fef3c7; color: #92400e; }
 
         .spinner { 
             border: none; 
@@ -240,25 +217,19 @@
             <!-- Sección Horario -->
             <div class="data-section">
                 <div class="section-title">📅 Tu Horario</div>
-                <div id="table-horario-container">
-                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Cargando horarios...</p>
-                </div>
+                <div id="data-horario" class="data-content">Cargando horario...</div>
             </div>
 
             <!-- Sección Notas -->
             <div class="data-section">
                 <div class="section-title">📝 Tus Calificaciones</div>
-                <div id="table-notas-container">
-                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Cargando notas...</p>
-                </div>
+                <div id="data-notas" class="data-content">Cargando calificaciones...</div>
             </div>
 
             <!-- Sección Pagos -->
             <div class="data-section">
                 <div class="section-title">💳 Estado de Pagos</div>
-                <div id="table-pagos-container">
-                    <p style="color: var(--text-muted); font-size: 0.9rem; font-style: italic;">Cargando pagos...</p>
-                </div>
+                <div id="data-pagos" class="data-content">Cargando pagos...</div>
             </div>
 
         </div>
@@ -282,9 +253,9 @@
         const loginSpinner = document.getElementById('login-spinner');
         
         const userName = document.getElementById('user-name');
-        const tableHorarioContainer = document.getElementById('table-horario-container');
-        const tableNotasContainer = document.getElementById('table-notas-container');
-        const tablePagosContainer = document.getElementById('table-pagos-container');
+        const dataHorario = document.getElementById('data-horario');
+        const dataNotas = document.getElementById('data-notas');
+        const dataPagos = document.getElementById('data-pagos');
 
         // Comprobar si ya hay sesión activa al cargar la página
         async function checkSession() {
@@ -294,70 +265,27 @@
             }
         }
 
-        // Cargar datos relacionales desde las tablas de Supabase con el nuevo diseño
+        // Cargar datos desde la tabla 'alumnos' única
         async function loadStudentData(email) {
             loginContainer.classList.add('hidden');
             dashboardContainer.classList.remove('hidden');
 
-            // 1. Obtener nombre del alumno
-            const { data: alumnoData } = await supabaseClient
-                .from('Alumnos')
-                .select('nombre')
+            const { data, error } = await supabaseClient
+                .from('alumnos')
+                .select('*')
                 .eq('email', email)
                 .single();
 
-            userName.textContent = alumnoData ? alumnoData.nombre : email;
-
-            // 2. Obtener Horarios
-            const { data: horarios } = await supabaseClient
-                .from('Horarios')
-                .select('*')
-                .eq('email', email);
-
-            if (!horarios || horarios.length === 0) {
-                tableHorarioContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No hay horarios registrados.</p>';
+            if (error || !data) {
+                userName.textContent = email;
+                dataHorario.textContent = "No se encontraron datos de horario.";
+                dataNotas.textContent = "No se encontraron notas.";
+                dataPagos.textContent = "Sin registrar.";
             } else {
-                let html = `<table><thead><tr><th>Día</th><th>Hora</th><th>Asignatura</th></tr></thead><tbody>`;
-                horarios.forEach(h => {
-                    html += `<tr><td><strong>${h.dia}</strong></td><td>${h.hora}</td><td>${h.asignatura}</td></tr>`;
-                });
-                html += `</tbody></table>`;
-                tableHorarioContainer.innerHTML = html;
-            }
-
-            // 3. Obtener Notas
-            const { data: notas } = await supabaseClient
-                .from('Notas')
-                .select('*')
-                .eq('email', email);
-
-            if (!notas || notas.length === 0) {
-                tableNotasContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No hay calificaciones registradas.</p>';
-            } else {
-                let html = `<table><thead><tr><th>Asignatura / Módulo</th><th>Calificación</th></tr></thead><tbody>`;
-                notas.forEach(n => {
-                    html += `<tr><td>${n.asignatura}</td><td><strong style="color: var(--c-primary);">${n.nota}</strong></td></tr>`;
-                });
-                html += `</tbody></table>`;
-                tableNotasContainer.innerHTML = html;
-            }
-
-            // 4. Obtener Pagos
-            const { data: pagos } = await supabaseClient
-                .from('Pagos')
-                .select('*')
-                .eq('email', email);
-
-            if (!pagos || pagos.length === 0) {
-                tablePagosContainer.innerHTML = '<p style="color: var(--text-muted); font-size: 0.9rem;">No hay registros de pagos.</p>';
-            } else {
-                let html = `<table><thead><tr><th>Concepto</th><th>Estado</th></tr></thead><tbody>`;
-                pagos.forEach(p => {
-                    const badgeClass = p.estado.toLowerCase() === 'pagado' ? 'badge-success' : 'badge-warning';
-                    html += `<tr><td>${p.concepto}</td><td><span class="badge ${badgeClass}">${p.estado}</span></td></tr>`;
-                });
-                html += `</tbody></table>`;
-                tablePagosContainer.innerHTML = html;
+                userName.textContent = data.nombre || email;
+                dataHorario.textContent = data.horario || "Sin horario asignado.";
+                dataNotas.textContent = data.notas || "Sin notas registradas.";
+                dataPagos.textContent = data.pagos || "Sin registrar.";
             }
         }
 
